@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F-Ville Viewer</title>
+<style>
+  :root { --bg: #1d1f23; --panel: rgba(20, 22, 26, .86); --fg: #eef0f2; --muted: #9aa3ad; --accent: #f37021; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, "Segoe UI", sans-serif; overflow: hidden; }
+  canvas { display: block; }
+  #ui { position: fixed; top: 12px; left: 12px; background: var(--panel); padding: 12px 14px; border-radius: 10px; min-width: 240px; }
+  #ui h1 { font-size: 15px; margin: 0 0 8px; }
+  #ui label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  #ui select { flex: 1; background: #2b2f36; color: var(--fg); border: 1px solid #3a3f47; border-radius: 6px; padding: 4px; }
+  #stats { margin-top: 10px; font: 12px/1.5 ui-monospace, Consolas, monospace; color: var(--muted); white-space: pre; }
+  #stats b { color: var(--accent); font-weight: 600; }
+  #msg { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); background: var(--panel); padding: 6px 12px; border-radius: 8px; color: var(--muted); }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="ui">
+  <h1>F-Ville 1 — xem thử</h1>
+  <label>Zone <select id="zone">
+    <option value="zone_01_bus">01 · Xe bus</option>
+    <option value="zone_02_campus" selected>02 · Cổng, giếng, tượng</option>
+    <option value="zone_03_lobby">03 · Sảnh, Hạt Lúa</option>
+    <option value="zone_04_corridor">04 · Hành lang, cầu thang</option>
+    <option value="zone_05_office">05 · Văn phòng</option>
+  </select></label>
+  <label>Đồ hoạ <select id="tier"><option value="low">Thấp</option><option value="high">Cao</option></select></label>
+  <label><input type="checkbox" id="lightmap" checked> Lightmap (bản cao)</label>
+  <label><input type="checkbox" id="toon" checked> Toon + viền nét</label>
+  <label><input type="checkbox" id="lmonly"> Chỉ xem lightmap (kiểm tra)</label>
+  <div id="stats"></div>
+</div>
+<div id="msg">Kéo chuột để xoay · cuộn để zoom · chuột phải để dời</div>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { OutlineEffect } from "three/addons/effects/OutlineEffect.js";
+
+const $ = (id) => document.getElementById(id);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+const outline = new OutlineEffect(renderer, { defaultThickness: 0.0025, defaultColor: [0.06, 0.06, 0.07] });
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9cc4e8);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 600);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+const hemi = new THREE.HemisphereLight(0xdfeeff, 0x7a8a5a, 1.1);
+const sun = new THREE.DirectionalLight(0xfff0d8, 1.6);
+sun.position.set(-30, 60, 40);
+scene.add(hemi, sun);
+
+const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/");
+const loader = new GLTFLoader().setDRACOLoader(draco);
+
+// gradient 3 bậc cho toon
+const grad = new THREE.DataTexture(new Uint8Array([90, 170, 255]), 3, 1, THREE.RedFormat);
+grad.minFilter = grad.magFilter = THREE.NearestFilter;
+grad.needsUpdate = true;
+
+let root = null;
+let original = new Map();
+
+function applyMaterials() {
+  if (!root) return;
+  const useLM = $("lightmap").checked && $("tier").value === "high";
+  const toon = $("toon").checked;
+  let hasLM = false;
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    if (o.name.startsWith("COL_")) { o.visible = false; return; }
+    const src = original.get(o.uuid);
+    const lm = src.aoMap || null;           // lightmap được xuất ở ô occlusion (TEXCOORD_1)
+    if (lm) hasLM = true;
+    const params = {
+      color: src.color, map: src.map, vertexColors: true,
+      transparent: src.transparent, opacity: src.opacity, side: src.side,
+      lightMap: useLM ? lm : null, lightMapIntensity: 2.2,
+    };
+    let m;
+    if ($("lmonly").checked && lm) m = new THREE.MeshBasicMaterial({ map: lm });   // chỉ xem lightmap
+    else if (toon) m = new THREE.MeshToonMaterial({ ...params, gradientMap: grad, emissive: src.emissive, emissiveIntensity: src.emissiveIntensity });
+    else m = new THREE.MeshStandardMaterial({ ...params, roughness: src.roughness, metalness: src.metalness, emissive: src.emissive, emissiveIntensity: src.emissiveIntensity });
+    if (src.transparent) m.userData.outlineParameters = { visible: false };
+    o.material = m;
+  });
+  // có lightmap: nắng/bóng đã nướng → giảm đèn thời gian thực
+  const lmOn = useLM && hasLM;
+  hemi.intensity = lmOn ? 0.35 : 1.1;
+  sun.intensity = lmOn ? 0.45 : 1.6;
+}
+
+function load() {
+  const zone = $("zone").value, tier = $("tier").value;
+  $("msg").textContent = `Đang tải ${tier}/${zone}.glb …`;
+  const t0 = performance.now();
+  if (root) { scene.remove(root); root = null; }
+  loader.load(`../assets/glb/${tier}/${zone}.glb`, (g) => {
+    root = g.scene;
+    original = new Map();
+    root.traverse((o) => { if (o.isMesh) original.set(o.uuid, o.material); });
+    scene.add(root);
+    applyMaterials();
+    let spawn = null;
+    root.traverse((o) => { if (!spawn && /^SPAWN_.*_start$/.test(o.name)) spawn = o; });
+    const box = new THREE.Box3().setFromObject(root);
+    const target = spawn ? spawn.position.clone().add(new THREE.Vector3(0, 1.6, 0)) : box.getCenter(new THREE.Vector3());
+    const yaw = spawn?.userData?.yaw_deg ?? 0;  // 0 = nhìn về -Z
+    const dir = new THREE.Vector3(-Math.sin(THREE.MathUtils.degToRad(yaw)), 0, -Math.cos(THREE.MathUtils.degToRad(yaw)));
+    controls.target.copy(target.clone().addScaledVector(dir, 6));
+    camera.position.copy(target.clone().addScaledVector(dir, -3).add(new THREE.Vector3(0, 1.2, 0)));
+    $("msg").textContent = `${tier}/${zone}.glb — tải ${(performance.now() - t0 | 0)} ms`;
+  }, undefined, (e) => { $("msg").textContent = "Lỗi tải: " + e.message; });
+}
+
+["zone", "tier"].forEach((id) => $(id).addEventListener("change", load));
+["lightmap", "toon", "lmonly"].forEach((id) => $(id).addEventListener("change", applyMaterials));
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+});
+
+let frames = 0, last = performance.now(), fps = 0;
+function tick() {
+  requestAnimationFrame(tick);
+  controls.update();
+  if ($("toon").checked) outline.render(scene, camera); else renderer.render(scene, camera);
+  frames++;
+  const now = performance.now();
+  if (now - last > 500) {
+    fps = frames * 1000 / (now - last); frames = 0; last = now;
+    const i = renderer.info.render;
+    $("stats").innerHTML = `FPS        <b>${fps.toFixed(0)}</b>\ntam giác   ${i.triangles.toLocaleString()}\ndraw call  ${i.calls}\nđộ phân giải ${renderer.domElement.width}×${renderer.domElement.height}`;
+  }
+}
+window.__viewer = { get fps() { return fps; }, get info() { return renderer.info.render; }, get root() { return root; },
+  camera, controls, load, applyMaterials,
+  renderNow() { controls.update(); if ($("toon").checked) outline.render(scene, camera); else renderer.render(scene, camera); } };
+load();
+tick();
+</script>
+</body>
+</html>
