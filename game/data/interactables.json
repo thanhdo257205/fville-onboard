@@ -1,0 +1,336 @@
+{
+  "_ghi_chu": "Nối đối tượng trong GLB với hành động. Vùng tương tác: 'radius' (m, đo theo phương ngang từ node; mặc định default_radius) và/hoặc 'area' (hộp TRIGGER_: đứng trong hộp là tương tác được). 'actor': nhân vật do code đặt (vd Tú). 'object': vật do code đặt (không có trong GLB) tại node 'anchor' + 'offset' (glTF, m). action: dialogue:<id> | minigame:<id> | pickup:<carry id>. requires/hide_if: { flags, not_flags, quests, rewards }. Hiệu ứng (hieu_biet, ket_noi, value, reward, flags, quest, item, remove_item) nằm trong dialogues.json và minigames bên dưới.",
+  "default_radius": 2.0,
+  "items": [
+    {
+      "zone": "zone_00",
+      "node": "INT_bien_xe_1",
+      "radius": 3.0,
+      "prompt": {
+        "en": "Read the route sign"
+      },
+      "action": "dialogue:bien_xe_1",
+      "_ly_do": "Biển số tuyến trên kính lái (cao 3 m), người chơi đứng trên vỉa hè cách ~2 m."
+    },
+    {
+      "zone": "zone_00",
+      "node": "INT_bien_xe_2",
+      "radius": 3.0,
+      "prompt": {
+        "en": "Read the route sign"
+      },
+      "action": "dialogue:bien_xe_2"
+    },
+    {
+      "zone": "zone_00",
+      "node": "INT_bien_xe_3",
+      "radius": 3.0,
+      "prompt": {
+        "en": "Read the route sign"
+      },
+      "action": "dialogue:bien_xe_3"
+    },
+    {
+      "zone": "zone_00",
+      "node": "NPC_tai_xe_1",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to the driver"
+      },
+      "action": "dialogue:tai_xe_1_hoi"
+    },
+    {
+      "zone": "zone_00",
+      "node": "NPC_tai_xe_3",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to the driver"
+      },
+      "action": "dialogue:tai_xe_3_hoi"
+    },
+    {
+      "zone": "zone_00",
+      "node": "NPC_thao_cua_xe",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to Ms. Thảo"
+      },
+      "action": "dialogue:thao_bus"
+    },
+    {
+      "zone": "zone_00",
+      "node": "NPC_hanh_khach",
+      "radius": 1.8,
+      "prompt": {
+        "en": "Talk to the passenger"
+      },
+      "action": "dialogue:hanh_khach",
+      "hide_if": {
+        "flags": [
+          "passenger_first",
+          "passenger_skipped"
+        ]
+      }
+    },
+    {
+      "zone": "zone_00",
+      "actor": "tu",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Say hi"
+      },
+      "action": "dialogue:tu_bat_chuyen",
+      "requires": {
+        "not_flags": [
+          "tu_met"
+        ]
+      },
+      "_ly_do": "Tú đứng chờ ở mái chờ (code đặt theo characters.json roles.tu.wait) tới khi người chơi bắt chuyện, sau đó đi theo."
+    },
+    {
+      "zone": "zone_01",
+      "node": "NPC_dong_nghiep_don",
+      "prompt": {
+        "en": "Talk to Ms. Thảo"
+      },
+      "action": "dialogue:thao_main"
+    },
+    {
+      "zone": "zone_01",
+      "node": "NPC_tai_xe",
+      "radius": 2.5,
+      "prompt": {
+        "en": "Talk to the bus driver"
+      },
+      "action": "dialogue:tai_xe_thanks",
+      "_ly_do": "Bác tài đứng trong xe (cao 1 m); người chơi tới gần nhất 2,15 m → bán kính 2,5 m."
+    },
+    {
+      "zone": "zone_01",
+      "node": "INT_ban_do_tuyen_xe",
+      "area": "TRIGGER_ban_do_tuyen_xe",
+      "prompt": {
+        "en": "Read the route map"
+      },
+      "action": "dialogue:route_map"
+    },
+    {
+      "zone": "zone_01",
+      "node": "INT_xe_bus",
+      "radius": 3.5,
+      "prompt": {
+        "en": "Look for Tú's backpack"
+      },
+      "action": "pickup:balo_tu",
+      "requires": {
+        "flags": [
+          "tu_lost_bag"
+        ],
+        "not_flags": [
+          "has_balo_tu",
+          "backpack_returned"
+        ]
+      },
+      "_ly_do": "pickup:<id> = thêm vật mang theo <id> + cờ has_<id>. Mở sau khi Tú kêu quên balo (cờ tu_lost_bag — sự kiện ở Đợt 3)."
+    },
+    {
+      "zone": "zone_01",
+      "actor": "tu",
+      "radius": 2.0,
+      "prompt": {
+        "en": "Give Tú the backpack"
+      },
+      "action": "dialogue:tu_backpack_thanks",
+      "requires": {
+        "flags": [
+          "has_balo_tu"
+        ],
+        "not_flags": [
+          "backpack_returned"
+        ]
+      },
+      "_ly_do": "actor: nhân vật do code đặt (Tú đi theo người chơi) — không có node trong GLB."
+    },
+    {
+      "zone": "zone_02",
+      "node": "INT_cong_fville",
+      "area": "TRIGGER_cong_fville",
+      "prompt": {
+        "en": "Take a check-in photo"
+      },
+      "action": "minigame:checkin_photo",
+      "hide_if": {
+        "quests": [
+          "z2_checkin"
+        ]
+      },
+      "_ly_do": "Tâm biển chữ nằm trên gò cỏ sau bờ tường (gần nhất ~4,9 m) → dùng vùng TRIGGER_cong_fville."
+    },
+    {
+      "zone": "zone_02",
+      "node": "INT_gieng_lang",
+      "area": "TRIGGER_gieng_lang",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Draw water from the well"
+      },
+      "action": "minigame:well",
+      "hide_if": {
+        "quests": [
+          "z2_well"
+        ]
+      }
+    },
+    {
+      "zone": "zone_02",
+      "node": "INT_tuong_cuder",
+      "area": "TRIGGER_tuong_cuder",
+      "prompt": {
+        "en": "Read about the Cuder Statue"
+      },
+      "action": "minigame:cuder_quiz",
+      "hide_if": {
+        "quests": [
+          "z2_cuder"
+        ]
+      }
+    },
+    {
+      "zone": "zone_03",
+      "node": "NPC_le_tan",
+      "area": "TRIGGER_quay_le_tan",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to the receptionist"
+      },
+      "action": "dialogue:le_tan_main"
+    },
+    {
+      "zone": "zone_03",
+      "node": "INT_hat_lua",
+      "area": "TRIGGER_hat_lua",
+      "prompt": {
+        "en": "Explore the Rice Grain Room"
+      },
+      "action": "minigame:timeline",
+      "hide_if": {
+        "quests": [
+          "z3_rice_room"
+        ]
+      }
+    },
+    {
+      "zone": "zone_03",
+      "object": "vi_danh_roi",
+      "anchor": "COL_cum_don",
+      "offset": [
+        0.0,
+        0.015,
+        0.0
+      ],
+      "radius": 1.6,
+      "model": "wallet",
+      "prompt": {
+        "en": "Pick up the wallet"
+      },
+      "action": "dialogue:wallet_found",
+      "hide_if": {
+        "flags": [
+          "wallet_taken",
+          "wallet_left"
+        ]
+      },
+      "_ly_do": "Chiếc ví không có trong GLB → code đặt lên MẶT ĐÔN (dò bằng tia chiếu trong vùng COL_cum_don, cao 0,3–0,7 m).",
+      "surface_min": 0.3,
+      "surface_max": 0.7
+    }
+  ],
+  "minigames": {
+    "_ghi_chu": "Đợt 2: mini-game là khung tạm (hiện tiêu đề + nút hoàn thành, áp 'result'). Đợt 3 thay bằng mini-game thật.",
+    "install_app": {
+      "title": {
+        "en": "Install My FPT"
+      },
+      "desc": {
+        "en": "Tap the three setup steps in the right order."
+      },
+      "result": {
+        "reward": "app_my_fpt",
+        "quest": "z1_get_app",
+        "hieu_biet": 5
+      }
+    },
+    "checkin_photo": {
+      "title": {
+        "en": "Check-in Photo"
+      },
+      "desc": {
+        "en": "Strike a pose in front of the FPT SOFTWARE sign."
+      },
+      "result": {
+        "reward": [
+          "ao_cam",
+          "anh_checkin"
+        ],
+        "quest": "z2_checkin",
+        "hieu_biet": 5
+      }
+    },
+    "well": {
+      "title": {
+        "en": "Draw Water"
+      },
+      "desc": {
+        "en": "Pull the lever when the bar hits the green zone. Three buckets!"
+      },
+      "result": {
+        "reward": "huy_hieu_dong_doi",
+        "quest": "z2_well",
+        "hieu_biet": 10
+      }
+    },
+    "cuder_quiz": {
+      "title": {
+        "en": "The Cuder Statue"
+      },
+      "desc": {
+        "en": "Read the story, then answer three questions."
+      },
+      "result": {
+        "reward": "huy_hieu_6_gia_tri",
+        "quest": "z2_cuder",
+        "hieu_biet": 5
+      }
+    },
+    "profile_check": {
+      "title": {
+        "en": "Check Your Profile"
+      },
+      "desc": {
+        "en": "One detail on the form is wrong. Find it and fix it."
+      },
+      "result": {}
+    },
+    "id_photo": {
+      "title": {
+        "en": "ID Photo"
+      },
+      "desc": {
+        "en": "Pick one of three expressions for your card."
+      },
+      "result": {}
+    },
+    "timeline": {
+      "title": {
+        "en": "FPT Timeline"
+      },
+      "desc": {
+        "en": "Drag five milestones into the right order."
+      },
+      "result": {
+        "quest": "z3_rice_room",
+        "hieu_biet": 10
+      }
+    }
+  }
+}

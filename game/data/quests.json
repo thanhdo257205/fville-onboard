@@ -1,10 +1,40 @@
 {
-  "_ghi_chu": "Đợt 1 chỉ có 'triggers' (chuyển zone). 'quests' và điều kiện 'requires' được thêm ở Đợt 2. Tên node đối chiếu với GLB thật: zone_02 không có SPAWN_zone_02_from_zone_01 → dùng SPAWN_zone_02_start; TRIGGER_zone_02_enter trong zone_02 nằm trùng điểm xuất hiện (mốc 'vừa vào zone'), không phải lối quay về.",
-  "quests": [],
+  "_ghi_chu": "checklist: 12 việc ngày đầu (tab Checklist của App My FPT) — xong khi mọi quest 'required' gắn với nó xong. quests: việc cần làm ở mỗi zone (Đợt 2 có zone 1–3). triggers: chuyển zone; 'requires' = quest phải xong, thiếu thì chạy 'blocked_dialogue' (hoặc thông báo 'blocked'); 'cutscene' = chạy cảnh chuyển (data/cutscenes.json) thay vì chuyển zone ngay. Mục checklist 'zones' = các zone góp việc vào mục đó (vd Xe Bus FPT: zone 0 lên xe + zone 1 nhận app). Tên node đối chiếu GLB thật: zone_02 không có SPAWN_zone_02_from_zone_01 → dùng SPAWN_zone_02_start; TRIGGER_zone_02_enter trong zone_02 nằm trùng điểm xuất hiện (mốc 'vừa vào zone').",
+  "checklist": [
+    { "id": "bus", "zone": "zone_00", "zones": ["zone_00", "zone_01"], "title": { "en": "FPT Bus" } },
+    { "id": "gate", "zone": "zone_02", "title": { "en": "F-Ville Gate" } },
+    { "id": "well", "zone": "zone_02", "title": { "en": "Village Well" } },
+    { "id": "statue", "zone": "zone_02", "title": { "en": "Cuder Statue" } },
+    { "id": "reception", "zone": "zone_03", "title": { "en": "Reception" } },
+    { "id": "rice_room", "zone": "zone_03", "title": { "en": "Rice Grain Room" } },
+    { "id": "card_gate", "zone": "zone_04", "title": { "en": "Card Gate" } },
+    { "id": "fsa", "zone": "zone_04", "title": { "en": "FSA Room" } },
+    { "id": "meet_prajith", "zone": "zone_05", "title": { "en": "Meet Prajith" } },
+    { "id": "meet_manager", "zone": "zone_05", "title": { "en": "Meet the Manager" } },
+    { "id": "hello_team", "zone": "zone_05", "title": { "en": "Say Hello to the Team" } },
+    { "id": "desk", "zone": "zone_05", "title": { "en": "Sit at Your Desk" } }
+  ],
+  "quests": [
+    { "id": "z0_find_bus", "zone": "zone_00", "checklist": "bus", "required": true, "target": "INT_bien_xe_2", "title": { "en": "Find Bus No. 2" } },
+    { "id": "z0_meet_tu", "zone": "zone_00", "required": false, "target": "tu", "title": { "en": "Say hi to the intern at the bus shelter" } },
+    { "id": "z0_meet_thao", "zone": "zone_00", "checklist": "bus", "required": true, "target": "NPC_thao_cua_xe", "title": { "en": "Say hello to Ms. Thảo at Bus No. 2" } },
+    { "id": "z0_board", "zone": "zone_00", "checklist": "bus", "required": true, "target": "TRIGGER_len_xe", "title": { "en": "Board Bus No. 2" } },
+    { "id": "z1_get_app", "zone": "zone_01", "checklist": "bus", "required": true, "target": "NPC_dong_nghiep_don", "title": { "en": "Get the My FPT app from Ms. Thảo" } },
+    { "id": "z1_thank_driver", "zone": "zone_01", "required": false, "target": "NPC_tai_xe", "title": { "en": "Say thanks to the bus driver" } },
+    { "id": "z1_route_map", "zone": "zone_01", "required": false, "target": "INT_ban_do_tuyen_xe", "title": { "en": "Check the bus route map" } },
+    { "id": "z1_backpack", "zone": "zone_01", "required": false, "target": "INT_xe_bus", "title": { "en": "Find Tú's backpack" }, "visible_if": { "flags": ["tu_lost_bag"] } },
+    { "id": "z2_checkin", "zone": "zone_02", "checklist": "gate", "required": true, "target": "INT_cong_fville", "title": { "en": "Check in at the FPT SOFTWARE sign" } },
+    { "id": "z2_well", "zone": "zone_02", "checklist": "well", "required": true, "target": "INT_gieng_lang", "title": { "en": "Draw water at the Village Well" } },
+    { "id": "z2_cuder", "zone": "zone_02", "checklist": "statue", "required": true, "target": "INT_tuong_cuder", "title": { "en": "Visit the Cuder Statue" } },
+    { "id": "z3_card", "zone": "zone_03", "checklist": "reception", "required": true, "target": "NPC_le_tan", "title": { "en": "Get your employee card" } },
+    { "id": "z3_rice_room", "zone": "zone_03", "checklist": "rice_room", "required": true, "target": "INT_hat_lua", "title": { "en": "Explore the Rice Grain Room" } },
+    { "id": "z3_wallet", "zone": "zone_03", "required": false, "target": "vi_danh_roi", "title": { "en": "Return the lost wallet" }, "visible_if": { "flags": ["wallet_taken"] } }
+  ],
   "triggers": [
-    { "zone": "zone_01", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_start", "requires": [] },
-    { "zone": "zone_02", "node": "TRIGGER_zone_03_enter", "to_zone": "zone_03", "to_spawn": "SPAWN_zone_03_start", "requires": [] },
+    { "zone": "zone_00", "node": "TRIGGER_len_xe", "cutscene": "len_xe", "requires": ["z0_meet_thao"], "blocked_dialogue": "board_remind" },
+    { "zone": "zone_01", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_start", "requires": ["z1_get_app"], "blocked_dialogue": "thao_remind_app" },
+    { "zone": "zone_02", "node": "TRIGGER_zone_03_enter", "to_zone": "zone_03", "to_spawn": "SPAWN_zone_03_start", "requires": ["z2_checkin", "z2_well", "z2_cuder"], "blocked_dialogue": "tu_remind_zone2" },
     { "zone": "zone_03", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_from_zone_03", "requires": [] },
-    { "zone": "zone_03", "node": "TRIGGER_zone_04_enter", "blocked": "hud.zone_locked" }
+    { "zone": "zone_03", "node": "TRIGGER_zone_04_enter", "requires": ["z3_card", "z3_rice_room"], "blocked_dialogue": "tu_remind_zone3", "blocked": "hud.zone_locked" }
   ]
 }

@@ -1,0 +1,20 @@
+{
+  "_ghi_chu": "11 phần thưởng (GDD mục Phần thưởng) + vật mang theo tạm (carry: không phải phần thưởng, mất khi trao lại). icon: emoji hiển thị trong app. wear: mặc lên người (nhân vật đang mặc sẵn áo cam → chỉ vào Túi đồ + thông báo). draft: chờ HR.",
+  "rewards": [
+    { "id": "app_my_fpt", "type": "app", "icon": "📱", "zone": "zone_01", "name": { "en": "My FPT App" }, "desc": { "en": "Your checklist, bag and badges — all in one app." } },
+    { "id": "ao_cam", "type": "outfit", "wear": true, "icon": "👕", "zone": "zone_02", "name": { "en": "FPT Orange Shirt" }, "desc": { "en": "Official F-Ville orange. You're one of us now." } },
+    { "id": "huy_hieu_dong_doi", "type": "badge", "icon": "🏅", "zone": "zone_02", "name": { "en": "Teamwork Spirit Badge" }, "desc": { "en": "Earned at the Village Well." } },
+    { "id": "huy_hieu_6_gia_tri", "type": "badge", "icon": "✨", "zone": "zone_02", "name": { "en": "Tôn Đổi Đồng Chí Gương Sáng" }, "desc": { "en": "Six slots for FPT's core values. Light them up today." }, "draft": true },
+    { "id": "anh_checkin", "type": "photo", "icon": "📷", "zone": "zone_02", "name": { "en": "Check-in Photo" }, "desc": { "en": "You, in front of the FPT SOFTWARE sign." } },
+    { "id": "the_nhan_vien", "type": "item", "icon": "🪪", "zone": "zone_03", "name": { "en": "FPT Employee Card" }, "desc": { "en": "Opens the card gates. Don't lend it to anyone." } },
+    { "id": "welcome_kit", "type": "item", "icon": "🎁", "zone": "zone_03", "name": { "en": "Welcome Kit" }, "desc": { "en": "A notebook, a pen and a few F-Ville surprises." }, "draft": true },
+    { "id": "so_tay_hoc_tap", "type": "item", "icon": "📓", "zone": "zone_04", "name": { "en": "Learning Notebook" }, "desc": { "en": "Your first-week learning plan." } },
+    { "id": "la_ban_nghe_nghiep", "type": "card", "icon": "🧭", "zone": "zone_05", "name": { "en": "Career Compass" }, "desc": { "en": "Prajith's tips for where you could grow." } },
+    { "id": "nhiem_vu_dau_tien", "type": "app_entry", "icon": "📌", "zone": "zone_05", "name": { "en": "First Mission" }, "desc": { "en": "Your first task from the manager." } },
+    { "id": "so_loi_khuyen", "type": "app_tab", "icon": "📒", "zone": "zone_05", "name": { "en": "Advice Book" }, "desc": { "en": "First-day tips from your teammates." } }
+  ],
+  "carry": [
+    { "id": "balo_tu", "icon": "🎒", "name": { "en": "Tú's Backpack" }, "desc": { "en": "Tú left it on the bus." } },
+    { "id": "vi_danh_roi", "icon": "👛", "name": { "en": "Lost Wallet" }, "desc": { "en": "Found on a seat in the lobby." } }
+  ]
+}

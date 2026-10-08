@@ -1,0 +1,41 @@
+{
+  "_ghi_chu": "6 giá trị Tôn Đổi Đồng Chí Gương Sáng. Tên tiếng Anh là TẠM (draft) — chờ HR xác nhận bản chính thức. 'active': ô có cách đạt trong bản hiện tại (Đợt 2: chỉ Respect và Fairness). Chữ hiển thị theo mã ngôn ngữ ('en'; sau thêm 'vi').",
+  "badge": {
+    "reward": "huy_hieu_6_gia_tri",
+    "name": "Tôn Đổi Đồng Chí Gương Sáng",
+    "subtitle": { "en": "FPT's six core values. Each slot lights up when you act in that spirit today." },
+    "draft": true
+  },
+  "values": [
+    {
+      "id": "respect", "vi": "Tôn trọng", "name": { "en": "Respect" }, "active": true, "zone": "zone_01", "draft": true,
+      "how": { "en": "Thank the bus driver and let others get off first." },
+      "hint": { "en": "Small courtesies count — like thanking the bus driver." }
+    },
+    {
+      "id": "innovation", "vi": "Đổi mới", "name": { "en": "Innovation" }, "active": false, "zone": "zone_04", "draft": true,
+      "how": { "en": "Set an extra learning goal of your own in the FSA room." },
+      "hint": { "en": "Try setting a learning goal beyond the suggested path." }
+    },
+    {
+      "id": "teamwork", "vi": "Đồng đội", "name": { "en": "Teamwork" }, "active": false, "zone": "zone_04", "draft": true,
+      "how": { "en": "Call reception through the app when Tú's card turns red." },
+      "hint": { "en": "When a friend is stuck, find the right way to help." }
+    },
+    {
+      "id": "fairness", "vi": "Chí công", "name": { "en": "Fairness" }, "active": true, "zone": "zone_03", "draft": true,
+      "how": { "en": "Take the lost wallet to reception instead of leaving it." },
+      "hint": { "en": "Found something that isn't yours? Hand it in." }
+    },
+    {
+      "id": "role_model", "vi": "Gương mẫu", "name": { "en": "Role Model" }, "active": false, "zone": "zone_04", "draft": true,
+      "how": { "en": "Don't let a stranger follow you through the card gate; point them to reception." },
+      "hint": { "en": "Security rules apply to everyone, even when it feels awkward." }
+    },
+    {
+      "id": "wisdom", "vi": "Sáng suốt", "name": { "en": "Wisdom" }, "active": false, "zone": "zone_05", "draft": true,
+      "how": { "en": "Put your first-week tasks in a sensible order with the manager." },
+      "hint": { "en": "Deadlines first, nice-to-haves last." }
+    }
+  ]
+}

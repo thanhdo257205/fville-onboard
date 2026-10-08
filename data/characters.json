@@ -1,6 +1,7 @@
 {
   "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. TẠM THỜI mọi vai dùng 'prajith'.",
-  "_place_ghi_chu": "place: 'spawn' = người chơi, đặt tại SPAWN_ · 'node' = đứng tại node NPC_ (xoay theo yaw_deg) · 'follow_player' = đi theo người chơi · 'near_node' = code đặt cạnh node (offset theo hệ trục glTF, m). pose: 'stand' (mặc định) | 'seated' = ngồi gõ phím (sit_type), ghế sau điểm đứng 0,40 m; khi nói chuyện thì stand_up → quay về phía người chơi → talk → ngồi lại. Không đặt NPC nào ở chỗ bàn intern (SPAWN_ban_lam_viec). node_marks: 'seat' = node đánh dấu CHỖ GHẾ (zone_05 đặt NPC_dong_nghiep_* tại ghế) → điểm đứng tính lùi về phía bàn theo models.<id>.seat.offset_xz_m. chair_height_m: mặt ghế trong GLB (đo bằng tia dò: 0,51 m) → khi ngồi nâng nhân vật thêm (chair_height_m − seat.height_m) để không lún vào ghế.",
+  "_place_ghi_chu": "place: 'spawn' = người chơi, đặt tại SPAWN_ · 'node' = đứng tại node NPC_ (xoay theo yaw_deg) · 'follow_player' = đi theo người chơi · 'near_node' = code đặt cạnh node (offset theo hệ trục glTF, m). pose: 'stand' (mặc định) | 'seated' = ngồi gõ phím (sit_type), ghế sau điểm đứng 0,40 m; khi nói chuyện thì stand_up → quay về phía người chơi → talk → ngồi lại. Không đặt NPC nào ở chỗ bàn intern (SPAWN_ban_lam_viec). node_marks: 'seat' = node đánh dấu CHỖ GHẾ (zone_05 đặt NPC_dong_nghiep_* tại ghế) → điểm đứng tính lùi về phía bàn theo models.<id>.seat.offset_xz_m. chair_height_m: mặt ghế trong GLB (đo bằng tia dò: 0,51 m) → khi ngồi nâng nhân vật thêm (chair_height_m − seat.height_m) để không lún vào ghế. node có thể là danh sách (vd chị Thảo: NPC_thao_cua_xe ở zone_00, NPC_dong_nghiep_don ở zone_01) — zone có node nào thì đứng ở đó. wait.<zone>: vai đi theo (Tú) đứng chờ tại near_node + offset tới khi đạt until. carry: đồ cầm tay do code gắn (bag). board: {on_flag, to_node, done_flag} — có cờ on_flag thì đi tới to_node rồi khuất, bật done_flag. hide_if: không đặt vai khi đạt điều kiện.",
+  "_tint_ghi_chu": "TẠM (mọi vai dùng chung model): tint = { shirt, pants } màu hex đổi bằng code (game/src/characters/tint.js) để dễ phân biệt NPC: áo = điểm ảnh cam đậm trên thân + tay, quần = điểm ảnh xám sáng trên hông + chân, giữ nếp vải của texture. Bỏ trống = giữ màu gốc (người chơi giữ áo cam, quần kem). Không sửa texture/GLB.",
   "roles": {
     "player": {
       "model": "prajith",
@@ -8,22 +9,98 @@
     },
     "tu": {
       "model": "prajith",
-      "place": "follow_player"
+      "place": "follow_player",
+      "tint": {
+        "shirt": "#2fa58f",
+        "pants": "#3f5f8f"
+      },
+      "wait": {
+        "zone_00": {
+          "near_node": "mai_cho_xe",
+          "offset": [
+            -1.0,
+            0,
+            0.15
+          ],
+          "yaw_deg": 180,
+          "anim": "phone",
+          "until": {
+            "flags": [
+              "tu_met"
+            ]
+          },
+          "_ghi_chu": "zone_00: Tú đứng xem điện thoại trước ghế mái chờ (mai_cho_xe = mesh mái chờ trong GLB; offset glTF, m) tới khi người chơi bắt chuyện (cờ tu_met), sau đó đi theo."
+        }
+      }
     },
     "thao": {
       "model": "prajith",
       "place": "node",
-      "node": "NPC_dong_nghiep_don"
+      "node": [
+        "NPC_thao_cua_xe",
+        "NPC_dong_nghiep_don"
+      ],
+      "tint": {
+        "shirt": "#f5a623",
+        "pants": "#2e3440"
+      }
     },
     "tai_xe": {
       "model": "prajith",
       "place": "node",
-      "node": "NPC_tai_xe"
+      "node": "NPC_tai_xe",
+      "tint": {
+        "shirt": "#4f7cb8",
+        "pants": "#3a3a3a"
+      }
+    },
+    "tai_xe_1": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_tai_xe_1",
+      "tint": {
+        "shirt": "#6a8fbf",
+        "pants": "#2e3440"
+      }
+    },
+    "tai_xe_3": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_tai_xe_3",
+      "tint": {
+        "shirt": "#4a6fa0",
+        "pants": "#3a3a3a"
+      }
+    },
+    "hanh_khach": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_hanh_khach",
+      "tint": {
+        "shirt": "#b07fb0",
+        "pants": "#6b5b4b"
+      },
+      "carry": "bag",
+      "board": {
+        "on_flag": "passenger_boarding",
+        "to_node": "TRIGGER_len_xe",
+        "done_flag": "passenger_boarded"
+      },
+      "hide_if": {
+        "flags": [
+          "passenger_boarded"
+        ]
+      },
+      "_ghi_chu": "Hành khách mang túi ở cửa xe số 2 (zone_00). Được nhường (cờ passenger_boarding) thì đi tới cửa xe rồi khuất (cờ passenger_boarded)."
     },
     "le_tan": {
       "model": "prajith",
       "place": "node",
-      "node": "NPC_le_tan"
+      "node": "NPC_le_tan",
+      "tint": {
+        "shirt": "#f4f4f2",
+        "pants": "#1f2a44"
+      }
     },
     "nguoi_la": {
       "model": "prajith",
@@ -33,17 +110,29 @@
         1.2,
         0,
         1.0
-      ]
+      ],
+      "tint": {
+        "shirt": "#7d8f5a",
+        "pants": "#bfa27a"
+      }
     },
     "mentor": {
       "model": "prajith",
       "place": "node",
-      "node": "NPC_mentor"
+      "node": "NPC_mentor",
+      "tint": {
+        "shirt": "#c4472b",
+        "pants": "#2b2b2b"
+      }
     },
     "manager": {
       "model": "prajith",
       "place": "node",
-      "node": "NPC_manager"
+      "node": "NPC_manager",
+      "tint": {
+        "shirt": "#56677d",
+        "pants": "#1c1c1e"
+      }
     },
     "dong_nghiep_1": {
       "model": "prajith",
@@ -51,7 +140,10 @@
       "node": "NPC_dong_nghiep_1",
       "pose": "seated",
       "node_marks": "seat",
-      "chair_height_m": 0.51
+      "chair_height_m": 0.51,
+      "tint": {
+        "pants": "#3f5f8f"
+      }
     },
     "dong_nghiep_2": {
       "model": "prajith",
@@ -59,7 +151,11 @@
       "node": "NPC_dong_nghiep_2",
       "pose": "seated",
       "node_marks": "seat",
-      "chair_height_m": 0.51
+      "chair_height_m": 0.51,
+      "tint": {
+        "shirt": "#e3c341",
+        "pants": "#5a4636"
+      }
     },
     "dong_nghiep_3": {
       "model": "prajith",
@@ -67,12 +163,20 @@
       "node": "NPC_dong_nghiep_3",
       "pose": "seated",
       "node_marks": "seat",
-      "chair_height_m": 0.51
+      "chair_height_m": 0.51,
+      "tint": {
+        "shirt": "#3e9a62",
+        "pants": "#2e3440"
+      }
     },
     "khang": {
       "model": "prajith",
       "place": "node",
-      "node": "NPC_ban_bi_a"
+      "node": "NPC_ban_bi_a",
+      "tint": {
+        "shirt": "#8058b8",
+        "pants": "#4a6a9a"
+      }
     }
   },
   "names": {
@@ -89,7 +193,12 @@
       "dong_nghiep_1": "Lan",
       "dong_nghiep_2": "Minh",
       "dong_nghiep_3": "Hà",
-      "khang": "Khang"
+      "khang": "Khang",
+      "narrator": "",
+      "tai_xe_1": "Bus 1 Driver",
+      "tai_xe_3": "Bus 3 Driver",
+      "hanh_khach": "Passenger",
+      "hr": "FPT Software HR"
     }
   },
   "name_tags": {
@@ -109,7 +218,48 @@
       "hair",
       "skin"
     ],
-    "_ghi_chu": "Màn tạo nhân vật tạm thời chỉ cho nhập tên và chọn vị trí intern; ẩn chọn giới tính, tóc, da (chưa có model khác)."
+    "_ghi_chu": "Màn tạo nhân vật tạm thời chỉ cho nhập tên và chọn vị trí intern; ẩn chọn giới tính, tóc, da (chưa có model khác).",
+    "positions": [
+      {
+        "id": "developer",
+        "name": {
+          "en": "Developer"
+        }
+      },
+      {
+        "id": "tester",
+        "name": {
+          "en": "Tester"
+        }
+      },
+      {
+        "id": "ba",
+        "name": {
+          "en": "Business Analyst"
+        }
+      },
+      {
+        "id": "designer",
+        "name": {
+          "en": "Designer"
+        }
+      }
+    ],
+    "name_max": 16,
+    "blocked_words": [
+      "fuck",
+      "shit",
+      "bitch",
+      "cunt",
+      "dick",
+      "đụ",
+      "địt",
+      "lồn",
+      "buồi",
+      "cặc",
+      "đm",
+      "vcl"
+    ]
   },
   "models": {
     "prajith": {
@@ -122,6 +272,10 @@
         "low": 6000
       },
       "height_m": 1.75,
+      "collision": {
+        "radius_m": 0.3,
+        "_ghi_chu": "capsule đứng (bán kính, cao = height_m) cho người chơi, Tú và NPC: người chơi không đi xuyên NPC / Tú; tâm capsule NPC theo xương hông (ngồi thì nằm trên ghế)."
+      },
       "forward": "+Z",
       "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
       "speed_mps": {
@@ -197,7 +351,8 @@
         "sit_type": 16.467,
         "cheer": 2.0,
         "stand_up": 2.233
-      }
+      },
+      "portrait": "assets/characters/prajith/prajith_portrait.png"
     }
   }
 }

@@ -1,7 +1,13 @@
 {
-  "_ghi_chu": "Danh sách zone của game: file GLB (assets/glb/<mức>/<file>.glb) và điểm xuất hiện mặc định. Tên hiển thị nằm trong data/i18n/<ngôn ngữ>.json (zones.<id>).",
-  "order": ["zone_01", "zone_02", "zone_03"],
+  "_ghi_chu": "Danh sách zone của game: file GLB (assets/glb/<mức>/<file>.glb) và điểm xuất hiện mặc định. Tên hiển thị + giờ trên đồng hồ nằm trong data/i18n/<ngôn ngữ>.json (zones.<id>). on_enter: hội thoại tự chạy khi vào zone lần đầu (once_flag = cờ đánh dấu đã chạy). mood: ánh sáng / bầu trời / sương riêng của zone (không có = mặc định ban ngày).",
+  "order": ["zone_00", "zone_01", "zone_02", "zone_03"],
   "zones": {
+    "zone_00": { "file": "zone_00_pickup", "start": "SPAWN_zone_00_start",
+      "on_enter": { "dialogue": "hr_message", "once_flag": "hr_message_read" },
+      "mood": { "_ghi_chu": "Sáng sớm 06:30: nắng thấp hướng đông-nam, màu ấm; trời nhạt; sương mỏng che hai đầu phố.",
+        "sky": "#dbe4ea", "fog": [38, 130],
+        "sun": { "color": "#ffd9a8", "intensity": 1.45, "position": [60, 26, 34] },
+        "hemi": { "sky": "#f3e6d8", "ground": "#8c8072", "intensity": 1.05 } } },
     "zone_01": { "file": "zone_01_bus", "start": "SPAWN_zone_01_start" },
     "zone_02": { "file": "zone_02_campus", "start": "SPAWN_zone_02_start" },
     "zone_03": { "file": "zone_03_lobby", "start": "SPAWN_zone_03_start" }

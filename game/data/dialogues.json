@@ -1,0 +1,208 @@
+{
+  "_ghi_chu": "Hội thoại dạng cây (GDD Phụ lục). Node: speaker (vai trong characters.json, 'player', 'narrator'), text {en}, anim (nod|wave|think|point — NPC đang nói diễn 1 lần rồi nói tiếp), effects, next; hoặc choices [{text, effects, next}] (phím 1–4 hoặc click); hoặc branch [{if:{flags,not_flags,quests,rewards}, next}] + next mặc định; hoặc action 'minigame:<id>' rồi next. style: 'phone' = tin nhắn trên điện thoại (vd HR). Chữ thay thế: {player} = tên người chơi, {missing} = việc còn thiếu. draft: true = chờ HR → game hiện [DRAFT].",
+  "dialogues": [
+    {
+      "id": "hr_message", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! Welcome to FPT Software. Your shuttle today is Bus No. 2 to Hòa Lạc — pickup at 06:45 at this stop. See you at F-Ville!" }, "next": "n2" },
+        "n2": { "speaker": "narrator", "text": { "en": "Find Bus No. 2 before 06:45." }, "effects": { "flags": ["hr_message_read"] }, "next": null }
+      }
+    },
+    {
+      "id": "bien_xe_1", "start": "n1",
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"1\" glows on the windshield. Your message said Bus No. 2." }, "effects": { "flags": ["sign_1_read"] }, "next": null } }
+    },
+    {
+      "id": "bien_xe_2", "start": "n1",
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"2\" on the windshield — this is the bus to Hòa Lạc!" }, "effects": { "quest": "z0_find_bus", "hieu_biet": 3, "flags": ["sign_2_read"] }, "next": null } }
+    },
+    {
+      "id": "bien_xe_3", "start": "n1",
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"3\" glows on the windshield. Your message said Bus No. 2." }, "effects": { "flags": ["sign_3_read"] }, "next": null } }
+    },
+    {
+      "id": "tai_xe_1_hoi", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "tai_xe_1", "anim": "nod", "text": { "en": "Morning! Looking for your bus?" },
+          "choices": [
+            { "text": { "en": "Is this the bus to Hòa Lạc?" }, "next": "n2" },
+            { "text": { "en": "(Just looking around.)" }, "next": "bye" }
+          ] },
+        "n2": { "speaker": "tai_xe_1", "anim": "point", "text": { "en": "Hòa Lạc? Not this one — that's Bus No. 2, right behind me. Can't miss it!" }, "effects": { "flags": ["asked_driver"] }, "next": null },
+        "bye": { "speaker": "tai_xe_1", "text": { "en": "Have a good one!" }, "next": null }
+      }
+    },
+    {
+      "id": "tai_xe_3_hoi", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "tai_xe_3", "anim": "nod", "text": { "en": "Morning! Looking for your bus?" },
+          "choices": [
+            { "text": { "en": "Is this the bus to Hòa Lạc?" }, "next": "n2" },
+            { "text": { "en": "(Just looking around.)" }, "next": "bye" }
+          ] },
+        "n2": { "speaker": "tai_xe_3", "anim": "point", "text": { "en": "Hòa Lạc? Not this one — that's Bus No. 2, just up ahead past the shelter." }, "effects": { "flags": ["asked_driver"] }, "next": null },
+        "bye": { "speaker": "tai_xe_3", "text": { "en": "Have a good one!" }, "next": null }
+      }
+    },
+    {
+      "id": "tu_bat_chuyen", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Are you an intern in this batch too? I'm Tú. I'm so nervous... I don't even know where to go after we get off the bus." },
+          "choices": [
+            { "text": { "en": "Me too — let's stick together!" }, "effects": { "ket_noi": 5 }, "next": "happy" },
+            { "text": { "en": "I'm sure someone will show us around." }, "next": "nod" }
+          ] },
+        "happy": { "speaker": "tu", "anim": "wave", "text": { "en": "Really? Phew, I feel so much better already!" }, "next": "n2" },
+        "nod": { "speaker": "tu", "anim": "nod", "text": { "en": "Yeah... I guess you're right." }, "next": "n2" },
+        "n2": { "speaker": "tu", "text": { "en": "We're on Bus No. 2, right? Let's go find it!" }, "effects": { "quest": "z0_meet_tu", "flags": ["tu_met"] }, "next": null }
+      }
+    },
+    {
+      "id": "thao_bus", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z0_meet_thao"] }, "next": "after" }, { "if": { "flags": ["tu_met"] }, "next": "two" }], "next": "one" },
+        "two": { "speaker": "thao", "anim": "wave", "text": { "en": "Two new interns, huh? I'm Thảo — I'm picking up your batch today." }, "next": "n2" },
+        "one": { "speaker": "thao", "anim": "wave", "text": { "en": "A new intern, huh? I'm Thảo — I'm picking up your batch today." }, "next": "n2" },
+        "n2": { "speaker": "thao", "anim": "point", "text": { "en": "This is Bus No. 2, straight to Hòa Lạc. Ask me anything before we go!" }, "effects": { "quest": "z0_find_bus" }, "next": "ask" },
+        "ask": { "speaker": "thao", "text": { "en": "What would you like to know?" },
+          "choices": [
+            { "if": { "not_flags": ["asked_thao_time"] }, "text": { "en": "What time does the bus head back?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_time"] }, "next": "a_time" },
+            { "if": { "not_flags": ["asked_thao_rules"] }, "text": { "en": "Are there any rules on the company bus?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_rules"] }, "next": "a_rules" },
+            { "if": { "not_flags": ["asked_thao_long"] }, "text": { "en": "Have you been riding this route long?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_long"] }, "next": "a_long" },
+            { "text": { "en": "That's all — thank you!" }, "next": "done" }
+          ] },
+        "a_time": { "speaker": "thao", "draft": true, "text": { "en": "The buses head back to the city in the evening — HR will put the exact times in your app." }, "next": "ask" },
+        "a_rules": { "speaker": "thao", "draft": true, "text": { "en": "Be at the stop a few minutes early, keep your seatbelt on, and keep the bus clean. Easy!" }, "next": "ask" },
+        "a_long": { "speaker": "thao", "anim": "think", "text": { "en": "Six years! Once I napped so hard I rode all the way back to the city. The driver still teases me about it." }, "next": "ask" },
+        "done": { "speaker": "thao", "anim": "nod", "text": { "en": "Great! Hop on whenever you're ready — Bus No. 2 leaves at 06:45 sharp." }, "effects": { "quest": "z0_meet_thao", "flags": ["met_thao"] }, "next": null },
+        "after": { "speaker": "thao", "text": { "en": "Hop on, we're leaving soon!" }, "next": null }
+      }
+    },
+    {
+      "id": "hanh_khach", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "hanh_khach", "text": { "en": "Oh — are you getting on too? Sorry, this bag is a bit heavy..." },
+          "choices": [
+            { "text": { "en": "After you! Take your time." }, "effects": { "ket_noi": 3, "flags": ["passenger_first"] }, "next": "thanks" },
+            { "text": { "en": "(Squeeze past and get on first.)" }, "effects": { "flags": ["passenger_skipped"] }, "next": "meh" }
+          ] },
+        "thanks": { "speaker": "hanh_khach", "anim": "nod", "text": { "en": "Thank you, that's very kind!" }, "effects": { "flags": ["passenger_boarding"] }, "next": null },
+        "meh": { "speaker": "hanh_khach", "text": { "en": "Oh... okay then." }, "next": null }
+      }
+    },
+    {
+      "id": "board_remind", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["tu_met"] }, "next": "tu" }], "next": "thao" },
+        "tu": { "speaker": "tu", "anim": "point", "text": { "en": "Wait — shouldn't we say hi to the lady at the door first? She looks like she's from FPT." }, "next": null },
+        "thao": { "speaker": "thao", "anim": "wave", "text": { "en": "Hi there! Are you one of the new interns? Come say hello first!" }, "next": null }
+      }
+    },
+    {
+      "id": "tu_bus_ride", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["tu_met"] }, "next": "n1" }], "next": "intro" },
+        "intro": { "speaker": "tu", "text": { "en": "Hi! I'm Tú — first day too. Mind if I sit here?" }, "effects": { "flags": ["tu_met"] }, "next": "n2" },
+        "n1": { "speaker": "tu", "text": { "en": "Window seat, yes! Hòa Lạc, here we come." }, "next": "n2" },
+        "n2": { "speaker": "narrator", "text": { "en": "Tú drops his backpack on the seat beside him and stares out the window." }, "effects": { "flags": ["tu_balo_tren_xe"] }, "next": null }
+      }
+    },
+    {
+      "id": "thao_main", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "rewards": ["app_my_fpt"] }, "next": "after" }], "next": "n1" },
+        "n1": { "speaker": "thao", "anim": "wave", "text": { "en": "Here we are, {player}! First things first: let's get the My FPT app on your phone." }, "next": "n2" },
+        "n2": { "speaker": "thao", "text": { "en": "It holds your checklist for today, your items and the badges you'll earn." },
+          "choices": [
+            { "text": { "en": "Let's install it!" }, "next": "install" },
+            { "text": { "en": "Badges? What kind of badges?" }, "effects": { "ket_noi": 2 }, "next": "n3" }
+          ] },
+        "n3": { "speaker": "thao", "anim": "point", "text": { "en": "You'll see at the Cuder Statue. Some of them you earn just by being nice to people." }, "next": "n4" },
+        "n4": { "speaker": "thao", "text": { "en": "Okay, phone out!" }, "next": "install" },
+        "install": { "action": "minigame:install_app", "next": "done" },
+        "done": { "speaker": "thao", "anim": "nod", "text": { "en": "All set! Head straight to the gate. I'll go up to the office first — message me in the app if you need anything." }, "next": null },
+        "after": { "speaker": "thao", "text": { "en": "Go on through the gate. See you upstairs!" }, "next": null }
+      }
+    },
+    {
+      "id": "thao_remind_app", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "thao", "text": { "en": "{player}, wait! Install the My FPT app first." }, "next": null }
+      }
+    },
+    {
+      "id": "tai_xe_thanks", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["driver_thanked"] }, "next": "again" }], "next": "n1" },
+        "n1": { "speaker": "tai_xe", "anim": "nod", "text": { "en": "Mind your step. First day, huh?" },
+          "choices": [
+            { "text": { "en": "Yes! Thank you so much — drive safely!" },
+              "effects": { "value": "respect", "ket_noi": 3, "quest": "z1_thank_driver", "flags": ["driver_thanked"] }, "next": "thanks" },
+            { "text": { "en": "(Nod and hop off.)" }, "next": "bye" }
+          ] },
+        "thanks": { "speaker": "tai_xe", "anim": "wave", "text": { "en": "Ha, a polite one! Have a great first day." }, "next": null },
+        "bye": { "speaker": "tai_xe", "text": { "en": "Off you go, then." }, "next": null },
+        "again": { "speaker": "tai_xe", "text": { "en": "Go get 'em, kid!" }, "next": null }
+      }
+    },
+    {
+      "id": "route_map", "start": "n1", "draft": true,
+      "nodes": {
+        "n1": { "speaker": "narrator", "text": { "en": "F-Ville shuttle buses run between Hà Nội and Hòa Lạc. Morning buses arrive at 07:30." }, "next": "n2" },
+        "n2": { "speaker": "narrator", "text": { "en": "Return buses leave at 17:30 and 18:15. The times are saved to your app." },
+          "effects": { "hieu_biet": 5, "quest": "z1_route_map", "flags": ["bus_times_saved"] }, "next": null }
+      }
+    },
+    {
+      "id": "tu_remind_zone2", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Hold on, we're not done here yet: {missing}." }, "next": null }
+      }
+    },
+    {
+      "id": "tu_remind_zone3", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Let's finish up here first: {missing}." }, "next": null }
+      }
+    },
+    {
+      "id": "le_tan_main", "start": "check",
+      "nodes": {
+        "check": { "branch": [
+            { "if": { "flags": ["wallet_taken"], "not_flags": ["wallet_returned"] }, "next": "w1" },
+            { "if": { "quests": ["z3_card"] }, "next": "after" }
+          ], "next": "n1" },
+        "n1": { "speaker": "le_tan", "anim": "wave", "text": { "en": "Good morning! First day, right? Welcome to F-Ville." }, "next": "n2" },
+        "n2": { "speaker": "le_tan", "text": { "en": "Could you check the details on this form for me? If anything's wrong, just fix it." }, "next": "form" },
+        "form": { "action": "minigame:profile_check", "next": "n3" },
+        "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card. Smile!" }, "next": "photo" },
+        "photo": { "action": "minigame:id_photo", "next": "n4" },
+        "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. Have a wonderful first day!" },
+          "effects": { "reward": ["the_nhan_vien", "welcome_kit"], "hieu_biet": 5, "quest": "z3_card" }, "next": null },
+        "after": { "speaker": "le_tan", "text": { "en": "Your card opens the gates upstairs. Have a great day!" }, "next": null },
+        "w1": { "speaker": "player", "text": { "en": "Excuse me — I found this wallet on the seats over there." }, "next": "w2" },
+        "w2": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Oh, thank you! Someone must be worried sick. I'll take care of it." },
+          "effects": { "value": "fairness", "ket_noi": 3, "quest": "z3_wallet", "flags": ["wallet_returned"], "remove_item": "vi_danh_roi" }, "next": "w3" },
+        "w3": { "branch": [{ "if": { "quests": ["z3_card"] }, "next": null }], "next": "n1" }
+      }
+    },
+    {
+      "id": "wallet_found", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "narrator", "text": { "en": "Someone left a wallet on the seat." },
+          "choices": [
+            { "text": { "en": "Take it to the reception desk." }, "effects": { "flags": ["wallet_taken"], "item": "vi_danh_roi" }, "next": "take" },
+            { "text": { "en": "Leave it where it is." }, "effects": { "flags": ["wallet_left"] }, "next": null }
+          ] },
+        "take": { "speaker": "narrator", "text": { "en": "You picked up the wallet. The reception desk is just over there." }, "next": null }
+      }
+    },
+    {
+      "id": "tu_backpack_thanks", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "My backpack! You're a lifesaver, {player}!" },
+          "effects": { "ket_noi": 5, "quest": "z1_backpack", "flags": ["backpack_returned"], "remove_item": "balo_tu" }, "next": null }
+      }
+    }
+  ]
+}

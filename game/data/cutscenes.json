@@ -1,0 +1,29 @@
+{
+  "_ghi_chu": "Cảnh chuyển chạy bằng code (game/src/game/cutscene.js), có nút Skip (hoặc Esc). Tên node đối chiếu GLB khi tải. Xe chạy dọc PATH_ (extras.points, toạ độ glTF), không cần animation trong GLB. Góc máy CAM_: extras target / fov_deg / track (bám theo xe). timing: giây. Chữ: data/i18n (card = khoá i18n), lời thoại: dialogues.json.",
+  "cutscenes": {
+    "len_xe": {
+      "_mo_ta": "Zone 0 → zone 1: người chơi + Tú đi tới cửa xe số 2, tối nhẹ khi bước lên, cửa đóng; CAM_lenxe_1..3: xe chạy khỏi trạm rồi mờ dần; nền tối: thẻ '06:45 · On the way to Hòa Lạc' + câu của Tú (đặt balo xuống ghế → cờ tu_balo_tren_xe); tải zone_01: xe chạy vào trạm theo PATH_xe_vao_tram, dừng, cửa mở; người chơi + Tú xuất hiện ở SPAWN_zone_01_cua_xe.",
+      "zone": "zone_00",
+      "door_point": "TRIGGER_len_xe",
+      "bus": "xe_bus_2", "door": "xe_bus_2_cua", "path": "PATH_xe_roi_tram",
+      "cams": ["CAM_lenxe_1", "CAM_lenxe_2", "CAM_lenxe_3"],
+      "board_with": ["thao", "hanh_khach"],
+      "card": "cutscene.on_the_way",
+      "dialogue": "tu_bus_ride",
+      "effects": { "quest": "z0_board", "flags": ["tu_met", "tu_balo_tren_xe"] },
+      "depart_accel_mps2": 1.8,
+      "arrive": {
+        "zone": "zone_01", "spawn": "SPAWN_zone_01_cua_xe",
+        "bus": "INT_xe_bus", "door": "xe_bus_cua", "path": "PATH_xe_vao_tram",
+        "last_m": 18, "speed_mps": 9.0,
+        "ride_along": ["tai_xe"],
+        "off_before_us": ["thao"],
+        "camera_from": "SPAWN_zone_01_cua_xe", "camera_offset": [-3.3, 1.65, -4.25], "camera_fov_deg": 50,
+        "_camera": "góc máy lúc xe vào trạm: lệch so với SPAWN_zone_01_cua_xe (glTF, m) — giữa vỉa hè, giữa 2 cột đèn phía tây cửa xe (không vướng cột đèn / xe đỗ), bám theo xe"
+      },
+      "timing": { "walk": 1.6, "dim": 0.35, "door": 0.8, "cam2": 2.6, "cam3": 2.8, "fade_out": 0.8,
+        "card": 2.0, "line": 2.3, "door_open": 0.7, "step_out": 0.5, "blend": 0.8,
+        "_tong": "≈ 1,6 + 0,7 + 0,8 + 2,6 + 2,8 + 2,0 + 2 × 2,3 + 4,0 (18 m ở 9 m/s, giảm tốc tới 0) + 0,7 + 0,5 + 0,8 ≈ 21 giây" }
+    }
+  }
+}
