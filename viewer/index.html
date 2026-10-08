@@ -8,13 +8,14 @@
   :root { --bg: #1d1f23; --panel: rgba(20, 22, 26, .86); --fg: #eef0f2; --muted: #9aa3ad; --accent: #f37021; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, "Segoe UI", sans-serif; overflow: hidden; }
   canvas { display: block; }
-  #ui { position: fixed; top: 12px; left: 12px; background: var(--panel); padding: 12px 14px; border-radius: 10px; min-width: 240px; }
+  #ui { position: fixed; top: 12px; left: 12px; background: var(--panel); padding: 12px 14px; border-radius: 10px; min-width: 240px; z-index: 2; }
   #ui h1 { font-size: 15px; margin: 0 0 8px; }
   #ui label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
   #ui select { flex: 1; background: #2b2f36; color: var(--fg); border: 1px solid #3a3f47; border-radius: 6px; padding: 4px; }
   #stats { margin-top: 10px; font: 12px/1.5 ui-monospace, Consolas, monospace; color: var(--muted); white-space: pre; }
   #stats b { color: var(--accent); font-weight: 600; }
-  #msg { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); background: var(--panel); padding: 6px 12px; border-radius: 8px; color: var(--muted); }
+  #msg { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); background: var(--panel); padding: 6px 12px; border-radius: 8px; color: var(--muted); z-index: 2; }
+  .tag { background: rgba(20, 22, 26, .78); color: #fff; font: 600 12px/1.2 system-ui, "Segoe UI", sans-serif; padding: 3px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid rgba(243, 112, 33, .7); }
 </style>
 <script type="importmap">
 { "imports": {
@@ -33,10 +34,13 @@
     <option value="zone_04_corridor">04 · Hành lang, cầu thang</option>
     <option value="zone_05_office">05 · Văn phòng</option>
   </select></label>
-  <label>Đồ hoạ <select id="tier"><option value="low">Thấp</option><option value="high">Cao</option></select></label>
-  <label><input type="checkbox" id="lightmap" checked> Lightmap (bản cao)</label>
+  <label class="high-only">Đồ hoạ <select id="tier"><option value="low">Thấp</option><option value="high">Cao</option></select></label>
+  <label class="high-only"><input type="checkbox" id="lightmap" checked> Lightmap (bản cao)</label>
   <label><input type="checkbox" id="toon" checked> Toon + viền nét</label>
-  <label><input type="checkbox" id="lmonly"> Chỉ xem lightmap (kiểm tra)</label>
+  <label class="high-only"><input type="checkbox" id="lmonly"> Chỉ xem lightmap (kiểm tra)</label>
+  <label class="char-only"><input type="checkbox" id="chars" checked> Nhân vật tại NPC_</label>
+  <label class="char-only">Animation <select id="anim"></select></label>
+  <label class="char-only"><input type="checkbox" id="tags" checked> Bảng tên</label>
   <div id="stats"></div>
 </div>
 <div id="msg">Kéo chuột để xoay · cuộn để zoom · chuột phải để dời</div>
@@ -44,16 +48,28 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { OutlineEffect } from "three/addons/effects/OutlineEffect.js";
+import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
 const $ = (id) => document.getElementById(id);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+// Bản đồ hoạ cao đang tạm dừng (2026-10-08): ẩn chọn mức + lightmap. Đổi thành true để bật lại.
+const SHOW_HIGH = false;
+if (!SHOW_HIGH) document.querySelectorAll(".high-only").forEach((e) => { e.style.display = "none"; });
+// ưu tiên card đồ hoạ rời trên laptop 2 card (giống game/src/render/renderer.js POWER_PREFERENCE)
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 const outline = new OutlineEffect(renderer, { defaultThickness: 0.0025, defaultColor: [0.06, 0.06, 0.07] });
+// bảng tên trên đầu NPC (HTML, luôn đọc được)
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+Object.assign(labelRenderer.domElement.style, { position: "fixed", top: "0", left: "0", pointerEvents: "none", zIndex: "1" });
+document.body.appendChild(labelRenderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9cc4e8);
@@ -66,7 +82,7 @@ sun.position.set(-30, 60, 40);
 scene.add(hemi, sun);
 
 const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/");
-const loader = new GLTFLoader().setDRACOLoader(draco);
+const loader = new GLTFLoader().setDRACOLoader(draco).setMeshoptDecoder(MeshoptDecoder);  // zone: Draco · nhân vật: meshopt
 
 // gradient 3 bậc cho toon
 const grad = new THREE.DataTexture(new Uint8Array([90, 170, 255]), 3, 1, THREE.RedFormat);
@@ -103,12 +119,120 @@ function applyMaterials() {
   const lmOn = useLM && hasLM;
   hemi.intensity = lmOn ? 0.35 : 1.1;
   sun.intensity = lmOn ? 0.45 : 1.6;
+  chars.forEach(styleChar);
+}
+
+// ---------- nhân vật (data/characters.json) ----------
+let cfg = null;                 // null nếu không có cấu hình (vd bản web công khai) → ẩn chế độ nhân vật
+const modelCache = new Map();   // id → Promise<gltf>
+let chars = [];                 // { obj, mixer, id, clips, mats, tag, offset, current, onFinish }
+const clock = new THREE.Clock();
+
+async function loadConfig() {
+  try {
+    const r = await fetch("../data/characters.json");
+    if (!r.ok) throw new Error(r.status);
+    cfg = await r.json();
+  } catch { cfg = null; }
+  if (!cfg) { document.querySelectorAll(".char-only").forEach((e) => { e.style.display = "none"; }); return; }
+  const m = Object.values(cfg.models)[0];
+  $("anim").innerHTML = Object.keys(m.animations).map((a) => `<option value="${a}">${a}</option>`).join("");
+}
+
+// GLB theo mức đồ hoạ đang xem: Thấp = bản 6k, Cao = bản 15k (models.<id>.glb.low|high)
+function getModel(id) {
+  const glb = cfg.models[id].glb;
+  const path = typeof glb === "string" ? glb : glb[$("tier").value] ?? glb.high ?? glb.low;
+  if (!modelCache.has(path)) modelCache.set(path, loader.loadAsync("../" + path));
+  return modelCache.get(path);
+}
+// vai đứng tại node NPC_ (characters.json roles.<vai>.node)
+const roleOfNode = (name) => Object.entries(cfg.roles).find(([k, r]) => !k.startsWith("_") && r.node === name)?.[0];
+const displayName = (role) => cfg.names?.en?.[role] ?? role;
+
+function styleChar(c) {
+  const toon = $("toon").checked;
+  c.mats.forEach((src, mesh) => {
+    const p = { map: src.map, color: src.color };
+    mesh.material = toon ? new THREE.MeshToonMaterial({ ...p, gradientMap: grad })
+                         : new THREE.MeshStandardMaterial({ ...p, roughness: 1, metalness: 0 });
+  });
+}
+
+function clearChars() {
+  chars.forEach((c) => { c.mixer.stopAllAction(); c.tag.element.remove(); scene.remove(c.obj); });
+  chars = [];
+}
+
+async function addChar(pos, yawDeg, role, label) {
+  const id = cfg.roles[role]?.model ?? Object.keys(cfg.models)[0];
+  const g = await getModel(id);
+  const obj = SkeletonUtils.clone(g.scene);
+  obj.position.copy(pos);
+  obj.rotation.y = THREE.MathUtils.degToRad(yawDeg) + Math.PI;   // model nhìn +Z; yaw_deg 0 = nhìn -Z
+  const mats = new Map();
+  obj.traverse((o) => { if (o.isMesh) { mats.set(o, o.material); o.frustumCulled = false; } });
+  const div = document.createElement("div");
+  div.className = "tag";
+  div.textContent = label;
+  const tag = new CSS2DObject(div);
+  tag.position.set(0, cfg.models[id].height_m + (cfg.name_tags?.above_head_m ?? 0.28), 0);
+  tag.visible = $("tags").checked;
+  obj.add(tag);
+  scene.add(obj);
+  const c = { obj, mixer: new THREE.AnimationMixer(obj), id, clips: g.animations, mats, tag, offset: Math.random() };
+  styleChar(c);
+  chars.push(c);
+  play(c, $("anim").value || "idle");
+  return c;
+}
+
+async function placeChars() {
+  clearChars();
+  if (!cfg || !root || !$("chars").checked) return;
+  root.updateMatrixWorld(true);
+  const npcs = [];
+  root.traverse((o) => { if (o.name.startsWith("NPC_")) npcs.push(o); });
+  for (const n of npcs) {
+    const role = roleOfNode(n.name);
+    if (!role) continue;                    // NPC_ chưa gán vai trong characters.json
+    // tên hiển thị tiếng Anh (label trong GLB là tiếng Việt)
+    await addChar(n.getWorldPosition(new THREE.Vector3()), n.userData.yaw_deg ?? 0, role, displayName(role));
+  }
+}
+
+// phát animation theo tên logic trong characters.json (nhóm = phát luân phiên; "once" = phát 1 lần, xem lại sau 1.2 s)
+function play(c, name) {
+  const m = cfg.models[c.id];
+  const entry = m.animations[name] ?? m.animations.idle;
+  const seq = Array.isArray(entry) ? entry : [entry];
+  const loop = m.loop.includes(name);
+  c.mixer.stopAllAction();
+  if (c.onFinish) c.mixer.removeEventListener("finished", c.onFinish);
+  let k = 0;
+  const start = (i, randomTime) => {
+    const clip = THREE.AnimationClip.findByName(c.clips, seq[i]);
+    if (!clip) return;
+    const a = c.mixer.clipAction(clip).reset();
+    if (seq.length > 1 || !loop) { a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; }
+    else a.setLoop(THREE.LoopRepeat, Infinity);
+    a.play();
+    if (randomTime) a.time = c.offset * clip.duration;   // lệch pha giữa các NPC
+    c.current = a;
+  };
+  c.onFinish = (e) => {
+    if (seq.length > 1) { e.action.stop(); k = (k + 1) % seq.length; start(k, false); }
+    else if (!loop) setTimeout(() => { if (c.current === e.action) e.action.reset().play(); }, 1200);
+  };
+  c.mixer.addEventListener("finished", c.onFinish);
+  start(0, true);
 }
 
 function load() {
   const zone = $("zone").value, tier = $("tier").value;
   $("msg").textContent = `Đang tải ${tier}/${zone}.glb …`;
   const t0 = performance.now();
+  clearChars();
   if (root) { scene.remove(root); root = null; }
   loader.load(`../assets/glb/${tier}/${zone}.glb`, (g) => {
     root = g.scene;
@@ -125,32 +249,46 @@ function load() {
     controls.target.copy(target.clone().addScaledVector(dir, 6));
     camera.position.copy(target.clone().addScaledVector(dir, -3).add(new THREE.Vector3(0, 1.2, 0)));
     $("msg").textContent = `${tier}/${zone}.glb — tải ${(performance.now() - t0 | 0)} ms`;
+    placeChars().then(() => { if (chars.length) $("msg").textContent += ` · ${chars.length} nhân vật`; });
   }, undefined, (e) => { $("msg").textContent = "Lỗi tải: " + e.message; });
 }
 
 ["zone", "tier"].forEach((id) => $(id).addEventListener("change", load));
 ["lightmap", "toon", "lmonly"].forEach((id) => $(id).addEventListener("change", applyMaterials));
+$("chars").addEventListener("change", placeChars);
+$("anim").addEventListener("change", () => chars.forEach((c) => play(c, $("anim").value)));
+$("tags").addEventListener("change", () => chars.forEach((c) => { c.tag.visible = $("tags").checked; }));
 addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);
 });
+
+function draw() {
+  if ($("toon").checked) outline.render(scene, camera); else renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
 
 let frames = 0, last = performance.now(), fps = 0;
 function tick() {
   requestAnimationFrame(tick);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  chars.forEach((c) => c.mixer.update(dt));
   controls.update();
-  if ($("toon").checked) outline.render(scene, camera); else renderer.render(scene, camera);
+  draw();
   frames++;
   const now = performance.now();
   if (now - last > 500) {
     fps = frames * 1000 / (now - last); frames = 0; last = now;
     const i = renderer.info.render;
-    $("stats").innerHTML = `FPS        <b>${fps.toFixed(0)}</b>\ntam giác   ${i.triangles.toLocaleString()}\ndraw call  ${i.calls}\nđộ phân giải ${renderer.domElement.width}×${renderer.domElement.height}`;
+    $("stats").innerHTML = `FPS        <b>${fps.toFixed(0)}</b>\ntam giác   ${i.triangles.toLocaleString()}\ndraw call  ${i.calls}\nnhân vật   ${chars.length}\nđộ phân giải ${renderer.domElement.width}×${renderer.domElement.height}`;
   }
 }
 window.__viewer = { get fps() { return fps; }, get info() { return renderer.info.render; }, get root() { return root; },
-  camera, controls, load, applyMaterials,
-  renderNow() { controls.update(); if ($("toon").checked) outline.render(scene, camera); else renderer.render(scene, camera); } };
-load();
+  get chars() { return chars; }, get cfg() { return cfg; },
+  camera, controls, load, applyMaterials, addChar, placeChars, play,
+  // vẽ ngay 1 khung (dùng khi khung trình duyệt bị ẩn: requestAnimationFrame dừng); dt = giây tua animation
+  renderNow(dt = 0) { chars.forEach((c) => c.mixer.update(dt)); controls.update(); draw(); } };
+loadConfig().then(load);
 tick();
 </script>
 </body>

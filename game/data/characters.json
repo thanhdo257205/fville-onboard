@@ -1,0 +1,203 @@
+{
+  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. TẠM THỜI mọi vai dùng 'prajith'.",
+  "_place_ghi_chu": "place: 'spawn' = người chơi, đặt tại SPAWN_ · 'node' = đứng tại node NPC_ (xoay theo yaw_deg) · 'follow_player' = đi theo người chơi · 'near_node' = code đặt cạnh node (offset theo hệ trục glTF, m). pose: 'stand' (mặc định) | 'seated' = ngồi gõ phím (sit_type), ghế sau điểm đứng 0,40 m; khi nói chuyện thì stand_up → quay về phía người chơi → talk → ngồi lại. Không đặt NPC nào ở chỗ bàn intern (SPAWN_ban_lam_viec). node_marks: 'seat' = node đánh dấu CHỖ GHẾ (zone_05 đặt NPC_dong_nghiep_* tại ghế) → điểm đứng tính lùi về phía bàn theo models.<id>.seat.offset_xz_m. chair_height_m: mặt ghế trong GLB (đo bằng tia dò: 0,51 m) → khi ngồi nâng nhân vật thêm (chair_height_m − seat.height_m) để không lún vào ghế.",
+  "roles": {
+    "player": {
+      "model": "prajith",
+      "place": "spawn"
+    },
+    "tu": {
+      "model": "prajith",
+      "place": "follow_player"
+    },
+    "thao": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_dong_nghiep_don"
+    },
+    "tai_xe": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_tai_xe"
+    },
+    "le_tan": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_le_tan"
+    },
+    "nguoi_la": {
+      "model": "prajith",
+      "place": "near_node",
+      "node": "INT_cua_quet_the",
+      "offset": [
+        1.2,
+        0,
+        1.0
+      ]
+    },
+    "mentor": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_mentor"
+    },
+    "manager": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_manager"
+    },
+    "dong_nghiep_1": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_dong_nghiep_1",
+      "pose": "seated",
+      "node_marks": "seat",
+      "chair_height_m": 0.51
+    },
+    "dong_nghiep_2": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_dong_nghiep_2",
+      "pose": "seated",
+      "node_marks": "seat",
+      "chair_height_m": 0.51
+    },
+    "dong_nghiep_3": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_dong_nghiep_3",
+      "pose": "seated",
+      "node_marks": "seat",
+      "chair_height_m": 0.51
+    },
+    "khang": {
+      "model": "prajith",
+      "place": "node",
+      "node": "NPC_ban_bi_a"
+    }
+  },
+  "names": {
+    "_ghi_chu": "Tên hiển thị trên bảng tên theo ngôn ngữ (label trong GLB là tiếng Việt nên không dùng). Tên riêng giữ dấu tiếng Việt.",
+    "en": {
+      "player": "You",
+      "tu": "Tú",
+      "thao": "Ms. Thảo",
+      "tai_xe": "Bus Driver",
+      "le_tan": "Receptionist",
+      "nguoi_la": "Stranger",
+      "mentor": "Prajith",
+      "manager": "Manager",
+      "dong_nghiep_1": "Lan",
+      "dong_nghiep_2": "Minh",
+      "dong_nghiep_3": "Hà",
+      "khang": "Khang"
+    }
+  },
+  "name_tags": {
+    "enabled": true,
+    "max_distance_m": 12,
+    "hide_when_occluded": true,
+    "above_head_m": 0.28,
+    "_ghi_chu": "Mọi NPC đang trông giống nhau → bảng tên nhỏ trên đầu, chữ lấy từ names.<ngôn ngữ>.<vai> (không dùng label tiếng Việt trong GLB). Ẩn khi bị tường che hoặc xa hơn max_distance_m."
+  },
+  "character_creation": {
+    "fields": [
+      "name",
+      "intern_position"
+    ],
+    "hidden": [
+      "gender",
+      "hair",
+      "skin"
+    ],
+    "_ghi_chu": "Màn tạo nhân vật tạm thời chỉ cho nhập tên và chọn vị trí intern; ẩn chọn giới tính, tóc, da (chưa có model khác)."
+  },
+  "models": {
+    "prajith": {
+      "glb": {
+        "high": "assets/characters/prajith/prajith.glb",
+        "low": "assets/characters/prajith/prajith_6k.glb"
+      },
+      "tris": {
+        "high": 14998,
+        "low": 6000
+      },
+      "height_m": 1.75,
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "anim_speed_mps": {
+        "walk": 1.66,
+        "run": 4.39
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.376,
+        "offset_xz_m": [
+          -0.027,
+          -0.404
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.378
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      }
+    }
+  }
+}

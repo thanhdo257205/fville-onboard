@@ -1,0 +1,10 @@
+{
+  "_ghi_chu": "Đợt 1 chỉ có 'triggers' (chuyển zone). 'quests' và điều kiện 'requires' được thêm ở Đợt 2. Tên node đối chiếu với GLB thật: zone_02 không có SPAWN_zone_02_from_zone_01 → dùng SPAWN_zone_02_start; TRIGGER_zone_02_enter trong zone_02 nằm trùng điểm xuất hiện (mốc 'vừa vào zone'), không phải lối quay về.",
+  "quests": [],
+  "triggers": [
+    { "zone": "zone_01", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_start", "requires": [] },
+    { "zone": "zone_02", "node": "TRIGGER_zone_03_enter", "to_zone": "zone_03", "to_spawn": "SPAWN_zone_03_start", "requires": [] },
+    { "zone": "zone_03", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_from_zone_03", "requires": [] },
+    { "zone": "zone_03", "node": "TRIGGER_zone_04_enter", "blocked": "hud.zone_locked" }
+  ]
+}

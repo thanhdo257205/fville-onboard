@@ -1,0 +1,51 @@
+{
+  "_note": "Every on-screen string, English. To add Vietnamese later: copy this file to vi.json with the same keys and translate. Proper names stay in Vietnamese: Tú, Thảo, Lan, Minh, Hà, Khang, F-Ville, Hòa Lạc.",
+  "app": {
+    "title": "First Day at F-Ville",
+    "loading": "Loading…",
+    "loading_zone": "Heading to {zone}…",
+    "error": "Something went wrong: {message}"
+  },
+  "zones": {
+    "zone_01": {
+      "title": "Bus Stop",
+      "time": "07:30"
+    },
+    "zone_02": {
+      "title": "F-Ville Gate · Village Well · Cuder Statue",
+      "time": "07:40"
+    },
+    "zone_03": {
+      "title": "Reception · Rice Grain Room",
+      "time": "08:00"
+    },
+    "zone_04": {
+      "title": "Card Gate · FSA Room",
+      "time": "08:30"
+    },
+    "zone_05": {
+      "title": "Office",
+      "time": "09:00"
+    }
+  },
+  "hud": {
+    "controls": "WASD / Arrow keys: move · Hold Shift: run · Drag the mouse: look around · Esc: menu",
+    "objective_explore": "Explore {zone}",
+    "zone_locked": "This way opens in the next update.",
+    "tier_auto_low": "Graphics switched to Low to keep things smooth."
+  },
+  "menu": {
+    "title": "Paused",
+    "resume": "Resume",
+    "graphics": "Graphics",
+    "auto": "Auto",
+    "low": "Low",
+    "high": "High",
+    "current": "Now: {tier} · {gpu}",
+    "fps": "{fps} FPS"
+  },
+  "tiers": {
+    "low": "Low",
+    "high": "High"
+  }
+}

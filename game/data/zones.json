@@ -1,0 +1,9 @@
+{
+  "_ghi_chu": "Danh sách zone của game: file GLB (assets/glb/<mức>/<file>.glb) và điểm xuất hiện mặc định. Tên hiển thị nằm trong data/i18n/<ngôn ngữ>.json (zones.<id>).",
+  "order": ["zone_01", "zone_02", "zone_03"],
+  "zones": {
+    "zone_01": { "file": "zone_01_bus", "start": "SPAWN_zone_01_start" },
+    "zone_02": { "file": "zone_02_campus", "start": "SPAWN_zone_02_start" },
+    "zone_03": { "file": "zone_03_lobby", "start": "SPAWN_zone_03_start" }
+  }
+}
