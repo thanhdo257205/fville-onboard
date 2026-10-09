@@ -9,19 +9,22 @@ import { applyTint, setTint } from "./tint.js";
 import { lang } from "../i18n.js";
 
 export class Characters {
-  constructor(cfg) { this.cfg = cfg; this.swap = {}; }
+  constructor(cfg) { this.cfg = cfg; this.swap = {}; this.gender = "nam"; }
   role(name) { return this.cfg.roles[name]; }
   roles() { return Object.entries(this.cfg.roles).filter(([k]) => !k.startsWith("_")); }
   roleOfNode(nodeName) { return this.roles().find(([, r]) => (r.place === "node" || r.place === "near_node") && [].concat(r.node).includes(nodeName))?.[0] ?? null; }
   displayName(role) { return this.cfg.names?.[lang]?.[role] ?? this.cfg.names?.en?.[role] ?? role; }
   model(id) { return this.cfg.models[this.swap[id] ?? id]; }
+  // id model của vai: model_by_gender (vd player: nam → intern_nam, nu → intern_nu) theo giới tính người chơi
+  // (this.gender, main.js đặt từ bản lưu), không có thì model
+  modelId(role) { const r = this.role(role); return r?.model_by_gender?.[this.gender] ?? r?.model; }
   tagConfig() { return this.cfg.name_tags || {}; }
   // người nói không có vai trong cảnh (vd "hr": tin nhắn điện thoại) → chân dung của vai speaker_as.<người nói>.
   // Model đang dùng fallback → không chân dung (không hiện mặt người khác dưới tên người này)
   portrait(role) {
-    const r = this.role(this.cfg.speaker_as?.[role] ?? role);
-    if (!r || this.swap[r.model]) return null;
-    return this.model(r.model)?.portrait ?? null;
+    const id = this.modelId(this.cfg.speaker_as?.[role] ?? role);
+    if (!id || this.swap[id]) return null;
+    return this.model(id)?.portrait ?? null;
   }
 
   // model chờ người thật đồng ý (models.<id>.consent_pending): GLB + chân dung chỉ có trên máy làm việc, không có trên
@@ -42,22 +45,39 @@ export class Characters {
 
   // tải trước GLB mọi model đang được vai dùng (cùng bộ nhớ đệm với create) — gọi lúc người chơi còn điền tên
   preload(tier) {
-    const files = new Set(this.roles().map(([, r]) => this.model(r.model)).filter(Boolean).map((m) => m.glb[tier] ?? m.glb.high ?? m.glb.low));
-    return Promise.allSettled([...files].map((glb) => loadGLTF(url(glb), { cached: true })));
+    const models = this.roles().map(([k]) => this.model(this.modelId(k))).filter(Boolean);
+    const files = new Set(models.map((m) => m.glb[tier] ?? m.glb.high ?? m.glb.low));
+    const outfits = new Set(models.flatMap((m) => Object.values(m.outfit_textures || {})));
+    return Promise.allSettled([...[...files].map((glb) => loadGLTF(url(glb), { cached: true })),
+      ...[...outfits].map((p) => loadOutfitTexture(p))]);
   }
 
   async create(role, tier) {
     const r = this.role(role);
     if (!r) throw new Error(`characters.json: thiếu vai "${role}"`);
-    const m = this.model(r.model);
+    const m = this.model(this.modelId(role));
     const glb = m.glb[tier] ?? m.glb.high ?? m.glb.low;
     const gltf = await loadGLTF(url(glb), { cached: true });
     const ch = new Character(SkeletonUtils.clone(gltf.scene), gltf.animations, m, role);
     ch.tier = tier;
-    applyTint(ch, r.tint || r.outfit?.tint, { dynamic: !!r.outfit });   // TẠM: màu áo / quần riêng từng vai; outfit: đổi được lúc chơi
+    await ch.loadOutfits();                 // texture bộ đồ (vd dau_ngay) tải sẵn → đổi áo lúc chơi không chờ, không chớp
+    applyTint(ch, r.tint || r.outfit?.tint, { dynamic: !!r.outfit?.tint });   // TẠM: màu áo / quần riêng từng vai (NPC)
     if (r.carry) attachCarry(ch, r.carry);  // đồ cầm tay (vd túi của hành khách)
     return ch;
   }
+}
+
+// texture bộ đồ (models.<id>.outfit_textures.<bộ> = ảnh cùng UV với texture trong GLB): tải 1 lần, dùng chung
+const outfitCache = new Map();
+function loadOutfitTexture(path) {
+  if (!outfitCache.has(path)) {
+    outfitCache.set(path, new THREE.TextureLoader().loadAsync(url(path)).then((t) => {
+      t.flipY = false;                      // như texture glTF (GLTFLoader)
+      t.colorSpace = THREE.SRGBColorSpace;
+      return t;
+    }));
+  }
+  return outfitCache.get(path);
 }
 
 // đồ cầm tay đơn giản gắn vào xương bàn tay phải (không cần model riêng): "bag" = túi xách vải có quai
@@ -195,6 +215,33 @@ export class Character {
     d = Math.atan2(Math.sin(d), Math.cos(d));
     this.root.rotation.y += d * Math.min(1, rate * dt);
     return Math.abs(d);
+  }
+
+  // --- bộ đồ: thay texture màu (models.<id>.outfit_textures) — null = texture gốc trong GLB (vd ao_cam) ---
+  async loadOutfits() {
+    const list = Object.entries(this.model.outfit_textures || {});
+    this.outfitTex = Object.fromEntries(await Promise.all(list.map(async ([k, p]) => [k, await loadOutfitTexture(p)])));
+    let base = null;
+    this.root.traverse((o) => { if (o.isSkinnedMesh && o.material?.map && !base) base = o.material.map; });
+    for (const t of Object.values(this.outfitTex)) {
+      if (!base || t.userData.sampler) continue;   // lấy cách lọc / lặp như texture trong GLB (1 lần, trước khi vẽ)
+      Object.assign(t, { wrapS: base.wrapS, wrapT: base.wrapT, minFilter: base.minFilter, magFilter: base.magFilter,
+        anisotropy: base.anisotropy });
+      t.userData.sampler = true;
+      t.needsUpdate = true;
+    }
+  }
+
+  setOutfit(name) {
+    const tex = name ? this.outfitTex?.[name] : null;
+    if (name && !tex) return false;         // model không có bộ này → giữ nguyên
+    this.root.traverse((o) => {
+      if (!o.isSkinnedMesh || !o.material) return;
+      o.userData.baseMap ??= o.material.map;
+      o.material.map = tex ?? o.userData.baseMap;
+    });
+    this.outfit = name;
+    return true;
   }
 
   update(dt) { this.mixer.update(dt); }

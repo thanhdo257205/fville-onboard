@@ -83,7 +83,20 @@ export function installDebug(game, loop) {
       const f = game.follower;
       return f && { pos: v3(f.position), speed: +f.speed.toFixed(2), toPlayer: +f.position.distanceTo(game.player.position).toFixed(2), teleports: f.teleports, onGround: f.body.onGround };
     },
-    get model() { const c = game.player.character; return { tier: c.tier, glb: game.characters.model(game.characters.role("player").model).glb[c.tier] }; },
+    get model() {
+      const c = game.player.character, id = game.characters.modelId("player");
+      return { id, gender: game.characters.gender, tier: c.tier, glb: game.characters.model(id).glb[c.tier], outfit: c.outfit ?? null };
+    },
+    // đổi giới tính người chơi lúc chơi (lưu vào bản lưu): "nam" | "nu" → đổi model, giữ đúng bộ đồ
+    async setGender(g) {
+      game.progress.player.gender = g;
+      game.characters.gender = g;
+      game.persist();
+      game.player.setCharacter(await game.characters.create("player", game.state.tier));
+      game.scene.add(game.player.character.root);
+      game.updateOutfit();
+      return api.model;
+    },
     get triggers() { return game.zone.triggers.map((t) => ({ name: t.name, inside: t.inside, cfg: game.triggerCfg(t.name) || null })); },
     get info() { const i = game.renderer.info; return { triangles: i.triangles, calls: i.calls }; },
     get seeThrough() { return game.seeThrough.info(); },

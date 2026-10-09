@@ -26,6 +26,7 @@ function wanted(rel, pending = new Set()) {
     if (pending.has(parts[2])) return false;
     const name = parts[3] || "";
     if (parts.length === 4 && name === `${parts[2]}_portrait.png`) return true;   // chân dung hộp thoại
+    if (parts.length === 4 && name.startsWith(`${parts[2]}_`) && name.endsWith(".webp")) return true;   // texture bộ đồ
     return parts.length === 4 && name.endsWith(".glb") && !name.endsWith(".raw.glb")
       && (name === `${parts[2]}.glb` || /^.+_\d+k\.glb$/.test(name));
   }

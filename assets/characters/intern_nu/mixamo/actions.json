@@ -1,0 +1,21 @@
+{
+  "_ghi_chu": "intern_nu: file gốc intern_nu_rigged.fbx tải từ Mixamo (With Skin, No Fingers, 25 xương) KHÔNG kèm animation (tư thế chữ A tĩnh) → idle và 13 animation lấy từ file của prajith (retarget, hông nhân theo tỉ lệ độ cao hông), như nga. speed_mps: tốc độ chơi như các nhân vật khác. Texture: textures/<id>_basecolor.jpg = bộ ao_cam (áo cam + logo), không lấy ảnh nhúng trong FBX.",
+  "base": [
+    "intern_nu_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "back_of_head_keep": 0.14,
+    "chest_logo": true,
+    "chest_logo_radius_m": 0.06,
+    "face_keep_tris": 2600,
+    "face_detail_pct": 0.12
+  },
+  "_decimate_ghi_chu": "Bản 6k, cách giảm như nga: lượt 0 chỉ giảm phần phẳng của mặt trước (giữ 12% đỉnh có độ tương phản texture cao: mắt, lông mày, môi), lượt 1 tóc sau gáy còn 14%, lượt 2 giữ đầu + vùng logo, giảm thân."
+}

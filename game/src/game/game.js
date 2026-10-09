@@ -180,12 +180,15 @@ export class Game {
     setTimeout(() => this.prefetchNext(zoneId), 2000);
   }
 
-  // trang phục người chơi (characters.json roles.player.outfit): áo sơ mi thường tới khi nhận Áo Cam FPT ở cổng
+  // trang phục người chơi (characters.json roles.player.outfit): bộ đồ ngày đầu (texture outfit.texture, vd dau_ngay) tới
+  // khi nhận Áo Cam FPT ở cổng → texture trong GLB (áo cam + logo). outfit.tint: cách cũ, đổi màu áo bằng shader.
+  // Theo phần thưởng đã lưu → tải lại game vẫn đúng áo.
   updateOutfit() {
     const o = this.characters.role("player")?.outfit;
     if (!o || !this.player) return;
     const wearing = this.outfitOverride === o.until_reward || this.progress.hasReward(o.until_reward);
-    setTint(this.player.character, wearing ? null : o.tint);
+    if (o.texture) this.player.character.setOutfit(wearing ? null : o.texture);
+    if (o.tint) setTint(this.player.character, wearing ? null : o.tint);
   }
 
   // sự kiện theo giờ trong zone (zones.json → events): vd zone_01, 20 giây sau khi xuống xe Tú kêu mất balo

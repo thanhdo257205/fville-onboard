@@ -306,17 +306,31 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Quần xanh than (`roles.le_tan.tint.pants = #2f3b55`) để khác Ms. Huyền; áo giữ cam. Tint không loang sang áo/logo.
     Loang nhẹ: vài đốm xanh trên chỗ sáng của giày (da giày sáng, ít màu như quần kem) và thắt lưng còn kem lẫn vài mảng
     xanh — chỉ thấy khi nhìn cận; trong game chị đứng sau quầy nên không thấy chân.
-- **intern_nam, intern_nu — nhân vật NGƯỜI CHƠI (hư cấu, Meshy; 10/10/2026), mới tới bước chuẩn bị Mixamo:**
+- **intern_nam, intern_nu — nhân vật NGƯỜI CHƠI (hư cấu, Meshy + Mixamo; 10/10/2026), đã vào game:**
   - Nam cao 1,70 m (gốc 71k tam giác), nữ 1,60 m (56k) → 25.000 tam giác, đứng chữ A, nhìn -Y, giữ nguyên mặt và vùng
     logo khi giảm. FBX cho Mixamo: `assets/characters/intern_nam/intern_nam_for_mixamo.fbx`,
     `assets/characters/intern_nu/intern_nu_for_mixamo.fbx` (không commit).
   - Sửa texture theo vị trí 3D (`texture_fixes.json`): mặt trong cổ áo Meshy tô màu da lởm chởm → tô lại màu áo (cả
     hai); mắt intern_nam to hơn 15% (phóng đều đồng tử + lòng trắng, lông mày không đổi) — so trước/sau: giữ.
-  - Logo FPT ngực trái (cùng file logo của nga): nam 7,5 cm tại z 1,275 m, nữ 7 cm tại z 1,19 m (hạ 1 cm cho cách mũi
-    cổ áo như áo nga); cùng tỉ lệ vị trí với nga và prajith.
+  - Logo FPT ngực trái (cùng file logo của nga): nam 7,5 cm tại (x 0,088; z 1,275 m), nữ 7 cm tại (x 0,066; z 1,19 m):
+    nữ hạ 1 cm cho cách mũi cổ áo như áo nga, dời vào 1,1 cm vì ở tư thế idle ngực sát nách co lại làm chữ T lật sang
+    mặt bên.
   - 2 bộ texture cùng UV (`outfit_textures.py`): `ao_cam` (áo cam + logo, bản chuẩn) và `dau_ngay` (áo xanh nhạt
-    #cfe0ee giữ nếp vải, không logo); mặt nạ vùng 512 px (áo, quần, giày, da, tóc). Đường dẫn ghi ở
-    `data/characters.json` → `models.intern_nam/intern_nu.textures`; vai player chưa đổi, code chưa sửa.
+    #cfe0ee giữ nếp vải, không logo); mặt nạ vùng 512 px (áo, quần, giày, da, tóc).
+  - Bản 6k duy nhất (`build_character.py --single`, 0,56 MB mỗi nhân vật, 15 animation retarget từ bộ prajith như nga;
+    file Mixamo "With Skin" không kèm animation → idle lấy từ Standing Idle của prajith), chân dung (bộ ao_cam).
+    Tay lún thân 4–6 cm ở vài animation nói / nghĩ / ngồi của intern_nu (như huyen, nga); intern_nam ≤ 5,8 cm (sit_down).
+  - Vai `player`: `model_by_gender` (nam → intern_nam, nu → intern_nu), giới tính trong bản lưu `player.gender`, mặc
+    định nam (màn tạo nhân vật chưa có mục này). Thử khi dev: `?gender=nu` / `?gender=nam` (ghi vào bản lưu) hoặc
+    `__game.setGender("nu")`; `__game.model` cho biết model + bộ đồ đang mặc.
+  - Bộ đồ đổi bằng texture (thay cách tint áo cũ của người chơi; NPC vẫn tint): đầu game `dau_ngay`
+    (`models.<id>.outfit_textures.dau_ngay` = `<id>_dau_ngay.webp`, WebP 1024, ~66 KB, cùng UV), nhận Áo Cam ở cổng (từ
+    lúc vào chụp ảnh check-in) → texture trong GLB (ao_cam, có logo). Theo phần thưởng đã lưu → tải lại vẫn đúng áo.
+    `Character.setOutfit` / `loadOutfits` (`game/src/characters/characters.js`), `Game.updateOutfit`.
+  - Đã chạy zone 0 → 3 với cả nam và nữ (bản dev): áo xanh lúc đầu, đổi áo cam có logo ở cổng, tải lại vẫn áo cam;
+    đi 1,4 m/s, chạy 4,39 m/s; mọi animation (cả ngồi) phát được trên người chơi; camera hội thoại qua vai đúng;
+    lời thoại của người chơi (trả ví cho Ms. Nga) hiện chân dung đúng giới tính; ảnh check-in trên màn tổng kết đúng
+    nhân vật. Ảnh: `renders/game/intern_{nam,nu}_*.jpg`.
   - Ảnh: `renders/characters/<id>_trang_phuc.png` (chính diện 2 bộ, mặt nạ trước/sau, cận ngực logo, cận mặt).
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
@@ -348,10 +362,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- intern_nam, intern_nu: chờ người dùng gắn xương trên Mixamo (2 FBX ở trên) → `mixamo/` → `build_character.py`
-  (6k, `--single`), chân dung; sau đó mới đổi vai player và làm đổi texture `dau_ngay` → `ao_cam` khi nhận Áo Cam
-  (cần quyết cách đưa bản `dau_ngay` vào game: texture riêng nén WebP hay cách khác — `textures/` hiện không commit).
-  Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
+- Màn tạo nhân vật: mở lại mục giới tính (game đã đọc `who.gender` nếu màn tạo trả về: `nam` | `nu`).
+- Mũ lưỡi trai (phần 2: gắn xương Head của từng intern): chưa làm — trên repo chưa có phần 1 (chỉ thấy file Meshy gốc
+  trong Downloads).
+- Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
   hưởng khi sau này đổi màu tóc.
 - huyen: bàn tay buông lấn vào đùi 3–5 cm ở 7 animation (talk, talk_2, nod, phone, press, wave, cheer) do dùng lại
   animation của prajith; chờ quyết định tải bản Mixamo riêng cho huyen.

@@ -14,13 +14,13 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | --- | --- |
 | `scripts/blender/zone_00.py` … `zone_05.py` | Dựng từng zone (chạy trong Blender không giao diện) |
 | `scripts/blender/lib/` | Thư viện dựng chung: kit modular, chất liệu, bảng màu, đồ vật, nội thất, phố, marker đối tượng game, lightmap, render |
-| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục), `render_portrait.py`, `texture_fix.py`, `char_render.py` |
+| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục), `render_portrait.py`, `texture_fix.py`, `char_render.py`, `char_data.py` (ghi `models.<id>` vào `data/characters.json` mà không định dạng lại cả file) |
 | `scripts/blender/lib/cuder.py`, `scripts/blender/props/cuder_preview.py` | Tượng Cuder zone 2 từ mô hình Meshy (zone_02.py gọi khi build); xem trước riêng tượng |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
-| `assets/characters/<id>/` | GLB nhân vật, chân dung, cấu hình (`chest_logo.json`, `texture_fixes.json`, `mixamo/actions.json`) |
+| `assets/characters/<id>/` | GLB nhân vật, chân dung, texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mixamo/actions.json`) |
 | `assets/props/<id>/source/` | Mô hình Meshy gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`) |
@@ -132,7 +132,9 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   thật thì sửa script Blender rồi build lại zone (cần người dùng đồng ý).
 - Nội dung chờ HR có `"draft": true` → game hiện **[DRAFT]**. Danh sách: `docs/PROGRESS.md`.
 - Vai nhân vật: id vai trong dữ liệu giữ nguyên (vd vai `thao` hiển thị là **Ms. Huyền**, model `huyen`; vai `le_tan`
-  là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại). Lời thoại
+  là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại). Vai `player` chọn model theo giới tính
+  (`roles.player.model_by_gender`: nam → `intern_nam`, nu → `intern_nu`; bản lưu `player.gender`, mặc định nam; thử khi dev:
+  `?gender=nu` hoặc `__game.setGender("nu")`); bộ đồ đổi bằng texture (`dau_ngay` → texture trong GLB khi nhận Áo Cam). Lời thoại
   nhân vật dựa trên người thật (Ms. Huyền, Ms. Nga, Prajith): tự viết chi tiết cá nhân, giữ nhẹ nhàng, thân thiện, không nói chuyện
   sức khỏe, gia đình, tiền bạc hay điều làm họ trông thiếu chuyên nghiệp.
 - Làm theo đợt và **dừng lại báo cáo** sau mỗi đợt; báo cáo bằng tiếng Việt.

@@ -46,6 +46,7 @@ from mathutils import Matrix, Quaternion, Vector
 from mathutils.kdtree import KDTree
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from char_data import splice_model  # noqa: E402
 from char_render import preview_setup, preview_teardown, shoot  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -155,8 +156,11 @@ def load_base(cfg):
     for o in objs:
         if o not in (arm, mesh):
             bpy.data.objects.remove(o)
-    idle = arm.animation_data.action
-    idle.name = cfg["base"][1]
+    idle = arm.animation_data.action if arm.animation_data else None    # tải "With Skin" không kèm animation → None
+    if idle:
+        idle.name = cfg["base"][1]
+    if arm.animation_data is None:
+        arm.animation_data_create()
     mesh.name, mesh.data.name = f"{CID}_body", f"{CID}_body"   # đổi mesh trước, tránh armature thành "<id>.001"
     arm.name, arm.data.name = CID, f"{CID}_rig"
     print(f"[gốc] {cfg['base'][0]}: armature scale {tuple(round(s, 4) for s in arm.scale)}, "
@@ -175,7 +179,8 @@ def load_base(cfg):
     if abs(s - 1) > 1e-3:
         arm.scale = (s, s, s)
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-        scale_location_curves(idle, s)
+        if idle:
+            scale_location_curves(idle, s)
     print(f"[gốc] cao (tư thế gốc) {rest_h:.4f} m → {HEIGHT} m (hệ số {s:.4f})")
     return arm, mesh, idle
 
@@ -795,9 +800,14 @@ def update_data(entry, tris, speed=None):
             m["speed_mps"] = dict(speed)
         else:
             m.setdefault("speed_mps", dict(entry["anim_speed_mps"]))
-    with open(DATA, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2, default=_num)
-    print(f"[data] cập nhật models.{CID} trong {DATA}")
+    text = open(DATA, encoding="utf-8").read() if os.path.exists(DATA) else ""
+    spliced = splice_model(text, CID, m)
+    with open(DATA, "w", encoding="utf-8", newline="") as f:
+        if spliced is not None:      # chỉ thay khối models.<id> — phần còn lại (bản Web sửa tay) giữ nguyên từng ký tự
+            f.write(spliced)
+        else:
+            json.dump(data, f, ensure_ascii=False, indent=2, default=_num)
+    print(f"[data] cập nhật models.{CID} trong {DATA}{'' if spliced is not None else ' (ghi lại cả file)'}")
 
 
 def render_actions(arm, mesh, actions):
@@ -836,11 +846,14 @@ def main():
     hips_h = rest_hips_height(arm, mesh)
     report = {"id": CID, "variant": VARIANT, "single": SINGLE, "bones_before": len(arm.data.bones),
               "anim_dir": os.path.relpath(anim_dir, ROOT).replace("\\", "/"), "rest_hips_m": round(hips_h, 4)}
-    if is_static(arm, base_act):
-        # file gốc chỉ là tư thế tĩnh → idle lấy từ idle_file (retarget), rồi mới đặt chân chạm sàn theo idle
+    if base_act is None or is_static(arm, base_act):
+        # file gốc chỉ là tư thế tĩnh (hoặc không có animation) → idle lấy từ idle_file (retarget), rồi mới đặt chân
+        # chạm sàn theo idle
         idle_file = cfg.get("idle_file", "Standing Idle.fbx")
-        print(f"[gốc] {cfg['base'][0]}: stack '{base_act.name}' là tư thế tĩnh → idle lấy từ {idle_file}")
-        bpy.data.actions.remove(base_act)
+        what = "không có animation" if base_act is None else f"stack '{base_act.name}' là tư thế tĩnh"
+        print(f"[gốc] {cfg['base'][0]}: {what} → idle lấy từ {idle_file}")
+        if base_act is not None:
+            bpy.data.actions.remove(base_act)
         idle, idle_info = retarget(arm, os.path.join(anim_dir, idle_file), cfg["base"][1], 0.0, hips_h)
         idle_info["base_static"] = True
     else:

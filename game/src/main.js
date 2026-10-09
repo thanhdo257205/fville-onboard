@@ -63,6 +63,11 @@ async function boot() {
     summary: new Summary({ onPlayAgain: playAgain }) };
   const characters = new Characters(chars);
   await characters.probe();                 // model chờ người thật đồng ý mà thiếu file → dùng model thay thế
+  // giới tính người chơi → model (roles.player.model_by_gender). Màn tạo nhân vật chưa có mục này → mặc định nam.
+  // Thử khi phát triển: ?gender=nu (hoặc nam) — ghi vào bản lưu; hoặc __game.setGender("nu") lúc đang chơi.
+  const gq = new URLSearchParams(location.search).get("gender");
+  if (import.meta.env.DEV && (gq === "nam" || gq === "nu")) { progress.player.gender = gq; if (saved) save.store(progress); }
+  characters.gender = progress.player.gender || "nam";
   const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters,
     input, settings, nametags, content, progress, ui });
   game.validation = { problems, nodes: nodeCheck };
@@ -128,6 +133,7 @@ async function boot() {
     const who = await characterCreator(chars.character_creation);
     progress.player.name = who.name;
     progress.player.position = who.position;
+    if (who.gender) { progress.player.gender = who.gender; characters.gender = who.gender; }
     progress.created = true;
     save.store(progress);
     hud.loading(t("app.loading"));
