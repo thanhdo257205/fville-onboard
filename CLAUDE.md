@@ -15,11 +15,13 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/blender/zone_00.py` … `zone_05.py` | Dựng từng zone (chạy trong Blender không giao diện) |
 | `scripts/blender/lib/` | Thư viện dựng chung: kit modular, chất liệu, bảng màu, đồ vật, nội thất, phố, marker đối tượng game, lightmap, render |
 | `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `render_portrait.py`, `texture_fix.py`, `char_render.py` |
+| `scripts/blender/lib/cuder.py`, `scripts/blender/props/cuder_preview.py` | Tượng Cuder zone 2 từ mô hình Meshy (zone_02.py gọi khi build); xem trước riêng tượng |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
 | `assets/characters/<id>/` | GLB nhân vật, chân dung, cấu hình (`chest_logo.json`, `texture_fixes.json`, `mixamo/actions.json`) |
+| `assets/props/<id>/source/` | Mô hình Meshy gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên) |
 | `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
@@ -146,7 +148,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 
 ## Việc chỉ làm được trên máy có Blender (máy làm việc gốc)
 
-- Dựng/sửa bối cảnh: `scripts/build.py` (Blender 5.2 qua `tools/bin/blender.cmd`, `gltf-transform` CLI, Pillow, numpy).
+- Dựng/sửa bối cảnh: `scripts/build.py` (Blender 5.2 qua `tools/bin/blender.cmd`, `gltf-transform` CLI, Pillow, numpy);
+  zone_02 cần thêm mô hình tượng Cuder gốc `assets/props/cuder/source/cuder_meshy.glb` (thiếu thì build báo lỗi).
 - Lightmap bản Cao, ảnh so sánh với tham chiếu (cần `references/` gốc).
 - Toàn bộ pipeline nhân vật: cần `assets/characters/<id>/source/`, `mixamo/*.fbx`, `textures/`, các file `.blend`
   (không có trên repo).

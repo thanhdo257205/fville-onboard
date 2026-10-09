@@ -11,6 +11,8 @@ assets/characters/*/source/
 assets/characters/*/mixamo/*
 !assets/characters/*/mixamo/actions.json
 assets/characters/*/textures/
+# Mô hình Meshy gốc của đồ vật (vd tượng Cuder): chỉ để trên máy làm việc, zone build đọc từ đây
+assets/props/*/source/
 *.fbx
 # logo dùng để dán vào texture (file logo gốc không đưa lên repo; logo chỉ nằm trong texture của model)
 assets/logos/

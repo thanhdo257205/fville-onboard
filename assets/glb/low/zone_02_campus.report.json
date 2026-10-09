@@ -1,7 +1,7 @@
 {
   "zone": "zone_02_campus",
   "quality": "low",
-  "triangles_visible": 55286,
+  "triangles_visible": 58427,
   "triangles_collision": 408,
   "materials": [
     "M_brick_tex",
@@ -67,7 +67,9 @@
       "TRIGGER_tuong_cuder",
       "TRIGGER_zone_02_enter",
       "TRIGGER_zone_03_enter"
-    ]
+    ],
+    "CAM_": [],
+    "PATH_": []
   },
   "labels": {
     "INT_cong_fville": "Cổng F-Ville",

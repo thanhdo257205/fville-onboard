@@ -24,7 +24,7 @@ if HERE not in sys.path:
 for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
     del sys.modules[_m]  # nạp lại khi chạy nhiều lần trong Blender đang mở
 
-from lib import kit, props, zone  # noqa: E402
+from lib import cuder, kit, props, zone  # noqa: E402
 from lib import quality as Q  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
@@ -48,6 +48,11 @@ ISLAND_Z = 0.2
 WELL = (16.0, -1.0)
 BAMBOO = (21.5, -0.6)
 STATUE = (20.0, 62.2)
+# Tượng Cuder: mô hình Meshy (lib/cuder.py, đọc assets/props/cuder/source/cuder_meshy.glb — chỉ có trên máy làm việc).
+# Cao (bệ + tượng) = tượng dựng tay trước đây; búi tóc sau gáy (chờ xác nhận) là object riêng, False = bỏ.
+CUDER_H = 2.384
+CUDER_KEEP_BUN = True
+CUDER_FOOT = {}                       # khung bao xy của tượng (build_interactives ghi, build_colliders dùng)
 DIRT = (2.0, 24.0, 64.0, 68.0)
 STAIRS = dict(x0=18.0, y0=69.5, width=10.0, n=5, rise=0.16, run=0.5)
 LOBBY_Z = PLAZA_Z + STAIRS["n"] * STAIRS["rise"]  # cao độ sàn sảnh (zone_03 khớp vào)
@@ -226,16 +231,14 @@ def build_interactives(col, rng):
     wm = wb.to_object("gieng_lang_mesh", col, location=(*WELL, ISLAND_Z), bevel=0.012)
     mk.parent(wm, well)
 
-    # Tượng Cuder (mặt nhìn về -Y, phía người chơi đi tới)
+    # Tượng Cuder (mặt nhìn về -Y, phía người chơi đi tới): mô hình Meshy, thay tượng + bệ dựng tay trước đây
     st = mk.interactive("tuong_cuder", "Tượng Cuder", (*STATUE, PLAZA_Z), col)
-    pb = MeshBuilder()
-    top = props.cuder_pedestal(pb)
-    pm = pb.to_object("tuong_cuder_be", col, location=(*STATUE, PLAZA_Z), bevel=0.015)
-    fb = MeshBuilder()
-    props.cuder_figure(fb, top)
-    fm = fb.to_object("tuong_cuder_tuong", col, location=(*STATUE, PLAZA_Z), smooth_angle=75, subdiv_high=True)
-    mk.parent(pm, st)
-    mk.parent(fm, st)
+    fm, bun, info = cuder.build(col, "tuong_cuder_tuong", (*STATUE, PLAZA_Z), CUDER_H, keep_bun=CUDER_KEEP_BUN)
+    for o in (fm, bun):
+        if o:
+            mk.parent(o, st)
+    co = [fm.matrix_world @ v.co for v in fm.data.vertices]
+    CUDER_FOOT.update(x=(min(p.x for p in co), max(p.x for p in co)), y=(min(p.y for p in co), max(p.y for p in co)))
     return gate, well, st
 
 
@@ -280,7 +283,9 @@ def build_colliders(col):
     # vật
     C("gieng_lang", (*WELL, 0.5), (1.5, 1.5, 1.0), col)
     C("bui_tre", (*BAMBOO, 2), (1.6, 1.6, 4), col)
-    C("tuong_cuder", (*STATUE, 1.3), (1.4, 1.4, 2.6), col)
+    fx, fy = CUDER_FOOT["x"], CUDER_FOOT["y"]   # hộp va chạm ôm khung bao tượng mới (bệ + đống xu + người)
+    C("tuong_cuder", ((fx[0] + fx[1]) / 2, (fy[0] + fy[1]) / 2, (CUDER_H + PLAZA_Z) / 2),
+      (fx[1] - fx[0] + 0.04, fy[1] - fy[0] + 0.04, CUDER_H + PLAZA_Z), col)
     for x in (-24, -12, px0 - 0.6, 15, 26, 38):
         C(f"cot_den_{x:+.0f}", (x, WALK[0] + 0.6, 2), (0.3, 0.3, 4), col)
     # biên vùng chơi (tường vô hình)

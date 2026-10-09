@@ -20,6 +20,23 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Thêm hộp va chạm đầu hành lang đông zone 4 (trước đây đi qua là rơi khỏi bản đồ) và 2 chậu cọ zone 5.
   - Đã xuất lại GLB bản Thấp.
   - Phần dữ liệu cần làm cho zone 4–5 (đăng ký zone, trigger, 3 hạt lúa, vị trí người lạ) liệt kê trong file đó.
+- **Tượng Cuder zone 2 từ mô hình Meshy** (09/10/2026, `scripts/blender/lib/cuder.py`; xem trước riêng:
+  `scripts/blender/props/cuder_preview.py`):
+  - Thay cả `tuong_cuder_tuong` + `tuong_cuder_be` dựng tay; cùng vị trí, cùng tổng cao 2,384 m, mặt nhìn -Y.
+  - File gốc (105k tam giác) chỉ có trên máy làm việc: `assets/props/cuder/source/cuder_meshy.glb`; thiếu thì build
+    zone_02 báo lỗi.
+  - Làm sạch:
+    - lưới vốn liền và kín (0 cạnh hở, không mảnh rời, sau khi gộp đỉnh trùng theo đường nối UV);
+    - bệ Meshy thay bằng hộp sạch cùng kích thước (0,63 × 0,54 m, đáy phẳng);
+    - mép trước đống xu (số 0/1 vốn chảy nhoè) thay bằng hàng số **010110** sắc nét;
+    - cán cuốc kiểm độ thẳng (lệch 0,9 mm, giữ nguyên; lệch > 4 mm thì tự thay hình trụ).
+  - Giảm theo vùng còn **7.810 tam giác** (+ búi tóc 119): mặt trước 2.525, tay 686, thân 1.320, đống xu 1.310…
+  - Chất liệu đá trắng `statue_white` qua màu đỉnh + AO zone, **không texture**. Đã thử texture AO 512 nướng từ bản
+    105k: ở khoảng cách chơi không khác, nhìn cận thêm vài vệt lỗi đường nối, tốn thêm 1 chất liệu + ảnh.
+  - Búi tóc tròn sau gáy (nghi AI thêm) là object riêng `tuong_cuder_tuong_buitoc`; `zone_02.py` → `CUDER_KEEP_BUN =
+    False` thì bỏ (đầu đã vá).
+  - `COL_tuong_cuder` 1,4 × 1,4 → 0,73 × 0,79 m (ôm tượng mới).
+  - GLB zone_02: 449.840 → 507.768 byte (+12,9 %).
 
 ### Game web — Giai đoạn 1 (vertical slice zone 0 đến zone 3)
 - **Đợt 1 (khung):** Vite + three.js 0.186, va chạm capsule (three-mesh-bvh), camera góc thứ ba không xuyên tường,
@@ -263,6 +280,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Zone 5 vào được nhưng chưa có việc: gặp Prajith (La bàn nghề nghiệp), gặp Manager (Sắp xếp ưu tiên, ô Wisdom), Say
   Hello Team (Sổ lời khuyên), bàn làm việc; cảnh kết, màn tổng kết, danh hiệu. Đủ 10 hạt lúa vàng (zone 1–5).
 - nga: tay lún thân 4–6 cm ở talk, talk_2, nod, think, sit_down (cùng mức huyen, do dùng lại animation của prajith).
+- Tượng Cuder: chờ xác nhận búi tóc sau gáy (giữ / bỏ: `CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`). Khi đã
+  chốt, dọn mép búi tóc (còn răng cưa nhỏ khi nhìn cận từ phía sau). zone_03 vẫn còn bản sao tượng cũ nhìn qua vách
+  kính (`ENV_tuong_cuder_xa`) — đổi theo tượng mới nếu cần.
 
 ## Đã quyết
 - 09/10/2026: **mọi nhân vật người thật đưa vào game đều đã đồng ý dùng hình, kể cả nhân vật thêm sau này** — không
