@@ -1,17 +1,20 @@
 {
-  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. TẠM THỜI mọi vai dùng 'prajith', trừ vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' và vai 'le_tan' (Ms. Nga, Recruitment — sảnh zone 3, tin nhắn 'hr' ở zone 0) dùng 'nga' — id vai giữ nguyên.",
+  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. Vai 'player' dùng intern_nam / intern_nu theo giới tính người chơi (roles.player.model_by_gender). TẠM THỜI mọi vai khác dùng 'prajith', trừ vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' và vai 'le_tan' (Ms. Nga, Recruitment — sảnh zone 3, tin nhắn 'hr' ở zone 0) dùng 'nga' — id vai giữ nguyên.",
   "_place_ghi_chu": "place: 'spawn' = người chơi, đặt tại SPAWN_ · 'node' = đứng tại node NPC_ (xoay theo yaw_deg) · 'follow_player' = đi theo người chơi · 'near_node' = code đặt cạnh node (offset theo hệ trục glTF, m). pose: 'stand' (mặc định) | 'seated' = ngồi gõ phím (sit_type), ghế sau điểm đứng 0,40 m; khi nói chuyện thì stand_up → quay về phía người chơi → talk → ngồi lại. Không đặt NPC nào ở chỗ bàn intern (SPAWN_ban_lam_viec). node_marks: 'seat' = node đánh dấu CHỖ GHẾ (zone_05 đặt NPC_dong_nghiep_* tại ghế) → điểm đứng tính lùi về phía bàn theo models.<id>.seat.offset_xz_m. chair_height_m: mặt ghế trong GLB (đo bằng tia dò: 0,51 m) → khi ngồi nâng nhân vật thêm (chair_height_m − seat.height_m) để không lún vào ghế. node có thể là danh sách (vd vai thao — chị Huyền: NPC_thao_cua_xe ở zone_00, NPC_dong_nghiep_don ở zone_01) — zone có node nào thì đứng ở đó. wait.<zone>: vai đi theo (Tú) đứng chờ tại near_node + offset tới khi đạt until. carry: đồ cầm tay do code gắn (bag). board: {on_flag, to_node, done_flag} — có cờ on_flag thì đi tới to_node rồi khuất, bật done_flag. hide_if: không đặt vai khi đạt điều kiện.",
   "_tint_ghi_chu": "TẠM (mọi vai dùng chung model): tint = { shirt, pants } màu hex đổi bằng code (game/src/characters/tint.js) để dễ phân biệt NPC: áo = điểm ảnh cam đậm trên thân + tay, quần = điểm ảnh xám sáng trên hông + chân, giữ nếp vải của texture. Bỏ trống = giữ màu gốc (người chơi giữ áo cam, quần kem). Không sửa texture/GLB. Vai dùng model riêng cũng có thể đặt tint (vd le_tan: chỉ quần, để Ms. Nga khác Ms. Huyền).",
   "roles": {
     "player": {
-      "model": "prajith",
+      "model": "intern_nam",
+      "model_by_gender": {
+        "nam": "intern_nam",
+        "nu": "intern_nu"
+      },
+      "_model_ghi_chu": "Model theo giới tính người chơi (bản lưu → player.gender: nam | nu; màn tạo nhân vật chưa có mục này → mặc định nam). Thử khi phát triển: ?gender=nu hoặc __game.setGender('nu').",
       "place": "spawn",
       "outfit": {
         "until_reward": "ao_cam",
-        "tint": {
-          "shirt": "#cfe0ee"
-        },
-        "_ghi_chu": "GDD: bắt đầu với áo sơ mi thường (xanh nhạt, đổi màu bằng code), nhận Áo Cam FPT ở cổng (zone 2) thì mặc vào ngay — mặc từ lúc vào chụp ảnh check-in."
+        "texture": "dau_ngay",
+        "_ghi_chu": "GDD: bắt đầu với bộ đồ ngày đầu — texture dau_ngay của model (models.<id>.outfit_textures: áo polo xanh nhạt, không logo); nhận Áo Cam FPT ở cổng (zone 2) thì đổi về texture trong GLB (ao_cam: áo cam + logo) — mặc từ lúc vào chụp ảnh check-in. outfit.tint (đổi màu áo bằng shader, cách cũ) vẫn dùng được cho model không có texture riêng."
       }
     },
     "tu": {
@@ -554,24 +557,196 @@
       "portrait": "assets/characters/nga/nga_portrait.png"
     },
     "intern_nam": {
-      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam (hư cấu, Meshy), cao 1,70 m. CHƯA có GLB: chờ gắn xương trên Mixamo (assets/characters/intern_nam/intern_nam_for_mixamo.fbx) rồi build_character.py; chưa vai nào dùng (vai player vẫn là prajith). textures: 2 bộ trang phục cùng UV — ao_cam = bản chuẩn (áo polo cam + logo FPT, phần thưởng ở cổng zone 2; build_character.py nhúng bản này vào GLB), dau_ngay = bộ đồ ngày đầu (áo xanh nhạt #cfe0ee, không logo; quần, giày, da, tóc giữ nguyên). mask = mặt nạ vùng 512 px: đỏ áo, xanh dương quần, xanh lá giày, vàng da, hồng tóc, đen ngoài UV (scripts/blender/characters/outfit_textures.py). Ảnh trong textures/ chỉ có trên máy làm việc (không commit); bước đổi áo khi nhận Áo Cam sẽ quyết cách đưa bản dau_ngay vào game.",
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam (hư cấu, Meshy + Mixamo), cao 1,70 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nam. Bộ đồ: texture trong GLB = ao_cam (áo polo cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo xanh nhạt #cfe0ee, không logo; quần, giày, da, tóc giữ nguyên), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần, xanh lá giày, vàng da, hồng tóc, đen ngoài UV; scripts/blender/characters/outfit_textures.py) — chỉ có trên máy làm việc, không commit.",
       "gender": "male",
       "height_m": 1.7,
-      "textures": {
+      "outfit_textures": {
+        "dau_ngay": "assets/characters/intern_nam/intern_nam_dau_ngay.webp"
+      },
+      "texture_sources": {
         "ao_cam": "assets/characters/intern_nam/textures/intern_nam_basecolor.jpg",
         "dau_ngay": "assets/characters/intern_nam/textures/intern_nam_basecolor_dau_ngay.jpg",
         "mask": "assets/characters/intern_nam/textures/intern_nam_mask.png"
-      }
+      },
+      "glb": {
+        "low": "assets/characters/intern_nam/intern_nam.glb"
+      },
+      "tris": {
+        "low": 5999
+      },
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.92,
+        "run": 4.33
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.365,
+        "offset_xz_m": [
+          0.001,
+          -0.392
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.365
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/intern_nam/intern_nam_portrait.png"
     },
     "intern_nu": {
-      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ (hư cấu, Meshy), cao 1,60 m. CHƯA có GLB: chờ gắn xương trên Mixamo (assets/characters/intern_nu/intern_nu_for_mixamo.fbx) rồi build_character.py; chưa vai nào dùng. textures / mask: như intern_nam.",
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ (hư cấu, Meshy + Mixamo), cao 1,60 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nữ. Bộ đồ, texture_sources: như intern_nam.",
       "gender": "female",
       "height_m": 1.6,
-      "textures": {
+      "outfit_textures": {
+        "dau_ngay": "assets/characters/intern_nu/intern_nu_dau_ngay.webp"
+      },
+      "texture_sources": {
         "ao_cam": "assets/characters/intern_nu/textures/intern_nu_basecolor.jpg",
         "dau_ngay": "assets/characters/intern_nu/textures/intern_nu_basecolor_dau_ngay.jpg",
         "mask": "assets/characters/intern_nu/textures/intern_nu_mask.png"
-      }
+      },
+      "glb": {
+        "low": "assets/characters/intern_nu/intern_nu.glb"
+      },
+      "tris": {
+        "low": 6000
+      },
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.54,
+        "run": 4.12
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.368,
+        "offset_xz_m": [
+          -0.007,
+          -0.386
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.37
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/intern_nu/intern_nu_portrait.png"
     }
   }
 }
