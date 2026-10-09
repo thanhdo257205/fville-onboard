@@ -155,6 +155,61 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - `scripts/tools/slow_server.py`: server tĩnh có độ trễ để đo trước/sau; cấu hình `perf-before` / `perf-after` trong
     `.claude/launch.json`.
 
+### Game web — Giai đoạn 2: zone 4 (09/10/2026)
+- **Zone 4 · Cửa quẹt thẻ, cầu thang, Cửa Phòng FSA** (GDD mục Zone 4). Lời thoại: `data/dialogues.json` → `card_gate`,
+  `fsa_visit`, `fsa_remind`; tài liệu `docs/dialogue_nga.md` mục 3, `docs/dialogue_huyen.md` mục 4.
+  - **Dữ liệu theo `docs/zone45_check.md`:** zone_04, zone_05 vào `zones.json`; trigger zone 3 ↔ 4 ↔ 5 (zone 4 → 5 cần
+    quẹt thẻ + phòng FSA); 3 hạt lúa còn lại (chiếu nghỉ zone 4; nóc kệ ô vuông và gầm bàn bi-a zone 5, `snap: false`
+    giờ được truyền đúng); người lạ dời ra cạnh đầu đọc thẻ (`offset [1.9, 0, 0.6]`, nhìn về phía người chơi đi tới).
+    Quest mới `z4_card_gate`, `z4_fsa` (checklist Card Gate, FSA Room). 3 ô giá trị zone 4 bật (`values.json` active).
+  - **Cửa quẹt thẻ:** bấm E ở đầu đọc → "Beep — green light!", Hiểu biết +5, chữ lớn "First card tap!". Hai cánh cửa
+    (`cua_quet_the_canh_trai/_phai`, custom property `hinge`) xoay 90° quanh bản lề mở vào phía cầu thang trong 0,9 s,
+    `COL_cua_quet_the` bỏ khỏi va chạm. Cấu hình bằng dữ liệu: `data/scene_fixes.json` → `zone_04.doors` (cánh + góc,
+    COL bỏ, điều kiện mở); vào lại zone thì cửa mở sẵn. Xoay bằng quaternion quanh trục Y của node cha (cánh phải có
+    Euler 180/0/180 — chỉnh `rotation.y` làm cánh mở ngược ra hành lang). Cửa phòng FSA mở khi xong Lộ trình học.
+  - **Tình huống 1 · người lạ xin đi ké** (ngay sau khi cửa mở): *"Sure, come on in."* → người lạ đi qua cửa về phía
+    cầu thang rồi khuất, Ms. Huyền nhắn nhắc nhẹ (không có ô); *"Sorry, I can't let you in — reception can help you."*
+    → ô **Role Model**, người lạ cảm ơn và đi về phía sảnh.
+  - **Tình huống 2 · thẻ Tú báo đỏ:** *"Sure, come with me."* → Ms. Huyền nhắn: bạn bè cũng không đi ké; *"I'll message
+    Ms. Nga in the app."* → tin nhắn trả lời của Ms. Nga đúng như `docs/dialogue_nga.md`, thẻ Tú xanh, ô **Teamwork**,
+    Kết nối +5; *"Maybe ask at reception?"* → Tú tự đi về phía sảnh, khuất, 40 giây sau quay lại cạnh người chơi với bong
+    bóng "I'm back! Reception sorted my card out." (không ô, không điểm).
+  - **Phòng FSA:** đọc biển sứ mệnh FSA [DRAFT], Tú nói luật (Tú vắng thì lời dẫn nói luật), mini-game **Lộ trình học**
+    (`minigames.learning_path`, `kind: learning_path`): xếp 3 khóa gợi ý theo vị trí intern (Developer / Tester / BA /
+    Designer, [DRAFT]) vào lịch Mon / Wed / Fri, khóa cơ bản trước (mỗi thẻ ghi "Start here" / "After: …"); kéo thẻ vào
+    lịch, hoặc click / phím 1–3. Gợi ý tăng dần như mọi mini-game (8 s → gợi ý ngày đang xếp; sai 2 → sáng thẻ đúng; sai
+    3 → Skip). Xếp xong hỏi có tự đặt mục tiêu riêng không (3 lựa chọn + "Not now"): chọn → ô **Innovation**. Nhận
+    **Sổ tay học tập**, Hiểu biết +10.
+  - **Tú chia tay:** sau Lộ trình học, *"My team's on the floor above. See you after work, okay?"*, Tú đi vòng giếng trời
+    về phía cầu thang rồi khuất (cờ `tu_said_bye` → từ đó không còn đi theo, zone 5 không có Tú). Tú đang ở lễ tân lúc
+    xong FSA → nhắn tin chào thay.
+  - **Hội thoại nhiều người:** camera hội thoại và hướng người chơi chuyển sang người đang nói (người lạ rồi Tú); NPC nói
+    trong hội thoại không bắt đầu từ họ (người lạ) cũng quay về phía người chơi. Hiệu ứng mới: `banner` (chữ lớn giữa màn
+    hình), `walk` (NPC / Tú đi chỗ khác rồi khuất; Tú quay lại sau `return_s`).
+  - **Hướng dẫn:** câu nhắc (help, 2 câu Tú, 2 tin nhắn Ms. Nga) cho 2 mục tiêu zone 4 và lối ra zone 3, zone 4; zone 5
+    hiện "Explore the Office" + help "các cuộc gặp mở ở bản sau". Phòng FSA ở tầng 2 → dấu "!" đi theo điểm dẫn đường
+    (`guidance.json` → `goals.z4_fsa.route`): chân cầu thang ngay sau cửa → nửa tây chiếu nghỉ → nửa đông chiếu nghỉ
+    (đi thẳng từ đầu vế 1 tới đầu vế 2 vướng lan can giữa) → đầu vế 2 → góc tây bắc tầng 2 (vòng giếng trời) → cửa FSA.
+  - **Sửa bằng dữ liệu, không sửa GLB** (nên sửa thật trong `scripts/blender/zone_04.py` khi dựng lại zone):
+    - `SPAWN_zone_04_from_zone_03` chỉ cách tường cuối hành lang 1,15 m → camera phải quay ngang nhìn vào tường. Thêm
+      `zones.json` → `spawn_offset` (xuất hiện lùi vào 2 m): camera đứng sau lưng, thấy dọc hành lang tới cửa quẹt thẻ.
+    - Vách phía trên cửa quẹt thẻ (cao 2,55–3,6 m) không có COL_ → đi lên vế 1, camera lọt khe ra hành lang, vách che đầu
+      người chơi (5/64 mẫu). Thêm hộp `camera_tren_cua_quet_the` (`data/collision.json`) → 0/117 mẫu bị che.
+    - **Mép tây chiếu trên (đầu vế 2, tầng 2) hở, không lan can lẫn COL_:** từ đầu vế 2 đi về phía tây là rơi xuống giếng
+      cầu thang (bot người chơi mới rơi 2 lần). Thêm hộp `lan_can_chieu_tren` cao 2,6–6 m (người đi tầng trệt không
+      vướng). Quét 9 điểm × 16 hướng × 3 s chạy: không còn chỗ rơi.
+  - **Camera ở cầu thang và chiếu nghỉ** (sảnh hẹp 7 m, trần 7,4 m): đi lên + xuống 2 vế, đo mỗi 0,25 s: camera cách bề
+    mặt ≥ 0,13 m, không mẫu nào bị che đầu người chơi; xoay camera 8 hướng ở chiếu nghỉ: không bị che (sát góc tường thì
+    camera kéo gần tới 0,86 m). Camera hội thoại với Tú ở chiếu nghỉ, giữa vế 1, giữa vế 2: đều bật, thấy mặt Tú.
+  - `zoneTime` tăng ở mọi zone (trước chỉ tăng ở zone có sự kiện → việc "quay lại sau 40 s" không chạy ở zone 4).
+- **Zone 5:** vào được qua cửa FSA, NPC đứng/ngồi đúng chỗ, 2 hạt lúa; chưa có việc (gặp Prajith, Manager, Say Hello
+  Team, bàn làm việc làm ở đợt sau).
+- **Kiểm tra:** chơi trọn zone 0 → 4 rồi vào zone 5 **không teleport** (bot chỉ nhìn dấu "!" / mũi tên, bấm E khi có lời
+  nhắc, ở cửa quẹt thẻ chọn từ chối người lạ + nhắn Ms. Nga), bản dev và bản build sau khi gộp commit hiệu năng: trọn
+  mạch 293 s giờ game (zone 4: 62 s), **không lần nào đứng yên quá 10 s**, không lần nhắc nào phải bật. Kẹt ngắn mới ở
+  zone 4: người lạ đứng gần đường thẳng từ đầu hành lang tới dấu "!" của cửa (4,8; −1), né sang bên 3 s là qua. Thử riêng 2 nhánh còn lại (cho người lạ vào, Tú quay lại lễ tân), mini-game (gợi ý 8 s,
+  sáng thẻ đúng, mục tiêu riêng), bị chặn khi vào cửa FSA chưa làm Lộ trình học, sang zone 5. Console sạch.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.
@@ -205,7 +260,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   animation của prajith; chờ quyết định tải bản Mixamo riêng cho huyen.
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
-- Lối sang zone 4 đang khóa ("This way opens in the next update"). Còn 3 hạt lúa vàng dành cho zone 4–5.
+- Zone 5 vào được nhưng chưa có việc: gặp Prajith (La bàn nghề nghiệp), gặp Manager (Sắp xếp ưu tiên, ô Wisdom), Say
+  Hello Team (Sổ lời khuyên), bàn làm việc; cảnh kết, màn tổng kết, danh hiệu. Đủ 10 hạt lúa vàng (zone 1–5).
 - nga: tay lún thân 4–6 cm ở talk, talk_2, nod, think, sit_down (cùng mức huyen, do dùng lại animation của prajith).
 
 ## Đã quyết
@@ -232,17 +288,19 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
    Đo luôn hiệu năng trên một laptop Intel UHD/Iris Xe: mở `?debug`, gõ `__game.benchmark(120)` ở từng zone; xem
    nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
    Gửi `docs/hr_content_request.md` cho HR.
-4. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA; lựa chọn nhắn Ms. Nga qua app — câu dự kiến trong
-   `docs/dialogue_nga.md`), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), màn tổng kết, danh hiệu,
-   tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.
+4. Giai đoạn 2 tiếp: zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), cảnh kết, màn tổng kết, danh
+   hiệu (Đồng Đội Số 1 dùng cờ `backpack_returned` + `tu_card_fixed`), tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.
 
 ## Việc nhỏ để sau
+- zone_04 (đang chặn bằng dữ liệu, nên sửa trong `scripts/blender/zone_04.py` khi dựng lại zone): thêm lan can thật ở mép
+  tây chiếu trên (x 3,4, z −3 … −1,65) và COL_ cho vách trên cửa quẹt thẻ; dời `SPAWN_zone_04_from_zone_03` vào trong
+  ~2 m (rồi bỏ `spawn_offset` trong `zones.json`).
 - zone_03, cây ngoài sân (`ENV_cay_san`): một cụm khoảng 8,7 × 6,9 × 7,2 m (x 24,8–33,5; z 1,6–8,8, toạ độ glTF) bị
   `seeThrough` gộp thành 1 cây vì các tán dính nhau → khi che thì mờ cả cụm cùng lúc. Chưa cần sửa (cây ngoài vách kính,
   ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá
   gần nó nhất).
 
-## Nội dung [DRAFT] chờ HR (16 mục)
+## Nội dung [DRAFT] chờ HR (18 mục)
 1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45, mã intern FV-2026 để đăng nhập App My FPT.
 2. Giờ xe về (chị Huyền trả lời ở zone 0).
 3. Quy định trên xe công ty (chị Huyền trả lời ở zone 0).
@@ -254,5 +312,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 14. Quiz CUDER: câu chuyện, 3 câu hỏi và gợi ý.
 15. 3 mẩu thông tin trong mini-game kéo nước giếng.
 16. 5 mốc của mini-game dòng thời gian (1988, 1999, 2006, 2018, 2019): năm và cách viết.
+17. Biển sứ mệnh FSA ở cửa phòng FSA (zone 4).
+18. Mini-game Lộ trình học: 3 khóa gợi ý cho mỗi vị trí intern (zone 4).
 
 Danh sách lấy từ dữ liệu (`"draft": true`); trong game các nội dung này hiện chữ [DRAFT].

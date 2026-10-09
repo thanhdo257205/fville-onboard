@@ -116,7 +116,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   giữ dấu tiếng Việt (Tú, Huyền, F-Ville, Hòa Lạc). Không viết chữ hiển thị cứng trong code.
 - **Chỉ dùng đồ họa Thấp** (bản Cao có lightmap đang tạm dừng; nhân vật huyen chỉ có bản 6k).
 - **Không sửa GLB bối cảnh từ code game.** Thiếu/sai đối tượng thì chỉnh bằng dữ liệu (`data/collision.json`: bỏ/thêm hộp
-  va chạm; `data/scene_fixes.json`; vật do code đặt trong `data/interactables.json`) và ghi vào báo cáo. Sửa bối cảnh
+  va chạm; `data/scene_fixes.json`: chỉnh khi chạy, cửa mở được `doors`; `data/zones.json` → `spawn_offset`: dời chỗ
+  xuất hiện; vật do code đặt trong `data/interactables.json`) và ghi vào báo cáo. Sửa bối cảnh
   thật thì sửa script Blender rồi build lại zone (cần người dùng đồng ý).
 - Nội dung chờ HR có `"draft": true` → game hiện **[DRAFT]**. Danh sách: `docs/PROGRESS.md`.
 - Vai nhân vật: id vai trong dữ liệu giữ nguyên (vd vai `thao` hiển thị là **Ms. Huyền**, model `huyen`; vai `le_tan`
