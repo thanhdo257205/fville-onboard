@@ -90,7 +90,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     chơi; trong thân xe: không còn lời nhắc), 7 tình huống camera hội thoại cũ (kể cả bác tài zone_01) đều bật, không bị
     che; chơi trọn zone 0 → 3 (dev + bản build), console sạch.
 
-- **Hướng dẫn người chơi mới (09/10/2026)** — nguyên tắc: lúc nào cũng biết "giờ làm gì" trong vài giây. Code
+- **Hướng dẫn người chơi mới (09/10/2026, `main` a3ca18e, đã deploy `gh-pages` 399220f)** — nguyên tắc: lúc nào cũng biết "giờ làm gì" trong vài giây. Code
   `game/src/game/guide.js`; chữ trong `data/guidance.json` (tiếng Anh) và `data/i18n/en.json` (`guide.*`, `menu.guide*`).
   - **Chỉ đường:** mục tiêu hiện tại = quest bắt buộc đầu tiên chưa xong của zone (`quests.json` → `target`); zone xong hết
     → `guidance.json` → `zone_exits` (zone 1 → cổng F-Ville, zone 2 → cửa tòa nhà; zone 3 hết việc → không có dấu, H nói
