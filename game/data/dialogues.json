@@ -61,8 +61,8 @@
       "id": "thao_bus", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z0_meet_thao"] }, "next": "after" }, { "if": { "flags": ["tu_met"] }, "next": "two" }], "next": "one" },
-        "two": { "speaker": "thao", "anim": "wave", "text": { "en": "Two new interns, huh? I'm Thảo — I'm picking up your batch today." }, "next": "n2" },
-        "one": { "speaker": "thao", "anim": "wave", "text": { "en": "A new intern, huh? I'm Thảo — I'm picking up your batch today." }, "next": "n2" },
+        "two": { "speaker": "thao", "anim": "wave", "text": { "en": "Two new interns? Welcome aboard! I'm Huyền — I'm picking up your batch today." }, "next": "n2" },
+        "one": { "speaker": "thao", "anim": "wave", "text": { "en": "A new intern? Welcome aboard! I'm Huyền — I'm picking up your batch today." }, "next": "n2" },
         "n2": { "speaker": "thao", "anim": "point", "text": { "en": "This is Bus No. 2, straight to Hòa Lạc. Ask me anything before we go!" }, "effects": { "quest": "z0_find_bus" }, "next": "ask" },
         "ask": { "speaker": "thao", "text": { "en": "What would you like to know?" },
           "choices": [
@@ -73,7 +73,7 @@
           ] },
         "a_time": { "speaker": "thao", "draft": true, "text": { "en": "The buses head back to the city in the evening — HR will put the exact times in your app." }, "next": "ask" },
         "a_rules": { "speaker": "thao", "draft": true, "text": { "en": "Be at the stop a few minutes early, keep your seatbelt on, and keep the bus clean. Easy!" }, "next": "ask" },
-        "a_long": { "speaker": "thao", "anim": "think", "text": { "en": "Six years! Once I napped so hard I rode all the way back to the city. The driver still teases me about it." }, "next": "ask" },
+        "a_long": { "speaker": "thao", "anim": "think", "text": { "en": "Six years now! Little secret: the window seats near the back have the best view of the rice fields on the way in." }, "next": "ask" },
         "done": { "speaker": "thao", "anim": "nod", "text": { "en": "Great! Hop on whenever you're ready — Bus No. 2 leaves at 06:45 sharp." }, "effects": { "quest": "z0_meet_thao", "flags": ["met_thao"] }, "next": null },
         "after": { "speaker": "thao", "text": { "en": "Hop on, we're leaving soon!" }, "next": null }
       }
@@ -117,7 +117,7 @@
             { "text": { "en": "Let's install it!" }, "next": "install" },
             { "text": { "en": "Badges? What kind of badges?" }, "effects": { "ket_noi": 2 }, "next": "n3" }
           ] },
-        "n3": { "speaker": "thao", "anim": "point", "text": { "en": "You'll see at the Cuder Statue. Some of them you earn just by being nice to people." }, "next": "n4" },
+        "n3": { "speaker": "thao", "anim": "point", "text": { "en": "You'll find out at the Cuder Statue. Some of them you earn just by being nice to people." }, "next": "n4" },
         "n4": { "speaker": "thao", "text": { "en": "Okay, phone out!" }, "next": "install" },
         "install": { "action": "minigame:install_app", "next": "done" },
         "done": { "speaker": "thao", "anim": "nod", "text": { "en": "All set! Head straight to the gate. I'll go up to the office first — message me in the app if you need anything." }, "next": null },
@@ -196,6 +196,21 @@
           ] },
         "take": { "speaker": "narrator", "text": { "en": "You picked up the wallet. The reception desk is just over there." }, "next": null }
       }
+    },
+    {
+      "id": "tu_lost_bag", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Wait... where's my backpack?!" }, "next": "n2" },
+        "n2": { "speaker": "tu", "text": { "en": "I think I left it on the bus! Could you help me look? The bus hasn't left yet." },
+          "choices": [
+            { "text": { "en": "Sure — I'll check the bus!" }, "effects": { "flags": ["tu_lost_bag"] }, "next": null },
+            { "text": { "en": "Don't worry, we'll find it." }, "effects": { "flags": ["tu_lost_bag"] }, "next": null }
+          ] }
+      }
+    },
+    {
+      "id": "jar_look", "start": "n1",
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A glass jar of golden grains. You've found {grains} of {grains_total} — more are hidden around F-Ville." }, "next": null } }
     },
     {
       "id": "tu_backpack_thanks", "start": "n1",

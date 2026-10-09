@@ -17,9 +17,9 @@
   "quests": [
     { "id": "z0_find_bus", "zone": "zone_00", "checklist": "bus", "required": true, "target": "INT_bien_xe_2", "title": { "en": "Find Bus No. 2" } },
     { "id": "z0_meet_tu", "zone": "zone_00", "required": false, "target": "tu", "title": { "en": "Say hi to the intern at the bus shelter" } },
-    { "id": "z0_meet_thao", "zone": "zone_00", "checklist": "bus", "required": true, "target": "NPC_thao_cua_xe", "title": { "en": "Say hello to Ms. Thảo at Bus No. 2" } },
+    { "id": "z0_meet_thao", "zone": "zone_00", "checklist": "bus", "required": true, "target": "NPC_thao_cua_xe", "title": { "en": "Say hello to Ms. Huyền at Bus No. 2" } },
     { "id": "z0_board", "zone": "zone_00", "checklist": "bus", "required": true, "target": "TRIGGER_len_xe", "title": { "en": "Board Bus No. 2" } },
-    { "id": "z1_get_app", "zone": "zone_01", "checklist": "bus", "required": true, "target": "NPC_dong_nghiep_don", "title": { "en": "Get the My FPT app from Ms. Thảo" } },
+    { "id": "z1_get_app", "zone": "zone_01", "checklist": "bus", "required": true, "target": "NPC_dong_nghiep_don", "title": { "en": "Get the My FPT app from Ms. Huyền" } },
     { "id": "z1_thank_driver", "zone": "zone_01", "required": false, "target": "NPC_tai_xe", "title": { "en": "Say thanks to the bus driver" } },
     { "id": "z1_route_map", "zone": "zone_01", "required": false, "target": "INT_ban_do_tuyen_xe", "title": { "en": "Check the bus route map" } },
     { "id": "z1_backpack", "zone": "zone_01", "required": false, "target": "INT_xe_bus", "title": { "en": "Find Tú's backpack" }, "visible_if": { "flags": ["tu_lost_bag"] } },

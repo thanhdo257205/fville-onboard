@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Nối đối tượng trong GLB với hành động. Vùng tương tác: 'radius' (m, đo theo phương ngang từ node; mặc định default_radius) và/hoặc 'area' (hộp TRIGGER_: đứng trong hộp là tương tác được). 'actor': nhân vật do code đặt (vd Tú). 'object': vật do code đặt (không có trong GLB) tại node 'anchor' + 'offset' (glTF, m). action: dialogue:<id> | minigame:<id> | pickup:<carry id>. requires/hide_if: { flags, not_flags, quests, rewards }. Hiệu ứng (hieu_biet, ket_noi, value, reward, flags, quest, item, remove_item) nằm trong dialogues.json và minigames bên dưới.",
+  "_ghi_chu": "Nối đối tượng trong GLB với hành động. Vùng tương tác: 'radius' (m, đo theo phương ngang từ node; mặc định default_radius) và/hoặc 'area' (hộp TRIGGER_: đứng trong hộp là tương tác được). 'actor': nhân vật do code đặt (vd Tú). 'at': điểm tương tác riêng (toạ độ glTF) thay cho vị trí node. 'object': vật do code đặt (không có trong GLB) tại node 'anchor' + 'offset' (glTF, m). action: dialogue:<id> | minigame:<id> | pickup:<carry id>. requires/hide_if: { flags, not_flags, quests, rewards }. Hiệu ứng (hieu_biet, ket_noi, value, reward, flags, quest, item, remove_item) nằm trong dialogues.json và minigames bên dưới.",
   "default_radius": 2.0,
   "items": [
     {
@@ -53,7 +53,7 @@
       "node": "NPC_thao_cua_xe",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to Ms. Thảo"
+        "en": "Talk to Ms. Huyền"
       },
       "action": "dialogue:thao_bus"
     },
@@ -91,7 +91,7 @@
       "zone": "zone_01",
       "node": "NPC_dong_nghiep_don",
       "prompt": {
-        "en": "Talk to Ms. Thảo"
+        "en": "Talk to Ms. Huyền"
       },
       "action": "dialogue:thao_main"
     },
@@ -117,7 +117,6 @@
     {
       "zone": "zone_01",
       "node": "INT_xe_bus",
-      "radius": 3.5,
       "prompt": {
         "en": "Look for Tú's backpack"
       },
@@ -131,7 +130,13 @@
           "backpack_returned"
         ]
       },
-      "_ly_do": "pickup:<id> = thêm vật mang theo <id> + cờ has_<id>. Mở sau khi Tú kêu quên balo (cờ tu_lost_bag — sự kiện ở Đợt 3)."
+      "_ly_do": "Tìm balo ở CỬA XE (at = điểm tương tác, toạ độ glTF; tâm xe INT_xe_bus cách cửa 5,2 m). pickup:<id> = thêm vật mang theo <id> + cờ has_<id>. Mở sau khi Tú kêu quên balo (cờ tu_lost_bag, zones.json events).",
+      "at": [
+        -4.68,
+        0.15,
+        -4.0
+      ],
+      "radius": 2.0
     },
     {
       "zone": "zone_01",
@@ -243,16 +248,71 @@
       "_ly_do": "Chiếc ví không có trong GLB → code đặt lên MẶT ĐÔN (dò bằng tia chiếu trong vùng COL_cum_don, cao 0,3–0,7 m).",
       "surface_min": 0.3,
       "surface_max": 0.7
+    },
+    {
+      "zone": "zone_03",
+      "object": "hu_hat_lua",
+      "pos": [
+        1.2,
+        0.2,
+        -15.0
+      ],
+      "model": "jar",
+      "radius": 1.8,
+      "prompt": {
+        "en": "Look at the glass jar"
+      },
+      "action": "dialogue:jar_look",
+      "_ly_do": "Hũ thủy tinh (GDD: Phòng Hạt Lúa hiện số hạt lúa vàng đã nhặt) — code đặt cạnh lối vào phòng, trong hũ có đúng số hạt đã nhặt."
     }
   ],
   "minigames": {
-    "_ghi_chu": "Đợt 2: mini-game là khung tạm (hiện tiêu đề + nút hoàn thành, áp 'result'). Đợt 3 thay bằng mini-game thật.",
+    "_ghi_chu": "Mini-game (game/src/minigames). kind = luật chơi; line = 1 dòng hướng dẫn (chuột + bàn phím). Không có thua cuộc: sai → gợi ý, làm lại; sai 2 lần → hiện nút Skip: vẫn nhận result (phần thưởng bắt buộc) nhưng không cộng hieu_biet lượt đó. draft = nội dung chờ HR (game hiện [DRAFT]). Âm thanh: game/src/core/sound.js.",
     "install_app": {
+      "kind": "install_app",
       "title": {
         "en": "Install My FPT"
       },
-      "desc": {
-        "en": "Tap the three setup steps in the right order."
+      "line": {
+        "en": "Tap the three setup steps in the right order — or press 1, 2, 3."
+      },
+      "steps": [
+        {
+          "text": {
+            "en": "Download the My FPT app"
+          },
+          "doing": {
+            "en": "Downloading My FPT…"
+          },
+          "hint": {
+            "en": "Hint: you need the app on your phone before anything else."
+          }
+        },
+        {
+          "text": {
+            "en": "Log in with your intern code"
+          },
+          "doing": {
+            "en": "Logging in as {player}…"
+          },
+          "hint": {
+            "en": "Hint: once the app is installed, log in with the code from HR's message."
+          }
+        },
+        {
+          "text": {
+            "en": "Turn on notifications"
+          },
+          "doing": {
+            "en": "Notifications on!"
+          },
+          "hint": {
+            "en": "Hint: notifications come last — after you've logged in."
+          }
+        }
+      ],
+      "done": {
+        "en": "My FPT is ready!"
       },
       "result": {
         "reward": "app_my_fpt",
@@ -261,12 +321,56 @@
       }
     },
     "checkin_photo": {
+      "kind": "photo_checkin",
       "title": {
         "en": "Check-in Photo"
       },
-      "desc": {
-        "en": "Strike a pose in front of the FPT SOFTWARE sign."
+      "line": {
+        "en": "Pick a pose (1–3) and take the photo (Space). Tú jumps in if he's with you."
       },
+      "anchor": "INT_cong_fville",
+      "stand_offset_x": -0.5,
+      "tu_side": 0.95,
+      "poses": [
+        "idle",
+        "wave",
+        "cheer"
+      ],
+      "pose_names": {
+        "idle": {
+          "en": "Classic"
+        },
+        "wave": {
+          "en": "Wave"
+        },
+        "cheer": {
+          "en": "Cheer"
+        }
+      },
+      "camera": {
+        "distance": 5.6,
+        "height": 3.0,
+        "look_height": 0.7,
+        "look_behind": 2.6,
+        "fov": 44,
+        "_ly_do": "Camera cao 3 m nhìn chếch xuống: biển chữ FPT SOFTWARE (sau lưng 6 m) hiện trọn phía trên đầu hai nhân vật."
+      },
+      "aspect": [
+        4,
+        3
+      ],
+      "size": [
+        480,
+        360
+      ],
+      "max_kb": 60,
+      "caption": {
+        "en": "{player} · F-Ville · Day 1"
+      },
+      "tu_hint": {
+        "en": "Tú squeezes into the shot!"
+      },
+      "wear": "ao_cam",
       "result": {
         "reward": [
           "ao_cam",
@@ -277,12 +381,41 @@
       }
     },
     "well": {
+      "kind": "well",
       "title": {
         "en": "Draw Water"
       },
-      "desc": {
-        "en": "Pull the lever when the bar hits the green zone. Three buckets!"
+      "line": {
+        "en": "Press Space (or Pull!) when the marker is inside the green zone — three buckets."
       },
+      "speed": [
+        0.55,
+        0.7,
+        0.85
+      ],
+      "zone_width": [
+        0.22,
+        0.18,
+        0.15
+      ],
+      "hint_early": {
+        "en": "Too early — wait until the marker reaches the green zone."
+      },
+      "hint_late": {
+        "en": "A little late — pull while the marker is inside the green zone."
+      },
+      "draft_snippets": true,
+      "snippets": [
+        {
+          "en": "F-Ville is a 'tech village': a green campus with open spaces, where people know their neighbours and help each other."
+        },
+        {
+          "en": "The village well is where the community gathers — to share stories, and to look out for one another."
+        },
+        {
+          "en": "'Làng Công Nghệ' means building world-class software while keeping Vietnamese village roots close."
+        }
+      ],
       "result": {
         "reward": "huy_hieu_dong_doi",
         "quest": "z2_well",
@@ -290,47 +423,286 @@
       }
     },
     "cuder_quiz": {
+      "kind": "quiz",
+      "quiz": "cuder",
+      "per_correct": 5,
       "title": {
         "en": "The Cuder Statue"
       },
-      "desc": {
-        "en": "Read the story, then answer three questions."
+      "line": {
+        "en": "Read the story, then answer three questions (1–4 or click)."
       },
       "result": {
         "reward": "huy_hieu_6_gia_tri",
-        "quest": "z2_cuder",
-        "hieu_biet": 5
-      }
+        "quest": "z2_cuder"
+      },
+      "_ly_do": "Hiểu biết +5 cho mỗi câu đúng ngay lần đầu (GDD: +5 mỗi câu đúng); sai thì gợi ý rồi chọn lại."
     },
     "profile_check": {
+      "kind": "profile_check",
       "title": {
         "en": "Check Your Profile"
       },
-      "desc": {
-        "en": "One detail on the form is wrong. Find it and fix it."
+      "line": {
+        "en": "One detail on this form is wrong — click it (or press 1–5), then pick the right value."
       },
-      "result": {}
+      "form_title": {
+        "en": "New Intern Profile"
+      },
+      "fields": [
+        {
+          "key": "name",
+          "label": {
+            "en": "Full name"
+          }
+        },
+        {
+          "key": "position",
+          "label": {
+            "en": "Intern position"
+          }
+        },
+        {
+          "key": "office",
+          "label": {
+            "en": "Office"
+          },
+          "value": {
+            "en": "F-Ville 1, Hòa Lạc"
+          }
+        },
+        {
+          "key": "bus",
+          "label": {
+            "en": "Morning shuttle"
+          }
+        },
+        {
+          "key": "start",
+          "label": {
+            "en": "First day"
+          },
+          "value": {
+            "en": "Today"
+          }
+        }
+      ],
+      "bus_value": {
+        "en": "Bus No. 2"
+      },
+      "bus_wrong": {
+        "en": "Bus No. 3"
+      },
+      "bus_options": [
+        {
+          "en": "Bus No. 1"
+        },
+        {
+          "en": "Bus No. 2"
+        },
+        {
+          "en": "Bus No. 3"
+        }
+      ],
+      "hint_find": {
+        "en": "That one looks right. Check what you know for sure: your position, and the bus you took this morning."
+      },
+      "hint_position": {
+        "en": "Not quite — which position did you sign up for?"
+      },
+      "hint_bus": {
+        "en": "Not quite — which bus did you ride this morning?"
+      },
+      "found": {
+        "en": "Good catch! Now pick the right value."
+      },
+      "done": {
+        "en": "All fixed — thank you!"
+      },
+      "result": {},
+      "_ly_do": "Chỗ sai chọn ngẫu nhiên giữa vị trí intern (người chơi chọn ở màn tạo nhân vật) và số xe đã đi sáng nay (xe số 2)."
     },
     "id_photo": {
+      "kind": "photo_id",
       "title": {
         "en": "ID Photo"
       },
-      "desc": {
-        "en": "Pick one of three expressions for your card."
+      "line": {
+        "en": "Pick an expression (1–3) and take your card photo (Space)."
       },
+      "poses": [
+        "idle",
+        "cheer",
+        "think"
+      ],
+      "pose_names": {
+        "idle": {
+          "en": "Neutral"
+        },
+        "cheer": {
+          "en": "Big smile"
+        },
+        "think": {
+          "en": "Thoughtful"
+        }
+      },
+      "camera": {
+        "distance": 1.35,
+        "height": 1.56,
+        "look_height": 1.5,
+        "look_behind": 0,
+        "fov": 30
+      },
+      "aspect": [
+        3,
+        4
+      ],
+      "size": [
+        240,
+        320
+      ],
+      "max_kb": 30,
+      "backdrop": "#bcd7ef",
       "result": {}
     },
     "timeline": {
+      "kind": "timeline",
+      "draft": true,
       "title": {
         "en": "FPT Timeline"
       },
-      "desc": {
-        "en": "Drag five milestones into the right order."
+      "line": {
+        "en": "Put the five milestones in order, oldest at the top: drag the cards (or ↑/↓ to pick, Shift+↑/↓ to move), then Check."
+      },
+      "items": [
+        {
+          "text": {
+            "en": "FPT is founded"
+          },
+          "year": 1988
+        },
+        {
+          "text": {
+            "en": "FPT Software is founded"
+          },
+          "year": 1999
+        },
+        {
+          "text": {
+            "en": "FPT University opens its doors"
+          },
+          "year": 2006
+        },
+        {
+          "text": {
+            "en": "FPT celebrates its 30th birthday"
+          },
+          "year": 2018
+        },
+        {
+          "text": {
+            "en": "FPT Software celebrates 20 years"
+          },
+          "year": 2019
+        }
+      ],
+      "hints": [
+        {
+          "en": "Hint: the cards in green are already in the right place. FPT itself came first."
+        },
+        {
+          "en": "Hint: FPT Software was born 11 years after FPT. The two birthdays come last."
+        },
+        {
+          "en": "Hint: a university needs a company behind it — FPT University came after FPT Software."
+        }
+      ],
+      "done": {
+        "en": "Perfect order! Like grains of rice, every milestone adds up to a harvest."
       },
       "result": {
         "quest": "z3_rice_room",
         "hieu_biet": 10
-      }
+      },
+      "_ly_do": "5 mốc tạm (dùng các năm công khai chắc chắn); HR cung cấp 5 mốc thành tựu chính thức."
     }
-  }
+  },
+  "grains_total": 10,
+  "grain_prompt": {
+    "en": "Pick up the golden grain"
+  },
+  "_grains_ghi_chu": "Hạt lúa vàng (GDD: 10 hạt, zone 1: 2, zone 2: 3, zone 3: 2, zone 4: 1, zone 5: 2). Code đặt, không có trong GLB: pos = toạ độ glTF (m), game chiếu tia xuống để đặt lên mặt thật gần nhất. where = vị trí theo GDD.",
+  "grains": [
+    {
+      "id": "z1_gian_leo",
+      "zone": "zone_01",
+      "pos": [
+        11.6,
+        0.3,
+        -9.55
+      ],
+      "where": "Dưới giàn leo chỗ ngồi chờ, trước băng ghế phía bắc"
+    },
+    {
+      "id": "z1_cot_den",
+      "zone": "zone_01",
+      "pos": [
+        18.3,
+        0.3,
+        -5.15
+      ],
+      "where": "Sau cột đèn cuối vỉa hè (cột đèn x 18)"
+    },
+    {
+      "id": "z2_bui_tre",
+      "zone": "zone_02",
+      "pos": [
+        22.7,
+        0.5,
+        1.75
+      ],
+      "where": "Chân bụi tre trên đảo giếng"
+    },
+    {
+      "id": "z2_go_co",
+      "zone": "zone_02",
+      "pos": [
+        24.0,
+        1.6,
+        -14.5
+      ],
+      "radius": 1.6,
+      "where": "Trên bờ tường thấp trước gò cỏ sau biển chữ (gò cỏ có tường + bồn cây bao quanh, không đi vào được)"
+    },
+    {
+      "id": "z2_pilotis",
+      "zone": "zone_02",
+      "pos": [
+        12.0,
+        0.4,
+        -33.5
+      ],
+      "where": "Dưới tầng trệt pilotis canteen, sát vách phòng kính bên phải lối gạch"
+    },
+    {
+      "id": "z3_chau_co",
+      "zone": "zone_03",
+      "pos": [
+        -8.0,
+        0.3,
+        -6.4
+      ],
+      "where": "Sau chậu cọ cạnh quầy lễ tân"
+    },
+    {
+      "id": "z3_chan_cau_thang",
+      "zone": "zone_03",
+      "pos": [
+        -7.35,
+        0.3,
+        -14.0
+      ],
+      "where": "Góc sàn tối giữa thành cầu thang và lối vào Phòng Hạt Lúa (ban đầu định đặt trên chiếu nghỉ, nhưng thành cầu thang kín che mất, đứng dưới sàn không thấy)"
+    }
+  ]
 }

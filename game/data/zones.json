@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Danh sách zone của game: file GLB (assets/glb/<mức>/<file>.glb) và điểm xuất hiện mặc định. Tên hiển thị + giờ trên đồng hồ nằm trong data/i18n/<ngôn ngữ>.json (zones.<id>). on_enter: hội thoại tự chạy khi vào zone lần đầu (once_flag = cờ đánh dấu đã chạy). mood: ánh sáng / bầu trời / sương riêng của zone (không có = mặc định ban ngày).",
+  "_ghi_chu": "Danh sách zone của game: file GLB (assets/glb/<mức>/<file>.glb) và điểm xuất hiện mặc định. Tên hiển thị + giờ trên đồng hồ nằm trong data/i18n/<ngôn ngữ>.json (zones.<id>). on_enter: hội thoại tự chạy khi vào zone lần đầu (once_flag = cờ đánh dấu đã chạy). events: hội thoại tự chạy sau after_s giây trong zone nếu đạt điều kiện if (vd Tú kêu mất balo). mood: ánh sáng / bầu trời / sương riêng của zone (không có = mặc định ban ngày).",
   "order": ["zone_00", "zone_01", "zone_02", "zone_03"],
   "zones": {
     "zone_00": { "file": "zone_00_pickup", "start": "SPAWN_zone_00_start",
@@ -8,7 +8,9 @@
         "sky": "#dbe4ea", "fog": [38, 130],
         "sun": { "color": "#ffd9a8", "intensity": 1.45, "position": [60, 26, 34] },
         "hemi": { "sky": "#f3e6d8", "ground": "#8c8072", "intensity": 1.05 } } },
-    "zone_01": { "file": "zone_01_bus", "start": "SPAWN_zone_01_start" },
+    "zone_01": { "file": "zone_01_bus", "start": "SPAWN_zone_01_start",
+      "events": [{ "after_s": 20, "if": { "flags": ["tu_balo_tren_xe"], "not_flags": ["tu_lost_bag"] }, "dialogue": "tu_lost_bag", "actor": "tu",
+        "_ly_do": "GDD zone 1: khoảng 20 giây sau khi xuống xe, Tú hốt hoảng vì quên balo trên xe (cờ tu_balo_tren_xe bật ở cảnh lên xe)" }] },
     "zone_02": { "file": "zone_02_campus", "start": "SPAWN_zone_02_start" },
     "zone_03": { "file": "zone_03_lobby", "start": "SPAWN_zone_03_start" }
   }

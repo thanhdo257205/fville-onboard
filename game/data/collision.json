@@ -1,15 +1,189 @@
 {
   "_ghi_chu": "Chỉnh va chạm bằng code (KHÔNG sửa GLB bối cảnh). Mỗi zone: 'remove' = bỏ hộp COL_ khỏi va chạm (vẫn ẩn), 'add' = hộp mới, toạ độ glTF (m, Y hướng lên): center [x, y, z], size [rộng X, cao Y, sâu Z].",
   "zone_01": {
-    "remove": ["COL_gian_leo"],
+    "remove": [
+      "COL_gian_leo"
+    ],
     "_remove_ly_do": "COL_gian_leo chặn kín cả giàn leo 6,2 × 3,7 m (cao 1 m), nhưng GDD giấu hạt lúa DƯỚI giàn leo → thay bằng 4 cột + 2 băng ghế, đúng kích thước dựng trong scripts/blender/lib/props.py pergola(7, 7, 13, 10.5).",
     "add": [
-      { "name": "gian_leo_cot_1", "center": [7.0, 1.35, -7.0], "size": [0.2, 2.7, 0.2] },
-      { "name": "gian_leo_cot_2", "center": [13.0, 1.35, -7.0], "size": [0.2, 2.7, 0.2] },
-      { "name": "gian_leo_cot_3", "center": [7.0, 1.35, -10.5], "size": [0.2, 2.7, 0.2] },
-      { "name": "gian_leo_cot_4", "center": [13.0, 1.35, -10.5], "size": [0.2, 2.7, 0.2] },
-      { "name": "gian_leo_ghe_nam", "center": [10.0, 0.25, -7.4], "size": [5.4, 0.5, 0.45] },
-      { "name": "gian_leo_ghe_bac", "center": [10.0, 0.25, -10.1], "size": [5.4, 0.5, 0.45] }
+      {
+        "name": "gian_leo_cot_1",
+        "center": [
+          7.0,
+          1.35,
+          -7.0
+        ],
+        "size": [
+          0.2,
+          2.7,
+          0.2
+        ]
+      },
+      {
+        "name": "gian_leo_cot_2",
+        "center": [
+          13.0,
+          1.35,
+          -7.0
+        ],
+        "size": [
+          0.2,
+          2.7,
+          0.2
+        ]
+      },
+      {
+        "name": "gian_leo_cot_3",
+        "center": [
+          7.0,
+          1.35,
+          -10.5
+        ],
+        "size": [
+          0.2,
+          2.7,
+          0.2
+        ]
+      },
+      {
+        "name": "gian_leo_cot_4",
+        "center": [
+          13.0,
+          1.35,
+          -10.5
+        ],
+        "size": [
+          0.2,
+          2.7,
+          0.2
+        ]
+      },
+      {
+        "name": "gian_leo_ghe_nam",
+        "center": [
+          10.0,
+          0.25,
+          -7.4
+        ],
+        "size": [
+          5.4,
+          0.5,
+          0.45
+        ]
+      },
+      {
+        "name": "gian_leo_ghe_bac",
+        "center": [
+          10.0,
+          0.25,
+          -10.1
+        ],
+        "size": [
+          5.4,
+          0.5,
+          0.45
+        ]
+      }
     ]
+  },
+  "zone_03": {
+    "add": [
+      {
+        "name": "hu_hat_lua",
+        "center": [
+          1.2,
+          0.6,
+          -15.0
+        ],
+        "size": [
+          0.7,
+          1.2,
+          0.7
+        ]
+      },
+      {
+        "name": "ghe_don_1",
+        "center": [
+          5.6,
+          0.25,
+          -9.0
+        ],
+        "size": [
+          0.85,
+          0.5,
+          0.85
+        ]
+      },
+      {
+        "name": "ghe_don_2",
+        "center": [
+          6.22,
+          0.25,
+          -6.6
+        ],
+        "size": [
+          0.9,
+          0.5,
+          0.75
+        ]
+      },
+      {
+        "name": "ghe_don_3",
+        "center": [
+          6.6,
+          0.25,
+          -3.97
+        ],
+        "size": [
+          0.75,
+          0.5,
+          0.9
+        ]
+      },
+      {
+        "name": "ghe_don_4",
+        "center": [
+          8.0,
+          0.25,
+          -8.2
+        ],
+        "size": [
+          0.85,
+          0.5,
+          0.85
+        ]
+      },
+      {
+        "name": "ghe_don_5",
+        "center": [
+          8.2,
+          0.25,
+          -5.6
+        ],
+        "size": [
+          0.85,
+          0.5,
+          0.85
+        ]
+      },
+      {
+        "name": "ghe_don_6",
+        "center": [
+          8.6,
+          0.25,
+          -2.8
+        ],
+        "size": [
+          0.85,
+          0.5,
+          0.85
+        ]
+      }
+    ],
+    "_add_ly_do": "Hũ thủy tinh hạt lúa vàng (code đặt, interactables.json) — không cho đi xuyên. ghe_don_1..6: 6 ghế đôn lục giác trong sảnh (thay COL_cum_don, xem _remove_ly_do).",
+    "remove": [
+      "COL_cum_don"
+    ],
+    "_remove_ly_do": "COL_cum_don chặn kín cả cụm 6 ghế đôn 3,8 × 7,2 m (cao 0,5 m) → người chơi không tới gần được chiếc ví đặt trên ghế đôn (cách > 3 m) → thay bằng 6 hộp, mỗi ghế 1 hộp (đo bằng tia chiếu xuống mặt ghế, đỉnh 0,5 m)."
   }
 }

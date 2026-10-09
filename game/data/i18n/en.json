@@ -1,5 +1,5 @@
 {
-  "_note": "Every on-screen string, English. To add Vietnamese later: copy this file to vi.json with the same keys and translate. Proper names stay in Vietnamese: Tú, Thảo, Lan, Minh, Hà, Khang, F-Ville, Hòa Lạc.",
+  "_note": "Every on-screen string, English. To add Vietnamese later: copy this file to vi.json with the same keys and translate. Proper names stay in Vietnamese: Tú, Huyền, Lan, Minh, Hà, Khang, F-Ville, Hòa Lạc.",
   "app": {
     "title": "First Day at F-Ville",
     "loading": "Loading…",
@@ -53,7 +53,10 @@
     "checklist_done": "Checklist: {name} ✓",
     "saved": "Progress saved",
     "welcome_back": "Welcome back, {name}!",
-    "save_failed": "Couldn't save progress in this browser."
+    "save_failed": "Couldn't save progress in this browser.",
+    "grain_found": "Golden grain found! ({n}/{total})",
+    "photo_saved_checkin": "Check-in photo saved to My FPT",
+    "photo_saved_id": "Your photo is printed on your card"
   },
   "menu": {
     "title": "Paused",
@@ -83,9 +86,24 @@
     "ket_noi": "Connection"
   },
   "minigame": {
-    "placeholder": "This mini-game arrives in the next update.",
-    "finish": "Finish for now",
-    "cancel": "Not now"
+    "cancel": "Not now",
+    "skip": "Skip",
+    "try_again": "Not quite — try again!",
+    "setup": "Setup",
+    "pull": "Pull!",
+    "next": "Next",
+    "bucket_n": "Bucket {n} of {total}!",
+    "start_quiz": "Start the quiz",
+    "question_n": "Question {n} of {total}",
+    "correct": "Correct!",
+    "correct_plus": "Correct! +{n} Knowledge",
+    "pick_correct": "Pick the correct {field}:",
+    "oldest": "Oldest",
+    "newest": "Newest",
+    "check": "Check",
+    "take_photo": "Take photo",
+    "keep": "Keep",
+    "retake": "Retake"
   },
   "creator": {
     "title": "Create your intern",
@@ -109,7 +127,9 @@
     "values_locked": "Get this badge at the Cuder Statue.",
     "value_inactive": "Coming later today",
     "carry": "Carrying",
-    "stats_title": "Your day so far"
+    "stats_title": "Your day so far",
+    "grains": "Golden grains: {n} / {total}",
+    "grains_hint": "Hidden around F-Ville. The glass jar in the Rice Grain Room keeps count."
   },
   "cutscene": {
     "skip": "Skip ›",

@@ -165,8 +165,8 @@ function clearChars() {
   chars = [];
 }
 
-async function addChar(pos, yawDeg, role, label) {
-  const id = cfg.roles[role]?.model ?? Object.keys(cfg.models)[0];
+async function addChar(pos, yawDeg, role, label, modelId = null) {
+  const id = modelId ?? cfg.roles[role]?.model ?? Object.keys(cfg.models)[0];
   const g = await getModel(id);
   const obj = SkeletonUtils.clone(g.scene);
   obj.position.copy(pos);
@@ -188,10 +188,30 @@ async function addChar(pos, yawDeg, role, label) {
   return c;
 }
 
+// ?compare=prajith,huyen — đặt các model cạnh nhau trước điểm xuất hiện, quay mặt về camera (so tỉ lệ, logo áo)
+const COMPARE = (new URLSearchParams(location.search).get("compare") || "").split(",").filter(Boolean);
+async function placeCompare() {
+  let spawn = null;
+  root.traverse((o) => { if (!spawn && /^SPAWN_.*_start$/.test(o.name)) spawn = o; });
+  const base = spawn ? spawn.getWorldPosition(new THREE.Vector3()) : new THREE.Vector3();
+  const yaw = spawn?.userData?.yaw_deg ?? 0, r = THREE.MathUtils.degToRad(yaw);
+  const fwd = new THREE.Vector3(-Math.sin(r), 0, -Math.cos(r));         // hướng nhìn của điểm xuất hiện
+  const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0));
+  const center = base.clone().addScaledVector(fwd, 2.5);
+  const ids = COMPARE.filter((id) => cfg.models[id]);
+  for (const [i, id] of ids.entries()) {
+    const pos = center.clone().addScaledVector(right, (i - (ids.length - 1) / 2) * 0.85);
+    await addChar(pos, yaw + 180, null, `${id} · ${cfg.models[id].height_m} m`, id);
+  }
+  controls.target.copy(center).add(new THREE.Vector3(0, 0.95, 0));
+  camera.position.copy(center).addScaledVector(fwd, -3.0).add(new THREE.Vector3(0, 1.15, 0));
+}
+
 async function placeChars() {
   clearChars();
   if (!cfg || !root || !$("chars").checked) return;
   root.updateMatrixWorld(true);
+  if (COMPARE.length) return placeCompare();
   const npcs = [];
   root.traverse((o) => { if (o.name.startsWith("NPC_")) npcs.push(o); });
   for (const n of npcs) {
@@ -289,6 +309,7 @@ window.__viewer = { get fps() { return fps; }, get info() { return renderer.info
   camera, controls, load, applyMaterials, addChar, placeChars, play,
   // vẽ ngay 1 khung (dùng khi khung trình duyệt bị ẩn: requestAnimationFrame dừng); dt = giây tua animation
   renderNow(dt = 0) { chars.forEach((c) => c.mixer.update(dt)); controls.update(); draw(); } };
+{ const z = new URLSearchParams(location.search).get("zone"); if (z) $("zone").value = z; }   // ?zone=zone_03_lobby
 loadConfig().then(load);
 tick();
 </script>
