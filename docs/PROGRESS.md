@@ -48,6 +48,24 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Kiểm tra bằng `__game` (Chromium headless): cả 4 zone, đặt người chơi sau cây / cạnh chậu cọ → so ảnh tắt/bật mờ
     cây; chơi trọn mạch zone 0 → 3 (11 nhiệm vụ, 7 mini-game, cảnh lên xe, lối zone 4 vẫn khóa) trên bản dev và bản
     build: 32 lần hộp thoại / mini-game / app mở đều ẩn dòng hướng dẫn; console chỉ còn dòng `[kiểm tra dữ liệu] OK`.
+- **Camera hội thoại (09/10/2026, trên `main`, chưa deploy `gh-pages`):** `game/src/player/talkcam.js`.
+  - Nói chuyện với NPC / Tú: câu đầu tiên của nhân vật → camera chuyển êm 0,4 s sang góc qua vai người chơi, nhìn vào
+    mặt người đối thoại: người đối thoại cao ~1/3 khung hình, mặt ở điểm 1/3 (trên, phía không có người chơi), chân nằm
+    trên hộp thoại. Đóng hội thoại → chuyển êm 0,4 s về camera chơi (yaw / pitch / khoảng cách như trước khi mở).
+  - Tin nhắn điện thoại (Ms. Nga đầu game) và lời dẫn narrator (biển xe, bản đồ tuyến…) giữ nguyên camera; hội thoại
+    đã chuyển camera thì câu narrator ở giữa không đổi lại.
+  - Camera nằm trên đường thẳng từ mặt người đối thoại qua điểm cạnh vai người chơi (0,6 m) → người chơi không che.
+    Không xuyên tường / quầy: lùi dọc đường đó, chạm `COL_` (BVH va chạm) thì dừng trước 0,2 m (thu gần lại); lúc
+    chuyển giữa chừng cũng kéo vào theo va chạm. Không thấp hơn tầm mắt người chơi.
+  - Chọn góc: 2 vai × 2 độ cao, chấm theo khoảng lùi được, mặt / ngực có bị bối cảnh che (lưới mesh hiển thị có BVH, dựng
+    lúc tải zone ~45 ms, trừ cây vì cây tự mờ — lúc nói chuyện `seeThrough` xét đường nhìn tới người đối thoại) và
+    Tú / NPC khác che không; chọn góc ~0,3 ms. Không góc nào thấy mặt → giữ camera chơi.
+  - Mini-game chụp ảnh giữa hội thoại (ảnh thẻ với Ms. Nga) dùng camera riêng; xong thì chuyển êm về camera hội thoại.
+  - Kiểm tra bằng `__game` (dev + bản build), ảnh trước/sau: Ms. Huyền (cửa xe zone 0, zone 1), Ms. Nga (quầy zone 3),
+    bác tài xe 1 (zone 0), Tú (mái chờ zone 0, kêu mất balo zone 1). Trước: Ms. Huyền bị người chơi che 3/3 điểm đo,
+    Ms. Nga 2/3. Sau: không điểm nào bị che, người đối thoại cao 0,35–0,36 khung (0,51–0,62 khi bị chắn phải thu gần),
+    mặt đúng điểm 1/3, camera không cắt `COL_`; đóng hội thoại camera về chỗ cũ (lệch ≤ 4 cm, hướng trùng). Chuyển
+    0,4 s = 24 khung ở 60 FPS, không giật. Chơi trọn zone 0 → 3 vẫn qua, console sạch. Xem trạng thái: `__game.talkCam`.
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
@@ -99,6 +117,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
 - Lối sang zone 4 đang khóa ("This way opens in the next update"). Còn 3 hạt lúa vàng dành cho zone 4–5.
 - nga: tay lún thân 4–6 cm ở talk, talk_2, nod, think, sit_down (cùng mức huyen, do dùng lại animation của prajith).
+- Bác tài zone_01 (`NPC_tai_xe`, vai `tai_xe`) đứng bên trong vỏ xe kín (`xe_bus_mesh_1`): từ bên ngoài không góc nào
+  thấy được bác (đã dò 84 vị trí camera quanh chỗ người chơi đứng nói chuyện) — camera chơi cũng không thấy. Camera
+  hội thoại giữ camera chơi cho cảnh này. Chờ quyết định cách sửa: dời vai `tai_xe` ra bậc cửa / vỉa hè bằng dữ liệu
+  (`data/characters.json`: `place: "near_node"` + offset, như bác tài zone 0) hoặc mở cửa / nội thất xe trong Blender.
 
 ## Đã quyết
 - 09/10/2026: **mọi nhân vật người thật đưa vào game đều đã đồng ý dùng hình, kể cả nhân vật thêm sau này** — không
@@ -116,7 +138,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Việc tiếp theo
 1. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
-   `data/scene_fixes.json` → `see_through`).
+   `data/scene_fixes.json` → `see_through`). Deploy camera hội thoại khi người dùng đồng ý; chỉnh khung hình bằng các
+   hằng số đầu `game/src/player/talkcam.js` (`FRAME_FRAC`, `FACE_AT`, `SHOULDER`, `BLEND_S`).
 2. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
 3. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA; lựa chọn nhắn Ms. Nga qua app — câu dự kiến trong
    `docs/dialogue_nga.md`), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), màn tổng kết, danh hiệu,

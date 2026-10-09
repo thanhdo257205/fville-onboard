@@ -78,6 +78,7 @@ export class DialogueRunner {
         if (n.effects) this.hooks.effects(n.effects);
         // diễn: NPC đang nói thì talk (+ anim 1 lần), người chơi nói thì NPC nghe
         if (npc) { if (n.speaker === "player") npc.listen(); else if (n.speaker !== "narrator") npc.speak(n.anim, n.speaker); }
+        this.hooks.line?.(n);   // vd camera hội thoại (Game.onLine)
         const who = this.hooks.speakerInfo(n.speaker);
         const text = draftMark(d.draft || n.draft) + tx(n.text, v);
         const choices = n.choices?.filter((ch) => this.state.check(ch.if)).map((ch) => tx(ch.text, v));

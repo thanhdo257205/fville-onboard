@@ -9,6 +9,7 @@
 //   __game.benchmark(frames)  → đo thời gian khung hình thật (ms, FPS tương đương), không phụ thuộc vsync
 //   __game.collisionScan()    → quét lỗi va chạm quanh mọi SPAWN_ của zone hiện tại
 //   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
+//   __game.talkCam            → camera hội thoại (đang bật, vai trái/phải, điểm chọn vai, người đối thoại)
 import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
@@ -71,6 +72,7 @@ export function installDebug(game, loop) {
     get triggers() { return game.zone.triggers.map((t) => ({ name: t.name, inside: t.inside, cfg: game.triggerCfg(t.name) || null })); },
     get info() { const i = game.renderer.info; return { triangles: i.triangles, calls: i.calls }; },
     get seeThrough() { return game.seeThrough.info(); },
+    get talkCam() { const c = game.talkCam; return { active: c.active, goal: c.goal, t: +c.t.toFixed(2), side: c.side, lift: c.lift, pick: c.info, partner: c.partner?.role ?? (c.partner ? "tu" : null) }; },
     get _game() { return game; },          // truy cập nội bộ khi cần soi sâu
     nodes(prefix = "") { return [...game.zone.nodes.keys()].filter((n) => n.startsWith(prefix)); },
     // COL_ nào chứa điểm p (tìm vật cản khi bị kẹt)

@@ -3,9 +3,11 @@
 // tương tác (interactables.json) → hội thoại (dialogues.json) / mini-game / nhặt vật; hiệu ứng → tiến trình (lưu trình duyệt).
 import * as THREE from "three";
 import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes } from "../world/zone.js";
+import { buildCollider } from "../world/collision.js";
 import { createLights } from "../render/renderer.js";
 import { SeeThrough } from "../render/seethrough.js";
 import { ThirdPersonCamera } from "../player/camera.js";
+import { TalkCamera } from "../player/talkcam.js";
 import { Player } from "../player/player.js";
 import { Npc } from "../characters/npc.js";
 import { Follower } from "../characters/follower.js";
@@ -35,11 +37,14 @@ export class Game {
       speakerInfo: (role) => this.speakerInfo(role),
       effects: (e) => this.applyEffects(e),
       minigame: (id) => this.runMinigame(id),
+      line: (n) => this.onLine(n),
     } });
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x9cc4e8);
     this.camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 600);
     this.cam = new ThirdPersonCamera(this.camera);
+    this.talkCam = new TalkCamera(this.camera);   // camera qua vai khi nói chuyện với NPC / Tú
+    this.talkPartner = null;                     // Npc | Follower đang nói chuyện (runDialogue)
     this.lights = createLights(this.scene);
     this.seeThrough = new SeeThrough(data.sceneFixes?.see_through);   // cây che người chơi → mờ dần
     this.zone = null;
@@ -81,11 +86,16 @@ export class Game {
     if (this.runner.active) this.runner.abort();
     if (this.ui.minigame.open) this.ui.minigame.close(false);
     if (this.ui.app.open) this.ui.app.hide();
+    this.talkCam.reset();
     if (fade) await hud.fade(true);
     if (!silent) hud.loading(t("app.loading_zone", { zone: t(`zones.${zoneId}.title`) }));
     const zone = await loadZone(zoneId, file ?? this.zoneCfg(zoneId).file, this.state.tier, this.data.collision?.[zoneId]);
     applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
+    // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
+    const plantRe = new RegExp(this.seeThrough.cfg.meshes), blockers = [];
+    zone.root.traverse((o) => { if (o.isMesh && o.visible && !o.name.startsWith("COL_") && !plantRe.test(o.name) && !plantRe.test(o.parent?.name || "")) blockers.push(o); });
+    zone.view = buildCollider(blockers);
     // dọn zone cũ
     if (this.zone) { this.scene.remove(this.zone.root, this.zone.collider); disposeZone(this.zone); }
     for (const n of this.npcs) n.character.dispose();
@@ -350,6 +360,7 @@ export class Game {
     p.velocity.set(0, 0, 0);
     const speakers = new Set(Object.values(this.content.dialogues.get(id).nodes).map((n) => n.speaker));
     const tu = this.follower && (actor === "tu" || speakers.has("tu")) ? this.follower : null;
+    this.talkPartner = npc || tu;
     const face = npc?.character.root.position ?? tu?.position;
     if (face) this.faceTarget = face.clone();
     if (tu) tu.speak(null);
@@ -361,11 +372,23 @@ export class Game {
       };
       await this.runner.run(id, { npc: npc || tu ? cast : null, vars });
     } finally {
+      this.talkPartner = null;
+      this.talkCam.release();
       this.faceTarget = null;
       if (npc) npc.release();
       if (tu) tu.endTalk();
       this.setMode("play");
     }
+  }
+
+  // câu của người đối thoại / người chơi → camera qua vai (tới hết hội thoại); lời dẫn (narrator) và tin nhắn điện thoại
+  // không đổi camera (vd tin nhắn Ms. Nga đầu game, đọc biển xe)
+  onLine(n) {
+    const partner = this.talkPartner;
+    if (!partner || this.mode !== "dialogue" || n.speaker === "narrator" || n.style === "phone") return;
+    const obstacles = this.npcs.filter((x) => x !== partner).map((x) => x.capsule());
+    if (this.follower && this.follower !== partner) obstacles.push(this.follower.capsule());
+    this.talkCam.engage(partner, { player: this.player, collider: this.zone.collider, obstacles: obstacles.filter(Boolean), view: this.zone.view });
   }
 
   async runMinigame(id) {
@@ -406,9 +429,13 @@ export class Game {
     }
     for (const n of this.npcs) n.update(dt);
     this.follower?.update(dt, this.player, this.zone.collider, { view: this.camera.position, obstacles: [...npcCaps, this.player.capsule()] });
-    if (this.cameraOverride) this.cameraOverride(dt);
-    else this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider);
-    this.seeThrough.update(dt, this.camera.position, this.player.position);
+    if (this.cameraOverride) { this.cameraOverride(dt); this.talkCam.overridden(); }
+    else {
+      this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider);
+      this.talkCam.apply(dt, this.cam.target, { player: this.player, collider: this.zone.collider });
+    }
+    // cây che: lúc nói chuyện thì xét đường nhìn tới người đối thoại
+    this.seeThrough.update(dt, this.camera.position, this.talkCam.active ? this.talkCam.partner.character.root.position : this.player.position);
     if (this.mode === "play") {
       this.checkTriggers();
       hud.prompt(this.interaction.update(this.player.position));

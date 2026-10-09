@@ -100,4 +100,5 @@ export function disposeZone(zone) {
     for (const m of [o.material, o.userData.srcMaterial]) if (m) { m.map?.dispose(); m.aoMap?.dispose(); m.dispose(); }
   });
   zone.collider.geometry.dispose();
+  zone.view?.geometry.dispose();
 }
