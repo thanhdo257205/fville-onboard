@@ -62,6 +62,9 @@ export class Net {
     if (!z) return;
     const p = this.profile();
     this.client.send({ t: "join", ...p, zone: z });
+    // danh sách người cùng zone máy chủ trả về là của zone này → update() không coi là "vừa đổi zone" mà xoá mất (xảy ra
+    // khi tin "zone" về trước khung đầu tiên, vd tab đang ẩn lúc kết nối)
+    this.zoneSeen = z;
     this.profileSent = JSON.stringify(p);
     this.sent = null;           // gửi lại vị trí ngay
   }

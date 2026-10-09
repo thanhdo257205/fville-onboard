@@ -1,6 +1,6 @@
 // Người chơi khác (chơi nhiều người mức "thấy nhau"): model + bộ đồ họ gửi lên (model không có trong characters.json →
 // dùng model của người chơi), bảng tên, animation theo state (idle / walk / run / sit), emote, bong bóng câu chat.
-// Vị trí nội suy giữa các bản tin, vẽ trễ interp_ms (≈120 ms) cho mượt. Chỉ hiện max_visible người gần nhất cùng zone;
+// Vị trí nội suy giữa các bản tin, vẽ trễ interp_ms (260 ms, > khoảng cách 2 bản tin 200 ms) cho mượt. Chỉ hiện max_visible người gần nhất cùng zone;
 // không va chạm, không nằm trong danh sách NPC → dấu "!", gợi ý E, camera hội thoại không bị ảnh hưởng. Đang mini-game: ẩn
 // hết (vd ảnh check-in); đang hội thoại / cảnh chuyển: ẩn người đứng sát người chơi, người đối thoại hoặc camera.
 import * as THREE from "three";
@@ -188,7 +188,7 @@ export class RemotePlayers {
     this.tagTimer -= dt;
     const checkTags = this.tagTimer <= 0;
     if (checkTags) this.tagTimer = 0.2;
-    const delay = this.cfg.interp_ms ?? 120;
+    const delay = this.cfg.interp_ms ?? 260;
     for (const r of this.list.values()) {
       if (r.bubbleLeft > 0) { r.bubbleLeft -= dt; if (r.bubbleLeft <= 0 && r.bubble) r.bubble.visible = false; }
       const s = r.sample(delay);

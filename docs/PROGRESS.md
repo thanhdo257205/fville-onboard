@@ -336,6 +336,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     (`net_bots.js` nay xen kẽ intern_nam / intern_nu, áo xanh / áo cam): đúng model, đúng áo, console sạch.
   - Texture bộ đồ tải lỗi → cảnh báo, nhân vật tạm mặc texture trong GLB (trước đây lỗi này chặn cả lúc mở game).
   - Ảnh: `renders/characters/<id>_trang_phuc.png` (chính diện 2 bộ, mặt nạ trước/sau, cận ngực logo, cận mặt).
+- **Chơi nhiều người đã lên mạng (10/10/2026):** máy chủ `https://fville-net.fville-onboard.workers.dev` (Cloudflare
+  Worker + Durable Object, gói Free), `data/net.json` → `url` = `wss://fville-net.fville-onboard.workers.dev/ws`. Kiểm tra
+  `/` + `/status`, hibernation (đọc lại attachment sau khi ngủ), 8 bước với 2 cửa sổ bản build; FPS 10 bot trên GPU thật:
+  72 → 66 FPS (1280 × 760, Detail 0). Sửa 2 lỗi client: danh sách người cùng zone bị xoá nếu về trước khung đầu tiên;
+  `interp_ms` 120 → 260 (người khác đi giật). Chi tiết: `docs/multiplayer.md` → "Đã lên mạng".
 - **Mũ lưỡi trai cam — phụ kiện tủ đồ (mở khoá khi xong game; 10/10/2026, `scripts/blender/accessories/build_cap.py`):**
   - Mô hình Meshy 307.500 tam giác (13,5 MB) → `assets/accessories/cap/cap.glb` **884 tam giác, 17,4 KB** (texture WebP 512
     nhúng, meshopt), validate 0 lỗi. Không Decimate: dựng lại lưới thấp bám bề mặt Meshy bằng tia chiếu — vòm 2 lớp

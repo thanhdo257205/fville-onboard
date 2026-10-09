@@ -38,7 +38,8 @@ sẵn. Không có chat tự do.
     `prajith`) thì luôn mặc áo cam của GLB.
   - Có bảng tên viền xanh ngọc để phân biệt với NPC viền cam.
   - Animation idle / walk / run / sit lấy theo vị trí và trạng thái họ gửi.
-  - Vẽ trễ 120 ms để nội suy cho mượt. Đứng yên lâu rồi mới đi thì không trượt chậm; cách nhau hơn 6 m thì dịch chuyển luôn.
+  - Vẽ trễ 260 ms để nội suy cho mượt (phải lớn hơn khoảng cách 2 bản tin 200 ms; 120 ms thì người khác đi giật, xem
+    "Đã lên mạng"). Đứng yên lâu rồi mới đi thì không trượt chậm; cách nhau hơn 6 m thì dịch chuyển luôn.
   - Chỉ hiện 10 người gần nhất cùng zone, không va chạm với ai.
   - Ngoài khung nhìn thì không vẽ. Viền nét chỉ vẽ cho người trong vòng 12 m.
 - **Không ảnh hưởng nhiệm vụ:**
@@ -186,6 +187,44 @@ rồi deploy lại bản web.
 
 **Tắt nhanh khi cần:** để `"url": ""` trong `data/net.json` rồi `python scripts/deploy_site.py`, game quay về chơi một
 mình. Muốn dừng hẳn máy chủ: `npx wrangler delete` trong `server/`, hoặc tắt route `workers.dev` trên dashboard.
+
+## Đã lên mạng (10/10/2026)
+
+- Máy chủ: **https://fville-net.fville-onboard.workers.dev** (WebSocket `wss://fville-net.fville-onboard.workers.dev/ws`, đã
+  điền vào `data/net.json` → `url`). Deploy bằng `npx wrangler deploy` trong `server/` (tài khoản Cloudflare của người dùng
+  đăng nhập bằng `wrangler login`; token nằm ngoài repo, trong thư mục cấu hình của wrangler trên máy). Lần deploy đầu
+  Cloudflare trả 504 khi đọc subdomain — deploy lại là được.
+- `curl …/` → `F-Ville net: OK`; `curl …/status` → `{"online":0,"connections":0,"max":60,"zones":{}}`.
+- **Hibernation:** 2 client vào zone_00 rồi chỉ ping 80 giây (Durable Object ngủ, ping do runtime tự trả lời). Client thứ
+  ba vào sau vẫn nhận đúng 2 người kèm tên và vị trí ban đầu (đọc lại attachment khi thức dậy); 2 client cũ không bị ngắt
+  nhầm sau khi Durable Object thức. Phòng trống vài phút rồi vào lại: bình thường.
+- **8 bước kiểm tra** (bản build, 2 cửa sổ trên cùng máy: `localhost:8767` và `127.0.0.1:8767` — 2 origin nên 2 bản lưu,
+  tên khác nhau, như 1 cửa sổ thường + 1 ẩn danh):
+  1. "2 online · 2 in this zone", thấy người kia đúng model theo giới tính (Minh: intern_nam, Lan: intern_nu), đúng bộ đồ,
+     bảng tên. ✓
+  2. Đi / chạy (người chơi giả "Walker" gửi 5 tin/giây như game): **lỗi đã sửa** — `interp_ms` 120 < khoảng cách 2 bản tin
+     200 ms → người khác đứng rồi nhảy, tốc độ ước 0,57 m/s thay vì 1,4, animation đi chỉ trộn ~40%. Nay 260 ms: 1,34 /
+     4,28 m/s (thật 1,4 / 4,4), animation đi / chạy 96%. ✓
+  3. Wave và "Hi!": bên kia thấy vẫy tay và bong bóng. ✓
+  4. Một bên sang zone 1: bên kia hết thấy, "· 1 in this zone". ✓
+  5. Show other players Off / On: ẩn / hiện lại (vẫn kết nối). ✓
+  6. Rớt mạng (giả lập bằng sự kiện `offline` → client đóng socket): game vẫn chơi, góc online ẩn, tự vào lại sau 2,3 s và
+     thấy lại người kia. Tắt Wi-Fi thật chưa thử (máy làm việc). ✓
+  7. `/status` khớp số cửa sổ đang mở. ✓
+  8. Số request trên Cloudflare dashboard: người dùng tự xem (Workers & Pages → `fville-net` → Metrics).
+  **Lỗi đã sửa ở client:** tin "zone" (danh sách người cùng zone) về trước khung hình đầu tiên (vd tab đang ẩn lúc kết nối)
+  thì `update()` coi là vừa đổi zone và xoá mất danh sách → người đứng yên không hiện. `sendJoin` nay ghi nhận zone.
+- **FPS với 10 bot trên GPU thật** (máy làm việc: AMD Radeon tích hợp, Chrome D3D11; bản build 1280 × 760, Detail 0 = độ
+  phân giải đầy đủ + viền nét; `__game.benchmark(180)` = thời gian vẽ thật có `gl.finish`, quay camera 1 vòng):
+
+  | Trường hợp | ms / khung | FPS |
+  | --- | --- | --- |
+  | Chỉ 1 người khác | 13,7–13,8 | 72–73 |
+  | 10 bot + 1 người (hiện 10) | 15,0–15,1 | 66–67 (−9 %) |
+  | 10 bot, Show other players: Off | 13,5–13,9 | 72–74 |
+
+  Tải máy chủ thật với 10 bot (100 s, 60 % thời gian đi): máy chủ nhận 26,7 tin/giây (2,67 / người), phát 241 tin/giây;
+  1 giờ chơi 10 người ≈ 4.800 request → hạn 100.000 / ngày đủ ~20,7 giờ; xấu nhất (cả 10 người đi liên tục) ~11 giờ.
 
 ## Giới hạn đã biết
 

@@ -28,7 +28,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`) |
 | `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
 | `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `debug.js` |
-| `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + 1 Durable Object (`wrangler.toml`, `src/index.js`); bật bằng `data/net.json` → `url` (trống = tắt). Xem `docs/multiplayer.md` |
+| `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + 1 Durable Object (`wrangler.toml`, `src/index.js`); bật bằng `data/net.json` → `url` (trống = tắt). Đã lên mạng: `https://fville-net.fville-onboard.workers.dev` (`/status`). Xem `docs/multiplayer.md` |
 | `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`; id vai cũng được: `compare=thao,le_tan,prajith` → kèm tint, tên vai) |
 | `references/` | Chỉ có ghi chú `.md` và bảng màu trên repo; video, khung hình gốc chỉ có trên máy làm việc |
 | `dist/` | **git worktree của nhánh gh-pages** (không thuộc nhánh main) |
