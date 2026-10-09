@@ -235,7 +235,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   zone 4: người lạ đứng gần đường thẳng từ đầu hành lang tới dấu "!" của cửa (4,8; −1), né sang bên 3 s là qua. Thử riêng 2 nhánh còn lại (cho người lạ vào, Tú quay lại lễ tân), mini-game (gợi ý 8 s,
   sáng thẻ đúng, mục tiêu riêng), bị chặn khi vào cửa FSA chưa làm Lộ trình học, sang zone 5. Console sạch.
 
-### 4 Act, thành tựu cuối, sửa quiz (09/10/2026)
+### 4 Act, thành tựu cuối, sửa quiz (09/10/2026, `main` 2c6c88d, đã deploy `gh-pages` 9494993)
 - **4 Act** (`data/acts.json`, `game/src/game/acts.js`; GDD mục Cấu trúc 4 Act): ACT 1 ENTER THE VILLAGE (Bus — gồm điểm
   đón zone 0 + bến xe zone 1 và cài app, F-Ville Gate, Village Well, Cuder Statue), ACT 2 BECOMING A FSOFTER (Reception,
   Rice Grain Room, Card Gate), ACT 3 JOINING FSA (FSA Room, Meet Prajith, Meet Manager), ACT 4 JOINING THE TEAM (Say
