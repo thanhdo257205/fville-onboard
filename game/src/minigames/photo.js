@@ -63,6 +63,8 @@ export const photo = {
     // Tú đứng cạnh (check-in), cùng tư thế
     const tu = g.follower;
     const tuJoins = kind === "checkin" && tu && !tu.waiting && tu.character.root.visible;
+    // vừa nói lời giới thiệu (checkin_intro): thôi "đang nói" để Tú đứng theo dáng chụp, không quay sang nhìn người chơi
+    if (tuJoins) tu.talking = false;
     const side = new THREE.Vector3(dir.z, 0, -dir.x);
     // ai đứng chắn giữa camera và người chơi thì ẩn tạm (trả lại khi xong)
     const hidden = [];
@@ -126,6 +128,8 @@ export const photo = {
       }
     };
     setPose(0);
+    // không có lựa chọn sai → chỉ có gợi ý khi đứng yên: chưa chụp → chọn dáng + chụp; đã chụp → giữ hoặc chụp lại
+    ctx.idleHint = () => tx(shot ? d.idle.keep : d.idle.shoot);
     ctx.onKey = (e) => {
       const n = /^(Digit|Numpad)[1-3]$/.test(e.code) ? +e.code.slice(-1) - 1 : -1;
       if (!shot && n >= 0 && n < poses.length) { setPose(n); return true; }

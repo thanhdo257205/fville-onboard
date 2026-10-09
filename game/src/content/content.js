@@ -1,10 +1,11 @@
-// Nội dung game từ data/*.json (GDD Phụ lục): dialogues, quests, interactables, quiz, rewards, values, cutscenes.
+// Nội dung game từ data/*.json (GDD Phụ lục): dialogues, quests, interactables, quiz, rewards, values, cutscenes,
+// guidance (hướng dẫn người chơi mới: gợi ý H, câu nhắc khi đứng yên).
 // Chữ hiển thị trong nội dung là object theo mã ngôn ngữ {"en": "..."} → tx() chọn theo ngôn ngữ hiện tại.
 // Kiểm tra khi tải: mọi node mà JSON nhắc tới phải có thật trong GLB của zone đó; tham chiếu nội bộ phải khớp.
 import { loadJSON, url } from "../core/assets.js";
 import { lang, t } from "../i18n.js";
 
-const FILES = ["dialogues", "quests", "interactables", "quiz", "rewards", "values", "cutscenes"];
+const FILES = ["dialogues", "quests", "interactables", "quiz", "rewards", "values", "cutscenes", "guidance"];
 
 export async function loadContent() {
   const raw = Object.fromEntries(await Promise.all(FILES.map(async (f) => [f, await loadJSON(url(`data/${f}.json`))])));
@@ -29,6 +30,7 @@ export async function loadContent() {
     valueById: new Map(raw.values.values.map((v) => [v.id, v])),
     badge: raw.values.badge,
     cutscenes: raw.cutscenes.cutscenes,
+    guidance: raw.guidance,
   };
 }
 
@@ -52,6 +54,7 @@ export function nodeRefs(c) {
     for (const k of ["node", "area", "anchor"]) add(it.zone, it[k], `interactables.json · ${it.node || it.object || it.actor} · ${k}`);
   }
   for (const q of c.quests) add(q.zone, q.target, `quests.json · quest ${q.id} · target`);
+  for (const [zone, ex] of Object.entries(c.guidance?.zone_exits || {})) add(zone, ex.target, `guidance.json · zone_exits.${zone} · target`);
   for (const tr of c.triggers) {
     add(tr.zone, tr.node, `quests.json · trigger ${tr.zone}/${tr.node}`);
     if (tr.to_zone) add(tr.to_zone, tr.to_spawn, `quests.json · trigger ${tr.zone}/${tr.node} · to_spawn`);
@@ -135,6 +138,19 @@ export function validateLinks(c) {
     checkEffects(cs.effects, `cutscenes.json · ${id} · effects`);
   }
   for (const q of c.quests) if (q.checklist && !c.checklist.some((x) => x.id === q.checklist)) errs.push(`quest ${q.id}: không có mục checklist ${q.checklist}`);
+  // hướng dẫn: mỗi quest bắt buộc có gợi ý (help) + 2 câu nhắc của Tú + 2 tin nhắn điện thoại; mọi quest có help
+  const gd = c.guidance || {};
+  for (const id of Object.keys(gd.goals || {})) if (!c.questById.has(id)) errs.push(`guidance.json · goals.${id}: không có quest ${id}`);
+  for (const q of c.quests) {
+    const g = gd.goals?.[q.id], where = `guidance.json · goals.${q.id}`;
+    if (!g?.help) errs.push(`${where}: thiếu help`);
+    if (q.required && (g?.tu?.length ?? 0) < 2) errs.push(`${where}: cần 2 câu nhắc của Tú (tu)`);
+    if (q.required && (g?.phone?.length ?? 0) < 2) errs.push(`${where}: cần 2 tin nhắn điện thoại (phone)`);
+  }
+  for (const zone of c.zoneOrder || []) {
+    if (!c.quests.some((q) => q.zone === zone)) continue;
+    if (!gd.zone_exits?.[zone]?.help) errs.push(`guidance.json · zone_exits.${zone}: thiếu help (zone đã xong hết việc)`);
+  }
   if (!c.rewards.has(c.badge.reward)) errs.push(`values.json: badge.reward ${c.badge.reward} không có`);
   return errs;
 }

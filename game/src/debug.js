@@ -10,6 +10,7 @@
 //   __game.collisionScan()    → quét lỗi va chạm quanh mọi SPAWN_ của zone hiện tại
 //   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
 //   __game.talkCam            → camera hội thoại (đang bật, vai trái/phải, điểm chọn vai, người đối thoại)
+//   __game.guide              → hướng dẫn: mục tiêu, vị trí dấu "!", mũi tên, giờ đứng yên, các lần nhắc; help() = phím H
 import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
@@ -37,6 +38,8 @@ export function installDebug(game, loop) {
     get minigame() { return game.ui.minigame.open ? game.ui.minigame.id : null; },
     get toasts() { return { now: document.getElementById("toast").textContent, queued: [...game.ui.hudQueue()] }; },
     get objective() { return document.getElementById("objective").textContent; },
+    get guide() { const el = document.getElementById("phone-msg"); return { ...game.guide.info(), phone: el?.classList.contains("show") ? el.textContent : null }; },
+    help() { game.help(); return { card: document.getElementById("helpcard")?.classList.contains("show") ? document.getElementById("helpcard").textContent : null, app: game.ui.app.helpOpen }; },
     // cảnh chuyển đang chạy / vừa chạy: nhịp hiện tại, thời gian (giây game), mốc từng nhịp
     get cutscene() { const c = game.cutscene || game.lastCutscene; return c ? { id: c.id, running: !!game.cutscene, stage: c.stage, t: +c.t.toFixed(2), skipped: c.skipped, log: c.log } : null; },
     playCutscene(id) { game.playCutscene(id); return api.cutscene; },

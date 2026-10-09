@@ -4,7 +4,7 @@
     {
       "id": "hr_message", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! It's Nga from Recruitment. Your shuttle today is Bus No. 2 to Hòa Lạc — pickup at 06:45 at this stop. See you at F-Ville!" }, "next": "n2" },
+        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! It's Nga from Recruitment. Your shuttle today is Bus No. 2 to Hòa Lạc — pickup at 06:45 at this stop. Your intern code for the My FPT app: FV-2026. See you at F-Ville!" }, "next": "n2" },
         "n2": { "speaker": "narrator", "text": { "en": "Find Bus No. 2 before 06:45." }, "effects": { "flags": ["hr_message_read"] }, "next": null }
       }
     },
@@ -114,11 +114,12 @@
         "n1": { "speaker": "thao", "anim": "wave", "text": { "en": "Here we are, {player}! First things first: let's get the My FPT app on your phone." }, "next": "n2" },
         "n2": { "speaker": "thao", "text": { "en": "It holds your checklist for today, your items and the badges you'll earn." },
           "choices": [
-            { "text": { "en": "Let's install it!" }, "next": "install" },
+            { "text": { "en": "Let's install it!" }, "next": "order" },
             { "text": { "en": "Badges? What kind of badges?" }, "effects": { "ket_noi": 2 }, "next": "n3" }
           ] },
         "n3": { "speaker": "thao", "anim": "point", "text": { "en": "You'll find out at the Cuder Statue. Some of them you earn just by being nice to people." }, "next": "n4" },
-        "n4": { "speaker": "thao", "text": { "en": "Okay, phone out!" }, "next": "install" },
+        "n4": { "speaker": "thao", "text": { "en": "Okay, phone out!" }, "next": "order" },
+        "order": { "speaker": "thao", "anim": "point", "text": { "en": "Three steps, in this order: download My FPT, log in with the intern code from Ms. Nga's message, then turn on notifications." }, "next": "install" },
         "install": { "action": "minigame:install_app", "next": "done" },
         "done": { "speaker": "thao", "anim": "nod", "text": { "en": "All set! Head straight to the gate. I'll go up to the office first — message me in the app if you need anything." }, "next": null },
         "after": { "speaker": "thao", "text": { "en": "Go on through the gate. See you upstairs!" }, "next": null }
@@ -154,6 +155,38 @@
       }
     },
     {
+      "id": "checkin_intro", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["checkin_intro_heard"] }, "next": "go" }], "next": "n1" },
+        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Our first photo at F-Ville! Pick a pose, then take the shot — and yes, I'm jumping in too." }, "effects": { "flags": ["checkin_intro_heard"] }, "next": "go" },
+        "go": { "action": "minigame:checkin_photo", "next": null }
+      }
+    },
+    {
+      "id": "well_intro", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["well_intro_heard"] }, "next": "go" }], "next": "n1" },
+        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "A real village well! Pull the rope the moment the marker is in the green zone. Three buckets — each one comes with a little story." }, "effects": { "flags": ["well_intro_heard"] }, "next": "go" },
+        "go": { "action": "minigame:well", "next": null }
+      }
+    },
+    {
+      "id": "cuder_intro", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["cuder_intro_heard"] }, "next": "go" }], "next": "n1" },
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "There's a story about the statue here. Let's read it first, then answer three questions. A wrong answer just gets a hint — no stress!" }, "effects": { "flags": ["cuder_intro_heard"] }, "next": "go" },
+        "go": { "action": "minigame:cuder_quiz", "next": null }
+      }
+    },
+    {
+      "id": "timeline_intro", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["timeline_intro_heard"] }, "next": "go" }], "next": "n1" },
+        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "These cards are FPT milestones. Let's put them in order — oldest at the top — then press Check." }, "effects": { "flags": ["timeline_intro_heard"] }, "next": "go" },
+        "go": { "action": "minigame:timeline", "next": null }
+      }
+    },
+    {
       "id": "tu_remind_zone2", "start": "n1",
       "nodes": {
         "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Hold on, we're not done here yet: {missing}." }, "next": null }
@@ -180,9 +213,9 @@
           ] },
         "n1c": { "speaker": "le_tan", "anim": "nod", "text": { "en": "That's Huyền — she never loses an intern. Oh, and look: orange suits you. We match today!" }, "next": "n2" },
         "n1d": { "speaker": "le_tan", "text": { "en": "Ha! The number on the windshield is the one to trust. Anyway, you made it — and orange suits you. We match today!" }, "next": "n2" },
-        "n2": { "speaker": "le_tan", "text": { "en": "Now, the paperwork. Could you check the details on this form for me? If anything's wrong, just fix it." }, "next": "form" },
+        "n2": { "speaker": "le_tan", "text": { "en": "Now, the paperwork. One detail on this form got mixed up — can you find that line, then pick the right value for it?" }, "next": "form" },
         "form": { "action": "minigame:profile_check", "next": "n3" },
-        "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card. Big smile — you'll be wearing this one every day!" }, "next": "photo" },
+        "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card: pick an expression, then take the shot. Big smile — you'll be wearing this one every day!" }, "next": "photo" },
         "photo": { "action": "minigame:id_photo", "next": "n4" },
         "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. From our first call to your first day — I'm so glad you're here!" },
           "effects": { "reward": ["the_nhan_vien", "welcome_kit"], "hieu_biet": 5, "quest": "z3_card" }, "next": null },

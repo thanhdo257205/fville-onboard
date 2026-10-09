@@ -1,0 +1,166 @@
+{
+  "_ghi_chu": "Hướng dẫn người chơi mới (game/src/game/guide.js): lúc nào cũng biết 'giờ làm gì'. Mục tiêu hiện tại = quest bắt buộc đầu tiên chưa xong của zone (quests.json, có 'target' = node NPC_/INT_/TRIGGER_, 'tu' hoặc vật do code đặt); zone đã xong hết → zone_exits.<zone>. Dấu '!' nổi trên target, ngoài khung nhìn → mũi tên ở mép màn hình (tắt được trong menu Esc). goals.<id>: help = gợi ý khi bấm H / nút Help trong app My FPT; tu = 2 câu bong bóng của Tú khi người chơi đứng yên (lần nhắc 1, 2); phone = 2 tin nhắn điện thoại khi không có Tú đi cùng (người gửi theo settings.phone_from). {player} = tên người chơi. Mục tiêu phụ (không bắt buộc) chỉ dùng help (bấm H khi đang nhận việc, vd tìm balo cho Tú).",
+  "settings": {
+    "idle_s": 30,
+    "repeat_s": 45,
+    "max_nudges": 2,
+    "bubble_s": 5,
+    "phone_s": 7,
+    "help_s": 8,
+    "marker_above_head_m": 0.8,
+    "marker_above_object_m": 0.6,
+    "marker_above_trigger_m": 0.3,
+    "phone_from": { "zone_00": "thao", "zone_01": "thao", "zone_02": "thao", "zone_03": "le_tan", "zone_04": "le_tan" },
+    "_ly_do": "idle_s: không tiến triển nhiệm vụ bao lâu (giây, chỉ tính lúc đang đi lại — không tính hội thoại / mini-game / app / menu / cảnh chuyển) thì nhắc lần 1; repeat_s: lần 2 sau bao lâu nữa; max_nudges: mỗi mục tiêu nhắc tối đa bấy nhiêu lần. phone_from: zone 0–2 Ms. Huyền (vai thao), zone 3–4 Ms. Nga (vai le_tan)."
+  },
+  "goals": {
+    "z0_find_bus": {
+      "help": { "en": "Ms. Nga's message says Bus No. 2. Walk along the buses and read the big number on each windshield — press E near a sign." },
+      "tu": [
+        { "en": "Bus No. 2... let's check the numbers on the windshields!" },
+        { "en": "Look for the big amber \"2\" on a windshield!" }
+      ],
+      "phone": [
+        { "en": "Hi {player}, it's Huyền from FPT! I'm waiting by Bus No. 2 — look for the big amber \"2\" on the windshield." },
+        { "en": "Huyền again: Bus No. 2 is the middle one of the three buses. Read the windshield signs to be sure!" }
+      ]
+    },
+    "z0_meet_tu": {
+      "help": { "en": "Another new intern is waiting at the bus shelter. Walk up and press E to say hi — first days are easier together." }
+    },
+    "z0_meet_thao": {
+      "help": { "en": "Ms. Huyền from FPT is waiting at the door of Bus No. 2. Walk up to her and press E to say hello." },
+      "tu": [
+        { "en": "That lady at the bus door is wearing FPT orange — let's say hi!" },
+        { "en": "Let's go talk to Ms. Huyền at the door of Bus No. 2." }
+      ],
+      "phone": [
+        { "en": "I'm right at the door of Bus No. 2 — come say hello!" },
+        { "en": "{player}, I'm the one in the orange FPT shirt by the bus door. Come on over!" }
+      ]
+    },
+    "z0_board": {
+      "help": { "en": "You've met Ms. Huyền — now walk through the open door of Bus No. 2 to board." },
+      "tu": [
+        { "en": "Come on, let's get on the bus before it leaves!" },
+        { "en": "The door's open — let's hop on Bus No. 2!" }
+      ],
+      "phone": [
+        { "en": "Hop on whenever you're ready — the door of Bus No. 2 is open!" },
+        { "en": "We leave at 06:45 sharp — step through the bus door to board!" }
+      ]
+    },
+    "z1_get_app": {
+      "help": { "en": "Ms. Huyền is waiting by the bus. Talk to her (E) to install the My FPT app before heading to the gate." },
+      "tu": [
+        { "en": "Ms. Huyền said she'd help us with the app — let's go find her!" },
+        { "en": "There's Ms. Huyền — let's get that My FPT app set up!" }
+      ],
+      "phone": [
+        { "en": "I'm just over here by the bus — come find me and we'll set up My FPT!" },
+        { "en": "Don't forget the My FPT app — come see me before you head to the gate!" }
+      ]
+    },
+    "z1_thank_driver": {
+      "help": { "en": "The bus driver is standing on the sidewalk by the bus door. A quick thank-you goes a long way — press E to talk." }
+    },
+    "z1_route_map": {
+      "help": { "en": "The big route map on the wall shows when the shuttle buses run. Stand in front of it and press E." }
+    },
+    "z1_backpack": {
+      "help": { "en": "Tú left his backpack on the bus! Go to the bus door and press E to look for it, then bring it back to Tú." }
+    },
+    "z2_checkin": {
+      "help": { "en": "Find the big FPT SOFTWARE sign, stand in front of it and press E for your check-in photo." },
+      "tu": [
+        { "en": "Look, the FPT SOFTWARE sign! Let's take a check-in photo!" },
+        { "en": "Photo first! Let's stand in front of the big FPT SOFTWARE sign." }
+      ],
+      "phone": [
+        { "en": "Welcome to F-Ville! Start with a check-in photo at the big FPT SOFTWARE sign." },
+        { "en": "Don't miss the check-in photo at the FPT SOFTWARE sign!" }
+      ]
+    },
+    "z2_well": {
+      "help": { "en": "Walk over to the Village Well and press E to draw water — three buckets, three little stories." },
+      "tu": [
+        { "en": "There's a village well over there — let's try drawing water!" },
+        { "en": "Let's go to the well — I want to try that rope!" }
+      ],
+      "phone": [
+        { "en": "Have you seen the Village Well? Draw some water there — each bucket has a story." },
+        { "en": "The Village Well is close by — give it a try!" }
+      ]
+    },
+    "z2_cuder": {
+      "help": { "en": "Follow the path to the Cuder Statue in the rice field, then press E to read its story and answer three questions." },
+      "tu": [
+        { "en": "Let's go see the Cuder Statue — it's further along the path." },
+        { "en": "The Cuder Statue is in the rice field up ahead — come on!" }
+      ],
+      "phone": [
+        { "en": "Stop by the Cuder Statue on your way — read its story and earn a badge!" },
+        { "en": "The Cuder Statue stands in the rice field along the path. Don't skip it!" }
+      ]
+    },
+    "z3_card": {
+      "help": { "en": "Ms. Nga is at the reception desk in the lobby. Talk to her (E) to get your employee card." },
+      "tu": [
+        { "en": "That's the reception desk — let's get our cards from Ms. Nga!" },
+        { "en": "Ms. Nga is waiting at reception — let's go say hi!" }
+      ],
+      "phone": [
+        { "en": "I'm at the reception desk, right in the lobby — come and get your card!" },
+        { "en": "Your employee card is ready at reception — come find me!" }
+      ]
+    },
+    "z3_rice_room": {
+      "help": { "en": "The Rice Grain Room is at the back of the lobby. Walk to its entrance and press E to explore it." },
+      "tu": [
+        { "en": "What's that room at the back? The Rice Grain Room — let's look inside!" },
+        { "en": "Let's explore the Rice Grain Room before we go up." }
+      ],
+      "phone": [
+        { "en": "Before you go up, take a look at the Rice Grain Room at the back of the lobby." },
+        { "en": "The Rice Grain Room tells FPT's story — it's at the back of the lobby!" }
+      ]
+    },
+    "z3_wallet": {
+      "help": { "en": "You're carrying a lost wallet. Hand it to Ms. Nga at the reception desk (E)." }
+    }
+  },
+  "zone_exits": {
+    "zone_00": {
+      "target": null,
+      "help": { "en": "You're on board! Find a seat — next stop, Hòa Lạc." }
+    },
+    "zone_01": {
+      "target": "TRIGGER_zone_02_enter",
+      "help": { "en": "All set here! Follow the sidewalk to the F-Ville gate at the end of the street." },
+      "tu": [
+        { "en": "App installed! Let's head to the F-Ville gate." },
+        { "en": "The gate is at the end of this sidewalk — let's go!" }
+      ],
+      "phone": [
+        { "en": "Head along the sidewalk to the F-Ville gate — see you upstairs!" },
+        { "en": "The gate is just ahead at the end of the sidewalk!" }
+      ]
+    },
+    "zone_02": {
+      "target": "TRIGGER_zone_03_enter",
+      "help": { "en": "You've done everything out here! Follow the path to the office building — reception is right inside." },
+      "tu": [
+        { "en": "We've seen everything here — let's go inside the office!" },
+        { "en": "The building entrance is at the end of the path. Let's go!" }
+      ],
+      "phone": [
+        { "en": "Great job! Come into the office building — reception is right inside." },
+        { "en": "The office entrance is at the end of the path — reception is waiting!" }
+      ]
+    },
+    "zone_03": {
+      "target": null,
+      "help": { "en": "That's all for now — the card gates and the office open in the next update. Feel free to look around and hunt for golden grains!" }
+    }
+  }
+}

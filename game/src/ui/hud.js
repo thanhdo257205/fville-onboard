@@ -1,7 +1,11 @@
-// HUD: màn mờ chuyển zone, thẻ tên zone, dòng mục tiêu, gợi ý phím E, gợi ý điều khiển, thông báo (xếp hàng), màn tải.
+// HUD: màn mờ chuyển zone, thẻ tên zone, dòng mục tiêu, gợi ý phím E, gợi ý điều khiển, thông báo (xếp hàng), màn tải,
+// tin nhắn điện thoại ngắn + thẻ gợi ý phím H (game/guide.js).
 import { t } from "../i18n.js";
 
 const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+// ô HUD tạo khi cần (trong #hud: bị ẩn theo cảnh chuyển như phần HUD khác)
+const slot = (id) => $(`#${id}`) || Object.assign(document.getElementById("hud").appendChild(document.createElement("div")), { id });
 
 export const hud = {
   fade(on, ms = 350) {
@@ -97,6 +101,28 @@ export const hud = {
     setTimeout(() => this._pump(), 2400);
   },
   toast(text) { this.notify([text]); },
+  // tin nhắn điện thoại ngắn (game/guide.js: nhắc khi đứng yên, không có Tú đi cùng) — không dừng game, tự ẩn
+  phone({ name, portrait, label, text }, seconds = 7) {
+    const el = slot("phone-msg");
+    el.innerHTML = `${portrait ? `<img src="${portrait}" alt="">` : ""}<div><small>${esc(label)} · <b>${esc(name)}</b></small><p>${esc(text)}</p></div>`;
+    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+    clearTimeout(this._phone);
+    this._phone = setTimeout(() => el.classList.remove("show"), seconds * 1000);
+    this.lastPhone = { name, text };
+  },
+  // thẻ gợi ý (phím H): bấm lại khi đang hiện thì ẩn
+  help(title, lines, seconds = 8) {
+    const el = slot("helpcard");
+    const key = lines.join("\n");
+    clearTimeout(this._help);
+    if (el.classList.contains("show") && el.dataset.text === key) { el.classList.remove("show"); return false; }
+    el.dataset.text = key;
+    el.innerHTML = `<b>${esc(title)} <kbd>H</kbd></b>${lines.map((l) => `<p>${esc(l)}</p>`).join("")}`;
+    el.classList.add("show");
+    this._help = setTimeout(() => el.classList.remove("show"), seconds * 1000);
+    this.lastHelp = lines;
+    return true;
+  },
   debug(text) { const el = $("#debug"); el.hidden = !text; el.textContent = text || ""; },
   error(message) { this.loading(t("app.error", { message })); },
 };

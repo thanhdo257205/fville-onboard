@@ -44,12 +44,32 @@ nhắc: **"Talk to Ms. Huyền"**; nhiệm vụ trong app: **"Get the My FPT app
 | 10 | Lần đầu nói chuyện ở bến | Here we are, {player}! First things first: let's get the My FPT app on your phone. | vẫy tay | |
 | 11 | Ngay sau câu 10; người chơi chọn *"Let's install it!"* (cài luôn) hoặc *"Badges? What kind of badges?"* | It holds your checklist for today, your items and the badges you'll earn. | | |
 | 12 | Người chơi hỏi về huy hiệu | You'll find out at the Cuder Statue. Some of them you earn just by being nice to people. | chỉ tay | |
-| 13 | Ngay sau câu 12, trước mini-game | Okay, phone out! | | |
+| 13 | Ngay sau câu 12 | Okay, phone out! | | |
+| 13b | Ngay trước mini-game (cả hai lựa chọn ở câu 11 đều tới đây): nói rõ thứ tự 3 bước | Three steps, in this order: download My FPT, log in with the intern code from Ms. Nga's message, then turn on notifications. | chỉ tay | mã intern **FV-2026** nằm trong tin nhắn đầu game của Ms. Nga [DRAFT] |
 | 14 | Cài app xong | All set! Head straight to the gate. I'll go up to the office first — message me in the app if you need anything. | gật đầu | |
 | 15 | Nói chuyện lại sau khi đã có app | Go on through the gate. See you upstairs! | | |
 | 16 | Người chơi định đi vào cổng khi **chưa** cài app: chị gọi lại | {player}, wait! Install the My FPT app first. | | |
 
-## 3. Lần sau (zone 4, chưa làm)
+## 3. Tin nhắn nhắc việc (zone 0–2, khi người chơi không có Tú đi cùng)
+
+Người chơi đứng yên / chưa làm được việc gì trong 30 giây (không tính lúc hội thoại, mini-game) mà Tú không đi cùng → chị
+Huyền nhắn một tin ngắn qua điện thoại (hiện góc phải trên, không dừng game). Mỗi việc nhắc tối đa 2 lần, cách nhau 45
+giây. Nguồn: `data/guidance.json` (`goals.<việc>.phone`). Thực tế ở bản hiện tại Tú đi cùng từ lúc gặp ở mái chờ (zone 0)
+nên tin nhắn chủ yếu hiện ở zone 0 trước khi gặp Tú.
+
+| Việc | Lần 1 | Lần 2 |
+| --- | --- | --- |
+| Tìm xe số 2 | Hi {player}, it's Huyền from FPT! I'm waiting by Bus No. 2 — look for the big amber "2" on the windshield. | Huyền again: Bus No. 2 is the middle one of the three buses. Read the windshield signs to be sure! |
+| Chào chị Huyền | I'm right at the door of Bus No. 2 — come say hello! | {player}, I'm the one in the orange FPT shirt by the bus door. Come on over! |
+| Lên xe | Hop on whenever you're ready — the door of Bus No. 2 is open! | We leave at 06:45 sharp — step through the bus door to board! |
+| Nhận app (zone 1) | I'm just over here by the bus — come find me and we'll set up My FPT! | Don't forget the My FPT app — come see me before you head to the gate! |
+| Ra cổng (zone 1) | Head along the sidewalk to the F-Ville gate — see you upstairs! | The gate is just ahead at the end of the sidewalk! |
+| Ảnh check-in (zone 2) | Welcome to F-Ville! Start with a check-in photo at the big FPT SOFTWARE sign. | Don't miss the check-in photo at the FPT SOFTWARE sign! |
+| Giếng làng (zone 2) | Have you seen the Village Well? Draw some water there — each bucket has a story. | The Village Well is close by — give it a try! |
+| Tượng Cuder (zone 2) | Stop by the Cuder Statue on your way — read its story and earn a badge! | The Cuder Statue stands in the rice field along the path. Don't skip it! |
+| Vào tòa nhà (zone 2) | Great job! Come into the office building — reception is right inside. | The office entrance is at the end of the path — reception is waiting! |
+
+## 4. Lần sau (zone 4, chưa làm)
 
 Theo GDD, ở cửa quẹt thẻ zone 4 chị Huyền sẽ **nhắn qua app** một lời nhắc nhẹ nhàng nếu người chơi cho người lạ (hoặc Tú)
 đi ké qua cửa. Câu chữ chưa viết; sẽ thêm vào đây khi làm tới zone 4.

@@ -20,6 +20,7 @@ import { save } from "./state.js";
 import { Interaction } from "./interaction.js";
 import { DialogueRunner } from "../ui/dialogue.js";
 import { Cutscene } from "./cutscene.js";
+import { Guide } from "./guide.js";
 import { setTint } from "../characters/characters.js";
 import { sound } from "../core/sound.js";
 
@@ -47,6 +48,7 @@ export class Game {
     this.talkPartner = null;                     // Npc | Follower đang nói chuyện (runDialogue)
     this.lights = createLights(this.scene);
     this.seeThrough = new SeeThrough(data.sceneFixes?.see_through);   // cây che người chơi → mờ dần
+    this.guide = new Guide(this, content);       // dấu "!" + mũi tên chỉ đường, nhắc khi đứng yên, gợi ý phím H
     this.zone = null;
     this.npcs = [];          // Npc (đứng/ngồi tại node)
     this.follower = null;    // Tú
@@ -121,11 +123,15 @@ export class Game {
     if (keepPose) this.player.character.root.rotation.y = keepPose.rot;
     if (!keepPose) {
       this.cam.behind(yaw);
-      this.cam.pickStartYaw(this.player.position, zone);   // sau lưng bị che (vd xe bus ở zone_01) → xoay sang hướng thoáng
+      // sau lưng bị che (vd xe bus ở zone_01) → xoay sang hướng thoáng; tán cây không tính (tự mờ khi che), để camera
+      // vẫn nhìn theo hướng SPAWN_ (zone_00: về phía các xe bus, không quay ngược ra cuối phố)
+      const plants = new Set(this.seeThrough.meshes || []);
+      this.cam.pickStartYaw(this.player.position, zone, (o) => plants.has(o.name) || plants.has(o.parent?.name));
     } else this.cam.occluders = null;
     this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true);
     await this.spawnActors();
     this.interaction.setup(zone, this.scene);
+    this.guide.reset();
     this.progress.zone = zoneId;
     this.zoneTime = 0;
     this.firedEvents = new Set();
@@ -336,7 +342,7 @@ export class Game {
     this.mode = m;
     this.input.enabled = m === "play";
     this.input.setLook(m === "play");   // chơi: khoá + ẩn con trỏ, chuột xoay camera; còn lại: hiện con trỏ để bấm
-    if (m !== "play") hud.prompt(null);
+    if (m !== "play") { hud.prompt(null); this.guide.hideMarks(); }   // dấu "!" / mũi tên chỉ hiện lúc đang đi lại
     hud.cover(m === "dialogue" || m === "minigame" || m === "app");   // ẩn dòng hướng dẫn điều khiển
   }
 
@@ -396,12 +402,24 @@ export class Game {
 
   async runMinigame(id) {
     const prev = this.mode;
+    // mở từ hội thoại (vd Tú nói luật, Ms. Nga đưa phiếu): thôi quay mặt về người đối thoại trong lúc chơi
+    // (trò chụp ảnh tự đặt hướng người chơi nhìn camera)
+    const face = this.faceTarget;
+    this.faceTarget = null;
     this.setMode("minigame");
     const r = await this.ui.minigame.run(id);   // { ok, skipped, effects } — Skip: không cộng Hiểu biết lượt đó
+    if (this.mode === "minigame" && prev === "dialogue") this.faceTarget = face;
     this.lastMinigame = { id, ...r };
     if (r.ok) this.applyEffects(r.effects);
     this.setMode(prev === "dialogue" ? "dialogue" : "play");
     return r.ok;
+  }
+
+  // phím H: gợi ý của mục tiêu hiện tại (đang đi lại: thẻ gợi ý; app My FPT đang mở: ô Help trong app)
+  help() {
+    if (this.state.phase !== "playing") return;
+    if (this.mode === "app") { this.ui.app.toggleHelp(); return; }
+    if (this.mode === "play") this.guide.help();
   }
 
   toggleApp() {
@@ -413,7 +431,7 @@ export class Game {
   }
 
   update(dt) {
-    if (this.cutscene) { this.input.consumeDrag(); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
+    if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
     const drag = this.input.consumeDrag();
     const still = { x: 0, y: 0, run: false };
@@ -443,6 +461,7 @@ export class Game {
       this.checkTriggers();
       hud.prompt(this.interaction.update(this.player.position));
     }
+    this.guide.update(dt);
     this.monitor.tick(dt);
   }
 

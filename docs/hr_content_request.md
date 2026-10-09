@@ -12,7 +12,7 @@ trong game nên ngắn, khoảng 1–2 câu (dưới 30 từ), vì hiện trong 
 
 | # | Zone (địa điểm trong game) | Cần cung cấp | Loại | Trong game hiện nay |
 | --- | --- | --- | --- | --- |
-| 1 | 0 · Điểm đón xe bus | Tin nhắn hẹn xe ngày đầu: số xe, giờ đón, điểm đón | Thông tin xe | Câu tạm, [DRAFT] |
+| 1 | 0 · Điểm đón xe bus | Tin nhắn hẹn xe ngày đầu: số xe, giờ đón, điểm đón; cách đăng nhập App My FPT ngày đầu | Thông tin xe | Câu tạm, [DRAFT] |
 | 2 | 0 · Điểm đón xe bus | Giờ các chuyến xe về buổi chiều | Thông tin xe | Câu tạm, [DRAFT] |
 | 3 | 0 · Điểm đón xe bus | 2–3 quy định khi đi xe bus công ty | Quy định | Câu tạm, [DRAFT] |
 | 4 | 1 · Bến xe F-Ville | Tuyến xe, giờ xe sáng tới nơi, giờ xe về | Thông tin xe | Câu tạm, [DRAFT] |
@@ -39,10 +39,12 @@ Người chơi đứng ở một điểm đón trong thành phố, đi tìm xe b
 ### 1. Tin nhắn hẹn xe ngày đầu
 - **Chỗ xuất hiện:** điện thoại tự hiện tin nhắn khi vừa vào game. Người gửi là Ms. Nga (Tuyển dụng).
 - **Câu tạm hiện tại:** "Good morning, {player}! It's Nga from Recruitment. Your shuttle today is Bus No. 2 to Hòa Lạc —
-  pickup at 06:45 at this stop. See you at F-Ville!" ({player} = tên người chơi)
+  pickup at 06:45 at this stop. Your intern code for the My FPT app: FV-2026. See you at F-Ville!" ({player} = tên
+  người chơi; mã FV-2026 là mã tạm, người chơi dùng để đăng nhập ở mini-game cài App My FPT, zone 1)
 - **HR cần cung cấp:**
   - Intern mới đi xe nào vào ngày đầu (số hoặc tên tuyến), giờ đón, điểm đón.
   - Trên thực tế HR có gửi tin nhắn như vậy không. Nếu có, gửi qua kênh nào (SMS, email, app).
+  - Ngày đầu intern đăng nhập App My FPT bằng gì (mã intern, email công ty, tài khoản HR gửi trước…), để thay mã tạm.
 - **Ví dụ câu trả lời:** "Ngày đầu intern đi tuyến số 2, đón 06:45 tại điểm A, tới F-Ville khoảng 07:30. HR gửi email
   hẹn xe trước 1 ngày."
 

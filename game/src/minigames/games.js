@@ -1,5 +1,7 @@
 // Các mini-game (GDD). Mỗi trò: { layout, start(ctx) → hàm dọn dẹp }. ctx: xem host.js.
 // Nội dung chữ nằm trong data (interactables.json → minigames, quiz.json); ở đây chỉ có luật chơi.
+// Gợi ý tăng dần (host.js): mỗi trò đặt ctx.idleHint (gợi ý của bước đang làm, hiện sau 8 s không thao tác) và
+// ctx.onAssist (sai 2 lần ở một bước → làm sáng lựa chọn đúng: class "glow").
 // ctx.debug.solve() / wrong(): để __game tự kiểm tra (khung trình duyệt ẩn vẫn chạy).
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
@@ -29,6 +31,7 @@ const install_app = {
       <div class="progress"><div class="label"></div><div class="bar"><i></i></div></div></div>`;
     const lis = [...ctx.body.querySelectorAll(".steps li")];
     const label = ctx.body.querySelector(".progress .label"), fill = ctx.body.querySelector(".progress .bar i");
+    label.textContent = tx(ctx.data.ready, ctx.vars);       // chưa bắt đầu: dòng trạng thái nói việc cần làm
     const pick = (k) => {
       if (busy || next >= steps.length) return;
       const si = order[k];
@@ -36,6 +39,7 @@ const install_app = {
       sound.play("tap");
       if (si !== next) { ctx.mistake(tx(steps[next].hint)); return; }
       lis[k].classList.add("done");
+      lis[k].classList.remove("glow");
       busy = true;
       sound.play("progress");
       label.textContent = tx(steps[si].doing, ctx.vars);
@@ -45,16 +49,19 @@ const install_app = {
       ctx.later(() => {
         busy = false;
         next++;
+        label.textContent = tx(steps[si].after, ctx.vars);     // bước xong: câu hoàn tất (không giữ "Downloading…")
         ctx.correct(next < steps.length ? "" : tx(ctx.data.done));
         if (next >= steps.length) ctx.later(() => ctx.finish(), 900);
       }, 1150);
     };
     lis.forEach((li, k) => li.addEventListener("click", () => pick(k)));
     ctx.onKey = (e) => { const d = digit(e); if (d >= 0 && d < lis.length) { pick(d); return true; } return false; };
+    ctx.idleHint = () => (busy || next >= steps.length ? null : tx(steps[next].hint));
+    ctx.onAssist = () => lis.forEach((li, k) => li.classList.toggle("glow", ctx.assist && order[k] === next));
     ctx.debug = {
       solve: () => { busy = false; while (next < steps.length) { const k = order.indexOf(next); lis[k].classList.add("done"); next++; } ctx.finish(); },
       wrong: () => { const k = order.findIndex((si) => si !== next && !lis[order.indexOf(si)].classList.contains("done")); if (k >= 0) pick(k); },
-      state: () => ({ next, order }),
+      state: () => ({ next, order, label: label.textContent, glow: lis.filter((li) => li.classList.contains("glow")).map((li) => +li.dataset.k) }),
     };
   },
 };
@@ -72,8 +79,10 @@ const well = {
     const snip = ctx.body.querySelector(".snippet"), buckets = [...ctx.body.querySelectorAll(".buckets span")];
     const speed = () => d.speed[Math.min(bucket, d.speed.length - 1)];
     const pos = () => { const ph = ((performance.now() - t0) / 1000) * speed(); const f = ph % 2; return f < 1 ? f : 2 - f; };  // 0..1..0
+    // làm sáng (sai 2 lần): vùng xanh rộng thêm assist_width và sáng lên
     const newZone = () => {
-      const w = d.zone_width[Math.min(bucket, d.zone_width.length - 1)];
+      const w = d.zone_width[Math.min(bucket, d.zone_width.length - 1)] + (ctx.assist ? d.assist_width ?? 0.12 : 0);
+      zoneEl.classList.toggle("glow", ctx.assist);
       const a = 0.12 + Math.random() * (0.76 - w);
       zone = [a, a + w];
       zoneEl.style.left = `${a * 100}%`; zoneEl.style.width = `${w * 100}%`;
@@ -98,6 +107,8 @@ const well = {
       pullBtn.hidden = false; newZone();
     };
     newZone(); draw();
+    ctx.idleHint = () => (bucket >= total ? null : tx(reading ? d.idle.read : d.idle.pull));
+    ctx.onAssist = () => { if (!reading) newZone(); else zoneEl.classList.toggle("glow", ctx.assist); };
     pullBtn.addEventListener("click", () => pull());
     snip.querySelector(".next").addEventListener("click", next);
     ctx.onKey = (e) => {
@@ -107,7 +118,7 @@ const well = {
     ctx.debug = {
       solve: () => { while (bucket < total) { if (reading) next(); else pull((zone[0] + zone[1]) / 2); } next(); },
       wrong: () => { if (reading) next(); pull(zone[0] > 0.2 ? 0.02 : 0.98); },
-      state: () => ({ bucket, zone, reading }),
+      state: () => ({ bucket, zone, reading, glow: zoneEl.classList.contains("glow") }),
     };
     return () => cancelAnimationFrame(raf);
   },
@@ -143,6 +154,7 @@ const quiz = {
       sound.play("tap");
       if (k !== qq.answer) { li.classList.add("no"); firstTry = false; ctx.mistake(tx(qq.hint || qq.explain)); return; }
       answered = true;
+      li.classList.remove("glow");
       li.classList.add("yes");
       if (firstTry) knowledge += per;
       ctx.correct(firstTry ? t("minigame.correct_plus", { n: per }) : t("minigame.correct"));
@@ -151,6 +163,8 @@ const quiz = {
       ex.hidden = false;
     };
     story();
+    ctx.idleHint = () => (i < 0 ? tx(ctx.data.idle.story) : answered ? tx(ctx.data.idle.next) : tx(q.questions[i].hint || ctx.data.idle.story));
+    ctx.onAssist = () => { if (i >= 0) ctx.body.querySelector(`.opts li[data-k="${q.questions[i].answer}"]`)?.classList.toggle("glow", ctx.assist && !answered); };
     ctx.onKey = (e) => {
       if (i < 0 && (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space")) { ask(0); return true; }
       if (i >= 0 && answered && (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space")) { ask(i + 1); return true; }
@@ -162,7 +176,7 @@ const quiz = {
     ctx.debug = {
       solve: () => { if (i < 0) ask(0); while (i < q.questions.length) { if (!answered) choose(q.questions[i].answer); ask(i + 1); } },
       wrong: () => { if (i < 0) ask(0); const qq = q.questions[i]; const k = qq.options.findIndex((_, n) => n !== qq.answer && !ctx.body.querySelector(`.opts li[data-k="${n}"]`).classList.contains("no")); choose(k); },
-      state: () => ({ i, knowledge }),
+      state: () => ({ i, knowledge, glow: [...ctx.body.querySelectorAll(".opts li.glow")].map((li) => +li.dataset.k) }),
     };
   },
 };
@@ -195,10 +209,10 @@ const profile_check = {
     let stage = "find", fixed = false;
     const draw = () => {
       ctx.body.innerHTML = `<div class="form"><div class="form-top">${esc(tx(d.form_title))}</div>
-        <ol class="fields">${fields.map((f, k) => `<li data-k="${k}" class="${k === target && stage === "fix" ? "sel" : ""} ${fixed && k === target ? "ok" : ""}">
+        <ol class="fields">${fields.map((f, k) => `<li data-k="${k}" class="${k === target && stage === "fix" ? "sel" : ""} ${fixed && k === target ? "ok" : ""} ${k === target && stage === "find" && ctx.assist ? "glow" : ""}">
           ${kbd(k + 1)}<span class="lab">${esc(tx(f.label))}</span><b>${esc(f.value)}</b></li>`).join("")}</ol>
         ${stage === "fix" && !fixed ? `<div class="fix"><p>${esc(t("minigame.pick_correct", { field: tx(fields[target].label) }))}</p>
-          <ol class="opts">${fields[target].options.map((o, k) => `<li data-o="${k}">${kbd(k + 1)} ${esc(o)}</li>`).join("")}</ol></div>` : ""}</div>`;
+          <ol class="opts">${fields[target].options.map((o, k) => `<li data-o="${k}" class="${ctx.assist && o === fields[target].correct ? "glow" : ""}">${kbd(k + 1)} ${esc(o)}</li>`).join("")}</ol></div>` : ""}</div>`;
       ctx.body.querySelectorAll(".fields li").forEach((li) => li.addEventListener("click", () => find(+li.dataset.k)));
       ctx.body.querySelectorAll(".opts li").forEach((li) => li.addEventListener("click", () => fix(+li.dataset.o)));
     };
@@ -218,11 +232,13 @@ const profile_check = {
       ctx.later(() => ctx.finish(), 900);
     };
     draw();
+    ctx.idleHint = () => (fixed ? null : stage === "find" ? tx(d.idle_find) : tx(wrongKey === "bus" ? d.hint_bus : d.hint_position));
+    ctx.onAssist = () => draw();
     ctx.onKey = (e) => { const n = digit(e); if (n < 0) return false; stage === "find" ? find(n) : fix(n); return true; };
     ctx.debug = {
       solve: () => { if (stage === "find") find(target); fix(fields[target].options.indexOf(fields[target].correct)); ctx.finish(); },
       wrong: () => { if (stage === "find") find((target + 1) % fields.length); else fix(fields[target].options.findIndex((x) => x !== fields[target].correct)); },
-      state: () => ({ wrongKey, stage, fixed }),
+      state: () => ({ wrongKey, stage, fixed, glow: [...ctx.body.querySelectorAll(".glow")].map((li) => li.textContent.trim()) }),
     };
   },
 };
@@ -235,10 +251,11 @@ const timeline = {
     const sorted = [...items].sort((a, b) => a.year - b.year);
     let order = shuffle(items);
     let sel = 0, done = false, hints = 0, okSet = new Set();
+    // làm sáng (sai 2 lần): mọi thẻ hiện năm (thẻ chưa đúng chỗ: class glow) → chỉ còn việc xếp theo năm
     const draw = (reveal = false) => {
       ctx.body.innerHTML = `<div class="timeline"><div class="ends">${t("minigame.oldest")}</div>
-        <ol class="cards">${order.map((it, n) => `<li data-k="${it.k}" class="${n === sel && !done ? "sel" : ""} ${okSet.has(it.k) || reveal ? "ok" : ""}">
-          <span class="grip">⋮⋮</span><span class="txt">${esc(tx(it.text))}</span>${reveal || okSet.has(it.k) ? `<b>${it.year}</b>` : ""}</li>`).join("")}</ol>
+        <ol class="cards">${order.map((it, n) => `<li data-k="${it.k}" class="${n === sel && !done ? "sel" : ""} ${okSet.has(it.k) || reveal ? "ok" : ctx.assist ? "glow" : ""}">
+          <span class="grip">⋮⋮</span><span class="txt">${esc(tx(it.text))}</span>${reveal || okSet.has(it.k) || ctx.assist ? `<b>${it.year}</b>` : ""}</li>`).join("")}</ol>
         <div class="ends">${t("minigame.newest")}</div>
         ${done ? "" : `<button class="primary check">${t("minigame.check")} ${kbd("Enter")}</button>`}</div>`;
       ctx.body.querySelector(".check")?.addEventListener("click", check);
@@ -288,6 +305,8 @@ const timeline = {
       ctx.mistake(tx(h));
     };
     draw();
+    ctx.idleHint = () => (done ? null : tx(d.idle));
+    ctx.onAssist = () => { if (!done) draw(); };
     ctx.onKey = (e) => {
       if (done) return false;
       if (e.code === "ArrowUp") { e.shiftKey ? move(sel, sel - 1) : (sel = Math.max(0, sel - 1), draw()); return true; }
@@ -298,7 +317,7 @@ const timeline = {
     ctx.debug = {
       solve: () => { order = [...sorted]; check(); ctx.finish(); },
       wrong: () => { const a = [...sorted]; [a[0], a[1]] = [a[1], a[0]]; order = a; check(); },
-      state: () => ({ order: order.map((x) => x.year), sel }),
+      state: () => ({ order: order.map((x) => x.year), sel, years: ctx.body.querySelectorAll(".cards li b").length }),
     };
   },
 };

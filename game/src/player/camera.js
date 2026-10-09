@@ -23,12 +23,13 @@ export class ThirdPersonCamera {
   // ~1 m) thì xoay dần sang hai bên (±15°/bước, tối đa ±150°) tới hướng gần nhất mà "ống nhìn" rộng ~1 m tới vị trí
   // camera chuẩn trống hẳn. Xét cả COL_ lẫn mesh hiển thị ở gần (thân xe thật nhô ra ngoài hộp COL_).
   // Không có hướng nào trống hẳn → hướng thoáng nhất. Trả về số độ đã xoay.
-  pickStartYaw(playerPos, zone) {
+  // skip(mesh): mesh không tính là vật che (vd tán cây — seeThrough tự làm mờ khi che người chơi)
+  pickStartYaw(playerPos, zone, skip = null) {
     const tgt = new THREE.Vector3(playerPos.x, playerPos.y + this.height, playerPos.z);
     zone.root.updateMatrixWorld(true);
     const box = new THREE.Box3(), near = [];
     zone.root.traverse((o) => {
-      if (o.isMesh && o.visible && !o.name.startsWith("COL_") && box.setFromObject(o).distanceToPoint(tgt) < this.distance + 1) near.push(o);
+      if (o.isMesh && o.visible && !o.name.startsWith("COL_") && !skip?.(o) && box.setFromObject(o).distanceToPoint(tgt) < this.distance + 1) near.push(o);
     });
     const rc = new THREE.Raycaster();
     const PROBES = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -48,13 +49,16 @@ export class ThirdPersonCamera {
       }
       return m;
     };
+    // góc lệch nhỏ nhất mà camera lùi được ≥ OK_CLEAR khoảng cách (gần hơn thì clampCamera kéo vào — vẫn nhìn theo hướng
+    // SPAWN_); không góc nào đạt thì lấy góc thoáng nhất
+    const OK_CLEAR = 0.6;
     const base = this.yaw;
     let best = { d: 0, c: clear(base) };
-    for (let d = 15; best.c < 0.98 && d <= 150; d += 15) {
+    for (let d = 15; best.c < OK_CLEAR && d <= 150; d += 15) {
       for (const s of [-1, 1]) {
         const c = clear(base + THREE.MathUtils.degToRad(s * d));
         if (c > best.c + 0.02) best = { d: s * d, c };
-        if (best.c >= 0.98) break;
+        if (best.c >= OK_CLEAR) break;
       }
     }
     this.yaw = base + THREE.MathUtils.degToRad(best.d);

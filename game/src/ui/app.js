@@ -1,4 +1,5 @@
-// App My FPT (phím Tab): 3 tab Checklist, Túi đồ, Huy hiệu + 2 chỉ số Hiểu biết, Kết nối.
+// App My FPT (phím Tab): 3 tab Checklist, Túi đồ, Huy hiệu + 2 chỉ số Hiểu biết, Kết nối; nút Help (phím H) = gợi ý của
+// mục tiêu hiện tại (game/guide.js).
 // Huy hiệu 6 giá trị: ô sáng khi đã thể hiện giá trị VÀ đã có huy hiệu; Đợt 2 chỉ Respect và Fairness hoạt động.
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
@@ -13,10 +14,16 @@ export class MyFptApp {
     el.hidden = true;
     document.body.appendChild(el);
     this.el = el;
-    el.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b) { this.tab = b.dataset.tab; this.draw(); } });
+    this.helpOpen = false;
+    el.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-tab]");
+      if (b) { this.tab = b.dataset.tab; this.draw(); }
+      if (e.target.closest("[data-a=help]")) this.toggleHelp();
+    });
   }
   get open() { return !this.el.hidden; }
-  show(tab) { if (tab) this.tab = tab; this.el.hidden = false; this.draw(); }
+  show(tab) { if (tab) this.tab = tab; this.helpOpen = false; this.el.hidden = false; this.draw(); }
+  toggleHelp() { this.helpOpen = !this.helpOpen; this.draw(); }
   hide() { this.el.hidden = true; }
 
   draw() {
@@ -24,7 +31,9 @@ export class MyFptApp {
     const stat = (k) => `<div class="stat"><span>${t(`stats.${k}`)}</span><div class="bar"><i style="width:${s.stats[k]}%"></i></div><b>${s.stats[k]}</b></div>`;
     const tabs = ["checklist", "bag", "badges"].map((k) => `<button data-tab="${k}" class="${this.tab === k ? "on" : ""}">${t(`myfpt.tabs.${k}`)}</button>`).join("");
     this.el.innerHTML = `<div class="phone">
-      <div class="top"><b>${t("myfpt.title")}</b><span>${escape(s.player.name)}</span></div>
+      <div class="top"><b>${t("myfpt.title")}</b><span>${escape(s.player.name)}</span>
+        <button class="help ${this.helpOpen ? "on" : ""}" data-a="help">? ${t("myfpt.help")} <kbd>H</kbd></button></div>
+      ${this.helpOpen ? `<div class="helpbox"><b>${t("guide.help_title")}</b>${(this.game?.guide.helpLines() || []).map((l) => `<p>${escape(l)}</p>`).join("")}</div>` : ""}
       <div class="stats">${stat("hieu_biet")}${stat("ket_noi")}</div>
       <nav>${tabs}</nav>
       <div class="page">${this[this.tab]()}</div>

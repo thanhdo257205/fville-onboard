@@ -8,7 +8,7 @@ import { loadJSON, url } from "./core/assets.js";
 import { loadStrings, t } from "./i18n.js";
 import { createRenderer } from "./render/renderer.js";
 import { Input } from "./core/input.js";
-import { loadSettings } from "./core/quality.js";
+import { loadSettings, saveSettings } from "./core/quality.js";
 import { Characters } from "./characters/characters.js";
 import { Game } from "./game/game.js";
 import { GameState, save } from "./game/state.js";
@@ -34,6 +34,7 @@ async function boot() {
 
   // kiểm tra dữ liệu: tham chiếu nội bộ + mọi node nhắc tới phải có trong GLB của zone (thiếu → báo rõ tên)
   const zoneFiles = Object.fromEntries(zones.order.map((z) => [z, zones.zones[z].file]));
+  content.zoneOrder = zones.order;          // để chuyển bản lưu cũ (trước khi có zone_00); kiểm tra guidance theo zone
   const linkErrors = validateLinks(content);
   const nodeCheck = await validateNodes(content, zoneFiles);
   const problems = [...linkErrors, ...nodeCheck.missing];
@@ -47,7 +48,6 @@ async function boot() {
   const input = new Input(renderer.canvas);
   const settings = loadSettings();
   const nametags = new NameTags(app);
-  content.zoneOrder = zones.order;          // để chuyển bản lưu cũ (trước khi có zone_00)
   const progress = new GameState(content);
   const saved = save.load();
   if (saved) progress.fromJSON(saved);
@@ -62,16 +62,18 @@ async function boot() {
 
   const loop = { fps: 0 };
   const menu = new Menu({
-    info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps }),
+    info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false }),
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
+    onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
     onClose: () => game.setMode("play"),
     onPlayAgain: async () => {
       if (await confirmBox(t("menu.play_again_confirm"), t("menu.yes"), t("menu.no"))) { save.clear(); location.reload(); }
     },
   });
 
-  // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn · Tab app · Esc đóng / menu
+  // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn · Tab app · H gợi ý · Esc đóng / menu
   input.on("KeyE", () => game.interact());
+  input.on("KeyH", () => game.help());
   for (const k of ["Space", "Enter", "NumpadEnter"]) input.on(k, () => ui.dialogue.next());
   for (let i = 1; i <= 4; i++) { input.on(`Digit${i}`, () => ui.dialogue.choose(i - 1)); input.on(`Numpad${i}`, () => ui.dialogue.choose(i - 1)); }
   input.on("Tab", () => game.toggleApp());

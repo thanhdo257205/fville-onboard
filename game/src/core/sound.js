@@ -16,6 +16,9 @@ export const SOUNDS = {
   splash: null,        // trượt vùng xanh
   grain: null,         // nhặt hạt lúa vàng
   pickup: null,        // nhặt đồ
+  nudge: null,         // Tú nhắc (bong bóng) khi đứng yên
+  phone: null,         // tin nhắn điện thoại ngắn (nhắc khi không có Tú)
+  help: null,          // mở thẻ gợi ý (phím H)
 };
 
 const cache = new Map();

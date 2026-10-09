@@ -25,8 +25,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - **Mở đầu mới:** zone 0 điểm đón 06:30 (tin nhắn HR, tìm xe số 2, Tú ở mái chờ, chị Huyền ở cửa xe, nhường hành khách)
   và cảnh chuyển lên xe khoảng 21 giây (có Skip) sang zone 1.
 - **Đợt 3 (nội dung):**
-  - 7 mini-game, chơi bằng chuột và bàn phím, không thua: sai thì gợi ý, sau 2 lần sai có Skip. Gồm: cài app,
-    ảnh check-in, kéo nước giếng, quiz CUDER, sửa hồ sơ, ảnh thẻ, dòng thời gian.
+  - 7 mini-game, chơi bằng chuột và bàn phím, không thua: sai thì gợi ý, sau 2 lần sai có Skip (từ 09/10/2026: gợi ý
+    tăng dần, xem "Hướng dẫn người chơi mới"). Gồm: cài app, ảnh check-in, kéo nước giếng, quiz CUDER, sửa hồ sơ, ảnh
+    thẻ, dòng thời gian.
   - Ảnh check-in và ảnh thẻ chụp từ canvas (JPEG có giới hạn dung lượng), hiện trong app.
   - Sự kiện Tú quên balo ở zone 1; 7 hạt lúa vàng ở zone 1–3; hũ thủy tinh ở Phòng Hạt Lúa đếm số hạt.
   - Sửa lỗi chơi thử đợt trước: camera lúc xuất hiện, capsule cho NPC và Tú, Tú đi chếch sau, màu áo/quần riêng từng NPC.
@@ -88,6 +89,45 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Thử: Ms. Huyền 8 hướng có / không có Tú (phía vỉa hè: góc qua vai, camera cách bề mặt ≥ 0,62 m; sát bó vỉa: giữ camera
     chơi; trong thân xe: không còn lời nhắc), 7 tình huống camera hội thoại cũ (kể cả bác tài zone_01) đều bật, không bị
     che; chơi trọn zone 0 → 3 (dev + bản build), console sạch.
+
+- **Hướng dẫn người chơi mới (09/10/2026)** — nguyên tắc: lúc nào cũng biết "giờ làm gì" trong vài giây. Code
+  `game/src/game/guide.js`; chữ trong `data/guidance.json` (tiếng Anh) và `data/i18n/en.json` (`guide.*`, `menu.guide*`).
+  - **Chỉ đường:** mục tiêu hiện tại = quest bắt buộc đầu tiên chưa xong của zone (`quests.json` → `target`); zone xong hết
+    → `guidance.json` → `zone_exits` (zone 1 → cổng F-Ville, zone 2 → cửa tòa nhà; zone 3 hết việc → không có dấu, H nói
+    phần tiếp theo mở ở bản sau). Dấu **"!"** nổi trên target (NPC/Tú: trên bảng tên; INT_ có hình: trên đỉnh khối;
+    INT_ rỗng có vùng tương tác: trên hộp TRIGGER_ = chỗ đứng bấm E; TRIGGER_: trên đỉnh hộp), nhấp nhô, viền cam như
+    bảng tên. Target ngoài khung nhìn → **mũi tên** tròn có "!" ở mép màn hình (chừa dòng mục tiêu phía trên và lời
+    nhắc E / dòng điều khiển phía dưới; sau lưng → chúc xuống). Chỉ hiện lúc đang đi lại (tắt khi hội thoại, mini-game,
+    app, menu, cảnh chuyển, chụp ảnh). Menu Esc → **Objective markers: On / Off** (lưu trong cài đặt trình duyệt).
+  - **Mini-game:** trước mỗi trò có lời giới thiệu luật / thứ tự: Ms. Huyền nói đủ 3 bước cài app (tải → đăng nhập bằng
+    mã intern trong tin nhắn Ms. Nga → bật thông báo; tin nhắn đầu game thêm mã **FV-2026** [DRAFT]); Ms. Nga nói luật
+    phiếu hồ sơ và ảnh thẻ; Tú nói luật ảnh check-in, giếng, tượng Cuder, dòng thời gian (hội thoại `*_intro`, lần đầu;
+    bỏ ngang rồi quay lại thì vào thẳng). Gợi ý tăng dần cho mọi trò (`minigames/host.js`): **8 s không thao tác** →
+    gợi ý của bước đang làm (vàng); **sai 2 lần ở một bước** → làm sáng lựa chọn đúng (cài app: bước kế; giếng: vùng xanh
+    rộng thêm 0,12 và sáng; quiz: đáp án; hồ sơ: dòng sai rồi giá trị đúng; dòng thời gian: hiện năm trên mọi thẻ);
+    **sai 3 lần** → nút Skip (đi tiếp, vẫn nhận phần thưởng bắt buộc, không cộng Hiểu biết của trò đó). Cài app: dòng
+    trạng thái lúc đầu "Ready to set up — which step comes first?", xong mỗi bước đổi thành câu hoàn tất ("My FPT
+    downloaded ✓ — what's next?", "Logged in as {player} ✓ — one more step!", "Notifications on ✓"). Đã rà 7 trò: chỗ
+    nào cũng có chữ nói việc cần làm (ảnh: "chọn dáng rồi Space", "Enter giữ ảnh / R chụp lại").
+  - **Nhắc khi đứng yên:** 30 s không tiến triển nhiệm vụ (chỉ tính lúc đang đi lại) → Tú nói 1 câu bong bóng trên đầu
+    (không mở hộp thoại, không dừng game, 5 s); không có Tú đi cùng (zone 0 trước khi gặp Tú, hoặc Tú ở xa > 15 m) →
+    tin nhắn điện thoại ngắn góc phải trên từ Ms. Huyền (zone 0–2) hoặc Ms. Nga (zone 3–4). Mỗi mục tiêu tối đa 2 lần,
+    lần 2 sau thêm 45 s. Có câu nhắc (2 câu Tú + 2 tin nhắn) cho mọi mục tiêu bắt buộc zone 0–3 và lối ra zone 1, 2;
+    thời gian chỉnh trong `guidance.json` → `settings`.
+  - **Phím H / nút Help trong app My FPT:** thẻ "What now?" với gợi ý của mục tiêu hiện tại (+ việc phụ đang nhận: tìm
+    balo cho Tú, trả ví). Dòng điều khiển thêm "H: help". Kiểm tra dữ liệu lúc tải: thiếu help / câu nhắc → báo lỗi.
+  - Sửa kèm: camera lúc vào zone_00 không còn quay ngược ra cuối phố (tán cây không tính là vật che khi chọn hướng
+    camera ban đầu — cây tự mờ; chấp nhận hướng gốc nếu lùi được ≥ 60% khoảng cách) → thấy ngay các xe bus và dấu "!".
+    Mini-game mở từ hội thoại không còn bắt người chơi quay mặt về người đối thoại (ảnh check-in sau lời Tú: người chơi
+    nhìn camera). Menu Esc chỉ cập nhật dòng FPS mỗi 0,5 s thay vì vẽ lại cả bảng (trước đó bấm nút có thể hụt).
+  - **Thử như người mới** (bot chỉ nhìn dấu "!" / mũi tên, bấm E khi có lời nhắc, không teleport; dev và bản build): trọn
+    zone 0 → 3 trong ~215 s giờ game (đọc mỗi câu 1,5 s, mini-game giải theo luật). **Không lần nào đứng yên quá 10 s.**
+    Kẹt ngắn (đi thẳng về phía dấu thì đụng vật, né sang bên 2–5 s là qua): zone_00 (5,2; −0,3) cột biển trạm sát bó
+    vỉa giữa xe 3 và xe 2; zone_01 (12,6; −6,9) vỉa hè đường ra cổng; zone_02 (18,5; −13,6) bờ tường thấp gò cỏ biển
+    chữ khi đi từ chỗ chụp ảnh sang tượng Cuder; zone_02 (12,2; −35,7) khe giữa bồn cây và canteen. Người thật sẽ tự
+    đi vòng; ghi lại để theo dõi khi chơi thử với người. Không lần nhắc nào bật trong lượt bot (mỗi mục tiêu xong < 30 s);
+    đã thử riêng: tin nhắn Ms. Huyền (zone 0, chưa gặp Tú), bong bóng Tú (zone 0, zone 2), tin nhắn Ms. Nga (zone 3, ẩn
+    Tú), lần nhắc thứ 3 không bật, tắt dấu trong menu. Console sạch.
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
@@ -155,11 +195,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   Blender không ghi metadata nữa; `privacy_scan.py` kiểm tra cả metadata ảnh.
 
 ## Việc tiếp theo
-1. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
+1. Chơi thử hệ thống hướng dẫn với người mới thật: có ai đứng yên quá 10 s không, câu nhắc có đúng lúc không (thời gian
+   chỉnh trong `data/guidance.json` → `settings`; câu chữ trong `goals`), dấu "!" có quá lộ không (tắt trong menu Esc).
+2. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
    `data/scene_fixes.json` → `see_through`), camera hội thoại (chỉnh khung hình bằng các hằng số đầu
    `game/src/player/talkcam.js`: `FRAME_FRAC`, `FACE_AT`, `SHOULDER`, `BLEND_S`).
-2. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
-3. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA; lựa chọn nhắn Ms. Nga qua app — câu dự kiến trong
+3. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
+4. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA; lựa chọn nhắn Ms. Nga qua app — câu dự kiến trong
    `docs/dialogue_nga.md`), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), màn tổng kết, danh hiệu,
    tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.
 
@@ -170,7 +212,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   gần nó nhất).
 
 ## Nội dung [DRAFT] chờ HR (16 mục)
-1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45.
+1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45, mã intern FV-2026 để đăng nhập App My FPT.
 2. Giờ xe về (chị Huyền trả lời ở zone 0).
 3. Quy định trên xe công ty (chị Huyền trả lời ở zone 0).
 4. Bản đồ tuyến xe ở zone 1: xe sáng đến 07:30, xe về 17:30 và 18:15.
