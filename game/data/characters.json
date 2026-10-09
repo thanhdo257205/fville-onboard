@@ -1,7 +1,7 @@
 {
-  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. TẠM THỜI mọi vai dùng 'prajith', trừ vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' — id vai giữ là 'thao'.",
+  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. TẠM THỜI mọi vai dùng 'prajith', trừ vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' và vai 'le_tan' (Ms. Nga, Recruitment — sảnh zone 3, tin nhắn 'hr' ở zone 0) dùng 'nga' — id vai giữ nguyên.",
   "_place_ghi_chu": "place: 'spawn' = người chơi, đặt tại SPAWN_ · 'node' = đứng tại node NPC_ (xoay theo yaw_deg) · 'follow_player' = đi theo người chơi · 'near_node' = code đặt cạnh node (offset theo hệ trục glTF, m). pose: 'stand' (mặc định) | 'seated' = ngồi gõ phím (sit_type), ghế sau điểm đứng 0,40 m; khi nói chuyện thì stand_up → quay về phía người chơi → talk → ngồi lại. Không đặt NPC nào ở chỗ bàn intern (SPAWN_ban_lam_viec). node_marks: 'seat' = node đánh dấu CHỖ GHẾ (zone_05 đặt NPC_dong_nghiep_* tại ghế) → điểm đứng tính lùi về phía bàn theo models.<id>.seat.offset_xz_m. chair_height_m: mặt ghế trong GLB (đo bằng tia dò: 0,51 m) → khi ngồi nâng nhân vật thêm (chair_height_m − seat.height_m) để không lún vào ghế. node có thể là danh sách (vd vai thao — chị Huyền: NPC_thao_cua_xe ở zone_00, NPC_dong_nghiep_don ở zone_01) — zone có node nào thì đứng ở đó. wait.<zone>: vai đi theo (Tú) đứng chờ tại near_node + offset tới khi đạt until. carry: đồ cầm tay do code gắn (bag). board: {on_flag, to_node, done_flag} — có cờ on_flag thì đi tới to_node rồi khuất, bật done_flag. hide_if: không đặt vai khi đạt điều kiện.",
-  "_tint_ghi_chu": "TẠM (mọi vai dùng chung model): tint = { shirt, pants } màu hex đổi bằng code (game/src/characters/tint.js) để dễ phân biệt NPC: áo = điểm ảnh cam đậm trên thân + tay, quần = điểm ảnh xám sáng trên hông + chân, giữ nếp vải của texture. Bỏ trống = giữ màu gốc (người chơi giữ áo cam, quần kem). Không sửa texture/GLB.",
+  "_tint_ghi_chu": "TẠM (mọi vai dùng chung model): tint = { shirt, pants } màu hex đổi bằng code (game/src/characters/tint.js) để dễ phân biệt NPC: áo = điểm ảnh cam đậm trên thân + tay, quần = điểm ảnh xám sáng trên hông + chân, giữ nếp vải của texture. Bỏ trống = giữ màu gốc (người chơi giữ áo cam, quần kem). Không sửa texture/GLB. Vai dùng model riêng cũng có thể đặt tint (vd le_tan: chỉ quần, để Ms. Nga khác Ms. Huyền).",
   "roles": {
     "player": {
       "model": "prajith",
@@ -97,13 +97,13 @@
       "_ghi_chu": "Hành khách mang túi ở cửa xe số 2 (zone_00). Được nhường (cờ passenger_boarding) thì đi tới cửa xe rồi khuất (cờ passenger_boarded)."
     },
     "le_tan": {
-      "model": "prajith",
+      "model": "nga",
       "place": "node",
       "node": "NPC_le_tan",
       "tint": {
-        "shirt": "#f4f4f2",
-        "pants": "#1f2a44"
-      }
+        "pants": "#2f3b55"
+      },
+      "_ghi_chu": "Ms. Nga: quần xanh than để khác Ms. Huyền (cùng áo polo cam, quần kem); áo giữ màu gốc."
     },
     "nguoi_la": {
       "model": "prajith",
@@ -189,7 +189,7 @@
       "tu": "Tú",
       "thao": "Ms. Huyền",
       "tai_xe": "Bus Driver",
-      "le_tan": "Receptionist",
+      "le_tan": "Ms. Nga",
       "nguoi_la": "Stranger",
       "mentor": "Prajith",
       "manager": "Manager",
@@ -201,8 +201,12 @@
       "tai_xe_1": "Bus 1 Driver",
       "tai_xe_3": "Bus 3 Driver",
       "hanh_khach": "Passenger",
-      "hr": "FPT Software HR"
+      "hr": "Ms. Nga"
     }
+  },
+  "speaker_as": {
+    "_ghi_chu": "Người nói không có vai đứng trong cảnh (vd tin nhắn điện thoại 'hr') → dùng chân dung của vai này; tên vẫn lấy từ names.",
+    "hr": "le_tan"
   },
   "name_tags": {
     "enabled": true,
@@ -442,6 +446,92 @@
         "run": 4.39
       },
       "portrait": "assets/characters/huyen/huyen_portrait.png"
+    },
+    "nga": {
+      "glb": {
+        "low": "assets/characters/nga/nga.glb"
+      },
+      "tris": {
+        "low": 5998
+      },
+      "height_m": 1.6,
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.68,
+        "run": 4.34
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.386,
+        "offset_xz_m": [
+          -0.023,
+          -0.387
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.389
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/nga/nga_portrait.png"
     }
   }
 }

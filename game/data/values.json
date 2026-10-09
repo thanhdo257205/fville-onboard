@@ -19,7 +19,7 @@
     },
     {
       "id": "teamwork", "vi": "Đồng đội", "name": { "en": "Teamwork" }, "active": false, "zone": "zone_04", "draft": true,
-      "how": { "en": "Call reception through the app when Tú's card turns red." },
+      "how": { "en": "Message Ms. Nga in the app when Tú's card turns red." },
       "hint": { "en": "When a friend is stuck, find the right way to help." }
     },
     {
