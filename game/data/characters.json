@@ -548,6 +548,26 @@
         "run": 4.39
       },
       "portrait": "assets/characters/nga/nga_portrait.png"
+    },
+    "intern_nam": {
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam (hư cấu, Meshy), cao 1,70 m. CHƯA có GLB: chờ gắn xương trên Mixamo (assets/characters/intern_nam/intern_nam_for_mixamo.fbx) rồi build_character.py; chưa vai nào dùng (vai player vẫn là prajith). textures: 2 bộ trang phục cùng UV — ao_cam = bản chuẩn (áo polo cam + logo FPT, phần thưởng ở cổng zone 2; build_character.py nhúng bản này vào GLB), dau_ngay = bộ đồ ngày đầu (áo xanh nhạt #cfe0ee, không logo; quần, giày, da, tóc giữ nguyên). mask = mặt nạ vùng 512 px: đỏ áo, xanh dương quần, xanh lá giày, vàng da, hồng tóc, đen ngoài UV (scripts/blender/characters/outfit_textures.py). Ảnh trong textures/ chỉ có trên máy làm việc (không commit); bước đổi áo khi nhận Áo Cam sẽ quyết cách đưa bản dau_ngay vào game.",
+      "gender": "male",
+      "height_m": 1.7,
+      "textures": {
+        "ao_cam": "assets/characters/intern_nam/textures/intern_nam_basecolor.jpg",
+        "dau_ngay": "assets/characters/intern_nam/textures/intern_nam_basecolor_dau_ngay.jpg",
+        "mask": "assets/characters/intern_nam/textures/intern_nam_mask.png"
+      }
+    },
+    "intern_nu": {
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ (hư cấu, Meshy), cao 1,60 m. CHƯA có GLB: chờ gắn xương trên Mixamo (assets/characters/intern_nu/intern_nu_for_mixamo.fbx) rồi build_character.py; chưa vai nào dùng. textures / mask: như intern_nam.",
+      "gender": "female",
+      "height_m": 1.6,
+      "textures": {
+        "ao_cam": "assets/characters/intern_nu/textures/intern_nu_basecolor.jpg",
+        "dau_ngay": "assets/characters/intern_nu/textures/intern_nu_basecolor_dau_ngay.jpg",
+        "mask": "assets/characters/intern_nu/textures/intern_nu_mask.png"
+      }
     }
   }
 }

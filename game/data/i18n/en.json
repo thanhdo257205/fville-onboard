@@ -34,6 +34,7 @@
   },
   "hud": {
     "controls": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · H: help · Esc: menu",
+    "controls_net": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · T: wave & chat · H: help · Esc: menu",
     "click_to_look": "Click to look around with the mouse",
     "objective_explore": "Explore the {zone}",
     "zone_locked": "This way opens in the next update.",
@@ -97,7 +98,8 @@
     "play_again": "Play again",
     "play_again_confirm": "Start over? Your progress will be erased.",
     "yes": "Yes, start over",
-    "no": "Cancel"
+    "no": "Cancel",
+    "players": "Show other players"
   },
   "tiers": {
     "low": "Low",
@@ -163,5 +165,11 @@
   "cutscene": {
     "skip": "Skip ›",
     "on_the_way": "06:45 · On the way to Hòa Lạc"
+  },
+  "net": {
+    "online": "{n} online · {m} in this zone",
+    "panel_title": "Say something",
+    "panel_help": "1–9: choose · T: close · keep walking anytime",
+    "offline": "Can't reach other players right now — you can keep playing."
   }
 }

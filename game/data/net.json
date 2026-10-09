@@ -1,0 +1,37 @@
+{
+  "_ghi_chu": "Chơi nhiều người mức 'thấy nhau' (docs/multiplayer.md): MỘT phòng chung, không mã phòng. url = địa chỉ WebSocket của máy chủ (server/, Cloudflare Worker + Durable Object 'fville'), vd \"wss://fville-net.<tài-khoản>.workers.dev/ws\"; để trống = tắt mạng, game chạy y như chơi một mình. Máy chủ đọc chính file này lúc đóng gói (wrangler deploy): danh sách emote / câu chat được phép và mục server.",
+  "url": "",
+  "send_hz": 5,
+  "interp_ms": 120,
+  "max_visible": 10,
+  "tag_distance_m": 16,
+  "heartbeat_s": 20,
+  "dead_after_s": 50,
+  "retry_s": [2, 4, 8, 16, 30, 60],
+  "full_retry_s": 90,
+  "bubble_s": 4,
+  "cooldown_s": 1.5,
+  "_client_ly_do": "send_hz: gửi vị trí tối đa bấy nhiêu lần/giây và chỉ khi có thay đổi; interp_ms: vẽ người khác trễ chừng ấy để nội suy mượt; max_visible: chỉ hiện bấy nhiêu người gần nhất cùng zone; heartbeat_s: đứng yên thì gửi ping (máy chủ tự trả lời, không đánh thức Durable Object); dead_after_s: không nhận được gì từ máy chủ chừng ấy giây → coi như rớt, kết nối lại; retry_s: các lần thử lại (giây, cộng ngẫu nhiên), lần cuối lặp mãi; full_retry_s: phòng đầy thì chờ lâu hơn; cooldown_s: giữa 2 lần emote / câu chat.",
+  "emotes": [
+    { "id": "wave", "anim": "wave", "icon": "👋", "label": { "en": "Wave" } },
+    { "id": "nod", "anim": "nod", "icon": "🙂", "label": { "en": "Nod" } },
+    { "id": "cheer", "anim": "cheer", "icon": "🎉", "label": { "en": "Cheer" } }
+  ],
+  "phrases": [
+    { "id": "hi", "text": { "en": "Hi!" } },
+    { "id": "good_luck", "text": { "en": "Good luck!" } },
+    { "id": "follow_me", "text": { "en": "Follow me!" } },
+    { "id": "thank_you", "text": { "en": "Thank you!" } },
+    { "id": "see_you_lunch", "text": { "en": "See you at lunch!" } },
+    { "id": "welcome", "text": { "en": "Welcome to F-Ville!" } }
+  ],
+  "_emote_ly_do": "Emote dùng animation có sẵn của model (characters.json → models.<id>.animations). Câu chat soạn sẵn, KHÔNG có chat tự do: máy chủ chỉ nhận id nằm trong 2 danh sách này.",
+  "server": {
+    "max_connections": 60,
+    "max_msgs_per_s": 10,
+    "idle_kick_s": 60,
+    "name_max": 20,
+    "allowed_origins": ["https://thanhdo257205.github.io"],
+    "_ly_do": "max_connections: quá thì từ chối kèm lý do (mã 4001); max_msgs_per_s: mỗi kết nối, quá thì bỏ tin (gấp 3 lần thì ngắt, mã 4003); idle_kick_s: không nhận được gì (kể cả ping) chừng ấy giây thì ngắt (mã 4002); allowed_origins: trang web được kết nối (localhost / 127.0.0.1 luôn được, để thử); công cụ không phải trình duyệt (không gửi Origin) vẫn được — giới hạn trên vẫn áp."
+  }
+}
