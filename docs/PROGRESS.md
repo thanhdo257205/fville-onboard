@@ -336,6 +336,18 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     (`net_bots.js` nay xen kẽ intern_nam / intern_nu, áo xanh / áo cam): đúng model, đúng áo, console sạch.
   - Texture bộ đồ tải lỗi → cảnh báo, nhân vật tạm mặc texture trong GLB (trước đây lỗi này chặn cả lúc mở game).
   - Ảnh: `renders/characters/<id>_trang_phuc.png` (chính diện 2 bộ, mặt nạ trước/sau, cận ngực logo, cận mặt).
+- **Mũ lưỡi trai cam — phụ kiện tủ đồ (mở khoá khi xong game; 10/10/2026, `scripts/blender/accessories/build_cap.py`):**
+  - Mô hình Meshy 307.500 tam giác (13,5 MB) → `assets/accessories/cap/cap.glb` **884 tam giác, 17,4 KB** (texture WebP 512
+    nhúng, meshopt), validate 0 lỗi. Không Decimate: dựng lại lưới thấp bám bề mặt Meshy bằng tia chiếu — vòm 2 lớp
+    (vải + lót) 24 tia × 6 vòng nối nhau ở mép đội đầu, nút đỉnh, vành có mặt trên / mặt dưới / mép (dày 4–8 mm, dài 7,7 cm,
+    13 hướng), không thủng khi nhìn từ dưới; chỗ hở trên quai sau gáy được đóng kín.
+  - Texture vẽ bằng code: cam phẳng #F26F21, đường may 6 mảnh + mũi chỉ nhạt, 5 hàng chỉ trên vành, lót #EFE8DC; miếng
+    thêu trắng bo góc 6 × 4,2 cm có viền chỉ, logo FPT rộng 5 cm (tô trắng chữ F P T như áo Nga), lưới cong ôm mặt trước
+    vòm, nổi 1,5 mm.
+  - Gốc toạ độ = tâm vòng đội đầu, vành hướng +Z (glTF), giữ độ nghiêng tự nhiên (mép trước cao hơn mép sau 16,6°); số đo
+    cho bước gắn lên đầu intern trong `cap.json` (vòng đội đầu 18,1 × 18,5 cm, vòm cao 11,3 cm). Chưa gắn vào game.
+  - Ảnh: `renders/accessories/cap_so_sanh.png` (Meshy | bản thấp: chính diện, 3/4, ngang, từ dưới), `cap_chi_tiet.png`.
+  - Còn: ở 2 đầu vành, mép vòm bước từ chân vành xuống mép tự nhiên thành một bậc nhỏ (thấy khi nhìn ngang sát).
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
     giảm tam giác. `texture_fixes.json` thêm `collar` (tô lại mặt trong cổ áo theo pháp tuyến mượt quay vào trục cổ) và

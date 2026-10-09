@@ -21,6 +21,8 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
 | `assets/characters/<id>/` | GLB nhân vật, chân dung, texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mixamo/actions.json`) |
+| `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
+| `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc |
 | `assets/props/<id>/source/` | Mô hình Meshy gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`) |

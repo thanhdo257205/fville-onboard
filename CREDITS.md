@@ -19,6 +19,11 @@ Logo FPT trên ngực áo (Prajith, Huyền) là bản tạm: mảng logo tách 
 (`scripts/blender/characters/apply_chest_logo.py`). Logo trên áo Nga và hai nhân vật người chơi (bộ `ao_cam`): logo FPT
 do người dùng cung cấp, chỉ nằm trong texture.
 
+## Phụ kiện
+- Mũ lưỡi trai cam (`assets/accessories/cap/cap.glb`): dáng mũ lấy từ mô hình tạo bằng Meshy (meshy.ai), giấy phép
+  CC BY 4.0 (file gốc không có trên repo; `scripts/blender/accessories/build_cap.py` dựng lại lưới thấp bám theo mô hình
+  đó); logo FPT do người dùng cung cấp, chỉ nằm trong texture.
+
 ## Bối cảnh
 - Tượng Cuder ở zone 2 (`zone_02_campus.glb`, mesh `tuong_cuder_tuong` + búi tóc `tuong_cuder_tuong_buitoc`): mô hình
   tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0. File gốc không có trên repo; `scripts/blender/lib/cuder.py` làm sạch,

@@ -13,6 +13,8 @@ assets/characters/*/mixamo/*
 assets/characters/*/textures/
 # Mô hình Meshy gốc của đồ vật (vd tượng Cuder): chỉ để trên máy làm việc, zone build đọc từ đây
 assets/props/*/source/
+# Phụ kiện (vd mũ lưỡi trai): mô hình Meshy gốc + logo gốc chỉ để trên máy làm việc
+assets/accessories/*/source/
 *.fbx
 # logo dùng để dán vào texture (file logo gốc không đưa lên repo; logo chỉ nằm trong texture của model)
 assets/logos/

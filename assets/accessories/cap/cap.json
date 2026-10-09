@@ -1,0 +1,30 @@
+{
+  "_ghi_chu": "Mũ lưỡi trai (scripts/blender/accessories/build_cap.py). Toạ độ glTF: gốc = tâm vòng đội đầu, +Y lên, +Z = phía trước (vành mũ). opening_*: vòng đội đầu (mép lớp lót) — bước gắn lên đầu nhân vật dùng để co giãn và đặt mũ; opening_tilt_deg: mép trước cao hơn mép sau (độ nghiêng tự nhiên của mũ).",
+  "tris": 884,
+  "source_tris": 307500,
+  "opening_width_m": 0.181,
+  "opening_depth_m": 0.1849,
+  "opening_tilt_deg": 16.6,
+  "crown_height_m": 0.1132,
+  "brim_length_m": 0.0775,
+  "logo": {
+    "width_m": 0.05,
+    "patch_m": [
+      0.06,
+      0.042
+    ],
+    "center_m": [
+      0.0005,
+      0.0821,
+      0.075
+    ]
+  },
+  "texture_px": 512,
+  "colors": {
+    "orange": "#F26F21",
+    "lining": "#EFE8DC"
+  },
+  "glb_kb": 17.4,
+  "source_mb": 13.52,
+  "validate_ok": true
+}
