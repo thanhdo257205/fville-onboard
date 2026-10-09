@@ -253,6 +253,41 @@
       },
       "action": "dialogue:jar_look",
       "_ly_do": "Hũ thủy tinh (GDD: Phòng Hạt Lúa hiện số hạt lúa vàng đã nhặt) — code đặt cạnh lối vào phòng, trong hũ có đúng số hạt đã nhặt."
+    },
+    {
+      "zone": "zone_04",
+      "node": "INT_cua_quet_the",
+      "area": "TRIGGER_cua_quet_the",
+      "prompt": {
+        "en": "Tap your employee card"
+      },
+      "action": "dialogue:card_gate",
+      "requires": {
+        "rewards": [
+          "the_nhan_vien"
+        ]
+      },
+      "hide_if": {
+        "quests": [
+          "z4_card_gate"
+        ]
+      },
+      "_ly_do": "GDD zone 4: lần quẹt thẻ đầu tiên → cửa mở (data/scene_fixes.json zone_04.doors), rồi tình huống người lạ xin đi ké và thẻ của Tú báo đỏ (hội thoại card_gate)."
+    },
+    {
+      "zone": "zone_04",
+      "node": "INT_cua_phong_fsa",
+      "area": "TRIGGER_cua_phong_fsa",
+      "prompt": {
+        "en": "Plan your learning path"
+      },
+      "action": "dialogue:fsa_visit",
+      "hide_if": {
+        "quests": [
+          "z4_fsa"
+        ]
+      },
+      "_ly_do": "GDD zone 4: đọc sứ mệnh FSA [DRAFT], Tú nói luật, mini-game Lộ trình học (minigames.learning_path), rồi Tú chia tay."
     }
   ],
   "minigames": {
@@ -646,6 +681,193 @@
         "hieu_biet": 10
       },
       "_ly_do": "5 mốc tạm (dùng các năm công khai chắc chắn); HR cung cấp 5 mốc thành tựu chính thức."
+    },
+    "learning_path": {
+      "kind": "learning_path",
+      "draft": true,
+      "title": {
+        "en": "My Learning Path"
+      },
+      "line": {
+        "en": "Put the three suggested courses on your first-week calendar, basics first — drag a card onto the calendar, or click it / press 1–3 to place it on the next free day."
+      },
+      "days": [
+        {
+          "en": "Mon"
+        },
+        {
+          "en": "Wed"
+        },
+        {
+          "en": "Fri"
+        }
+      ],
+      "courses": {
+        "developer": [
+          {
+            "title": {
+              "en": "Git & Code Review Basics"
+            },
+            "tag": {
+              "en": "Start here"
+            }
+          },
+          {
+            "title": {
+              "en": "Clean Code in Practice"
+            },
+            "tag": {
+              "en": "After: Git & Code Review"
+            }
+          },
+          {
+            "title": {
+              "en": "Unit Testing 101"
+            },
+            "tag": {
+              "en": "After: Clean Code"
+            }
+          }
+        ],
+        "tester": [
+          {
+            "title": {
+              "en": "Software Testing Fundamentals"
+            },
+            "tag": {
+              "en": "Start here"
+            }
+          },
+          {
+            "title": {
+              "en": "Writing Good Test Cases"
+            },
+            "tag": {
+              "en": "After: Testing Fundamentals"
+            }
+          },
+          {
+            "title": {
+              "en": "Intro to Test Automation"
+            },
+            "tag": {
+              "en": "After: Good Test Cases"
+            }
+          }
+        ],
+        "ba": [
+          {
+            "title": {
+              "en": "Business Analysis Basics"
+            },
+            "tag": {
+              "en": "Start here"
+            }
+          },
+          {
+            "title": {
+              "en": "Writing User Stories"
+            },
+            "tag": {
+              "en": "After: BA Basics"
+            }
+          },
+          {
+            "title": {
+              "en": "Running a Requirements Workshop"
+            },
+            "tag": {
+              "en": "After: User Stories"
+            }
+          }
+        ],
+        "designer": [
+          {
+            "title": {
+              "en": "Design Thinking Basics"
+            },
+            "tag": {
+              "en": "Start here"
+            }
+          },
+          {
+            "title": {
+              "en": "UI Patterns & Accessibility"
+            },
+            "tag": {
+              "en": "After: Design Thinking"
+            }
+          },
+          {
+            "title": {
+              "en": "Prototyping Your First Flow"
+            },
+            "tag": {
+              "en": "After: UI Patterns"
+            }
+          }
+        ]
+      },
+      "hints": [
+        {
+          "en": "Hint: start with the basics — the card marked \"Start here\"."
+        },
+        {
+          "en": "Hint: next comes the course that builds on {prev}."
+        },
+        {
+          "en": "Hint: the last course builds on {prev}."
+        }
+      ],
+      "placed": {
+        "en": "{course} → {day} ✓"
+      },
+      "idle": {
+        "place": {
+          "en": "Look at the small line on each card: it says which course it builds on. Put the next one on {day}."
+        },
+        "goal": {
+          "en": "Pick a goal of your own (1–3), or press 4 for \"Not now\"."
+        }
+      },
+      "goal_question": {
+        "en": "Nice plan! Want to add a learning goal of your own, beyond the suggested path?"
+      },
+      "goals": [
+        {
+          "id": "english",
+          "text": {
+            "en": "Practise English for work — 15 minutes a day"
+          }
+        },
+        {
+          "id": "reading",
+          "text": {
+            "en": "Read one tech article every week"
+          }
+        },
+        {
+          "id": "club",
+          "text": {
+            "en": "Join an FSA learning club"
+          }
+        }
+      ],
+      "goal_skip": {
+        "en": "Not now"
+      },
+      "done_goal": {
+        "en": "Plan saved — with a goal of your own. That's the spirit!"
+      },
+      "done": {
+        "en": "Plan saved to your Learning Notebook."
+      },
+      "result": {
+        "reward": "so_tay_hoc_tap",
+        "quest": "z4_fsa",
+        "hieu_biet": 10
+      },
+      "_ly_do": "GDD zone 4: kéo 3 khóa gợi ý (theo vị trí intern) vào lịch tuần đầu, rồi hỏi có muốn tự đặt thêm mục tiêu riêng không (chọn 1 mục tiêu → ô Innovation). Khóa học là nội dung tạm (HR/FSA cung cấp khóa thật theo vị trí) → draft. Mỗi khóa học dựa trên khóa trước: đặt sai thứ tự = sai, có gợi ý."
     }
   },
   "grains_total": 10,
@@ -696,6 +918,25 @@
       "zone": "zone_03",
       "pos": [-7.35, 0.3, -14.0],
       "where": "Góc sàn tối giữa thành cầu thang và lối vào Phòng Hạt Lúa (ban đầu định đặt trên chiếu nghỉ, nhưng thành cầu thang kín che mất, đứng dưới sàn không thấy)"
+    },
+    {
+      "id": "z4_chieu_nghi",
+      "zone": "zone_04",
+      "pos": [5.3, 2.4, -9.9],
+      "where": "Góc đông bắc chiếu nghỉ cầu thang (docs/zone45_check.md)"
+    },
+    {
+      "id": "z5_ke_o_vuong",
+      "zone": "zone_05",
+      "pos": [-1.6, 1.5, 5.75],
+      "where": "Trên nóc kệ ô vuông đỏ–trắng ở khu nghỉ (kệ cao 1,4 m)"
+    },
+    {
+      "id": "z5_ban_bi_a",
+      "zone": "zone_05",
+      "pos": [-4.0, 0.02, -2.35],
+      "snap": false,
+      "where": "Dưới mép bàn bi-a, phía lối đi (snap false: không chiếu tia xuống, kẻo hạt nằm trên mặt bàn)"
     }
   ]
 }

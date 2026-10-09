@@ -38,7 +38,13 @@
           },
           "_ghi_chu": "zone_00: Tú đứng xem điện thoại trước ghế mái chờ (mai_cho_xe = mesh mái chờ trong GLB; offset glTF, m) tới khi người chơi bắt chuyện (cờ tu_met), sau đó đi theo."
         }
-      }
+      },
+      "hide_if": {
+        "flags": [
+          "tu_said_bye"
+        ]
+      },
+      "_hide_ghi_chu": "GDD: sau phòng FSA (zone 4) Tú lên team khác, hẹn gặp lúc tan làm → từ đó không đi theo nữa (zone 5 không có Tú)."
     },
     "thao": {
       "model": "huyen",
@@ -117,10 +123,17 @@
       "place": "near_node",
       "node": "INT_cua_quet_the",
       "offset": [
-        1.2,
+        1.9,
         0,
-        1.0
+        0.6
       ],
+      "yaw_deg": -70,
+      "hide_if": {
+        "flags": [
+          "stranger_done"
+        ]
+      },
+      "_ghi_chu": "zone_04: người lạ (đồ khách) đứng cạnh đầu đọc thẻ, ngoài khung cửa (thế giới ≈ 4,2; 0; −0,9 — docs/zone45_check.md), nhìn về phía người chơi đi tới từ đầu hành lang đông (yaw −70°). Xong tình huống đi ké (cờ stranger_done) thì không đặt lại.",
       "tint": {
         "shirt": "#7d8f5a",
         "pants": "#bfa27a"

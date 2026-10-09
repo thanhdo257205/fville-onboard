@@ -187,6 +187,66 @@
       }
     },
     {
+      "id": "card_gate", "start": "tap",
+      "nodes": {
+        "tap": { "speaker": "narrator", "text": { "en": "You hold your new employee card to the reader. Beep — green light! The glass doors swing open." },
+          "effects": { "quest": "z4_card_gate", "hieu_biet": 5, "banner": { "en": "First card tap!" } }, "next": "s0" },
+        "s0": { "branch": [{ "if": { "flags": ["stranger_done"] }, "next": "tu0" }], "next": "s1" },
+        "s1": { "speaker": "nguoi_la", "anim": "wave", "text": { "en": "Excuse me! Could I come in with you? I left my card on the bus." },
+          "choices": [
+            { "text": { "en": "Sure, come on in." }, "effects": { "flags": ["stranger_let_in", "stranger_done"] }, "next": "s_in" },
+            { "text": { "en": "Sorry, I can't let you in — reception can help you." }, "effects": { "value": "role_model", "flags": ["stranger_sent_back", "stranger_done"] }, "next": "s_back" }
+          ] },
+        "s_in": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Thanks, you're a lifesaver!" }, "next": "s_in2" },
+        "s_in2": { "speaker": "narrator", "text": { "en": "He slips through the gate behind you and hurries towards the stairs." },
+          "effects": { "walk": { "who": "nguoi_la", "to": [1.6, 0, -4.4], "hide": true } }, "next": "s_in3" },
+        "s_in3": { "speaker": "thao", "style": "phone", "text": { "en": "Hi {player}! A quick tip from me: at the card gate, everyone taps their own card — even someone who seems friendly. Reception can always help guests get in. 🙂" }, "next": "tu0" },
+        "s_back": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Fair enough — rules are rules. I'll ask at reception. Thanks!" }, "next": "s_back2" },
+        "s_back2": { "speaker": "narrator", "text": { "en": "He heads back down the corridor towards the lobby." },
+          "effects": { "walk": { "who": "nguoi_la", "to": [11.6, 0, 0.3], "hide": true } }, "next": "tu0" },
+        "tu0": { "branch": [{ "if": { "flags": ["tu_card_done"] }, "next": null }], "next": "tu1" },
+        "tu1": { "speaker": "narrator", "text": { "en": "Tú taps his card. Beep — the light flashes red." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
+        "tu2": { "speaker": "tu", "anim": "think", "text": { "en": "Huh? My card's red... Could you just let me follow you through?" },
+          "choices": [
+            { "text": { "en": "Sure, come with me." }, "effects": { "flags": ["tu_tailgated", "tu_card_done"] }, "next": "tu_follow" },
+            { "text": { "en": "I'll message Ms. Nga in the app." }, "next": "nga1" },
+            { "text": { "en": "Maybe ask at reception?" }, "effects": { "flags": ["tu_to_reception", "tu_card_done"] }, "next": "tu_rec" }
+          ] },
+        "tu_follow": { "speaker": "tu", "anim": "nod", "text": { "en": "Thanks, {player}! Phew." }, "next": "tu_follow2" },
+        "tu_follow2": { "speaker": "thao", "style": "phone", "text": { "en": "{player}, I saw Tú come in on your card. 🙂 Even friends shouldn't follow each other through the gate — if a card doesn't work, message Ms. Nga in the app and she'll sort it out." }, "next": null },
+        "nga1": { "speaker": "narrator", "text": { "en": "You open My FPT and message Ms. Nga: \"Tú's card shows red at the gate — could you help?\"" }, "next": "nga2" },
+        "nga2": { "speaker": "hr", "style": "phone", "text": { "en": "Got it! I've just activated Tú's card — try again now. Thanks for looking out for each other!" }, "next": "nga3" },
+        "nga3": { "speaker": "narrator", "text": { "en": "Tú taps again. Beep — green!" }, "effects": { "value": "teamwork", "ket_noi": 5, "flags": ["tu_card_fixed", "tu_card_done"] }, "next": "nga4" },
+        "nga4": { "speaker": "tu", "anim": "wave", "text": { "en": "It works! Thanks, {player} — you always know who to ask." }, "next": null },
+        "tu_rec": { "speaker": "tu", "anim": "nod", "text": { "en": "Okay... I'll go and ask. You go on ahead — I'll catch up!" },
+          "effects": { "walk": { "who": "tu", "to": [11.6, 0, 0.3], "return_s": 40, "return_line": { "en": "I'm back! Reception sorted my card out." }, "return_flag": "tu_back" } }, "next": null }
+      }
+    },
+    {
+      "id": "fsa_visit", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["fsa_intro_heard"] }, "next": "go" }], "next": "n1" },
+        "n1": { "speaker": "narrator", "draft": true, "text": { "en": "A sign by the glass door reads: \"FSA — FPT Software Academy. Learning never stops here: every FSofter has a learning path, from first-week courses to certificates.\"" }, "next": "n2" },
+        "n2": { "branch": [{ "if": { "flags": ["tu_to_reception"], "not_flags": ["tu_back"] }, "next": "n2_solo" }], "next": "n2_tu" },
+        "n2_tu": { "speaker": "tu", "anim": "point", "text": { "en": "Let's plan our first week! Put the three suggested courses on the calendar — basics first, then the ones that build on them." }, "effects": { "flags": ["fsa_intro_heard"] }, "next": "go" },
+        "n2_solo": { "speaker": "narrator", "text": { "en": "Below it, a screen invites you to plan your first week: put the three suggested courses on the calendar — basics first, then the ones that build on them." }, "effects": { "flags": ["fsa_intro_heard"] }, "next": "go" },
+        "go": { "action": "minigame:learning_path", "next": "bye0" },
+        "bye0": { "branch": [{ "if": { "flags": ["tu_said_bye"] }, "next": null }, { "if": { "flags": ["tu_to_reception"], "not_flags": ["tu_back"] }, "next": "bye_phone" }], "next": "bye1" },
+        "bye1": { "speaker": "tu", "anim": "wave", "text": { "en": "My team's on the floor above. See you after work, okay?" }, "next": "bye2" },
+        "bye2": { "speaker": "narrator", "text": { "en": "Tú waves and heads back to the stairs." },
+          "effects": { "flags": ["tu_said_bye"], "walk": { "who": "tu", "to": [[-9.4, 4.2, 2.0], [-1.5, 4.2, 1.6], [4.7, 4.2, 1.0], [4.7, 4.2, -2.0]] } }, "next": null },
+        "bye_phone": { "speaker": "tu", "style": "phone", "text": { "en": "Reception fixed my card! My team's on the floor above, so I'm heading straight up. See you after work, okay?" }, "effects": { "flags": ["tu_said_bye"] }, "next": null }
+      }
+    },
+    {
+      "id": "fsa_remind", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "flags": ["tu_back"] }, "next": "tu" }, { "if": { "not_flags": ["tu_to_reception"] }, "next": "tu" }], "next": "self" },
+        "tu": { "speaker": "tu", "anim": "point", "text": { "en": "Wait — before we go in, let's plan our first week at the FSA board!" }, "next": null },
+        "self": { "speaker": "narrator", "text": { "en": "Before you go in, plan your first week at the FSA board by the door." }, "next": null }
+      }
+    },
+    {
       "id": "tu_remind_zone2", "start": "n1",
       "nodes": {
         "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Hold on, we're not done here yet: {missing}." }, "next": null }

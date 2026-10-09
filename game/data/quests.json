@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "checklist: 12 việc ngày đầu (tab Checklist của App My FPT) — xong khi mọi quest 'required' gắn với nó xong. quests: việc cần làm ở mỗi zone (Đợt 2 có zone 1–3). triggers: chuyển zone; 'requires' = quest phải xong, thiếu thì chạy 'blocked_dialogue' (hoặc thông báo 'blocked'); 'cutscene' = chạy cảnh chuyển (data/cutscenes.json) thay vì chuyển zone ngay. Mục checklist 'zones' = các zone góp việc vào mục đó (vd Xe Bus FPT: zone 0 lên xe + zone 1 nhận app). Tên node đối chiếu GLB thật: zone_02 không có SPAWN_zone_02_from_zone_01 → dùng SPAWN_zone_02_start; TRIGGER_zone_02_enter trong zone_02 nằm trùng điểm xuất hiện (mốc 'vừa vào zone').",
+  "_ghi_chu": "checklist: 12 việc ngày đầu (tab Checklist của App My FPT) — xong khi mọi quest 'required' gắn với nó xong. quests: việc cần làm ở mỗi zone (Đợt 2 có zone 1–3). triggers: chuyển zone; 'requires' = quest phải xong, thiếu thì chạy 'blocked_dialogue' (hoặc thông báo 'blocked'); 'cutscene' = chạy cảnh chuyển (data/cutscenes.json) thay vì chuyển zone ngay. Mục checklist 'zones' = các zone góp việc vào mục đó (vd Xe Bus FPT: zone 0 lên xe + zone 1 nhận app). Tên node đối chiếu GLB thật: zone_02 không có SPAWN_zone_02_from_zone_01 → dùng SPAWN_zone_02_start; TRIGGER_zone_02_enter trong zone_02 nằm trùng điểm xuất hiện (mốc 'vừa vào zone'). Zone 4–5 theo docs/zone45_check.md: zone 4 → 5 cần quẹt thẻ + phòng FSA; zone 5 chưa có việc (gặp Prajith, Manager… làm sau).",
   "checklist": [
     { "id": "bus", "zone": "zone_00", "zones": ["zone_00", "zone_01"], "title": { "en": "FPT Bus" } },
     { "id": "gate", "zone": "zone_02", "title": { "en": "F-Ville Gate" } },
@@ -28,13 +28,18 @@
     { "id": "z2_cuder", "zone": "zone_02", "checklist": "statue", "required": true, "target": "INT_tuong_cuder", "title": { "en": "Visit the Cuder Statue" } },
     { "id": "z3_card", "zone": "zone_03", "checklist": "reception", "required": true, "target": "NPC_le_tan", "title": { "en": "Get your employee card from Ms. Nga" } },
     { "id": "z3_rice_room", "zone": "zone_03", "checklist": "rice_room", "required": true, "target": "INT_hat_lua", "title": { "en": "Explore the Rice Grain Room" } },
-    { "id": "z3_wallet", "zone": "zone_03", "required": false, "target": "vi_danh_roi", "title": { "en": "Return the lost wallet" }, "visible_if": { "flags": ["wallet_taken"] } }
+    { "id": "z3_wallet", "zone": "zone_03", "required": false, "target": "vi_danh_roi", "title": { "en": "Return the lost wallet" }, "visible_if": { "flags": ["wallet_taken"] } },
+    { "id": "z4_card_gate", "zone": "zone_04", "checklist": "card_gate", "required": true, "target": "INT_cua_quet_the", "title": { "en": "Tap your card at the card gate" } },
+    { "id": "z4_fsa", "zone": "zone_04", "checklist": "fsa", "required": true, "target": "INT_cua_phong_fsa", "title": { "en": "Plan your first week at the FSA Room upstairs" } }
   ],
   "triggers": [
     { "zone": "zone_00", "node": "TRIGGER_len_xe", "cutscene": "len_xe", "requires": ["z0_meet_thao"], "blocked_dialogue": "board_remind" },
     { "zone": "zone_01", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_start", "requires": ["z1_get_app"], "blocked_dialogue": "thao_remind_app" },
     { "zone": "zone_02", "node": "TRIGGER_zone_03_enter", "to_zone": "zone_03", "to_spawn": "SPAWN_zone_03_start", "requires": ["z2_checkin", "z2_well", "z2_cuder"], "blocked_dialogue": "tu_remind_zone2" },
     { "zone": "zone_03", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_from_zone_03", "requires": [] },
-    { "zone": "zone_03", "node": "TRIGGER_zone_04_enter", "requires": ["z3_card", "z3_rice_room"], "blocked_dialogue": "tu_remind_zone3", "blocked": "hud.zone_locked" }
+    { "zone": "zone_03", "node": "TRIGGER_zone_04_enter", "to_zone": "zone_04", "to_spawn": "SPAWN_zone_04_from_zone_03", "requires": ["z3_card", "z3_rice_room"], "blocked_dialogue": "tu_remind_zone3" },
+    { "zone": "zone_04", "node": "TRIGGER_zone_03_enter", "to_zone": "zone_03", "to_spawn": "SPAWN_zone_03_from_zone_04", "requires": [] },
+    { "zone": "zone_04", "node": "TRIGGER_zone_05_enter", "to_zone": "zone_05", "to_spawn": "SPAWN_zone_05_from_zone_04", "requires": ["z4_card_gate", "z4_fsa"], "blocked_dialogue": "fsa_remind" },
+    { "zone": "zone_05", "node": "TRIGGER_zone_04_enter", "to_zone": "zone_04", "to_spawn": "SPAWN_zone_04_from_zone_05", "requires": [] }
   ]
 }
