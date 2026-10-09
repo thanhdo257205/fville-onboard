@@ -43,7 +43,7 @@ class Remote {
   profile(p) {
     this.name = p.name || "";
     this.outfit = p.outfit || "";
-    if (this.model && p.model !== this.model) this.rebuild = true;   // đổi model → dựng lại
+    if (this.model && p.model !== this.model) { this.rebuild = true; this.failed = false; }   // đổi model → dựng lại
     this.model = p.model || "";
     if (this.nameTag) this.nameTag.element.textContent = this.name;
     if (p.pos) this.push(p.pos, p.yaw, p.anim, true);
@@ -129,7 +129,8 @@ export class RemotePlayers {
     r.loading = true;
     r.rebuild = false;
     const chars = this.g.characters, own = chars.role("player")?.model;
-    const id = chars.cfg.models[r.model] ? r.model : own;      // model lạ (vd bản game khác) → model người chơi
+    // model lạ hoặc chưa có GLB (vd intern_nam / intern_nu khi còn chờ Mixamo) → model của người chơi
+    const id = chars.model(r.model)?.glb ? r.model : own;
     const m = chars.model(id), tier = this.g.state.tier;
     try {
       const gltf = await loadGLTF(url(m.glb[tier] ?? m.glb.high ?? m.glb.low), { cached: true });
@@ -159,7 +160,10 @@ export class RemotePlayers {
       r.outfitShown = null;
       this.group.add(ch.root);
       if (r.bubbleLeft > 0) this.showBubble(r);
-    } catch { /* tải model lỗi: bỏ qua người này */ } finally { r.loading = false; }
+    } catch {
+      if (id !== own) r.model = own;                           // tải lỗi: thử 1 lần với model người chơi, rồi thôi
+      else r.failed = true;
+    } finally { r.loading = false; }
   }
   dispose(r, keepEntry = false) {
     if (!r.ch) return;
@@ -186,7 +190,7 @@ export class RemotePlayers {
       if (r.bubbleLeft > 0) { r.bubbleLeft -= dt; if (r.bubbleLeft <= 0 && r.bubble) r.bubble.visible = false; }
       const s = r.sample(delay);
       if (!r.want || !s) { if (r.ch) r.ch.root.visible = false; r.visible = false; continue; }
-      if ((!r.ch || r.rebuild) && !r.loading) { this.build(r); if (!r.ch) continue; }
+      if ((!r.ch || r.rebuild) && !r.loading && !r.failed) { this.build(r); if (!r.ch) continue; }
       if (!r.ch) continue;
       const ch = r.ch, root = ch.root;
       // bộ đồ

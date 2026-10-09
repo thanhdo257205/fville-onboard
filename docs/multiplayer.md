@@ -31,8 +31,11 @@ sẵn. Không có chat tự do.
   - Phòng đầy thì chờ 90 giây mới thử lại.
 - **Người khác:**
   - Hiện bằng model và bộ đồ họ gửi lên: chưa nhận Áo Cam FPT thì mặc áo sơ mi thường, đã nhận thì mặc áo cam.
-  - Model chưa có trong `data/characters.json` (vd bản game mới hơn có `intern_nam` / `intern_nu`) thì dùng model của người
-    chơi. Khi có model theo giới tính, `join.model` tự gửi đúng model của vai `player`.
+  - Model chưa có trong `data/characters.json` hoặc chưa có GLB (vd `intern_nam` / `intern_nu` khi còn chờ Mixamo) thì dùng
+    model của người chơi. Khi vai `player` dùng model theo giới tính, `join.model` tự gửi đúng model đó.
+  - Khi đổi cách mặc Áo Cam cho `intern_nam` / `intern_nu` (đổi bộ texture `dau_ngay` ↔ `ao_cam` thay vì đổi màu áo), sửa phần
+    bộ đồ trong `RemotePlayers.update` (`game/src/net/remotes.js`) cho khớp. Hiện phần này dùng cùng cách đổi màu như người
+    chơi (`characters.json` → `roles.player.outfit`).
   - Có bảng tên viền xanh ngọc để phân biệt với NPC viền cam.
   - Animation idle / walk / run / sit lấy theo vị trí và trạng thái họ gửi.
   - Vẽ trễ 120 ms để nội suy cho mượt. Đứng yên lâu rồi mới đi thì không trượt chậm; cách nhau hơn 6 m thì dịch chuyển luôn.
