@@ -1,0 +1,68 @@
+{
+  "zone": "zone_03_lobby",
+  "quality": "low",
+  "triangles_visible": 48366,
+  "triangles_collision": 312,
+  "materials": [
+    "M_brick_tex",
+    "M_ceiling_tex",
+    "M_glass",
+    "M_gloss",
+    "M_light",
+    "M_louver_tex",
+    "M_palette"
+  ],
+  "objects": 52,
+  "game_objects": {
+    "COL_": [
+      "COL_bien_chieu_nghi",
+      "COL_cau_thang",
+      "COL_cot_+5",
+      "COL_cot_-5",
+      "COL_cum_don",
+      "COL_hanh_lang_bac",
+      "COL_hanh_lang_cuoi",
+      "COL_hanh_lang_nam",
+      "COL_hl_khu_sinh_hoat",
+      "COL_hl_tuong_bac",
+      "COL_hl_tuong_dong",
+      "COL_hl_tuong_tay_bac",
+      "COL_hl_tuong_tay_nam",
+      "COL_kinh_nam_phai",
+      "COL_kinh_nam_trai",
+      "COL_quay_le_tan",
+      "COL_san_hanh_lang",
+      "COL_san_hat_lua",
+      "COL_san_sanh",
+      "COL_tuong_bac_phai",
+      "COL_tuong_bac_trai",
+      "COL_tuong_tay",
+      "COL_tv_1",
+      "COL_tv_2",
+      "COL_vach_kinh_dong",
+      "COL_vach_lam_va_cay"
+    ],
+    "INT_": [
+      "INT_hat_lua",
+      "INT_quay_le_tan"
+    ],
+    "SPAWN_": [
+      "SPAWN_zone_03_from_zone_04",
+      "SPAWN_zone_03_start"
+    ],
+    "NPC_": [
+      "NPC_le_tan"
+    ],
+    "TRIGGER_": [
+      "TRIGGER_hat_lua",
+      "TRIGGER_quay_le_tan",
+      "TRIGGER_zone_02_enter",
+      "TRIGGER_zone_04_enter"
+    ]
+  },
+  "labels": {
+    "INT_quay_le_tan": "Quầy lễ tân",
+    "INT_hat_lua": "Phòng Hạt Lúa",
+    "NPC_le_tan": "Lễ tân"
+  }
+}

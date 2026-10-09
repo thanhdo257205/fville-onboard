@@ -1,0 +1,27 @@
+{
+  "_ghi_chu": "Tâm logo (m) theo toạ độ của huyen_prep.blend (cao 1,60 m): giữa nẹp cúc (x 0) và đường may vai (x ≈ 0,145), ngang giữa 2 cúc áo (z ≈ 1,195); rộng 6,5 cm như logo polo thật. Chạy lại: scripts/blender/characters/apply_chest_logo.py -- --id huyen [--logo <logo chính thức>].",
+  "center": [
+    0.075,
+    -0.0888,
+    1.195
+  ],
+  "width_m": 0.065,
+  "logo": "assets/logos/fpt_logo_tu_prajith.png",
+  "result": {
+    "center": [
+      0.075,
+      -0.0888,
+      1.195
+    ],
+    "shift_m": 0.0,
+    "seam_in_logo_m": 0.1274,
+    "seam_at_wanted_m": 0.1274,
+    "nearest_seam_free": null,
+    "size_m": [
+      0.065,
+      0.0556
+    ],
+    "texels": 9270,
+    "texel_mm": 0.62
+  }
+}

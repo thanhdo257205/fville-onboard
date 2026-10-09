@@ -1,0 +1,30 @@
+{
+  "_ghi_chu": "huyen: file gốc huyen_rigged.fbx tải từ Mixamo KHÔNG kèm animation (tư thế tĩnh, Skeleton LOD No Fingers, 25 xương) → idle và 13 animation lấy từ file của prajith (retarget, hông nhân theo tỉ lệ độ cao hông). speed_mps: tốc độ chơi (walk giữ 1,4 m/s như prajith, run như prajith); game chỉnh tốc độ phát = speed_mps / anim_speed_mps để chân không trượt.",
+  "base": [
+    "huyen_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "back_of_head_keep": 0.5,
+    "chest_logo": true,
+    "chest_logo_radius_m": 0.06,
+    "regions": [
+      {
+        "name": "nep_cuc_ao",
+        "center": [
+          0.0,
+          -0.095,
+          1.19
+        ],
+        "radius": 0.035
+      }
+    ]
+  },
+  "_decimate_ghi_chu": "Bản 6k: vùng đầu huyen ~5.400 tam giác (tóc bob + kính) — giữ cả thì thân chỉ còn ~900 tam giác, logo ngực và ống quần vỡ. Lượt 1: tóc sau gáy giữ 50%; lượt 2: giữ nguyên mặt trước (mặt, kính, lông mày, mắt, tóc mái), phần gáy còn lại vùng logo và nẹp 2 cúc áo, giảm thân."
+}

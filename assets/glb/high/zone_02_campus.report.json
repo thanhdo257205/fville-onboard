@@ -1,0 +1,77 @@
+{
+  "zone": "zone_02_campus",
+  "quality": "high",
+  "triangles_visible": 145676,
+  "triangles_collision": 408,
+  "materials": [
+    "M_brick_tex",
+    "M_glass",
+    "M_gloss",
+    "M_hex_tex",
+    "M_laterite_tex",
+    "M_light",
+    "M_louver_tex",
+    "M_palette"
+  ],
+  "objects": 55,
+  "game_objects": {
+    "COL_": [
+      "COL_bac_them",
+      "COL_bien_bac_san",
+      "COL_bien_dong_duong",
+      "COL_bien_dong_san",
+      "COL_bien_nam",
+      "COL_bien_nam_san_phai",
+      "COL_bien_nam_san_trai",
+      "COL_bien_tay_duong",
+      "COL_bien_tay_san",
+      "COL_bo_tuong_phai",
+      "COL_bo_tuong_trai",
+      "COL_bon_cay_12_14",
+      "COL_bon_cay_12_36",
+      "COL_bon_cay_6_14",
+      "COL_bon_cay_6_36",
+      "COL_bui_tre",
+      "COL_canh_sau",
+      "COL_canh_trai",
+      "COL_canteen_phai",
+      "COL_canteen_trai",
+      "COL_chieu_nghi_sanh",
+      "COL_cot_den_+15",
+      "COL_cot_den_+26",
+      "COL_cot_den_+38",
+      "COL_cot_den_+6",
+      "COL_cot_den_-12",
+      "COL_cot_den_-24",
+      "COL_dao_gieng",
+      "COL_gieng_lang",
+      "COL_ground",
+      "COL_khe_giua_nha",
+      "COL_khoi_kinh_xam",
+      "COL_tuong_cuder",
+      "COL_via_he"
+    ],
+    "INT_": [
+      "INT_cong_fville",
+      "INT_gieng_lang",
+      "INT_tuong_cuder"
+    ],
+    "SPAWN_": [
+      "SPAWN_zone_02_from_zone_03",
+      "SPAWN_zone_02_start"
+    ],
+    "NPC_": [],
+    "TRIGGER_": [
+      "TRIGGER_cong_fville",
+      "TRIGGER_gieng_lang",
+      "TRIGGER_tuong_cuder",
+      "TRIGGER_zone_02_enter",
+      "TRIGGER_zone_03_enter"
+    ]
+  },
+  "labels": {
+    "INT_cong_fville": "Cổng F-Ville",
+    "INT_gieng_lang": "Giếng Làng",
+    "INT_tuong_cuder": "Tượng Cuder"
+  }
+}

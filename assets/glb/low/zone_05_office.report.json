@@ -1,0 +1,85 @@
+{
+  "zone": "zone_05_office",
+  "quality": "low",
+  "triangles_visible": 32086,
+  "triangles_collision": 372,
+  "materials": [
+    "M_ceiling_grid_tex",
+    "M_gloss",
+    "M_light",
+    "M_palette"
+  ],
+  "objects": 142,
+  "game_objects": {
+    "COL_": [
+      "COL_ban_bi_a",
+      "COL_ban_tulip",
+      "COL_cua_fsa",
+      "COL_cum_ban_-14_-11",
+      "COL_cum_ban_-14_-5",
+      "COL_cum_ban_-22_-11",
+      "COL_cum_ban_-22_-5",
+      "COL_cum_ban_-30_-11",
+      "COL_cum_ban_-30_-5",
+      "COL_ke_o_vuong_1",
+      "COL_ke_o_vuong_2",
+      "COL_nghi_tuong_bac",
+      "COL_nghi_tuong_nam",
+      "COL_phong_hop_manager_ban",
+      "COL_phong_hop_manager_dong",
+      "COL_phong_hop_manager_nam_phai",
+      "COL_phong_hop_manager_nam_trai",
+      "COL_phong_hop_manager_tay",
+      "COL_phong_hop_mentor_ban",
+      "COL_phong_hop_mentor_dong",
+      "COL_phong_hop_mentor_nam_phai",
+      "COL_phong_hop_mentor_nam_trai",
+      "COL_phong_hop_mentor_tay",
+      "COL_san",
+      "COL_tuong_fsa_bac",
+      "COL_tuong_fsa_nam",
+      "COL_vach_luc_giac_bac",
+      "COL_vach_luc_giac_nam",
+      "COL_vp_tuong_bac",
+      "COL_vp_tuong_nam",
+      "COL_vp_tuong_tay"
+    ],
+    "INT_": [
+      "INT_ban_lam_viec",
+      "INT_phong_hop_manager",
+      "INT_phong_hop_mentor"
+    ],
+    "SPAWN_": [
+      "SPAWN_ban_lam_viec",
+      "SPAWN_phong_hop_manager",
+      "SPAWN_phong_hop_mentor",
+      "SPAWN_zone_05_start"
+    ],
+    "NPC_": [
+      "NPC_ban_bi_a",
+      "NPC_dong_nghiep_1",
+      "NPC_dong_nghiep_2",
+      "NPC_dong_nghiep_3",
+      "NPC_manager",
+      "NPC_mentor"
+    ],
+    "TRIGGER_": [
+      "TRIGGER_ban_lam_viec",
+      "TRIGGER_khu_team",
+      "TRIGGER_phong_hop_manager",
+      "TRIGGER_phong_hop_mentor",
+      "TRIGGER_zone_04_enter"
+    ]
+  },
+  "labels": {
+    "INT_phong_hop_mentor": "Phòng họp Mentor",
+    "INT_phong_hop_manager": "Phòng họp Manager",
+    "INT_ban_lam_viec": "Bàn làm việc của bạn",
+    "NPC_mentor": "Mentor",
+    "NPC_manager": "Manager",
+    "NPC_dong_nghiep_1": "Đồng nghiệp Lan",
+    "NPC_dong_nghiep_2": "Đồng nghiệp Minh",
+    "NPC_dong_nghiep_3": "Đồng nghiệp Hà",
+    "NPC_ban_bi_a": "Đồng nghiệp ở khu nghỉ"
+  }
+}

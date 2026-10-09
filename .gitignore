@@ -1,0 +1,39 @@
+# Repo công khai: nhánh main = mã nguồn, nhánh gh-pages = bản build (dist/ là git worktree của gh-pages).
+
+# --- Tham chiếu: video, ảnh gốc, khung hình cắt từ video (có khung chụp thẻ nhân viên ghi họ tên) ---
+# Chỉ giữ ghi chú .md và bảng màu.
+references/*
+!references/*.md
+!references/palette_proposal.png
+
+# --- Nhân vật: FBX gốc từ Mixamo, file Meshy gốc, ảnh/texture làm từ người thật ---
+assets/characters/*/source/
+assets/characters/*/mixamo/*
+!assets/characters/*/mixamo/actions.json
+assets/characters/*/textures/
+*.fbx
+
+# --- File Blender, ảnh render, công cụ cài trên máy ---
+*.blend
+*.blend1
+assets/blend/
+renders/
+tools/bin/
+
+# --- Build ---
+node_modules/
+dist/
+game/dist/
+game/public/draco/
+*.raw.glb
+
+# --- Tạm, cá nhân ---
+__pycache__/
+*.pyc
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+.claude/settings.local.json
+.vscode/

@@ -1,0 +1,74 @@
+{
+  "zone": "zone_00_pickup",
+  "quality": "low",
+  "triangles_visible": 40116,
+  "triangles_collision": 288,
+  "materials": [
+    "M_gloss",
+    "M_light",
+    "M_palette"
+  ],
+  "objects": 54,
+  "game_objects": {
+    "COL_": [
+      "COL_bien_bo_via",
+      "COL_bien_dong",
+      "COL_bien_tay",
+      "COL_bien_tram",
+      "COL_cay_+20",
+      "COL_cay_+28",
+      "COL_cay_-16",
+      "COL_cay_-29",
+      "COL_cot_den_+24",
+      "COL_cot_den_+4",
+      "COL_cot_den_-11",
+      "COL_cot_den_-28",
+      "COL_ground",
+      "COL_mai_cho_cot_+10",
+      "COL_mai_cho_cot_+6",
+      "COL_mai_cho_hong",
+      "COL_mai_cho_sau",
+      "COL_nha_bac",
+      "COL_quan_1",
+      "COL_quan_2",
+      "COL_via_he_bac",
+      "COL_xe_bus_1",
+      "COL_xe_bus_2",
+      "COL_xe_bus_3"
+    ],
+    "INT_": [
+      "INT_bien_xe_1",
+      "INT_bien_xe_2",
+      "INT_bien_xe_3"
+    ],
+    "SPAWN_": [
+      "SPAWN_zone_00_start"
+    ],
+    "NPC_": [
+      "NPC_hanh_khach",
+      "NPC_tai_xe_1",
+      "NPC_tai_xe_3",
+      "NPC_thao_cua_xe"
+    ],
+    "TRIGGER_": [
+      "TRIGGER_len_xe"
+    ],
+    "CAM_": [
+      "CAM_lenxe_1",
+      "CAM_lenxe_2",
+      "CAM_lenxe_3"
+    ],
+    "PATH_": [
+      "PATH_xe_roi_tram"
+    ]
+  },
+  "labels": {
+    "INT_bien_xe_1": "Biển tuyến xe số 1",
+    "INT_bien_xe_2": "Biển tuyến xe số 2",
+    "INT_bien_xe_3": "Biển tuyến xe số 3",
+    "NPC_thao_cua_xe": "Chị Thảo (cửa xe số 2)",
+    "NPC_hanh_khach": "Hành khách mang túi",
+    "NPC_tai_xe_1": "Bác tài xe số 1",
+    "NPC_tai_xe_3": "Bác tài xe số 3"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "zone": "zone_01_bus",
+  "quality": "high",
+  "triangles_visible": 77958,
+  "triangles_collision": 216,
+  "materials": [
+    "M_gloss",
+    "M_hex_tex",
+    "M_light",
+    "M_louver_tex",
+    "M_palette"
+  ],
+  "objects": 41,
+  "game_objects": {
+    "COL_": [
+      "COL_ban_do",
+      "COL_bien_dong",
+      "COL_bien_nam",
+      "COL_bien_tay",
+      "COL_bui_tre_1",
+      "COL_bui_tre_2",
+      "COL_cot_den_+18",
+      "COL_cot_den_+4",
+      "COL_cot_den_-10",
+      "COL_cot_den_-22",
+      "COL_gian_leo",
+      "COL_ground",
+      "COL_sidewalk",
+      "COL_toa_nha",
+      "COL_xe_bus_+0",
+      "COL_xe_bus_+20",
+      "COL_xe_bus_+6",
+      "COL_xe_bus_-15"
+    ],
+    "INT_": [
+      "INT_ban_do_tuyen_xe",
+      "INT_xe_bus"
+    ],
+    "SPAWN_": [
+      "SPAWN_zone_01_cua_xe",
+      "SPAWN_zone_01_from_zone_02",
+      "SPAWN_zone_01_start"
+    ],
+    "NPC_": [
+      "NPC_dong_nghiep_don",
+      "NPC_tai_xe"
+    ],
+    "TRIGGER_": [
+      "TRIGGER_ban_do_tuyen_xe",
+      "TRIGGER_xuong_xe",
+      "TRIGGER_zone_02_enter"
+    ],
+    "CAM_": [],
+    "PATH_": [
+      "PATH_xe_vao_tram"
+    ]
+  },
+  "labels": {
+    "INT_xe_bus": "Xe Bus FPT",
+    "INT_ban_do_tuyen_xe": "Bản đồ tuyến xe buýt",
+    "NPC_tai_xe": "Tài xế",
+    "NPC_dong_nghiep_don": "Đồng nghiệp đón"
+  }
+}

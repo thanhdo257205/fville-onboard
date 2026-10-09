@@ -1,0 +1,16 @@
+{
+  "_ghi_chu": "Toạ độ 3D (m) sau khi chuẩn hoá: nhân vật nhìn -Y, cao 1.75, gốc giữa hai bàn chân. Ngực trái của nhân vật = phía +X. Logo Meshy cũ dò bằng màu xanh lá/xanh dương: x 0.064..0.131, z 1.285..1.333.",
+  "pad": 12,
+  "remove": [
+    {"name": "logo_nguc", "box": [[0.03, 0.20], [-0.30, 0.05], [1.22, 1.42]], "facing": [0, -1, 0],
+     "near": [0.098, 0.0, 1.31], "radius": 0.05}
+  ],
+  "bands": [
+    {"name": "vet_mu_ban_tay_phai", "region": [[-0.43, -0.38], [-0.04, 0.03], [0.785, 0.835]],
+     "facing": [-0.35, -1, 0.15], "width": 0.004}
+  ],
+  "decals": [
+    {"name": "logo_fpt", "png": "assets/logos/fpt_logo.png", "center": [0.098, -0.06, 1.31], "width": 0.08,
+     "fill_holes": [1.0, 1.0, 1.0]}
+  ]
+}
