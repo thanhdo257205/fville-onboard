@@ -258,7 +258,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   lần ra 7 thứ tự khác nhau); câu 2 Cuder cân độ dài phương án: đúng "Farming roots and hard work, now in tech", sai
   "Digging for gold in the hills" / "Building new roads for the city" / "Winning a big sports trophy" (giữ hint, explain).
 
-### Chơi nhiều người mức "thấy nhau" (09/10/2026)
+### Chơi nhiều người mức "thấy nhau" (09/10/2026, `main` d5727d5 + bddb7f6, đã deploy `gh-pages` 1a78a90 — mạng tắt)
 - **Một phòng chung**, không mã phòng (`docs/multiplayer.md`, GDD mục Chơi nhiều người). `data/net.json` → `url` trống =
   tắt mạng: bản gh-pages lần này để trống, game y như chơi một mình (đã thử: chơi trọn zone 0 → 5 không teleport trên bản
   build, không có WebSocket, không góc online / phím T / dòng menu, console sạch).
