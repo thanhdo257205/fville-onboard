@@ -341,6 +341,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `/` + `/status`, hibernation (đọc lại attachment sau khi ngủ), 8 bước với 2 cửa sổ bản build; FPS 10 bot trên GPU thật:
   72 → 66 FPS (1280 × 760, Detail 0). Sửa 2 lỗi client: danh sách người cùng zone bị xoá nếu về trước khung đầu tiên;
   `interp_ms` 120 → 260 (người khác đi giật). Chi tiết: `docs/multiplayer.md` → "Đã lên mạng".
+  Đã deploy `gh-pages` 3203cbe (từ `main` 836c3d3, gồm intern nam / nữ, đổi áo bằng texture, mũ chưa gắn); trang thật kết
+  nối máy chủ được (origin github.io).
 - **Mũ lưỡi trai cam — phụ kiện tủ đồ (mở khoá khi xong game; 10/10/2026, `scripts/blender/accessories/build_cap.py`):**
   - Mô hình Meshy 307.500 tam giác (13,5 MB) → `assets/accessories/cap/cap.glb` **884 tam giác, 17,4 KB** (texture WebP 512
     nhúng, meshopt), validate 0 lỗi. Không Decimate: dựng lại lưới thấp bám bề mặt Meshy bằng tia chiếu — vòm 2 lớp
