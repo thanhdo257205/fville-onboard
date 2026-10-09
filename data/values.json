@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "6 giá trị Tôn Đổi Đồng Chí Gương Sáng. Tên tiếng Anh là TẠM (draft) — chờ HR xác nhận bản chính thức. 'active': ô có cách đạt trong bản hiện tại (Đợt 2: chỉ Respect và Fairness). Chữ hiển thị theo mã ngôn ngữ ('en'; sau thêm 'vi').",
+  "_ghi_chu": "6 giá trị Tôn Đổi Đồng Chí Gương Sáng. Tên tiếng Anh là TẠM (draft) — chờ HR xác nhận bản chính thức. 'active': ô có cách đạt trong bản hiện tại (zone 1–4: Respect, Fairness, Teamwork, Role Model, Innovation; Wisdom ở zone 5 chưa làm). Chữ hiển thị theo mã ngôn ngữ ('en'; sau thêm 'vi').",
   "badge": {
     "reward": "huy_hieu_6_gia_tri",
     "name": "Tôn Đổi Đồng Chí Gương Sáng",
@@ -13,12 +13,12 @@
       "hint": { "en": "Small courtesies count — like thanking the bus driver." }
     },
     {
-      "id": "innovation", "vi": "Đổi mới", "name": { "en": "Innovation" }, "active": false, "zone": "zone_04", "draft": true,
+      "id": "innovation", "vi": "Đổi mới", "name": { "en": "Innovation" }, "active": true, "zone": "zone_04", "draft": true,
       "how": { "en": "Set an extra learning goal of your own in the FSA room." },
       "hint": { "en": "Try setting a learning goal beyond the suggested path." }
     },
     {
-      "id": "teamwork", "vi": "Đồng đội", "name": { "en": "Teamwork" }, "active": false, "zone": "zone_04", "draft": true,
+      "id": "teamwork", "vi": "Đồng đội", "name": { "en": "Teamwork" }, "active": true, "zone": "zone_04", "draft": true,
       "how": { "en": "Message Ms. Nga in the app when Tú's card turns red." },
       "hint": { "en": "When a friend is stuck, find the right way to help." }
     },
@@ -28,7 +28,7 @@
       "hint": { "en": "Found something that isn't yours? Hand it in." }
     },
     {
-      "id": "role_model", "vi": "Gương mẫu", "name": { "en": "Role Model" }, "active": false, "zone": "zone_04", "draft": true,
+      "id": "role_model", "vi": "Gương mẫu", "name": { "en": "Role Model" }, "active": true, "zone": "zone_04", "draft": true,
       "how": { "en": "Don't let a stranger follow you through the card gate; point them to reception." },
       "hint": { "en": "Security rules apply to everyone, even when it feels awkward." }
     },

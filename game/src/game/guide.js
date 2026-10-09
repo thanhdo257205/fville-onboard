@@ -123,7 +123,8 @@ export class Guide {
     }
     if (done !== this.doneCount) { this.doneCount = done; this.idle = 0; }
     // dấu "!" + mũi tên
-    const pos = playing && this.enabled ? this.targetPos(goal.target, _v) : null;
+    const way = playing && this.enabled ? this.routePoint(goal) : null;
+    const pos = !playing || !this.enabled ? null : way ? _v.set(way.pos[0], way.pos[1] + (way.above_m ?? 1.4), way.pos[2]) : this.targetPos(goal.target, _v);
     this.mark.visible = !!pos;
     if (pos) this.mark.position.copy(pos);
     this.updateArrow(pos);
@@ -142,6 +143,22 @@ export class Guide {
       this.nudged.set(goal.key, n + 1);
       this.nudge(goal, n);
     }
+  }
+
+  // điểm dẫn đường (guidance.json → goals.<id>.route / zone_exits.<zone>.route): target ở tầng khác (zone_04: phòng FSA
+  // trên tầng 2) → dấu "!" lần lượt ở chân cầu thang, chiếu nghỉ, đầu cầu thang… Tới gần một điểm (r m, cùng tầng) → điểm
+  // sau; tới gần điểm phía sau thì nhảy qua; xuống lại tầng dưới → tính lại từ đầu. Hết điểm → target thật.
+  routePoint(goal) {
+    const route = goal.data?.route;
+    if (!route?.length) return null;
+    const p = this.g.player.position;
+    if (this.routeKey !== goal.key) { this.routeKey = goal.key; this.routeIdx = 0; }
+    if (this.routeIdx > 0 && p.y < route[this.routeIdx - 1].pos[1] - 1.5) this.routeIdx = 0;
+    for (let j = route.length - 1; j >= this.routeIdx; j--) {
+      const w = route[j];
+      if (Math.hypot(p.x - w.pos[0], p.z - w.pos[2]) < (w.r ?? 1.5) && Math.abs(p.y - w.pos[1]) < 1.2) { this.routeIdx = j + 1; break; }
+    }
+    return route[this.routeIdx] ?? null;
   }
 
   // mũi tên ở mép màn hình chỉ hướng target (khi target ngoài khung nhìn)
@@ -232,7 +249,7 @@ export class Guide {
 
   info() {
     const goal = this.current();
-    return { goal: goal.key, target: goal.target, marker: this.mark.visible ? this.mark.position.toArray().map((x) => +x.toFixed(2)) : null,
+    return { goal: goal.key, target: goal.target, route: this.routeKey === goal.key ? this.routeIdx : null, marker: this.mark.visible ? this.mark.position.toArray().map((x) => +x.toFixed(2)) : null,
       arrow: this.arrow.hidden ? null : this.arrowInfo, idle: +this.idle.toFixed(1), nudged: Object.fromEntries(this.nudged),
       bubble: this.bubble.visible ? this.bubble.element.textContent : null, enabled: this.enabled, log: this.log };
   }

@@ -322,8 +322,73 @@ const timeline = {
   },
 };
 
+// ---------- Lộ trình học (phòng FSA, zone 4): xếp 3 khóa gợi ý (theo vị trí intern) vào lịch tuần đầu, khóa cơ bản trước;
+// xong thì hỏi có tự đặt thêm mục tiêu riêng không (chọn → ô Innovation) ----------
+const learning_path = {
+  start(ctx) {
+    const d = ctx.data, g = ctx.game;
+    const courses = d.courses[g?.progress.player.position] || d.courses.developer;
+    const days = d.days.map((x) => tx(x));
+    const order = shuffle(courses.map((_, i) => i));
+    let next = 0, stage = "place", drag = -1;
+    const title = (i) => tx(courses[i].title);
+    const draw = () => {
+      if (stage === "place") {
+        ctx.body.innerHTML = `<div class="lpath"><div class="cal">${days.map((day, k) => `<div class="day ${k < next ? "filled" : k === next ? "now" : ""}">
+            <b>${esc(day)}</b><span>${k < next ? esc(title(k)) : ""}</span></div>`).join("")}</div>
+          <ol class="opts lp-cards">${order.map((ci, k) => `<li data-k="${k}" draggable="${ci >= next}" class="${ci < next ? "used" : ""} ${ctx.assist && ci === next ? "glow" : ""}">
+            ${kbd(k + 1)}<div><b>${esc(title(ci))}</b><small>${esc(tx(courses[ci].tag))}</small></div></li>`).join("")}</ol></div>`;
+        ctx.body.querySelectorAll(".lp-cards li").forEach((li) => {
+          li.addEventListener("click", () => pick(+li.dataset.k));
+          li.addEventListener("dragstart", (e) => { drag = +li.dataset.k; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", li.dataset.k); });
+        });
+        const cal = ctx.body.querySelector(".cal");
+        cal.addEventListener("dragover", (e) => { e.preventDefault(); cal.classList.add("over"); });
+        cal.addEventListener("dragleave", () => cal.classList.remove("over"));
+        cal.addEventListener("drop", (e) => { e.preventDefault(); cal.classList.remove("over"); const k = drag >= 0 ? drag : +e.dataTransfer.getData("text/plain"); drag = -1; pick(k); });
+      } else {
+        ctx.body.innerHTML = `<div class="lpath"><div class="cal">${days.map((day, k) => `<div class="day filled"><b>${esc(day)}</b><span>${esc(title(k))}</span></div>`).join("")}</div>
+          <p class="q">${esc(tx(d.goal_question))}</p>
+          <ol class="opts lp-goals">${d.goals.map((x, k) => `<li data-o="${k}">${kbd(k + 1)} ${esc(tx(x.text))}</li>`).join("")}
+            <li data-o="${d.goals.length}" class="skip-goal">${kbd(d.goals.length + 1)} ${esc(tx(d.goal_skip))}</li></ol></div>`;
+        ctx.body.querySelectorAll(".lp-goals li").forEach((li) => li.addEventListener("click", () => choose(+li.dataset.o)));
+      }
+    };
+    const pick = (k) => {
+      if (stage !== "place" || k < 0 || k >= order.length) return;
+      const ci = order[k];
+      if (ci < next) return;                      // đã xếp rồi
+      sound.play("tap");
+      if (ci !== next) { ctx.mistake(tx(d.hints[next], { prev: next ? title(next - 1) : "" })); return; }
+      next++;
+      ctx.correct(tx(d.placed, { course: title(ci), day: days[ci] }));
+      if (next >= courses.length) stage = "goal";
+      draw();
+    };
+    const choose = (o) => {
+      if (stage !== "goal" || o < 0 || o > d.goals.length) return;
+      stage = "done";
+      sound.play("tap");
+      const goal = d.goals[o];
+      ctx.correct(tx(goal ? d.done_goal : d.done));
+      ctx.body.querySelectorAll(".lp-goals li").forEach((li) => li.classList.toggle("yes", +li.dataset.o === o));
+      ctx.later(() => ctx.finish(goal ? { value: "innovation", flags: ["own_goal_set", `own_goal_${goal.id}`] } : {}), 1100);
+    };
+    draw();
+    ctx.idleHint = () => (stage === "place" ? tx(d.idle.place, { day: days[next] }) : stage === "goal" ? tx(d.idle.goal) : null);
+    ctx.onAssist = () => { if (stage === "place") draw(); };
+    ctx.onKey = (e) => { const n = digit(e); if (n < 0) return false; stage === "place" ? pick(n) : choose(n); return true; };
+    ctx.skipExtra = () => ({});
+    ctx.debug = {
+      solve: (goal = 0) => { while (stage === "place") pick(order.indexOf(next)); choose(goal); },
+      wrong: () => { if (stage === "place") pick(order.findIndex((ci) => ci > next)); },
+      state: () => ({ stage, next, order, glow: [...ctx.body.querySelectorAll(".glow")].map((li) => +li.dataset.k), courses: courses.map((c) => tx(c.title)) }),
+    };
+  },
+};
+
 export const GAMES = {
-  install_app, well, quiz, profile_check, timeline,
+  install_app, well, quiz, profile_check, timeline, learning_path,
   photo_checkin: { layout: "photo", start: (ctx) => photo.start(ctx, "checkin") },
   photo_id: { layout: "photo", start: (ctx) => photo.start(ctx, "id") },
 };

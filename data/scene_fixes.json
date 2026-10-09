@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục; 'see_through' ở gốc = cấu hình chung.",
+  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục; 'see_through' ở gốc = cấu hình chung. doors: cửa mở được (cánh = node có custom property hinge, xoay quanh bản lề theo góc độ; col = hộp COL_ bỏ khi mở; open_if = điều kiện như quests.json).",
   "see_through": {
     "_ghi_chu": "Cây cối không che người chơi (game/src/render/seethrough.js): cây nằm giữa camera và người chơi, hoặc bọc lấy / quẹt sát camera, mờ dần bằng dither rồi hiện lại khi hết che. meshes = regex tên node có cây (mesh gộp chung, code chia thành từng cây lúc tải zone). rays = [lệch ngang m, cao m] các điểm trên người chơi để dò che khuất từ camera. fade_s = thời gian mờ/hiện, hold_s = giữ mờ thêm sau khi hết che (khỏi nhấp nháy), max = mức mờ tối đa (1 = ẩn hẳn), near_m = lá cách camera dưới mức này thì mờ, min_height_m = cụm cây thấp hơn (hàng rào, bụi, cỏ — zone_01 có hàng rào dài 100 m cao 0,9 m) không bao giờ mờ. Zone có mesh gộp lẫn đồ khác: <zone>.see_through.add = [{ mesh, boxes }] (chỉ lấy mảnh có tâm trong hộp, toạ độ glTF).",
     "meshes": "^ENV_(vegetation|cay_)",
@@ -24,6 +24,23 @@
         }
       ]
     }
+  },
+  "zone_04": {
+    "doors": [
+      {
+        "_ghi_chu": "Cửa quẹt thẻ (kính khung đen 2 cánh, bản lề ở mép ngoài: canh_trai x 1,0, canh_phai x 3,6). Quẹt thẻ xong (quest z4_card_gate) → 2 cánh xoay 90° mở vào phía cầu thang (−Z), bỏ hộp COL_cua_quet_the khỏi va chạm.",
+        "leaves": { "cua_quet_the_canh_trai": 90, "cua_quet_the_canh_phai": -90 },
+        "col": ["COL_cua_quet_the"],
+        "open_if": { "quests": ["z4_card_gate"] },
+        "seconds": 0.9
+      },
+      {
+        "_ghi_chu": "Cửa Phòng FSA (tầng trên, đầu tây). Xong Lộ trình học (quest z4_fsa) → 2 cánh mở vào phía văn phòng (−X). Giữ COL_cua_phong_fsa: TRIGGER_zone_05_enter nằm trước hộp này, chạm cửa là sang zone 5.",
+        "leaves": { "cua_phong_fsa_canh_trai": 90, "cua_phong_fsa_canh_phai": -90 },
+        "open_if": { "quests": ["z4_fsa"] },
+        "seconds": 0.9
+      }
+    ]
   },
   "zone_05": {
     "chairs": {

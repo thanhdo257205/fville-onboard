@@ -18,7 +18,7 @@ export async function loadContent() {
     triggers: raw.quests.triggers,
     // hạt lúa vàng (interactables.json → grains) thành vật tương tác do code đặt: nhặt = grain:<id>
     interactables: [...raw.interactables.items, ...(raw.interactables.grains || []).map((g) => ({
-      zone: g.zone, object: g.id, pos: g.pos, model: "grain", radius: g.radius ?? 1.4, prompt: raw.interactables.grain_prompt,
+      zone: g.zone, object: g.id, pos: g.pos, snap: g.snap, model: "grain", radius: g.radius ?? 1.4, prompt: raw.interactables.grain_prompt,
       action: `grain:${g.id}`, hide_if: { grains: [g.id] }, where: g.where }))],
     grainsTotal: raw.interactables.grains_total ?? 10,
     defaultRadius: raw.interactables.default_radius ?? 2,

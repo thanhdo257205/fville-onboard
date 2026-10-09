@@ -22,8 +22,8 @@ trong game nên ngắn, khoảng 1–2 câu (dưới 30 từ), vì hiện trong 
 | 8 | Cả game | Tên tiếng Anh và diễn giải chính thức 6 giá trị; rà lại hành động gắn với từng giá trị | Văn hóa | Câu tạm, [DRAFT] |
 | 9 | 3 · Sảnh lễ tân | Welcome Kit thật gồm những gì | Vật phẩm | Câu tạm, [DRAFT] |
 | 10 | 3 · Phòng Hạt Lúa | 5 mốc thành tựu; cá nhân, tập thể xuất sắc được phép nêu tên | Lịch sử FPT | Câu tạm, [DRAFT] |
-| 11 | 4 · Phòng FSA | Sứ mệnh FSA; 3 khóa học gợi ý cho mỗi vị trí intern | Đào tạo | Chưa làm |
-| 12 | 4 · Cửa quẹt thẻ | Quy định ra vào bằng thẻ; xử lý khi thẻ lỗi hoặc quên thẻ | Quy định | Chưa làm |
+| 11 | 4 · Phòng FSA | Sứ mệnh FSA; 3 khóa học gợi ý cho mỗi vị trí intern | Đào tạo | Câu tạm, [DRAFT] |
+| 12 | 4 · Cửa quẹt thẻ | Quy định ra vào bằng thẻ; xử lý khi thẻ lỗi hoặc quên thẻ | Quy định | Câu tạm (nguyên tắc chung) |
 | 13 | 5 · Bàn làm việc | Quy định mật khẩu và xác thực hai lớp (IT) | Quy định | Chưa làm |
 | 14 | 5 · Gặp Manager | Mục tiêu team mẫu; 5 việc tuần đầu | Công việc | Chưa làm |
 | 15 | 5 · Bàn làm việc | Checklist ngày đầu thật | Công việc | Chưa làm |
@@ -162,7 +162,16 @@ Người chơi đứng ở một điểm đón trong thành phố, đi tìm xe b
   - Người chơi đọc sứ mệnh FSA ở cửa phòng.
   - Sau đó chơi mini-game "Lộ trình học": kéo 3 khóa học gợi ý vào lịch tuần đầu, rồi được hỏi có muốn tự đặt thêm một
     mục tiêu riêng không.
-- **Câu tạm hiện tại:** chưa có.
+- **Câu tạm hiện tại** (đánh dấu [DRAFT], `data/dialogues.json` → `fsa_visit`, `data/interactables.json` →
+  `minigames.learning_path`):
+  - Biển ở cửa: "FSA — FPT Software Academy. Learning never stops here: every FSofter has a learning path, from
+    first-week courses to certificates."
+  - Developer: Git & Code Review Basics → Clean Code in Practice → Unit Testing 101.
+  - Tester: Software Testing Fundamentals → Writing Good Test Cases → Intro to Test Automation.
+  - Business Analyst: Business Analysis Basics → Writing User Stories → Running a Requirements Workshop.
+  - Designer: Design Thinking Basics → UI Patterns & Accessibility → Prototyping Your First Flow.
+  - Mục tiêu riêng (chọn 1 hoặc "Not now"): luyện tiếng Anh 15 phút mỗi ngày, đọc một bài kỹ thuật mỗi tuần, tham gia
+    một câu lạc bộ học tập của FSA.
 - **HR cần cung cấp:**
   - Sứ mệnh FSA và vai trò của học tập ở FPT Software, 2–3 câu.
   - Với mỗi vị trí intern (Developer, Tester, Business Analyst, Designer): 3 khóa học nên học tuần đầu, gồm tên khóa
@@ -173,7 +182,9 @@ Người chơi đứng ở một điểm đón trong thành phố, đi tìm xe b
 - **Chỗ xuất hiện:** hai tình huống ở cửa quẹt thẻ:
   - Một người lạ xin đi ké qua cửa.
   - Thẻ của Tú (bạn cùng đợt) báo đỏ. Người chơi có thể nhắn Ms. Nga qua app để kích hoạt thẻ.
-- **Câu tạm hiện tại:** chưa có.
+- **Câu tạm hiện tại** (`data/dialogues.json` → `card_gate`): mỗi người tự quẹt thẻ, kể cả người trông thân thiện;
+  khách và người quên thẻ qua lễ tân; thẻ lỗi thì nhắn Ms. Nga (Tuyển dụng) qua App My FPT, chị kích hoạt từ xa. Các câu
+  này chưa đánh dấu [DRAFT] vì đúng với nguyên tắc an toàn chung; HR xác nhận kênh xử lý thẻ lỗi thật.
 - **HR cần cung cấp:**
   - Quy định ra vào bằng thẻ (có cấm cho người khác đi ké không).
   - Khi thẻ intern chưa kích hoạt hoặc báo lỗi thì liên hệ ai, qua kênh nào. Người tuyển dụng hay bộ phận hành chính

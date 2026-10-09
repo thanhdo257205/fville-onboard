@@ -37,7 +37,24 @@ export class Follower {
     character.enableLocomotion();
   }
   get position() { return this.body.position; }
-  capsule() { const p = this.body.position; return { x: p.x, z: p.z, y: p.y, height: this.body.height, radius: this.body.radius }; }
+  capsule() { if (this.gone) return null; const p = this.body.position; return { x: p.x, z: p.z, y: p.y, height: this.body.height, radius: this.body.radius }; }
+
+  // rời đi (vd zone_04: Tú quay lại lễ tân, Tú chia tay lên team): đi bộ qua các điểm (đường đi) rồi khuất (gone).
+  // Kẹt / quá lâu / đã xa người chơi → khuất luôn.
+  leave(path) {
+    const pts = [].concat(path).map((p) => p.clone());
+    this.leaving = { path: pts, target: pts.shift(), t: 0 };
+    this.talking = false;
+    this.waiting = null;
+    this.stuck = 0;
+    this.character.enableLocomotion();
+  }
+  // quay lại (vd Tú hỏi lễ tân xong): hiện ở chỗ đứng cạnh người chơi
+  comeBack(player, opts = {}) {
+    this.gone = false;
+    this.character.root.visible = true;
+    this.placeNear(player, opts);
+  }
 
   // điểm trên vòng quanh người chơi: deg so với sau lưng (dương = bên phải)
   ring(player, deg) {
@@ -145,6 +162,8 @@ export class Follower {
 
   // opts: { view: vị trí camera, obstacles: capsule NPC + người chơi }
   update(dt, player, collider, opts = {}) {
+    if (this.gone) return;
+    if (this.leaving) { this.walkAway(dt, collider, opts, player); return; }
     if (this.waiting && !this.talking) { this.character.update(dt); return; }
     if (this.talking) {   // đứng yên, nhìn người chơi
       this.character.faceDir(new THREE.Vector3(player.position.x - this.position.x, 0, player.position.z - this.position.z), dt, 5);
@@ -180,6 +199,34 @@ export class Follower {
     this.character.setSpeed(this.speed);
     this.character.update(dt);
     if (this.position.y < -10) this.placeNear(player, { ...opts, collider });
+    this.sync();
+  }
+
+  walkAway(dt, collider, opts, player) {
+    const L = this.leaving, p = this.position;
+    L.t += dt;
+    let dist = Math.hypot(L.target.x - p.x, L.target.z - p.z);
+    if (dist < 0.6 && L.path.length) { L.target = L.path.shift(); dist = Math.hypot(L.target.x - p.x, L.target.z - p.z); }
+    const far = player && Math.hypot(player.position.x - p.x, player.position.z - p.z) > 16;
+    if (dist < 0.6 || L.t > 16 || this.stuck > 1.2 || far) {
+      this.leaving = null;
+      this.gone = true;
+      this.character.root.visible = false;
+      this.velocity.set(0, 0, 0);
+      return;
+    }
+    const want = this.steer(L.target, opts.obstacles).multiplyScalar(this.character.model.speed_mps.walk);
+    const diff = want.sub(this.velocity), maxStep = 9 * dt;
+    if (diff.length() > maxStep) diff.setLength(maxStep);
+    this.velocity.add(diff);
+    const before = p.clone();
+    this.body.step(dt, this.velocity, collider, opts.obstacles);
+    const moved = Math.hypot(p.x - before.x, p.z - before.z) / Math.max(dt, 1e-4);
+    this.stuck = moved < 0.15 ? this.stuck + dt : 0;
+    this.speed = THREE.MathUtils.lerp(this.speed, moved, Math.min(1, dt * 12));
+    if (this.velocity.lengthSq() > 0.04) this.character.faceDir(this.velocity, dt, 8);
+    this.character.setSpeed(this.speed);
+    this.character.update(dt);
     this.sync();
   }
 

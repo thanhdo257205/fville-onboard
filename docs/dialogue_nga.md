@@ -63,14 +63,26 @@ giây. Nguồn: `data/guidance.json`. Ở bản hiện tại Tú luôn đi cùng
 | Nhận thẻ ở quầy | I'm at the reception desk, right in the lobby — come and get your card! | Your employee card is ready at reception — come find me! |
 | Phòng Hạt Lúa | Before you go up, take a look at the Rice Grain Room at the back of the lobby. | The Rice Grain Room tells FPT's story — it's at the back of the lobby! |
 
-## 3. Zone 4 (chưa làm)
+## 3. Zone 4 · Cửa quẹt thẻ (08:30) — tin nhắn
 
-Ở cửa quẹt thẻ, thẻ của Tú báo đỏ. Lựa chọn trước đây "gọi lễ tân qua app" đổi thành **nhắn chị Nga qua App My FPT**:
+Ở cửa quẹt thẻ, sau khi người chơi xử lý người lạ, thẻ của Tú báo đỏ (hội thoại `card_gate`). Người chơi chọn
+**"I'll message Ms. Nga in the app."** → lời dẫn *"You open My FPT and message Ms. Nga: "Tú's card shows red at the gate —
+could you help?""* → chị Nga trả lời bằng tin nhắn (khung điện thoại, chân dung chị Nga):
 
-- Lựa chọn của người chơi (dự kiến): *"I'll message Ms. Nga in the app."*
-- Tin nhắn trả lời của chị Nga (dự kiến, khung tin nhắn như câu 1): *"Got it! I've just activated Tú's card — try again
-  now. Thanks for looking out for each other!"*
-- Kết quả: thẻ Tú chuyển xanh; ô **Đồng đội** (Teamwork), Kết nối +5. Mô tả cách đạt ô này trong app đã đổi thành
-  *"Message Ms. Nga in the app when Tú's card turns red."*
+| # | Ngữ cảnh | Câu thoại | Cử chỉ | Ghi chú |
+| --- | --- | --- | --- | --- |
+| 13 | Trả lời tin nhắn nhờ kích hoạt thẻ cho Tú | Got it! I've just activated Tú's card — try again now. Thanks for looking out for each other! | | tin nhắn; ngay sau đó thẻ Tú xanh: ô **Đồng đội** (Teamwork), Kết nối +5 |
 
-Câu chữ zone 4 sẽ chốt và thêm vào game khi làm tới zone 4.
+Hai lựa chọn còn lại không có tin nhắn của chị Nga: "Sure, come with me." (Tú đi ké → chị Huyền nhắn nhắc, xem
+`docs/dialogue_huyen.md`), "Maybe ask at reception?" (Tú tự quay lại lễ tân, khoảng 40 giây sau quay lại).
+
+**Tin nhắn nhắc việc ở zone 4** (đứng yên 30 giây mà Tú không đi cùng — vd Tú đang quay lại lễ tân, hoặc đã chia tay):
+
+| Việc | Lần 1 | Lần 2 |
+| --- | --- | --- |
+| Quẹt thẻ | Hi {player}! Your card opens the glass gate down the corridor — just tap it on the reader. | Tap your employee card on the reader by the glass doors and they'll open for you. |
+| Phòng FSA | Next stop: the FSA Room, upstairs at the end of the corridor. | Take the stairs behind the card gate — the FSA Room is at the far end upstairs. |
+| Vào văn phòng | Your team is waiting in the office — go on through the glass door at the end of the corridor! | The office is right behind the FSA Room's glass door. See you there! |
+
+Ở zone 3, khi đã nhận thẻ và xem Phòng Hạt Lúa (lối ra zone 4): *"Your card is ready to use — the card gate is down the
+corridor at the back of the lobby."* / *"Head to the corridor at the back of the lobby — the card gate is just there."*

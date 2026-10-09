@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Hướng dẫn người chơi mới (game/src/game/guide.js): lúc nào cũng biết 'giờ làm gì'. Mục tiêu hiện tại = quest bắt buộc đầu tiên chưa xong của zone (quests.json, có 'target' = node NPC_/INT_/TRIGGER_, 'tu' hoặc vật do code đặt); zone đã xong hết → zone_exits.<zone>. Dấu '!' nổi trên target, ngoài khung nhìn → mũi tên ở mép màn hình (tắt được trong menu Esc). goals.<id>: help = gợi ý khi bấm H / nút Help trong app My FPT; tu = 2 câu bong bóng của Tú khi người chơi đứng yên (lần nhắc 1, 2); phone = 2 tin nhắn điện thoại khi không có Tú đi cùng (người gửi theo settings.phone_from). {player} = tên người chơi. Mục tiêu phụ (không bắt buộc) chỉ dùng help (bấm H khi đang nhận việc, vd tìm balo cho Tú).",
+  "_ghi_chu": "Hướng dẫn người chơi mới (game/src/game/guide.js): lúc nào cũng biết 'giờ làm gì'. Mục tiêu hiện tại = quest bắt buộc đầu tiên chưa xong của zone (quests.json, có 'target' = node NPC_/INT_/TRIGGER_, 'tu' hoặc vật do code đặt); zone đã xong hết → zone_exits.<zone>. Dấu '!' nổi trên target, ngoài khung nhìn → mũi tên ở mép màn hình (tắt được trong menu Esc). goals.<id>: help = gợi ý khi bấm H / nút Help trong app My FPT; tu = 2 câu bong bóng của Tú khi người chơi đứng yên (lần nhắc 1, 2); phone = 2 tin nhắn điện thoại khi không có Tú đi cùng (người gửi theo settings.phone_from); route = điểm dẫn đường khi target ở tầng khác ([{pos: toạ độ glTF, r: bán kính tới nơi}], dấu \"!\" đi lần lượt qua từng điểm). {player} = tên người chơi. Mục tiêu phụ (không bắt buộc) chỉ dùng help (bấm H khi đang nhận việc, vd tìm balo cho Tú).",
   "settings": {
     "idle_s": 30,
     "repeat_s": 45,
@@ -10,7 +10,7 @@
     "marker_above_head_m": 0.8,
     "marker_above_object_m": 0.6,
     "marker_above_trigger_m": 0.3,
-    "phone_from": { "zone_00": "thao", "zone_01": "thao", "zone_02": "thao", "zone_03": "le_tan", "zone_04": "le_tan" },
+    "phone_from": { "zone_00": "thao", "zone_01": "thao", "zone_02": "thao", "zone_03": "le_tan", "zone_04": "le_tan", "zone_05": "le_tan" },
     "_ly_do": "idle_s: không tiến triển nhiệm vụ bao lâu (giây, chỉ tính lúc đang đi lại — không tính hội thoại / mini-game / app / menu / cảnh chuyển) thì nhắc lần 1; repeat_s: lần 2 sau bao lâu nữa; max_nudges: mỗi mục tiêu nhắc tối đa bấy nhiêu lần. phone_from: zone 0–2 Ms. Huyền (vai thao), zone 3–4 Ms. Nga (vai le_tan)."
   },
   "goals": {
@@ -127,6 +127,36 @@
     },
     "z3_wallet": {
       "help": { "en": "You're carrying a lost wallet. Hand it to Ms. Nga at the reception desk (E)." }
+    },
+    "z4_card_gate": {
+      "help": { "en": "Walk down the corridor to the glass doors and tap your employee card on the reader (E). From here on, your card opens the gates." },
+      "tu": [
+        { "en": "The card gate is just down the corridor — let's try our new cards!" },
+        { "en": "Let's tap our cards on the reader by the glass doors over there." }
+      ],
+      "phone": [
+        { "en": "Hi {player}! Your card opens the glass gate down the corridor — just tap it on the reader." },
+        { "en": "Tap your employee card on the reader by the glass doors and they'll open for you." }
+      ]
+    },
+    "z4_fsa": {
+      "route": [
+        { "pos": [1.3, 0, -3.3], "r": 1.2 },
+        { "pos": [2.0, 2.1, -9.3], "r": 1.5 },
+        { "pos": [4.6, 2.1, -8.6], "r": 1.0 },
+        { "pos": [4.7, 4.2, -1.0], "r": 1.5 },
+        { "pos": [-8.8, 4.2, 1.9], "r": 1.8 }
+      ],
+      "_route_ly_do": "Phòng FSA ở tầng trên: dấu \"!\" dẫn lần lượt qua chân cầu thang (ngay sau cửa quẹt thẻ), chiếu nghỉ (nửa tây rồi nửa đông — đi thẳng từ đầu vế 1 tới đầu vế 2 thì vướng lan can giữa), đầu vế 2, góc tây bắc tầng trên (đi vòng giếng trời) rồi tới cửa FSA.",
+      "help": { "en": "Go through the card gate and take the stairs up one floor. The FSA Room is at the far end of the upstairs corridor — press E at its glass door." },
+      "tu": [
+        { "en": "The FSA Room is upstairs — let's take the stairs!" },
+        { "en": "Up the stairs and all the way down the corridor — that's the FSA Room." }
+      ],
+      "phone": [
+        { "en": "Next stop: the FSA Room, upstairs at the end of the corridor." },
+        { "en": "Take the stairs behind the card gate — the FSA Room is at the far end upstairs." }
+      ]
     }
   },
   "zone_exits": {
@@ -159,8 +189,32 @@
       ]
     },
     "zone_03": {
+      "target": "TRIGGER_zone_04_enter",
+      "help": { "en": "Card and Rice Grain Room done! Head to the corridor behind the stairs at the back of the lobby — the card gate is next." },
+      "tu": [
+        { "en": "We've got our cards — let's find the card gate. It's down the corridor at the back." },
+        { "en": "The corridor to the card gate is at the back of the lobby. Let's go!" }
+      ],
+      "phone": [
+        { "en": "Your card is ready to use — the card gate is down the corridor at the back of the lobby." },
+        { "en": "Head to the corridor at the back of the lobby — the card gate is just there." }
+      ]
+    },
+    "zone_04": {
+      "target": "TRIGGER_zone_05_enter",
+      "help": { "en": "Your first-week plan is ready! Walk through the FSA Room's glass door — the office is right behind it." },
+      "tu": [
+        { "en": "Go on in — your team's waiting!" },
+        { "en": "The office is right behind the glass door. Off you go!" }
+      ],
+      "phone": [
+        { "en": "Your team is waiting in the office — go on through the glass door at the end of the corridor!" },
+        { "en": "The office is right behind the FSA Room's glass door. See you there!" }
+      ]
+    },
+    "zone_05": {
       "target": null,
-      "help": { "en": "That's all for now — the card gates and the office open in the next update. Feel free to look around and hunt for golden grains!" }
+      "help": { "en": "Welcome to the office! The meetings with Prajith, the manager and the team open in the next update — feel free to look around (two golden grains are hiding here)." }
     }
   }
 }

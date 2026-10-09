@@ -294,3 +294,18 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 #myfpt .helpbox { background: #fff; border-left: 4px solid var(--orange); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 14px; line-height: 1.35; }
 #myfpt .helpbox b { color: #c4520f; }
 #myfpt .helpbox p { margin: 4px 0 0; }
+/* Lộ trình học (phòng FSA, zone 4) */
+.lpath .cal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; padding: 6px; border-radius: 12px; border: 2px dashed transparent; }
+.lpath .cal.over { border-color: var(--orange); }
+.lpath .day { background: #f6f3ee; color: #1d1f23; border-radius: 10px; padding: 8px 10px; min-height: 64px; }
+.lpath .day b { display: block; color: #c4520f; font-size: 13px; }
+.lpath .day span { display: block; font-weight: 700; font-size: 13px; line-height: 1.25; margin-top: 4px; }
+.lpath .day.now { outline: 2px solid var(--orange); }
+.lpath .day.filled { background: #e3f5e8; }
+.lpath .lp-cards li { cursor: grab; }
+.lpath .lp-cards li div { display: grid; gap: 2px; }
+.lpath .lp-cards li small { color: var(--muted); font-weight: 700; font-size: 12px; }
+.lpath .lp-cards li.used { opacity: .35; cursor: default; }
+.lpath .q { font-weight: 800; margin: 0 0 8px; }
+.lpath .lp-goals li.skip-goal { color: var(--muted); }
+.lpath .lp-goals li.yes { background: #2e9e5b; color: #fff; }

@@ -27,6 +27,13 @@ export const hud = {
     el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
     $("#clock").textContent = t(`zones.${zoneId}.time`);
   },
+  // chữ lớn giữa màn hình như thẻ tên zone (vd "First card tap!"), không đổi đồng hồ
+  banner(text, sub = "") {
+    const el = $("#title-card");
+    el.querySelector(".time").textContent = sub;
+    el.querySelector(".name").textContent = text;
+    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+  },
   objective(text) { $("#objective").textContent = text || ""; },
   // cảnh chuyển: viền điện ảnh trên/dưới, ẩn HUD chơi + bảng tên
   cinematic(on) { document.body.classList.toggle("cinematic", on); },

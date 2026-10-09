@@ -113,7 +113,8 @@ export class Game {
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
     // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
     const plantRe = new RegExp(this.seeThrough.cfg.meshes), blockers = [];
-    zone.root.traverse((o) => { if (o.isMesh && o.visible && !o.name.startsWith("COL_") && !plantRe.test(o.name) && !plantRe.test(o.parent?.name || "")) blockers.push(o); });
+    const leaves = new Set((this.data.sceneFixes?.[zoneId]?.doors || []).flatMap((d) => Object.keys(d.leaves || {})));   // cánh cửa mở được
+    zone.root.traverse((o) => { if (o.isMesh && o.visible && !o.name.startsWith("COL_") && !plantRe.test(o.name) && !plantRe.test(o.parent?.name || "") && !leaves.has(o.parent?.name)) blockers.push(o); });
     zone.view = buildCollider(blockers);
     // dọn zone cũ
     if (this.zone) { this.scene.remove(this.zone.root, this.zone.collider); disposeZone(this.zone); }
@@ -136,7 +137,10 @@ export class Game {
     const spawn = zone.spawns.get(spawnName) ?? zone.spawns.get(this.zoneCfg(zoneId)?.start ?? "");
     if (!spawn && !keepPose) throw new Error(`${zoneId}: thiếu ${spawnName}`);
     const yaw = keepPose ? 0 : spawn.userData.yaw_deg ?? 0;
-    this.player.spawn(keepPose ? keepPose.pos : worldPos(spawn), yaw);
+    // zones.json → spawn_offset.<SPAWN_>: dời chỗ xuất hiện (toạ độ glTF, m) — vd zone_04: SPAWN_ sát tường cuối hành lang,
+    // camera không lùi được ra sau lưng → xuất hiện lùi vào trong 2 m
+    const spawnOff = !keepPose && this.zoneCfg(zoneId)?.spawn_offset?.[spawn.name];
+    this.player.spawn(keepPose ? keepPose.pos : worldPos(spawn).add(new THREE.Vector3(...(spawnOff || [0, 0, 0]))), yaw);
     if (keepPose) this.player.character.root.rotation.y = keepPose.rot;
     if (!keepPose) {
       this.cam.behind(yaw);
@@ -147,6 +151,7 @@ export class Game {
     } else this.cam.occluders = null;
     this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true);
     await this.spawnActors();
+    this.setupDoors();
     this.interaction.setup(zone, this.scene);
     this.guide.reset();
     this.progress.zone = zoneId;
@@ -181,9 +186,9 @@ export class Game {
 
   // sự kiện theo giờ trong zone (zones.json → events): vd zone_01, 20 giây sau khi xuống xe Tú kêu mất balo
   checkZoneEvents(dt) {
+    this.zoneTime += dt;            // cũng dùng cho việc khác theo giờ trong zone (vd Tú đi hỏi lễ tân rồi quay lại)
     const evs = this.zoneCfg(this.state.zone)?.events;
     if (!evs) return;
-    this.zoneTime += dt;
     if (this.mode !== "play") return;
     for (const [i, ev] of evs.entries()) {
       if (this.firedEvents.has(i) || this.zoneTime < ev.after_s || !this.progress.check(ev.if)) continue;
@@ -360,6 +365,8 @@ export class Game {
 
   // ---------- tiến trình, tương tác, hội thoại ----------
   applyEffects(e) {
+    if (e?.banner) hud.banner(tx(e.banner));                        // chữ lớn giữa màn hình (vd "First card tap!")
+    for (const w of [].concat(e?.walk || [])) this.walkActor(w);     // NPC / Tú đi chỗ khác (rồi khuất)
     const events = this.progress.apply(e);
     hud.notify(events);
     if (e?.reward) this.updateOutfit();
@@ -369,9 +376,82 @@ export class Game {
     return events;
   }
 
+  // effects.walk = { who: vai NPC | "tu", to: node | [x, y, z] | [[x, y, z], …] (Tú: đường đi qua nhiều điểm), hide,
+  //   return_s, return_line, return_flag }
+  // NPC: đi thẳng tới đó (hide → khuất khi tới). Tú: đi tới đó rồi khuất; return_s → quay lại cạnh người chơi sau chừng
+  // ấy giây chơi, nói return_line (bong bóng) và bật return_flag — trừ khi đã chia tay (cờ tu_said_bye).
+  walkActor(w) {
+    const node = typeof w.to === "string" ? this.zone.nodes.get(w.to) : null;
+    const path = node ? [worldPos(node)] : Array.isArray(w.to?.[0]) ? w.to.map((q) => new THREE.Vector3(...q)) : Array.isArray(w.to) ? [new THREE.Vector3(...w.to)] : null;
+    if (!path) return;
+    const to = path[path.length - 1];
+    if (w.who === "tu") {
+      const f = this.follower;
+      if (!f || f.gone) return;
+      if (this.talkCam.partner === f) this.talkCam.release();
+      f.leave(path);
+      f.returnInfo = w.return_s ? { at: this.zoneTime + w.return_s, line: w.return_line, flag: w.return_flag } : null;
+      return;
+    }
+    const n = this.npc(w.who);
+    if (!n || n.hidden) return;
+    if (this.talkCam.partner === n) this.talkCam.release();
+    n.walkTo(path[0].setY(n.character.root.position.y), { speed: w.speed ?? 1.3, done: () => { if (w.hide) n.setHidden(true); } });
+  }
+
+  // Tú đi hỏi lễ tân (walk return_s) → tới giờ thì quay lại cạnh người chơi, nói 1 câu bong bóng
+  checkTuReturn() {
+    const f = this.follower, r = f?.returnInfo;
+    if (!r || !f.gone || this.mode !== "play" || this.zoneTime < r.at) return;
+    f.returnInfo = null;
+    if (this.progress.flags.has("tu_said_bye")) return;
+    f.comeBack(this.player, { view: this.camera.position, obstacles: this.npcs.map((n) => n.capsule()).filter(Boolean), collider: this.zone.collider });
+    if (r.flag) this.applyEffects({ flags: [r.flag] });
+    if (r.line) this.guide.say(tx(r.line, { player: this.progress.player.name }));
+  }
+
+  // cửa mở được (data/scene_fixes.json → <zone>.doors): open_if đạt → các cánh (node có custom property hinge) xoay quanh
+  // bản lề tới góc đã cho trong `seconds`, hộp COL_ của cửa bỏ khỏi va chạm (dựng lại BVH va chạm). Vào zone mà đã đạt
+  // điều kiện → cửa mở sẵn.
+  setupDoors() {
+    this.doors = (this.data.sceneFixes?.[this.zone.id]?.doors || []).map((cfg) => ({
+      cfg, t: 0, open: false,
+      leaves: Object.entries(cfg.leaves || {}).map(([name, deg]) => {
+        const node = this.zone.nodes.get(name);
+        // xoay quanh trục Y của node cha (quaternion: cánh có thể đã xoay sẵn, vd Euler 180/0/180)
+        const turn = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(deg));
+        return node && { node, from: node.quaternion.clone(), to: turn.multiply(node.quaternion) };
+      }).filter(Boolean),
+    }));
+    this.updateDoors(0, true);
+  }
+  updateDoors(dt, instant = false) {
+    for (const d of this.doors || []) {
+      if (!d.open && this.progress.check(d.cfg.open_if)) {
+        d.open = true;
+        if (instant) d.t = 1;
+        if (d.cfg.col?.length) this.removeColliders(d.cfg.col);
+      }
+      if (!d.open || (d.t >= 1 && !instant)) continue;
+      d.t = Math.min(1, d.t + dt / (d.cfg.seconds ?? 0.9));
+      const k = THREE.MathUtils.smootherstep(d.t, 0, 1);
+      for (const l of d.leaves) l.node.quaternion.slerpQuaternions(l.from, l.to, k);
+    }
+  }
+  removeColliders(names) {
+    const zone = this.zone, drop = new Set(names);
+    zone.colMeshes = zone.colMeshes.filter((m) => !drop.has(m.name));
+    this.scene.remove(zone.collider);
+    zone.collider.geometry.dispose();
+    zone.collider = buildCollider(zone.colMeshes, this.data.collision?.[zone.id]?.add || []);
+    this.scene.add(zone.collider);
+  }
+
   updateObjective() {
-    const q = this.progress.currentQuest(this.state.zone);
-    hud.objective(q ? tx(q.title) : t("hud.objective_done_zone"));
+    const z = this.state.zone, q = this.progress.currentQuest(z);
+    // zone chưa có việc (zone_05: các cuộc gặp làm sau) → "Explore <zone>"; zone đã xong hết việc → sang khu tiếp theo
+    const none = !this.content.quests.some((x) => x.zone === z);
+    hud.objective(q ? tx(q.title) : none ? t("hud.objective_explore", { zone: t(`zones.${z}.title`) }) : t("hud.objective_done_zone"));
   }
 
   persist() {
@@ -415,19 +495,26 @@ export class Game {
     const p = this.player;
     p.velocity.set(0, 0, 0);
     const speakers = new Set(Object.values(this.content.dialogues.get(id).nodes).map((n) => n.speaker));
-    const tu = this.follower && (actor === "tu" || speakers.has("tu")) ? this.follower : null;
+    const tu = this.follower && !this.follower.gone && (actor === "tu" || speakers.has("tu")) ? this.follower : null;
     this.talkPartner = npc || tu;
     const face = npc?.character.root.position ?? tu?.position;
     if (face) this.faceTarget = face.clone();
+    const others = new Set();
     if (tu) tu.speak(null);
     try {
       if (npc) await npc.engage(p.position.clone());
-      const cast = {   // ai đang nói thì người đó diễn
-        speak: (anim, speaker) => (speaker === "tu" ? tu?.speak(anim) : npc?.speak(anim)),
-        listen: () => { npc?.listen(); tu?.listen(); },
+      const cast = {   // ai đang nói thì người đó diễn; NPC khác trong cảnh nói (vd người lạ ở cửa quẹt thẻ) → quay về người chơi
+        speak: (anim, speaker) => {
+          if (speaker === "tu") return tu?.speak(anim);
+          const who = npc && npc.role === speaker ? npc : this.speakerActor(speaker);
+          if (who && who !== npc && who !== this.follower && !others.has(who)) { others.add(who); who.engage(p.position.clone()); }
+          who?.speak?.(anim);
+        },
+        listen: () => { npc?.listen(); tu?.listen(); for (const o of others) o.listen(); },
       };
-      await this.runner.run(id, { npc: npc || tu ? cast : null, vars });
+      await this.runner.run(id, { npc: cast, vars });
     } finally {
+      for (const o of others) o.release();
       this.talkPartner = null;
       this.talkCam.release();
       this.faceTarget = null;
@@ -440,11 +527,21 @@ export class Game {
   // câu của người đối thoại / người chơi → camera qua vai (tới hết hội thoại); lời dẫn (narrator) và tin nhắn điện thoại
   // không đổi camera (vd tin nhắn Ms. Nga đầu game, đọc biển xe)
   onLine(n) {
+    if (this.mode !== "dialogue" || n.speaker === "narrator" || n.style === "phone") return;
+    // camera + người chơi quay về phía người đang nói (hội thoại nhiều người, vd người lạ rồi Tú ở cửa quẹt thẻ)
+    const speaker = n.speaker === "player" ? null : this.speakerActor(n.speaker);
+    if (speaker && speaker !== this.talkPartner) { this.talkPartner = speaker; this.faceTarget = speaker.character.root.position.clone(); }
     const partner = this.talkPartner;
-    if (!partner || this.mode !== "dialogue" || n.speaker === "narrator" || n.style === "phone") return;
+    if (!partner) return;
     const obstacles = this.npcs.filter((x) => x !== partner).map((x) => x.capsule());
     if (this.follower && this.follower !== partner) obstacles.push(this.follower.capsule());
     this.talkCam.engage(partner, { player: this.player, env: this.talkEnv(), obstacles: obstacles.filter(Boolean) });
+  }
+
+  // người (NPC / Tú) đang có mặt ứng với vai người nói
+  speakerActor(role) {
+    if (role === "tu") return this.follower && !this.follower.gone && this.follower.character.root.visible ? this.follower : null;
+    return this.npcs.find((x) => x.role === role && !x.hidden) || null;
   }
 
   // vật cản cho camera hội thoại: COL_, lưới mesh hiển thị, tán cây / chậu cây (seeThrough)
@@ -489,6 +586,8 @@ export class Game {
     if (this.followerWait && this.follower?.waiting && this.progress.check(this.followerWait)) { this.follower.stopWaiting(); this.followerWait = null; }
     this.checkBoarding();
     this.checkZoneEvents(dt);
+    this.updateDoors(dt);
+    this.checkTuReturn();
     this.interaction.animate(dt);
     // capsule nhân vật: người chơi không xuyên NPC / Tú; Tú tránh NPC + người chơi
     const npcCaps = this.npcs.map((n) => n.capsule()).filter(Boolean);

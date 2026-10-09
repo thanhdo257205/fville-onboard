@@ -39,6 +39,7 @@ export class Npc {
 
   // đi bộ tới điểm (thế giới) rồi gọi done — vd hành khách bước lên cửa xe
   walkTo(target, { speed = 1.2, done = null } = {}) {
+    if (this._turn) { const r = this._turn.res; this._turn = null; r(); }   // đang quay mặt (engage) → thôi, đi luôn
     this.state = "walking";
     this.character.enableLocomotion(0.2);
     this._walk = { target: target.clone(), speed, done };
@@ -64,6 +65,7 @@ export class Npc {
     this.state = "turning";
     this.character.play("idle", { fade: 0.2 });
     await this.turnTo(this.faceAngleTo(playerPos));
+    if (this._walk) return;               // vừa được bảo đi chỗ khác giữa lúc quay (vd người lạ quay về sảnh)
     this.character.play("talk");          // nhóm talk/talk_2 luân phiên
     this.state = "talking";
   }

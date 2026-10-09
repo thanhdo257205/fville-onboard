@@ -195,5 +195,13 @@
       "COL_cum_don"
     ],
     "_remove_ly_do": "COL_cum_don chặn kín cả cụm 6 ghế đôn 3,8 × 7,2 m (cao 0,5 m) → người chơi không tới gần được chiếc ví đặt trên ghế đôn (cách > 3 m) → thay bằng 6 hộp, mỗi ghế 1 hộp (đo bằng tia chiếu xuống mặt ghế, đỉnh 0,5 m)."
+  },
+  "zone_04": {
+    "add": [
+      { "name": "camera_tren_cua_quet_the", "center": [2.3, 3.1, -1.5], "size": [2.6, 1.1, 0.3] },
+      { "name": "lan_can_chieu_tren", "center": [3.0, 4.3, -2.325], "size": [0.8, 3.4, 1.35] }
+    ],
+    "_lan_can_ly_do": "Mép tây chiếu trên (đầu vế 2, x 3,4, z −3 … −1,65, sàn cao 4,2 m) không có lan can lẫn COL_: COL_lan_can_giua chỉ dọc 2 vế (z −6,6 … −3). Từ đầu vế 2 đi về phía tây là rơi xuống giếng cầu thang (bot người chơi mới rơi 2 lần). Hộp x 2,6–3,4 nối tiếp lan can giữa, cao 2,6–6 m: người đi dưới tầng trệt (cao 1,75 m) vẫn qua cửa quẹt thẻ bình thường. Nên thêm lan can thật trong scripts/blender/zone_04.py khi dựng lại zone.",
+    "_add_ly_do": "Vách phía trên cửa quẹt thẻ (x 1,0–3,6, cao 2,55–3,6 m) không có COL_: COL_tuong_bac_trai/_phai chỉ ở hai bên cửa, COL_cua_quet_the chỉ cao tới 2,6 m và bị bỏ khi cửa mở. Đi lên vế 1 ngay sau cửa, camera chơi lọt qua khe này ra hành lang, vách che đầu người chơi (5/64 mẫu đo). Hộp chắn trùng vách; người chơi (cao 1,75 m) vẫn qua cửa (cao 2,55 m)."
   }
 }

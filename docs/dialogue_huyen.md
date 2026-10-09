@@ -69,7 +69,12 @@ nên tin nhắn chủ yếu hiện ở zone 0 trước khi gặp Tú.
 | Tượng Cuder (zone 2) | Stop by the Cuder Statue on your way — read its story and earn a badge! | The Cuder Statue stands in the rice field along the path. Don't skip it! |
 | Vào tòa nhà (zone 2) | Great job! Come into the office building — reception is right inside. | The office entrance is at the end of the path — reception is waiting! |
 
-## 4. Lần sau (zone 4, chưa làm)
+## 4. Zone 4 · Cửa quẹt thẻ — tin nhắn nhắc nhẹ
 
-Theo GDD, ở cửa quẹt thẻ zone 4 chị Huyền sẽ **nhắn qua app** một lời nhắc nhẹ nhàng nếu người chơi cho người lạ (hoặc Tú)
-đi ké qua cửa. Câu chữ chưa viết; sẽ thêm vào đây khi làm tới zone 4.
+Chị Huyền không có mặt ở zone 4; chị nhắn qua app (khung tin nhắn) khi người chơi cho người khác đi ké qua cửa quẹt thẻ
+(hội thoại `card_gate`). Không trừ điểm, chỉ không sáng ô giá trị.
+
+| # | Ngữ cảnh | Câu thoại | Cử chỉ | Ghi chú |
+| --- | --- | --- | --- | --- |
+| 17 | Người chơi cho người lạ đi ké (*"Sure, come on in."*) | Hi {player}! A quick tip from me: at the card gate, everyone taps their own card — even someone who seems friendly. Reception can always help guests get in. 🙂 | | tin nhắn; từ chối thì sáng ô **Gương mẫu** (Role Model) |
+| 18 | Người chơi cho Tú đi ké (*"Sure, come with me."*) | {player}, I saw Tú come in on your card. 🙂 Even friends shouldn't follow each other through the gate — if a card doesn't work, message Ms. Nga in the app and she'll sort it out. | | tin nhắn; nhắn chị Nga thì sáng ô **Đồng đội** (Teamwork) |
