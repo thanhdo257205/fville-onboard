@@ -155,7 +155,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - `scripts/tools/slow_server.py`: server tĩnh có độ trễ để đo trước/sau; cấu hình `perf-before` / `perf-after` trong
     `.claude/launch.json`.
 
-### Game web — Giai đoạn 2: zone 4 (09/10/2026)
+### Game web — Giai đoạn 2: zone 4 (09/10/2026, `main` aee0dee, đã deploy `gh-pages` 15f3036 — gồm cả commit hiệu năng 76d9914)
 - **Zone 4 · Cửa quẹt thẻ, cầu thang, Cửa Phòng FSA** (GDD mục Zone 4). Lời thoại: `data/dialogues.json` → `card_gate`,
   `fsa_visit`, `fsa_remind`; tài liệu `docs/dialogue_nga.md` mục 3, `docs/dialogue_huyen.md` mục 4.
   - **Dữ liệu theo `docs/zone45_check.md`:** zone_04, zone_05 vào `zones.json`; trigger zone 3 ↔ 4 ↔ 5 (zone 4 → 5 cần
