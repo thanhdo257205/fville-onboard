@@ -32,7 +32,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Sửa lỗi chơi thử đợt trước: camera lúc xuất hiện, capsule cho NPC và Tú, Tú đi chếch sau, màu áo/quần riêng từng NPC.
   - Chỗ chuẩn bị âm thanh (`game/src/core/sound.js`, chưa có file âm thanh).
 - Đã chạy thử trọn zone 0 → hết zone 3 (ước tính 12–14 phút theo mạch chính) và đưa lên GitHub Pages.
-- **Sửa 3 lỗi chơi thử (09/10/2026, trên `main`, chưa deploy gh-pages):**
+- **Sửa 3 lỗi chơi thử (09/10/2026, `main` 9d0fe4a, đã deploy `gh-pages` 0af09a2):**
   - Dòng hướng dẫn điều khiển (cuối màn hình) ẩn khi hộp thoại, mini-game hoặc app My FPT đang mở (`hud.cover`, gọi từ
     `Game.setMode`); đồng hồ 10 giây của dòng này tạm dừng lúc bị ẩn, đóng lại thì hiện nốt (vd tin nhắn HR mở ngay đầu
     game).
@@ -69,26 +69,31 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- Bản sửa 3 lỗi chơi thử mới ở `main`, chưa deploy lên `gh-pages` (chờ người dùng đồng ý).
 - huyen: bàn tay buông lấn vào đùi 3–5 cm ở 7 animation (talk, talk_2, nod, phone, press, wave, cheer) do dùng lại
   animation của prajith; chờ quyết định tải bản Mixamo riêng cho huyen.
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
 - Lối sang zone 4 đang khóa ("This way opens in the next update"). Còn 3 hạt lúa vàng dành cho zone 4–5.
-- GitHub Pages vẫn lấy từ nhánh `main` (kiểm tra 09/10/2026: `/game/` trả `index.html` mã nguồn, game không chạy) —
-  người dùng cần chuyển nguồn sang nhánh `gh-pages`, thư mục `/` (Settings → Pages).
 
 ## Đã quyết
+- GitHub Pages build từ nhánh **`gh-pages`** (Settings → Pages: "being built from the gh-pages branch"); người dùng đã
+  chuyển từ trước (xác nhận 09/10/2026). Ghi chú cũ "Pages vẫn lấy từ `main`, cần chuyển nguồn" là sai, đã bỏ.
 - 09/10/2026: **không viết lại lịch sử commit** để xóa metadata đường dẫn máy trong 2 ảnh chân dung cũ
   (`prajith_portrait.png`, `huyen_portrait.png` ở các commit build trước 09/10/2026). Bản hiện tại đã sạch; render
   Blender không ghi metadata nữa; `privacy_scan.py` kiểm tra cả metadata ảnh.
 
 ## Việc tiếp theo
-1. Deploy bản sửa lỗi lên `gh-pages` (`python scripts/deploy_site.py`, khi người dùng đồng ý); chơi thử lại trên máy
-   thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong `data/scene_fixes.json`).
+1. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
+   `data/scene_fixes.json` → `see_through`).
 2. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
 3. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc),
    màn tổng kết, danh hiệu, tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.
+
+## Việc nhỏ để sau
+- zone_03, cây ngoài sân (`ENV_cay_san`): một cụm khoảng 8,7 × 6,9 × 7,2 m (x 24,8–33,5; z 1,6–8,8, toạ độ glTF) bị
+  `seeThrough` gộp thành 1 cây vì các tán dính nhau → khi che thì mờ cả cụm cùng lúc. Chưa cần sửa (cây ngoài vách kính,
+  ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá
+  gần nó nhất).
 
 ## Nội dung [DRAFT] chờ HR (16 mục)
 1. Tin nhắn HR đầu game: xe số 2 đi Hòa Lạc, đón lúc 06:45.
