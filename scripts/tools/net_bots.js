@@ -54,7 +54,7 @@ class Bot {
       this.ws = ws;
       ws.onopen = () => {
         this.open = true;
-        this.send({ t: "join", name: this.name, model: "prajith", outfit: this.i % 2 ? "ao_cam" : "", zone: this.o.zone });
+        this.send({ t: "join", name: this.name, model: this.i % 2 ? "intern_nu" : "intern_nam", outfit: Math.floor(this.i / 2) % 2 ? "ao_cam" : "", zone: this.o.zone });
         resolve(true);
       };
       ws.onmessage = (e) => { this.c.out++; if (String(e.data).includes('"t":"error"')) this.c.errors.push(String(e.data)); };

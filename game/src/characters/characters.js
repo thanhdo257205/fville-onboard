@@ -67,7 +67,8 @@ export class Characters {
   }
 }
 
-// texture bộ đồ (models.<id>.outfit_textures.<bộ> = ảnh cùng UV với texture trong GLB): tải 1 lần, dùng chung
+// texture bộ đồ (models.<id>.outfit_textures.<bộ> = ảnh cùng UV với texture trong GLB): tải 1 lần, dùng chung.
+// Tải lỗi → null (nhân vật mặc texture trong GLB, game vẫn chạy), bỏ khỏi bộ nhớ đệm để lần tạo nhân vật sau thử lại.
 const outfitCache = new Map();
 function loadOutfitTexture(path) {
   if (!outfitCache.has(path)) {
@@ -75,6 +76,10 @@ function loadOutfitTexture(path) {
       t.flipY = false;                      // như texture glTF (GLTFLoader)
       t.colorSpace = THREE.SRGBColorSpace;
       return t;
+    }, () => {
+      outfitCache.delete(path);
+      console.warn(`[nhân vật] không tải được texture bộ đồ ${path} — tạm mặc texture trong GLB`);
+      return null;
     }));
   }
   return outfitCache.get(path);
@@ -220,7 +225,8 @@ export class Character {
   // --- bộ đồ: thay texture màu (models.<id>.outfit_textures) — null = texture gốc trong GLB (vd ao_cam) ---
   async loadOutfits() {
     const list = Object.entries(this.model.outfit_textures || {});
-    this.outfitTex = Object.fromEntries(await Promise.all(list.map(async ([k, p]) => [k, await loadOutfitTexture(p)])));
+    const loaded = await Promise.all(list.map(async ([k, p]) => [k, await loadOutfitTexture(p)]));
+    this.outfitTex = Object.fromEntries(loaded.filter(([, t]) => t));
     let base = null;
     this.root.traverse((o) => { if (o.isSkinnedMesh && o.material?.map && !base) base = o.material.map; });
     for (const t of Object.values(this.outfitTex)) {

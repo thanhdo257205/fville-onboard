@@ -331,6 +331,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     đi 1,4 m/s, chạy 4,39 m/s; mọi animation (cả ngồi) phát được trên người chơi; camera hội thoại qua vai đúng;
     lời thoại của người chơi (trả ví cho Ms. Nga) hiện chân dung đúng giới tính; ảnh check-in trên màn tổng kết đúng
     nhân vật. Ảnh: `renders/game/intern_{nam,nu}_*.jpg`.
+  - Chơi nhiều người (khớp code mạng của bản Web): `join.model` gửi model theo giới tính (`Characters.modelId`), người
+    khác đổi áo bằng texture như người chơi (`RemotePlayers.build/update`). Thử với `wrangler dev` + 4 bot
+    (`net_bots.js` nay xen kẽ intern_nam / intern_nu, áo xanh / áo cam): đúng model, đúng áo, console sạch.
+  - Texture bộ đồ tải lỗi → cảnh báo, nhân vật tạm mặc texture trong GLB (trước đây lỗi này chặn cả lúc mở game).
   - Ảnh: `renders/characters/<id>_trang_phuc.png` (chính diện 2 bộ, mặt nạ trước/sau, cận ngực logo, cận mặt).
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi

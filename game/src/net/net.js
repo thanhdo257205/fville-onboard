@@ -55,7 +55,7 @@ export class Net {
   profile() {
     const g = this.g, chars = g.characters, o = chars.role("player")?.outfit;
     const wearing = o && (g.outfitOverride === o.until_reward || g.progress.hasReward(o.until_reward));
-    return { name: g.progress.player.name, model: chars.role("player")?.model || "", outfit: wearing ? o.until_reward : "" };
+    return { name: g.progress.player.name, model: chars.modelId("player") || "", outfit: wearing ? o.until_reward : "" };   // model theo giới tính
   }
   sendJoin() {
     const z = this.g.state.zone;

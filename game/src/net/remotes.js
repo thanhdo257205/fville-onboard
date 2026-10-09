@@ -128,18 +128,21 @@ export class RemotePlayers {
   async build(r) {
     r.loading = true;
     r.rebuild = false;
-    const chars = this.g.characters, own = chars.role("player")?.model;
-    // model lạ hoặc chưa có GLB (vd intern_nam / intern_nu khi còn chờ Mixamo) → model của người chơi
+    const chars = this.g.characters, own = chars.modelId("player");
+    // model lạ hoặc chưa có GLB (vd model mới chưa build) → model của người chơi
     const id = chars.model(r.model)?.glb ? r.model : own;
     const m = chars.model(id), tier = this.g.state.tier;
     try {
       const gltf = await loadGLTF(url(m.glb[tier] ?? m.glb.high ?? m.glb.low), { cached: true });
       if (!this.list.has(r.id)) return;                        // đã rời trong lúc tải
-      if (r.ch) this.dispose(r, true);
       const ch = new Character(SkeletonUtils.clone(gltf.scene), gltf.animations, m, "remote");
       ch.tier = tier;
-      const o = chars.role("player")?.outfit;                  // bộ đồ: chưa nhận Áo Cam FPT → áo sơ mi thường (đổi màu)
-      applyTint(ch, o?.tint, { dynamic: !!o });
+      await ch.loadOutfits();                                  // texture bộ đồ (vd dau_ngay) — thường đã có trong bộ nhớ đệm
+      if (!this.list.has(r.id)) return;
+      if (r.ch) this.dispose(r, true);
+      // bộ đồ: chưa nhận Áo Cam FPT → texture outfit.texture (vd dau_ngay), đổi ở update(); outfit.tint: cách cũ (đổi màu)
+      const o = chars.role("player")?.outfit;
+      if (o?.tint) applyTint(ch, o.tint, { dynamic: true });
       // người khác ngoài khung nhìn thì không vẽ (Character tắt frustumCulled cho mọi nhân vật): khối cầu bao lấy theo tư thế
       // gốc, nới rộng cho tay chân khi chạy / vẫy
       ch.root.updateMatrixWorld(true);
@@ -195,7 +198,12 @@ export class RemotePlayers {
       const ch = r.ch, root = ch.root;
       // bộ đồ
       const o = g.characters.role("player")?.outfit;
-      if (r.outfitShown !== r.outfit) { r.outfitShown = r.outfit; setTint(ch, o && r.outfit === o.until_reward ? null : o?.tint); }
+      if (r.outfitShown !== r.outfit) {
+        r.outfitShown = r.outfit;
+        const wearing = o && r.outfit === o.until_reward;      // Áo Cam FPT = texture trong GLB
+        if (o?.texture) ch.setOutfit(wearing ? null : o.texture);
+        if (o?.tint) setTint(ch, wearing ? null : o.tint);
+      }
       // vị trí, hướng, tốc độ (đo từ quãng di chuyển) → animation
       const before = _q.copy(root.position);
       const wasVisible = r.visible;

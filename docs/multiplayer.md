@@ -30,12 +30,12 @@ sẵn. Không có chat tự do.
   - Trình duyệt báo mất mạng (`navigator.onLine`) thì không thử, chờ có mạng lại rồi vào ngay.
   - Phòng đầy thì chờ 90 giây mới thử lại.
 - **Người khác:**
-  - Hiện bằng model và bộ đồ họ gửi lên: chưa nhận Áo Cam FPT thì mặc áo sơ mi thường, đã nhận thì mặc áo cam.
-  - Model chưa có trong `data/characters.json` hoặc chưa có GLB (vd `intern_nam` / `intern_nu` khi còn chờ Mixamo) thì dùng
-    model của người chơi. Khi vai `player` dùng model theo giới tính, `join.model` tự gửi đúng model đó.
-  - Khi đổi cách mặc Áo Cam cho `intern_nam` / `intern_nu` (đổi bộ texture `dau_ngay` ↔ `ao_cam` thay vì đổi màu áo), sửa phần
-    bộ đồ trong `RemotePlayers.update` (`game/src/net/remotes.js`) cho khớp. Hiện phần này dùng cùng cách đổi màu như người
-    chơi (`characters.json` → `roles.player.outfit`).
+  - Hiện bằng model và bộ đồ họ gửi lên: chưa nhận Áo Cam FPT thì mặc bộ đồ ngày đầu (texture `dau_ngay`: áo polo xanh
+    nhạt), đã nhận thì texture trong GLB (áo cam + logo) — cùng cách đổi áo như người chơi (`characters.json` →
+    `roles.player.outfit.texture`, `Character.setOutfit`); cấu hình còn `outfit.tint` (cách cũ, đổi màu) thì vẫn dùng.
+  - `join.model` = model theo giới tính của người gửi (`intern_nam` / `intern_nu`, `Characters.modelId("player")`). Model chưa
+    có trong `data/characters.json` hoặc chưa có GLB thì dùng model của người chơi; model không có texture bộ đồ (vd
+    `prajith`) thì luôn mặc áo cam của GLB.
   - Có bảng tên viền xanh ngọc để phân biệt với NPC viền cam.
   - Animation idle / walk / run / sit lấy theo vị trí và trạng thái họ gửi.
   - Vẽ trễ 120 ms để nội suy cho mượt. Đứng yên lâu rồi mới đi thì không trượt chậm; cách nhau hơn 6 m thì dịch chuyển luôn.
