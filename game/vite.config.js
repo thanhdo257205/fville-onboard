@@ -1,7 +1,7 @@
 // Vite: game đọc GLB và JSON trực tiếp từ thư mục gốc dự án (assets/, data/) — không chép trùng.
 // Dev: middleware phục vụ /assets/... và /data/... từ thư mục gốc. Build: chép đúng các file cần vào dist/.
 // Nhân vật Prajith, Huyền đã được duyệt: GLB nhân vật được phép đóng gói; KHÔNG bao giờ chép FBX Mixamo, .blend, source/,
-// và không chép model còn chờ người thật đồng ý (models.<id>.consent_pending, vd nga).
+// và không chép model còn chờ người thật đồng ý (models.<id>.consent_pending; hiện không model nào dùng).
 import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
 import { dirname, join, extname, resolve, sep } from "node:path";

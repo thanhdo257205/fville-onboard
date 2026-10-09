@@ -531,10 +531,7 @@
         "walk": 1.4,
         "run": 4.39
       },
-      "portrait": "assets/characters/nga/nga_portrait.png",
-      "consent_pending": true,
-      "fallback": "prajith",
-      "_consent_ghi_chu": "Ms. Nga là người thật, CHƯA xác nhận đồng ý dùng hình: nga.glb và nga_portrait.png chỉ có trên máy làm việc (.gitignore), không vào bản build (game/vite.config.js, scripts/make_site.py). Thiếu file → game và viewer dùng model fallback và không hiện chân dung (không hiện mặt người khác dưới tên chị); bản build đổi thẳng, không dò file. Khi chị đồng ý: bỏ consent_pending và 2 dòng nga trong .gitignore, commit 2 file."
+      "portrait": "assets/characters/nga/nga_portrait.png"
     }
   }
 }

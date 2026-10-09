@@ -12,9 +12,7 @@ sẽ xưng "em" và gọi "chị").
 
 Cột Ghi chú: **[DRAFT]** = nội dung đang chờ HR xác nhận (giờ xe, quy định), trong game hiện chữ [DRAFT].
 
-> Chị Nga là người thật, **chưa xác nhận đồng ý dùng hình**. Model `nga` và chân dung chỉ có trên máy làm việc; bản web
-> công khai (và bản clone repo) dùng tạm model Prajith cho vai này và bỏ chân dung trong hộp thoại, tin nhắn (tên vẫn là
-> Ms. Nga). Xem `docs/PROGRESS.md`.
+> Chị Nga là người thật, đã đồng ý dùng hình (xác nhận 09/10/2026).
 
 ## 1. Zone 0 · Điểm đón xe bus (06:30) — tin nhắn điện thoại
 

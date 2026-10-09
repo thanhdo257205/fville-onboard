@@ -52,7 +52,7 @@ Người chơi bắt chuyến xe bus sớm lên Hòa Lạc ở một điểm đ�
 | Bác tài | Tài xế xe bus FPT | Zone 1 | `NPC_tai_xe` |
 | Bác tài xe số 1, xe số 3 | Tài xế hai tuyến khác, chỉ đường sang xe số 2 | Zone 0 | `NPC_tai_xe_1`, `NPC_tai_xe_3` |
 | Hành khách mang túi | Người lên xe số 2 cùng lúc với người chơi | Zone 0 | `NPC_hanh_khach` |
-| Chị Nga (Ms. Nga) | Tuyển dụng (Recruitment): người đã liên lạc với người chơi suốt quá trình tuyển, gửi tin nhắn hẹn xe ở zone 0; ở quầy lễ tân zone 3 lần đầu gặp người chơi trực tiếp, phát thẻ nhân viên và Welcome Kit. Người thật, **chưa xác nhận đồng ý dùng hình**: model riêng `nga` (áo polo cam có logo FPT, quần đổi sang xanh than bằng code để khác chị Huyền) chỉ có trên máy làm việc, bản công khai dùng tạm Prajith và không hiện chân dung. Id vai trong dữ liệu vẫn là `le_tan`; tin nhắn điện thoại dùng người nói `hr` | Zone 0 (tin nhắn), zone 3 | `NPC_le_tan` |
+| Chị Nga (Ms. Nga) | Tuyển dụng (Recruitment): người đã liên lạc với người chơi suốt quá trình tuyển, gửi tin nhắn hẹn xe ở zone 0; ở quầy lễ tân zone 3 lần đầu gặp người chơi trực tiếp, phát thẻ nhân viên và Welcome Kit. Người thật, đã đồng ý dùng hình; model riêng `nga` (áo polo cam có logo FPT, quần đổi sang xanh than bằng code để khác chị Huyền). Id vai trong dữ liệu vẫn là `le_tan`; tin nhắn điện thoại dùng người nói `hr` | Zone 0 (tin nhắn), zone 3 | `NPC_le_tan` |
 | Prajith | Mentor, định hướng nghề nghiệp | Zone 5, phòng họp mentor | `NPC_mentor` |
 | Manager | Quản lý team, giao nhiệm vụ đầu tiên | Zone 5, phòng họp manager | `NPC_manager` |
 | Lan, Minh, Hà (tên tạm) | Đồng nghiệp trong team | Zone 5, khu team | `NPC_dong_nghiep_1..3` |

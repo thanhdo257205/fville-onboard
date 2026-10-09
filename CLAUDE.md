@@ -126,10 +126,11 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - KHÔNG BAO GIỜ đưa lên: FBX gốc Mixamo (`mixamo/*.fbx`, điều khoản Mixamo không cho phát tán animation thô), file
   `.blend`, `source/` (file Meshy gốc), texture nhân vật, file logo gốc (`assets/logos/`, logo chỉ nằm trong texture), video/ảnh/khung hình trong `references/` (có khung chụp thẻ nhân
   viên ghi họ tên: `VanPhongLamViec/t_0008.0.jpg`, `t_0010.0.jpg`, `contact_01.jpg`), `renders/`, `tools/bin/`.
-- **Người thật chưa xác nhận đồng ý dùng hình** (`data/characters.json` → `models.<id>.consent_pending`, hiện có `nga`):
-  GLB và chân dung chỉ để trên máy làm việc (.gitignore), không lên nhánh main lẫn gh-pages; `vite build` và
-  `make_site.py` bỏ model đó, `privacy_scan.py` báo lỗi nếu lỡ stage; game và viewer thiếu file thì dùng
-  `models.<id>.fallback` và không hiện chân dung (không hiện mặt người khác dưới tên người này). Khi người đó đồng ý: bỏ `consent_pending` và 2 dòng trong .gitignore, commit GLB + chân dung.
+- **Người thật trong game đã đồng ý dùng hình — tất cả, kể cả nhân vật thêm sau này** (người dùng xác nhận
+  09/10/2026): GLB và chân dung của mọi nhân vật được commit và deploy như bình thường, không cần chặn chờ đồng ý.
+  Cơ chế `models.<id>.consent_pending` + `fallback` vẫn còn trong code (game, viewer, `vite.config.js`, `make_site.py`,
+  `privacy_scan.py`) nhưng hiện không model nào dùng. Các quy tắc ở dòng trên vẫn giữ: không commit ảnh gốc của người
+  thật, file Meshy gốc, FBX Mixamo, `.blend`, video/ảnh tham chiếu.
 - Không đưa email, đường dẫn máy cá nhân, token vào file. Ảnh render từ Blender: `char_render.preview_setup()` đã tắt
   metadata (trước đây Blender ghi đường dẫn file vào PNG). Chạy `python scripts/tools/privacy_scan.py` trước khi commit;
   không file nào trên 20 MB.

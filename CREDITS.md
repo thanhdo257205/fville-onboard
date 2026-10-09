@@ -8,7 +8,7 @@ Mô hình nhân vật tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0. G�
 - `assets/characters/huyen/` — Huyền (vai chị Huyền, buddy đón intern ở zone 0 và zone 1; người thật, đã đồng ý dùng
   hình). Animation dùng lại bộ Mixamo của Prajith (retarget sang bộ xương của Huyền).
 - `assets/characters/nga/` — Nga (vai Ms. Nga, Tuyển dụng: tin nhắn hẹn xe ở zone 0, quầy lễ tân zone 3; người thật,
-  **chưa xác nhận đồng ý dùng hình** — GLB và chân dung chỉ có trên máy làm việc, bản công khai dùng tạm Prajith).
+  đã đồng ý dùng hình).
   Mô hình tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0; gắn xương Adobe Mixamo; animation dùng lại bộ Mixamo của
   Prajith (retarget sang bộ xương của Nga).
 

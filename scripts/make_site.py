@@ -6,8 +6,8 @@ dist/ là git worktree của nhánh gh-pages (repo thanhdo257205/fville-onboard;
 Máy mới: git worktree add dist gh-pages. Script giữ nguyên dist/.git (file trỏ về worktree).
 Commit + push bản build: python scripts/deploy_site.py (chỉ khi người dùng đồng ý đưa bản mới lên mạng).
 
-Được đưa lên: game đã build, viewer, GLB bối cảnh, GLB nhân vật đã được duyệt (Prajith, Huyền), data/*.json.
-Model còn chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending, vd nga) KHÔNG được lên dist/:
+Được đưa lên: game đã build, viewer, GLB bối cảnh, GLB nhân vật (mọi người thật trong game đã đồng ý), data/*.json.
+Model còn chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending; hiện không có) KHÔNG lên dist/:
 game và viewer tự dùng models.<id>.fallback khi thiếu file.
 KHÔNG BAO GIỜ đưa lên: FBX gốc từ Mixamo (điều khoản Mixamo không cho phát tán animation dạng thô), file .blend,
 thư mục source/ và mixamo/ của nhân vật, .raw.glb, references/ (video, ảnh thật), renders/, TASK.md, REPORT.md.

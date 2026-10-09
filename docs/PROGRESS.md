@@ -54,19 +54,17 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   chị Nga.
 - **huyen** (Meshy + Mixamo, người thật, đã đồng ý): bản 6k duy nhất, cao 1,60 m, 15 animation retarget từ bộ của
   prajith, logo FPT trên ngực trái. Đóng vai `thao`, tên hiển thị **Ms. Huyền** (zone 0 và zone 1).
-- **nga** — Ms. Nga, L1 of Recruitment (Meshy + Mixamo, người thật, **chờ xác nhận đồng ý dùng hình**): bản 6k duy
+- **nga** — Ms. Nga, L1 of Recruitment (Meshy + Mixamo, người thật, đã đồng ý): bản 6k duy
   nhất (5.998 tam giác, 0,59 MB), cao 1,60 m, 15 animation retarget từ bộ của prajith, logo FPT trên ngực trái (7,5 cm,
   giữ nếp vải; WebP 1024 trong GLB vẫn đọc rõ chữ FPT), chân dung. Đóng vai `le_tan` (quầy lễ tân zone 3) và người nói
   `hr` (tin nhắn hẹn xe zone 0), tên hiển thị **Ms. Nga**; lời thoại mới: `docs/dialogue_nga.md`.
   - Bản 6k: mặt trước đã giữ nguyên lúc chuẩn bị Mixamo (~10,7k tam giác) → thêm lượt giảm riêng cho mặt
     (`decimate_protect.face_keep_tris`, `face_detail_pct`: giữ đỉnh có độ tương phản texture cao — mắt, lông mày,
     gọng kính, môi — chỉ giảm da phẳng); thử nhanh bằng `build_character.py --decimate-only`.
-  - **Chưa công khai:** `nga.glb` và `nga_portrait.png` chỉ có trên máy làm việc (.gitignore), không lên `main` lẫn
-    `gh-pages`. `data/characters.json` → `models.nga.consent_pending` + `fallback: prajith`: game và viewer thiếu file
-    thì dùng Prajith cho vai này (tên vẫn là Ms. Nga) và **không hiện chân dung** (hộp thoại le_tan, tin nhắn hr) — không
-    hiện mặt người khác dưới tên chị; `vite build`, `make_site.py` bỏ model nga; `privacy_scan.py` báo lỗi nếu lỡ stage.
-    Bản dev dò file bằng HEAD; bản build (`import.meta.env.PROD`) đổi thẳng sang fallback, không request → console sạch.
-    Viewer bản web: `make_site.py` đánh dấu `glb_excluded` trong `dist/data/characters.json` → viewer không tải thử.
+  - `nga.glb` và `nga_portrait.png` đã lên `main` và `gh-pages` (09/10/2026, sau khi người dùng xác nhận đồng ý).
+  - Cơ chế chờ đồng ý vẫn còn trong code, hiện không model nào dùng: `models.<id>.consent_pending` + `fallback` → thiếu
+    file thì game/viewer dùng model thay thế và không hiện chân dung; bản build (`import.meta.env.PROD`) đổi thẳng,
+    không request; `vite build`, `make_site.py` bỏ model đó; `privacy_scan.py` báo lỗi nếu lỡ stage.
   - Quần xanh than (`roles.le_tan.tint.pants = #2f3b55`) để khác Ms. Huyền; áo giữ cam. Tint không loang sang áo/logo.
     Loang nhẹ: vài đốm xanh trên chỗ sáng của giày (da giày sáng, ít màu như quần kem) và thắt lưng còn kem lẫn vài mảng
     xanh — chỉ thấy khi nhìn cận; trong game chị đứng sau quầy nên không thấy chân.
@@ -99,11 +97,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
 - Lối sang zone 4 đang khóa ("This way opens in the next update"). Còn 3 hạt lúa vàng dành cho zone 4–5.
-- nga: chờ chị Nga xác nhận đồng ý dùng hình. Có xác nhận thì: bỏ `consent_pending` trong `data/characters.json`, xoá
-  2 dòng nga trong `.gitignore`, commit `nga.glb` + `nga_portrait.png`, rồi deploy `gh-pages` (khi người dùng đồng ý).
 - nga: tay lún thân 4–6 cm ở talk, talk_2, nod, think, sit_down (cùng mức huyen, do dùng lại animation của prajith).
 
 ## Đã quyết
+- 09/10/2026: **mọi nhân vật người thật đưa vào game đều đã đồng ý dùng hình, kể cả nhân vật thêm sau này** — không
+  cần chặn chờ đồng ý nữa (GLB, chân dung commit và deploy bình thường). Giữ nguyên: không commit ảnh gốc của người
+  thật, file Meshy gốc, FBX Mixamo, `.blend`, video/ảnh tham chiếu. Cơ chế `consent_pending` để lại trong code, không
+  model nào dùng.
 - 09/10/2026: vai `le_tan` → **Ms. Nga** (model `nga`); tin nhắn điện thoại zone 0 (`hr`) cũng hiện Ms. Nga kèm chân dung
   (`characters.json` → `speaker_as.hr = le_tan`). Zone 4: lựa chọn "gọi lễ tân qua app" → "nhắn Ms. Nga qua app"
   (mô tả ô Teamwork đã đổi; câu chữ zone 4 viết khi làm tới).
