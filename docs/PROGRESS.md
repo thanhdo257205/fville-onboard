@@ -66,7 +66,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     Ms. Nga 2/3. Sau: không điểm nào bị che, người đối thoại cao 0,35–0,36 khung (0,51–0,62 khi bị chắn phải thu gần),
     mặt đúng điểm 1/3, camera không cắt `COL_`; đóng hội thoại camera về chỗ cũ (lệch ≤ 4 cm, hướng trùng). Chuyển
     0,4 s = 24 khung ở 60 FPS, không giật. Chơi trọn zone 0 → 3 vẫn qua, console sạch. Xem trạng thái: `__game.talkCam`.
-- **Sửa sau lần kiểm tra camera hội thoại (09/10/2026):**
+- **Sửa sau lần kiểm tra camera hội thoại (09/10/2026, `main` f8c9356, đã deploy `gh-pages` 53b8578 — gồm cả camera
+  hội thoại ở trên):**
   - Camera hội thoại coi tán cây / chậu cây (plant của `seeThrough`) và mọi mesh hiển thị (mái hiên, biển hiệu, ban công…
     không có `COL_`) là vật cản như tường: lùi qua là dừng trước 0,2 m; góc không dùng nếu camera / điểm qua vai nằm trong
     hoặc sát (< 0,15 m) bề mặt, trong tán cây, hay camera lùi chưa được 0,3 m. Thử 2 vai × 2 độ cao; không góc nào hợp lệ
