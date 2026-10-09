@@ -61,7 +61,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Bản 6k: mặt trước đã giữ nguyên lúc chuẩn bị Mixamo (~10,7k tam giác) → thêm lượt giảm riêng cho mặt
     (`decimate_protect.face_keep_tris`, `face_detail_pct`: giữ đỉnh có độ tương phản texture cao — mắt, lông mày,
     gọng kính, môi — chỉ giảm da phẳng); thử nhanh bằng `build_character.py --decimate-only`.
-  - `nga.glb` và `nga_portrait.png` đã lên `main` và `gh-pages` (09/10/2026, sau khi người dùng xác nhận đồng ý).
+  - `nga.glb` và `nga_portrait.png` đã lên `main` (8996537) và đã deploy `gh-pages` 1e646c4 (09/10/2026, sau khi người
+    dùng xác nhận đồng ý).
   - Cơ chế chờ đồng ý vẫn còn trong code, hiện không model nào dùng: `models.<id>.consent_pending` + `fallback` → thiếu
     file thì game/viewer dùng model thay thế và không hiện chân dung; bản build (`import.meta.env.PROD`) đổi thẳng,
     không request; `vite build`, `make_site.py` bỏ model đó; `privacy_scan.py` báo lỗi nếu lỡ stage.
