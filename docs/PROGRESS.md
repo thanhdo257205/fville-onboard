@@ -90,7 +90,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     chơi; trong thân xe: không còn lời nhắc), 7 tình huống camera hội thoại cũ (kể cả bác tài zone_01) đều bật, không bị
     che; chơi trọn zone 0 → 3 (dev + bản build), console sạch.
 
-- **Hướng dẫn người chơi mới (09/10/2026, `main` a3ca18e, đã deploy `gh-pages` 399220f)** — nguyên tắc: lúc nào cũng biết "giờ làm gì" trong vài giây. Code
+- **Hướng dẫn người chơi mới (09/10/2026, `main` a3ca18e + sửa thẻ H, đã deploy `gh-pages`)** — nguyên tắc: lúc nào cũng biết "giờ làm gì" trong vài giây. Code
   `game/src/game/guide.js`; chữ trong `data/guidance.json` (tiếng Anh) và `data/i18n/en.json` (`guide.*`, `menu.guide*`).
   - **Chỉ đường:** mục tiêu hiện tại = quest bắt buộc đầu tiên chưa xong của zone (`quests.json` → `target`); zone xong hết
     → `guidance.json` → `zone_exits` (zone 1 → cổng F-Ville, zone 2 → cửa tòa nhà; zone 3 hết việc → không có dấu, H nói
@@ -115,7 +115,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     lần 2 sau thêm 45 s. Có câu nhắc (2 câu Tú + 2 tin nhắn) cho mọi mục tiêu bắt buộc zone 0–3 và lối ra zone 1, 2;
     thời gian chỉnh trong `guidance.json` → `settings`.
   - **Phím H / nút Help trong app My FPT:** thẻ "What now?" với gợi ý của mục tiêu hiện tại (+ việc phụ đang nhận: tìm
-    balo cho Tú, trả ví). Dòng điều khiển thêm "H: help". Kiểm tra dữ liệu lúc tải: thiếu help / câu nhắc → báo lỗi.
+    balo cho Tú, trả ví); bấm H lần nữa thì ẩn, tự ẩn sau 8 s hoặc khi đổi mục tiêu / sang zone. Dòng điều khiển thêm
+    "H: help". Kiểm tra dữ liệu lúc tải: thiếu help / câu nhắc → báo lỗi.
   - Sửa kèm: camera lúc vào zone_00 không còn quay ngược ra cuối phố (tán cây không tính là vật che khi chọn hướng
     camera ban đầu — cây tự mờ; chấp nhận hướng gốc nếu lùi được ≥ 60% khoảng cách) → thấy ngay các xe bus và dấu "!".
     Mini-game mở từ hội thoại không còn bắt người chơi quay mặt về người đối thoại (ảnh check-in sau lời Tú: người chơi

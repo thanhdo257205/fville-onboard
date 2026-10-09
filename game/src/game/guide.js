@@ -67,7 +67,7 @@ export class Guide {
   }
 
   // vào zone mới / tải lại zone: tính lại vị trí target
-  reset() { this.goal = null; this.staticPos = null; this.hideBubble(); this.hideMarks(); }
+  reset() { this.goal = null; this.staticPos = null; this.hideBubble(); this.hideMarks(); hud.help(null); }
   hideMarks() { this.mark.visible = false; this.arrow.hidden = true; }
 
   // điểm đặt dấu "!" (toạ độ thế giới) hoặc null
@@ -117,7 +117,10 @@ export class Guide {
     const goal = this.current();
     // đổi mục tiêu hoặc có quest vừa xong (kể cả việc phụ) → đếm lại
     const done = g.progress.quests.size;
-    if (goal.key !== this.goal?.key) { this.goal = goal; this.staticPos = null; this.idle = 0; }
+    if (goal.key !== this.goal?.key) {
+      if (this.goal) hud.help(null);                  // thẻ gợi ý H đang hiện là của mục tiêu cũ
+      this.goal = goal; this.staticPos = null; this.idle = 0;
+    }
     if (done !== this.doneCount) { this.doneCount = done; this.idle = 0; }
     // dấu "!" + mũi tên
     const pos = playing && this.enabled ? this.targetPos(goal.target, _v) : null;

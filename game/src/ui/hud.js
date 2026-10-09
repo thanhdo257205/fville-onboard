@@ -110,9 +110,10 @@ export const hud = {
     this._phone = setTimeout(() => el.classList.remove("show"), seconds * 1000);
     this.lastPhone = { name, text };
   },
-  // thẻ gợi ý (phím H): bấm lại khi đang hiện thì ẩn
+  // thẻ gợi ý (phím H): bấm lại khi đang hiện thì ẩn; help(null) = ẩn (vd đổi mục tiêu, sang zone khác)
   help(title, lines, seconds = 8) {
     const el = slot("helpcard");
+    if (!lines) { clearTimeout(this._help); el.classList.remove("show"); el.dataset.text = ""; return false; }
     const key = lines.join("\n");
     clearTimeout(this._help);
     if (el.classList.contains("show") && el.dataset.text === key) { el.classList.remove("show"); return false; }
