@@ -64,6 +64,9 @@ tools/bin/blender.cmd --background --factory-startup --python scripts/blender/ch
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id>
 python scripts/tools/anim_sheet.py <id>
 
+# Đo hiệu năng bản build với độ trễ mạng giả lập (~GitHub Pages): xem docs/perf_report.md
+python scripts/tools/slow_server.py --dir game/dist --port 8772 --delay 0.3
+
 # Deploy GitHub Pages (chỉ khi người dùng đồng ý)
 python scripts/deploy_site.py        # build → quét riêng tư → commit → push gh-pages
 python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
@@ -71,7 +74,8 @@ python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
 
 Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug.js`): `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
-`shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`).
+`shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
+`_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
 
 ## Bắt đầu từ bản clone mới (Claude Code Web hoặc máy khác)

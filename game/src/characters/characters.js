@@ -40,6 +40,12 @@ export class Characters {
     }
   }
 
+  // tải trước GLB mọi model đang được vai dùng (cùng bộ nhớ đệm với create) — gọi lúc người chơi còn điền tên
+  preload(tier) {
+    const files = new Set(this.roles().map(([, r]) => this.model(r.model)).filter(Boolean).map((m) => m.glb[tier] ?? m.glb.high ?? m.glb.low));
+    return Promise.allSettled([...files].map((glb) => loadGLTF(url(glb), { cached: true })));
+  }
+
   async create(role, tier) {
     const r = this.role(role);
     if (!r) throw new Error(`characters.json: thiếu vai "${role}"`);

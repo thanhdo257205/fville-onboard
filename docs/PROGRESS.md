@@ -15,6 +15,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Đối tượng game đặt tên theo quy ước `COL_`, `INT_`, `SPAWN_`, `NPC_`, `TRIGGER_`, `PATH_`, `CAM_`.
 - Viewer Three.js (`viewer/index.html`): toon shading, viền nét, nhân vật tại `NPC_`, so sánh model
   (`?compare=prajith,huyen`).
+- Zone 4–5 (09/10/2026, `docs/zone45_check.md`): soát node theo GDD và thử va chạm bằng capsule trong game.
+  - Thêm `SPAWN_zone_04_from_zone_03`, `SPAWN_zone_05_from_zone_04`.
+  - Thêm hộp va chạm đầu hành lang đông zone 4 (trước đây đi qua là rơi khỏi bản đồ) và 2 chậu cọ zone 5.
+  - Đã xuất lại GLB bản Thấp.
+  - Phần dữ liệu cần làm cho zone 4–5 (đăng ký zone, trigger, 3 hạt lúa, vị trí người lạ) liệt kê trong file đó.
 
 ### Game web — Giai đoạn 1 (vertical slice zone 0 đến zone 3)
 - **Đợt 1 (khung):** Vite + three.js 0.186, va chạm capsule (three-mesh-bvh), camera góc thứ ba không xuyên tường,
@@ -130,6 +135,26 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     đã thử riêng: tin nhắn Ms. Huyền (zone 0, chưa gặp Tú), bong bóng Tú (zone 0, zone 2), tin nhắn Ms. Nga (zone 3, ẩn
     Tú), lần nhắc thứ 3 không bật, tắt dấu trong menu. Console sạch.
 
+- **Hiệu năng (09/10/2026, chi tiết + số đo trước/sau: `docs/perf_report.md`):**
+  - Đo bản deploy trên máy thật: Chrome dùng GPU tích hợp AMD Radeon, không lấy RTX 3060 dù xin `high-performance`.
+    Không zone nào dưới 30 FPS: 1920×1010 đạt 85–98 FPS, 1366×768 đạt 117–131 FPS.
+  - **Hết giật khi vào zone:**
+    - Trước đây lần nào vào zone khung đầu cũng đứng 90–285 ms vì phải biên dịch shader; lần đầu mở game là 960 ms.
+    - Nay `renderer.warmup` biên dịch shader trong lúc màn chờ còn che: `compile()` + 1 khung vẽ mọi vật, mất 50–90 ms.
+    - Không dùng `compileAsync`, vì đo trên máy này nó mất 0,37–0,88 s.
+  - **Mở game nhanh hơn:**
+    - Bản build bỏ bước đối chiếu node GLB; bước này vẫn chạy ở bản dev.
+    - Trong lúc người chơi điền tên, game tải song song file zone đầu, GLB nhân vật và bộ giải nén Draco/Meshopt.
+    - 2 s sau khi vào zone, game tải sẵn GLB của zone kế tiếp.
+    - Lần đầu mở game (trễ 0,3 s/file): tới màn tạo nhân vật 3,3 → 1,7 s; từ Start tới lúc hình chạy mượt
+      ~2,3 → 0,6 s.
+  - **Menu Esc → Detail (Auto / Sharper / Faster):**
+    - Auto: đã ở mức Thấp mà FPS vẫn < 45 thì hạ từng nấc, pixelRatio 1,25 → 1,0 rồi tắt viền nét; mỗi nấc nhẹ hơn
+      khoảng 19 % và 27 %.
+    - Lựa chọn lưu trong `fville.settings` → `detail`.
+  - `scripts/tools/slow_server.py`: server tĩnh có độ trễ để đo trước/sau; cấu hình `perf-before` / `perf-after` trong
+    `.claude/launch.json`.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.
@@ -169,6 +194,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   lịch sử build cũ). `dist/` là git worktree của `gh-pages`; deploy bằng `scripts/deploy_site.py`, quét riêng tư bằng
   `scripts/tools/privacy_scan.py`. `.gitignore` loại video/ảnh tham chiếu gốc, FBX Mixamo, file Meshy gốc, texture
   nhân vật, `.blend`, `renders/`, `tools/bin/`, file logo gốc (`assets/logos/`, gỡ khỏi repo 09/10/2026).
+- `docs/perf_report.md` (hiệu năng, số đo trước/sau), `docs/zone45_check.md` (soát zone 4–5),
+  `docs/hr_content_request.md` (15 mục nội dung cần HR cung cấp, theo zone, gửi thẳng cho HR được).
 - Bản clone mới chạy được không cần máy làm việc gốc: `game/.npmrc` ép `registry.npmjs.org`, `package-lock.json` chỉ
   trỏ về npmjs (trước trỏ mirror `registry.npmmirror.com` làm `npm ci` treo trên máy cloud); đã thử `npm ci` +
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
@@ -202,6 +229,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
    `data/scene_fixes.json` → `see_through`), camera hội thoại (chỉnh khung hình bằng các hằng số đầu
    `game/src/player/talkcam.js`: `FRAME_FRAC`, `FACE_AT`, `SHOULDER`, `BLEND_S`).
 3. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
+   Đo luôn hiệu năng trên một laptop Intel UHD/Iris Xe: mở `?debug`, gõ `__game.benchmark(120)` ở từng zone; xem
+   nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
+   Gửi `docs/hr_content_request.md` cho HR.
 4. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA; lựa chọn nhắn Ms. Nga qua app — câu dự kiến trong
    `docs/dialogue_nga.md`), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), màn tổng kết, danh hiệu,
    tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.

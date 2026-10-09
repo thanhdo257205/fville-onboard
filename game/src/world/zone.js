@@ -6,6 +6,16 @@ import { makeZoneMaterial } from "../render/renderer.js";
 import { buildCollider } from "./collision.js";
 
 const _inv = new THREE.Matrix4();
+
+// tải trước file GLB của zone vào bộ nhớ đệm HTTP (không giải nén): lúc điền tên, hoặc zone kế tiếp khi đang chơi
+const prefetched = new Map();
+export function prefetchZone(file, tier) {
+  const u = url(`assets/glb/${tier}/${file}.glb`);
+  if (!prefetched.has(u)) prefetched.set(u, fetch(u).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null));
+  return prefetched.get(u);
+}
+// file đang được tải trước (nếu có) — chờ xong rồi mới tải thật, khỏi tải 2 lần cùng lúc
+export function pendingPrefetch(file, tier) { return prefetched.get(url(`assets/glb/${tier}/${file}.glb`)) ?? null; }
 const _p = new THREE.Vector3();
 
 // overrides (data/collision.json → <zone>): { remove: [tên COL_], add: [hộp] } — chỉnh va chạm bằng code, không sửa GLB

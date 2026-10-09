@@ -1,16 +1,127 @@
-# Báo cáo hiệu năng — bản web đã deploy
+# Báo cáo hiệu năng — bản web
 
-Đo ngày 09/10/2026 trên bản đã deploy (`https://thanhdo257205.github.io/fville-onboard/game/`, gh-pages build từ `main`
-8996537 trở về sau), đồ họa **Thấp** (game tự chọn: GPU tích hợp → Thấp). Chỉ đo, không sửa code.
+Đo lần đầu ngày 09/10/2026 trên bản đã deploy (`https://thanhdo257205.github.io/fville-onboard/game/`, gh-pages build từ `main`
+8996537 trở về sau), đồ họa **Thấp** (game tự chọn: GPU tích hợp → Thấp). Lần đo đầu chỉ đo, không sửa code; mục
+"Sau khi sửa" là kết quả sau khi làm đề xuất 1–3.
 
 ## Kết luận nhanh
 
 - **Không zone nào dưới 30 FPS**, ở cả 1920×1010 và 1366×768. Khung 1 giây tệ nhất là 61 FPS (zone 1, 1920).
 - Chrome **không dùng card rời RTX 3060** mà vẽ bằng **GPU tích hợp AMD Radeon** (Vega 8 trong Ryzen 9 5900HS), dù game
   đã xin `powerPreference: "high-performance"`. Card tích hợp vẫn đủ: GPU chỉ mất 1,5–4 ms để vẽ một khung.
-- Vấn đề thấy được là **giật một lần lúc vừa vào zone lần đầu** (một khung 320–380 ms ở zone 1 và zone 2), nhiều khả
-  năng do biên dịch shader. Vào lại zone thì hết giật.
+- Vấn đề thấy được là **giật lúc vừa vào zone** (một khung 320–380 ms ở zone 1 và zone 2), do biên dịch shader.
+  - Đính chính: đo kỹ ở lần sau cho thấy **lần nào vào zone cũng giật**, không riêng lần đầu. Khi rời zone, three.js huỷ
+    shader của zone đó, nên vào lại phải biên dịch lại.
+  - **Đã sửa:** xem mục "Sau khi sửa" ngay dưới.
 - Máy đo này mạnh hơn laptop văn phòng mà GDD nhắm tới; cần đo thêm trên một máy Intel UHD/Iris Xe (xem cuối báo cáo).
+
+## Sau khi sửa (đề xuất 1–3, 09/10/2026)
+
+**Phần đã làm:**
+- Biên dịch shader trước khi hiện zone.
+- Bản build bỏ bước đối chiếu node GLB; tải trước file zone đầu, GLB nhân vật và bộ giải nén trong lúc người chơi điền
+  tên.
+- Thêm nấc hạ độ nét khi FPS thấp và tuỳ chọn **Detail** trong menu Esc.
+
+**Cách đo (trước / sau):**
+- Bản build trước: `main` 27f0840. Bản build sau: bản này.
+- Cả hai được phục vụ qua `scripts/tools/slow_server.py`, trễ 0,3 s mỗi file, giống thời gian GitHub Pages trả file đo
+  ở dưới.
+- Máy và GPU giữ nguyên: AMD Radeon tích hợp.
+- Hai trình duyệt:
+  - **Thời gian mở game:** đo trong trình duyệt tích hợp của ứng dụng Claude (Chromium 152, cùng GPU). Tab Chrome bị ẩn
+    trong lúc đo, nên Chrome chỉ cho bộ hẹn giờ chạy khoảng 1 s một lần và làm tròn số đo; phần này đã đo lại bằng trình
+    duyệt tích hợp.
+  - **Khung giật và `__game.benchmark`:** đo trong Chrome 154. Hai phép đo này đồng bộ (vẽ rồi `readPixels`) nên không
+    bị ảnh hưởng.
+
+### Mở game (người chơi mới, mất 4 s điền tên)
+
+| | Trước | Sau |
+| --- | --- | --- |
+| Lần đầu (bộ nhớ đệm trống): mở trang → màn tạo nhân vật | 3,33 s | **1,71 s** |
+| Lần đầu: bấm Start → chơi được | 1,35 s | **0,58 s** |
+| Lần đầu: khung hình đầu tiên sau khi vào | **960 ms** (đứng hình) | 22 ms |
+| Lần sau (đã có bộ nhớ đệm): mở trang → màn tạo nhân vật | 0,43–0,46 s | 0,40–0,43 s |
+| Lần sau: bấm Start → chơi được | 0,50–0,57 s | 0,55–0,76 s (gồm 0,18–0,22 s biên dịch shader sẵn) |
+| Lần sau: khung hình đầu tiên | 256–277 ms | 14–31 ms |
+
+**Lần đầu (bộ nhớ đệm trống):**
+- Bản trước tải lần lượt 4 GLB zone trước khi hiện màn tạo nhân vật (1,93 → 3,16 s). Bấm Start xong mới tải lần lượt
+  GLB nhân vật, bộ giải nén Draco, GLB nhân vật tiếp theo (mỗi file ~0,3 s), rồi đứng hình gần 1 s ở khung đầu.
+- Bản sau tải song song bộ giải nén Draco, `zone_00` và 3 GLB nhân vật (1,95 → 2,31 s) trong lúc người chơi điền tên.
+- Từ lúc bấm Start tới lúc hình chạy mượt: khoảng **2,3 s → 0,6 s**.
+
+**Lần sau (đã có bộ nhớ đệm):** tổng thời gian tới khung mượt đầu tiên gần như bằng nhau (~0,8 s). Khác biệt là bản sau
+không còn khung đứng hình.
+
+**Các zone sau `zone_00`:** bản sau không còn tải sẵn mọi zone lúc mở game. Thay vào đó, 2 s sau khi vào một zone, game
+tải sẵn GLB của zone kế tiếp vào bộ nhớ đệm HTTP (`prefetchNext`).
+
+### Vào zone (Chrome 154, 1920×1010)
+
+Ngay sau khi vào zone, xoay camera một vòng 36 khung quanh người chơi:
+
+| Zone | Trước: khung đầu / dài nhất | Trước: shader biên dịch lúc chơi | Trước: thời gian vào | Sau: khung đầu / dài nhất | Sau: shader biên dịch lúc chơi | Sau: thời gian vào (gồm biên dịch sẵn) |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 · Bến xe | **285** / 285 ms | 10 | 0,37 s | 12 / 36 ms | 0 | 0,31 s (87 ms) |
+| 2 · Cổng | **90** / 90 ms | 5 | 0,34 s | 11 / 14 ms | 0 | 0,48 s (76 ms) |
+| 3 · Sảnh | **135** / 135 ms | 7 | 0,91 s | 10 / 15 ms | 0 | 0,65 s (80 ms) |
+| 0 · Điểm đón (vào lại) | **174** / 174 ms | 8 | 0,22 s | 11 / 13 ms | 0 | 0,31 s (73 ms) |
+
+**Cách biên dịch sẵn (`renderer.warmup` trong `game/src/render/renderer.js`):** chạy lúc màn chờ hoặc màn tối còn che.
+1. Gọi `renderer.compile(scene, camera)` cho mọi chất liệu đang hiện: toon, cây mờ `seeThrough`, nhân vật có tint. Bước
+   này không phụ thuộc hướng camera.
+2. Vẽ 1 khung với mọi vật, tạm bỏ cắt theo tầm nhìn, để biên dịch shader viền nét (OutlineEffect tạo chất liệu viền lúc
+   vẽ) và đưa texture lên GPU.
+
+**Không dùng `compileAsync` như đề xuất ban đầu.** Đã thử trên máy này:
+- `compileAsync` phải chờ `KHR_parallel_shader_compile` báo xong, mất **0,37–0,88 s** mỗi lần vào zone.
+- `compile()` đồng bộ cộng 1 khung vẽ chỉ mất **48–64 ms** (lần đầu trong trang 0,15–0,47 s), và cũng hết giật như nhau.
+
+Màn chờ đang che nên việc chặn luồng chính trong lúc này không ảnh hưởng người chơi.
+
+### Khung hình đều (`__game.benchmark(120)`, Chrome 154, 1920×1010)
+
+Số dưới đây là ms/khung, trung bình 2 lần chạy; giữa các lần chênh nhau tới khoảng ±30 % vì GPU tích hợp tự đổi xung
+nhịp.
+
+| Zone | Trước (đủ nét) | Sau · nấc 0: đủ nét | Sau · nấc 1: pixelRatio 1,0 | Sau · nấc 2: + tắt viền nét |
+| --- | --- | --- | --- | --- |
+| 0 | 9,9 | 10,2 | 8,6 | 7,6 |
+| 1 | 11,4 | 10,9 | 8,9 | 7,5 |
+| 2 | 7,5 | 10,5 | 7,7 | 7,8 |
+| 3 | 10,2 | 14,1 | 9,0 | 7,7 |
+
+**Nấc 0** vẽ y hệt bản trước; độ chênh trong bảng là nhiễu đo. Lấy trung bình nấc 0 của cả hai bản (10,5 ms):
+- **Nấc 1** nhẹ hơn khoảng **19 %**.
+- **Nấc 2** nhẹ hơn khoảng **27 %**.
+
+### Nấc hạ độ nét và menu Esc → Detail
+
+**Detail = Auto (mặc định):**
+- Chỉ áp dụng khi đã ở mức đồ hoạ Thấp. Nếu FPS trung bình (3 s khởi động + 5 s đo) dưới **45**, game hạ một nấc:
+  1. pixelRatio 1,25 → 1,0;
+  2. tắt viền nét.
+- Mỗi lần hạ có thông báo *"Detail lowered to keep things smooth (Esc → Detail)."*
+- Hạ xong thì đo lại. Nấc nào không thay đổi gì thì bỏ qua: màn hình có `devicePixelRatio` 1 hạ thẳng từ nấc 0 xuống
+  nấc 2.
+- Không tự tăng nét lại trong phiên chơi.
+
+**Sharper:** luôn ở nấc 0. **Faster:** luôn ở nấc 2. Lựa chọn được lưu trong `fville.settings` → `detail`.
+
+**Đã thử:**
+- Giả FPS thấp (đặt ngưỡng 1000) trên Chrome với DPR 1,25:
+  - nấc 0 → 1: khung vẽ 1920 → 1536 px, có thông báo;
+  - nấc 1 → 2: tắt viền nét;
+  - sau đó dừng ở nấc 2.
+- Giả DPR 1: hạ thẳng 0 → 2.
+- Menu: hàng Detail hiện giữa Graphics và Objective markers.
+  - Bấm Sharper: pixelRatio 1,25 + viền nét, có lưu vào bộ nhớ trình duyệt.
+  - Bấm Faster: pixelRatio 1,0, tắt viền nét.
+  - Bấm Auto: quay về nấc Auto đã tự hạ trong phiên.
+- Console bản build chỉ có dòng `[kiểm tra dữ liệu] OK — bản build: bỏ đối chiếu node GLB`.
+- Bản dev vẫn đối chiếu đủ node GLB (58 tham chiếu, 0 lỗi).
 
 ## Máy và cách đo
 
@@ -150,19 +261,22 @@ Trên Windows, Chrome chọn GPU cho cả tiến trình, theo cài đặt đồ 
 Muốn thử RTX 3060: Windows Settings → System → Display → Graphics → Google Chrome → **High performance**, rồi khởi động lại
 Chrome. Tôi không đổi cài đặt hệ thống này. Với số đo trên thì **không cần**: card tích hợp đã vượt 60 FPS ở mọi zone.
 
-## Đề xuất (chưa sửa code)
+## Đề xuất
 
-1. **Biên dịch shader trước khi hiện zone.**
+Đề xuất 1–3 đã làm ngày 09/10/2026 (xem mục "Sau khi sửa" ở đầu báo cáo); đề xuất 4–5 còn mở.
+
+1. **Biên dịch shader trước khi hiện zone.** *(Đã làm.)*
    - Sau khi dựng zone và NPC, trong lúc màn hình còn mờ, gọi `renderer.compile(scene, camera)` (three r186 có cả
      `compileAsync`, dùng `KHR_parallel_shader_compile` nếu trình duyệt hỗ trợ).
    - Gồm cả biến thể `seeThrough` của cây và chất liệu nhân vật có tint. Có thể cho camera quay một vòng ẩn để mọi
      chất liệu được vẽ một lần.
    - Mục tiêu: hết khung 320–380 ms khi vào zone lần đầu.
-2. **Mở game nhanh hơn.**
+2. **Mở game nhanh hơn.** *(Đã làm.)*
    - Bước kiểm tra node chỉ cần khi phát triển: bản build có thể bỏ (`import.meta.env.PROD`), hoặc tải 4 GLB song song
      (`Promise.all`) thay vì lần lượt. Màn tạo nhân vật sẽ hiện sớm hơn khoảng 1–1,4 s.
    - Tải song song GLB các nhân vật của zone đầu và bộ giải nén Draco ngay khi người chơi đang điền tên.
-3. **Thêm nấc hạ chất lượng khi FPS thấp.** Khi đã ở mức Thấp mà `FpsMonitor` vẫn đo dưới khoảng 45 FPS:
+3. **Thêm nấc hạ chất lượng khi FPS thấp.** *(Đã làm hai nấc đầu; chưa làm tùy chọn tắt MSAA.)* Khi đã ở mức Thấp mà
+   `FpsMonitor` vẫn đo dưới khoảng 45 FPS:
    - giảm pixelRatio 1,25 → 1,0 (zone 3: bớt khoảng 2 ms);
    - rồi tắt viền nét (bớt 0,7–2,4 ms);
    - cuối cùng có thể tắt MSAA (phải tạo lại renderer, nên để thành tùy chọn trong menu Esc).

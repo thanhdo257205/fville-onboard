@@ -45,6 +45,34 @@
         "game/dist"
       ],
       "port": 8767
+    },
+    {
+      "name": "perf-before",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "scripts/tools/slow_server.py",
+        "--dir",
+        "renders/perf/dist_before",
+        "--port",
+        "8771",
+        "--delay",
+        "0.3"
+      ],
+      "port": 8771
+    },
+    {
+      "name": "perf-after",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "scripts/tools/slow_server.py",
+        "--dir",
+        "game/dist",
+        "--port",
+        "8772",
+        "--delay",
+        "0.3"
+      ],
+      "port": 8772
     }
   ]
 }

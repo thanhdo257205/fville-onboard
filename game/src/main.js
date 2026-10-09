@@ -36,12 +36,13 @@ async function boot() {
   const zoneFiles = Object.fromEntries(zones.order.map((z) => [z, zones.zones[z].file]));
   content.zoneOrder = zones.order;          // để chuyển bản lưu cũ (trước khi có zone_00); kiểm tra guidance theo zone
   const linkErrors = validateLinks(content);
-  const nodeCheck = await validateNodes(content, zoneFiles);
+  // đối chiếu node GLB phải tải cả 4 zone (~1 MB, lần lượt) → chỉ chạy khi phát triển; bản build mở game ngay
+  const nodeCheck = import.meta.env.DEV ? await validateNodes(content, zoneFiles) : { checked: 0, skipped: 0, missing: [], off: true };
   const problems = [...linkErrors, ...nodeCheck.missing];
   if (problems.length) {
     console.error("[kiểm tra dữ liệu]\n" + problems.join("\n"));
     if (debugMode) hud.debug(`Lỗi dữ liệu (${problems.length}):\n${problems.join("\n")}`);
-  } else console.info(`[kiểm tra dữ liệu] OK — ${nodeCheck.checked} tham chiếu node GLB, ${content.dialogues.size} hội thoại`);
+  } else console.info(`[kiểm tra dữ liệu] OK — ${nodeCheck.off ? "bản build: bỏ đối chiếu node GLB" : `${nodeCheck.checked} tham chiếu node GLB`}, ${content.dialogues.size} hội thoại`);
 
   const app = document.getElementById("app");
   const renderer = createRenderer(app);
@@ -60,10 +61,16 @@ async function boot() {
   ui.minigame.game = game;
   ui.app.game = game;
 
+  // zone đầu + GLB nhân vật + bộ giải nén tải trong lúc người chơi điền tên (không chờ ở đây)
+  const startZone = zoneFiles[progress.zone] ? progress.zone : zones.order[0];
+  game.preload(startZone);
+
   const loop = { fps: 0 };
   const menu = new Menu({
-    info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false }),
+    info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false,
+      detail: settings.detail ?? "auto", detailLevel: renderer.detail }),
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
+    onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
     onClose: () => game.setMode("play"),
     onPlayAgain: async () => {
@@ -104,7 +111,6 @@ async function boot() {
     save.store(progress);
     hud.loading(t("app.loading"));
   }
-  const startZone = zoneFiles[progress.zone] ? progress.zone : zones.order[0];
   await game.start(startZone);
   if (saved) hud.toast(t("hud.welcome_back", { name: progress.player.name }));
   hud.hint(t("hud.controls"), 10);

@@ -18,14 +18,19 @@ export const LIGHTMAP_INTENSITY = 2.2;
 export const POWER_PREFERENCE = "high-performance";
 export const GPU_ADAPTER_OPTIONS = { powerPreference: POWER_PREFERENCE };
 
+// Nấc độ nét (menu Esc → Detail; tự hạ khi đã ở mức Thấp mà FPS vẫn thấp — game.js autoDetail):
+//   0 = đủ nét (pixelRatio tối đa 1,5 + viền nét) · 1 = pixelRatio 1,0 · 2 = pixelRatio 1,0 + tắt viền nét
+export const DETAIL_LEVELS = [{ maxPixelRatio: 1.5, outline: true }, { maxPixelRatio: 1.0, outline: true }, { maxPixelRatio: 1.0, outline: false }];
+
 export function createRenderer(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: POWER_PREFERENCE });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  const pixelRatioFor = (level) => Math.min(window.devicePixelRatio, DETAIL_LEVELS[level].maxPixelRatio);
+  renderer.setPixelRatio(pixelRatioFor(0));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
   const outline = new OutlineEffect(renderer, { defaultThickness: 0.0025, defaultColor: [0.06, 0.06, 0.07] });
-  let useOutline = true;
+  let useOutline = true, detail = 0;
   return {
     three: renderer,
     canvas: renderer.domElement,
@@ -33,6 +38,27 @@ export function createRenderer(container) {
     setSize(w, h) { renderer.setSize(w, h); },
     setOutline(on) { useOutline = on; },
     render(scene, camera) { (useOutline ? outline : renderer).render(scene, camera); },
+    get detail() { return detail; },
+    // nấc có đổi gì so với nấc hiện tại không (vd màn hình devicePixelRatio 1: nấc 0 → 1 không khác gì)
+    detailDiffers(level) { return pixelRatioFor(level) !== renderer.getPixelRatio() || DETAIL_LEVELS[level].outline !== useOutline; },
+    setDetail(level) {
+      detail = level;
+      useOutline = DETAIL_LEVELS[level].outline;
+      if (renderer.getPixelRatio() !== pixelRatioFor(level)) renderer.setPixelRatio(pixelRatioFor(level));   // tự đặt lại kích thước khung vẽ
+    },
+    // Biên dịch shader + đưa texture lên GPU trước khi hiện zone (gọi lúc màn chờ còn che). Không có bước này, khung đầu
+    // tiên nhìn thấy một chất liệu mới đứng 90–300 ms để biên dịch (mỗi lần vào zone, vì shader zone cũ đã bị huỷ).
+    // Dùng compile() đồng bộ, không dùng compileAsync: đo trên Chrome/ANGLE D3D11 (docs/perf_report.md), compileAsync
+    // chờ KHR_parallel_shader_compile mất 0,35–0,75 s mỗi zone, còn compile() + 1 khung vẽ chỉ 50–65 ms — màn chờ đang
+    // che nên chặn luồng chính lúc này không sao.
+    async warmup(scene, camera) {
+      // 1) lượt cảnh: mọi chất liệu đang hiện (toon, cây mờ seeThrough, nhân vật có tint), không phụ thuộc hướng camera
+      renderer.compile(scene, camera);
+      // 2) viền nét (OutlineEffect tạo chất liệu viền lúc vẽ) + texture: vẽ 1 khung với mọi vật, bỏ cắt theo tầm nhìn
+      const culled = [];
+      scene.traverse((o) => { if (o.frustumCulled && (o.isMesh || o.isLine || o.isPoints)) { o.frustumCulled = false; culled.push(o); } });
+      try { (useOutline ? outline : renderer).render(scene, camera); } finally { for (const o of culled) o.frustumCulled = true; }
+    },
     // tên GPU (để tự chọn mức đồ hoạ)
     gpuName() {
       const gl = renderer.getContext();

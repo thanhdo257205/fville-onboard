@@ -2,20 +2,20 @@
 // trigger chuyển zone có màn mờ (điều kiện từ quests.json), mức đồ hoạ (tự chọn / menu / tự hạ khi FPS < 40),
 // tương tác (interactables.json) → hội thoại (dialogues.json) / mini-game / nhặt vật; hiệu ứng → tiến trình (lưu trình duyệt).
 import * as THREE from "three";
-import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes } from "../world/zone.js";
+import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, prefetchZone, pendingPrefetch } from "../world/zone.js";
 import { buildCollider } from "../world/collision.js";
-import { createLights } from "../render/renderer.js";
+import { createLights, DETAIL_LEVELS } from "../render/renderer.js";
 import { SeeThrough } from "../render/seethrough.js";
 import { ThirdPersonCamera } from "../player/camera.js";
 import { TalkCamera } from "../player/talkcam.js";
 import { Player } from "../player/player.js";
 import { Npc } from "../characters/npc.js";
 import { Follower } from "../characters/follower.js";
-import { FpsMonitor, detectTier, saveSettings } from "../core/quality.js";
+import { FpsMonitor, detectTier, saveSettings, DETAIL_FPS } from "../core/quality.js";
 import { hud } from "../ui/hud.js";
 import { t } from "../i18n.js";
 import { tx } from "../content/content.js";
-import { url } from "../core/assets.js";
+import { url, preloadDecoders } from "../core/assets.js";
 import { save } from "./state.js";
 import { Interaction } from "./interaction.js";
 import { DialogueRunner } from "../ui/dialogue.js";
@@ -58,6 +58,10 @@ export class Game {
     this.detected = detectTier(this.gpu);
     this.fps = 0;
     this.monitor = new FpsMonitor({ onLow: (fps) => this.autoLow(fps) });
+    // đã ở mức Thấp mà FPS vẫn < DETAIL_FPS → hạ độ nét từng nấc (menu Esc → Detail = Auto)
+    this.detailMonitor = new FpsMonitor({ threshold: DETAIL_FPS, onLow: (fps) => this.autoDetail(fps) });
+    this.state.detailLevel = 0;              // nấc Auto đã tự hạ tới (chỉ trong phiên chơi này)
+    this.applyDetail();
     const tags = characters.tagConfig();
     nametags.maxDistance = tags.max_distance_m ?? 12;
     nametags.occlusion = tags.hide_when_occluded !== false;
@@ -81,6 +85,18 @@ export class Game {
 
   zoneCfg(id) { return this.data.zones.zones[id]; }
 
+  // tải trước trong lúc người chơi điền tên (main.js): GLB zone đầu (bộ nhớ đệm HTTP), GLB nhân vật, bộ giải nén
+  preload(zoneId) {
+    return Promise.allSettled([preloadDecoders(), prefetchZone(this.zoneCfg(zoneId).file, this.state.tier),
+      this.characters.preload(this.state.tier)]);
+  }
+
+  // zone kế tiếp theo thứ tự chơi: tải sẵn GLB khi đang chơi zone này (bản build không còn tải mọi zone lúc mở game)
+  prefetchNext(zoneId) {
+    const order = this.data.zones.order, next = order[order.indexOf(zoneId) + 1];
+    if (next && this.zoneCfg(next)) prefetchZone(this.zoneCfg(next).file, this.state.tier);
+  }
+
   // silent: tải sau màn tối của cảnh chuyển — không hiện màn chờ, thẻ tên zone, hội thoại vào zone
   async enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false } = {}) {
     this.state.phase = "transition";
@@ -91,6 +107,7 @@ export class Game {
     this.talkCam.reset();
     if (fade) await hud.fade(true);
     if (!silent) hud.loading(t("app.loading_zone", { zone: t(`zones.${zoneId}.title`) }));
+    await pendingPrefetch(file ?? this.zoneCfg(zoneId).file, this.state.tier);
     const zone = await loadZone(zoneId, file ?? this.zoneCfg(zoneId).file, this.state.tier, this.data.collision?.[zoneId]);
     applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
@@ -140,12 +157,18 @@ export class Game {
     // trigger đang chứa người chơi lúc xuất hiện: chỉ kích hoạt sau khi đã bước ra
     for (const tr of zone.triggers) tr.inside = inTrigger(tr, this.player.position.clone().setY(this.player.position.y + 0.9));
     this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true);
+    // biên dịch shader + đưa texture lên GPU khi màn chờ / màn tối còn che (không giật ở khung đầu tiên)
+    const tw = performance.now();
+    await this.renderer.warmup(this.scene, this.camera);
+    this.state.warmupMs = Math.round(performance.now() - tw);
     this.monitor.reset();
+    this.detailMonitor.reset();
     hud.loading(null);
     if (!silent) hud.zoneCard(zoneId);
     if (fade) await hud.fade(false);
     this.state.phase = "playing";
     if (!silent) setTimeout(() => this.runOnEnter(zoneId), 600);
+    setTimeout(() => this.prefetchNext(zoneId), 2000);
   }
 
   // trang phục người chơi (characters.json roles.player.outfit): áo sơ mi thường tới khi nhận Áo Cam FPT ở cổng
@@ -255,6 +278,33 @@ export class Game {
   async reloadZone() {
     const keep = { pos: this.player.position.clone(), rot: this.player.character.root.rotation.y };
     await this.enterZone(this.state.zone, null, { fade: true, keepPose: keep, file: this.zone.file });
+  }
+
+  // độ nét: settings.detail = "auto" (tự hạ khi FPS thấp) | "sharper" (luôn đủ nét) | "faster" (luôn nhẹ nhất)
+  detailLevel() {
+    const s = this.settings.detail ?? "auto";
+    return s === "sharper" ? 0 : s === "faster" ? DETAIL_LEVELS.length - 1 : this.state.detailLevel;
+  }
+
+  applyDetail() { this.renderer.setDetail(this.detailLevel()); }
+
+  setDetail(setting) {
+    this.settings.detail = setting;
+    saveSettings(this.settings);
+    this.applyDetail();
+    this.detailMonitor.reset();
+  }
+
+  autoDetail(fps) {
+    this.state.lastDetailFps = fps;
+    if ((this.settings.detail ?? "auto") !== "auto" || this.state.tier !== "low") return;
+    let lv = this.state.detailLevel;
+    do lv++; while (lv < DETAIL_LEVELS.length - 1 && !this.renderer.detailDiffers(lv));   // bỏ nấc không đổi gì
+    if (lv >= DETAIL_LEVELS.length) return;
+    this.state.detailLevel = lv;
+    this.applyDetail();
+    hud.toast(t("hud.detail_lowered"), 4);
+    if (lv < DETAIL_LEVELS.length - 1) this.detailMonitor.reset();   // đo lại với nấc mới
   }
 
   async autoLow(fps) {
@@ -463,6 +513,7 @@ export class Game {
     }
     this.guide.update(dt);
     this.monitor.tick(dt);
+    this.detailMonitor.tick(dt);
   }
 
   render(dt) {

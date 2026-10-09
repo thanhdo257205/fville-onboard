@@ -1,8 +1,12 @@
 // Mức đồ hoạ: tự chọn theo GPU khi khởi động, đổi được trong menu Esc, tự hạ xuống Thấp nếu FPS < 40.
+// Độ nét (menu Esc → Detail: Auto / Sharper / Faster): đã ở mức Thấp mà FPS vẫn < DETAIL_FPS thì (Auto) hạ từng nấc
+// pixelRatio 1,25 → 1,0, rồi tắt viền nét (render/renderer.js → DETAIL_LEVELS).
 const KEY = "fville.settings";
+export const DETAIL_FPS = 45;
 
 export function loadSettings() {
-  try { return { tier: "auto", ...JSON.parse(localStorage.getItem(KEY) || "{}") }; } catch { return { tier: "auto" }; }
+  const d = { tier: "auto", detail: "auto" };
+  try { return { ...d, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; } catch { return d; }
 }
 export function saveSettings(s) {
   try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* chế độ riêng tư: bỏ qua */ }
