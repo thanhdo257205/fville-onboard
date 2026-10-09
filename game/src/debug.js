@@ -13,6 +13,8 @@
 //   __game.guide              → hướng dẫn: mục tiêu, vị trí dấu "!", mũi tên, giờ đứng yên, các lần nhắc; help() = phím H
 //   __game.acts               → 4 Act: Act hiện tại, tiến độ từng Act, các thẻ Act đã hiện; __game.cards = thẻ giữa màn hình gần đây
 //   __game.finish()           → hoàn thành game (thử thành tựu cuối + màn tổng kết khi chưa có zone 5); __game.summary
+//   __game.net                → chơi nhiều người: trạng thái kết nối, số online, người khác (vị trí, animation, bảng tên, bong bóng),
+//                               emote / câu chat đã nhận; netEmote(id) / netPhrase(id) = chọn trong bảng phím T
 import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
@@ -45,6 +47,9 @@ export function installDebug(game, loop) {
     get acts() { return game.acts.info(); },
     get cards() { return { recent: hud.lastCards || [], queued: hud.cards.map((c) => c.kind) }; },
     finish() { game.finishGame(); return api.cards; },
+    get net() { return game.net?.info(); },
+    netEmote(id) { return game.net?.emote(id); },
+    netPhrase(id) { return game.net?.phrase(id); },
     get summary() { return { open: game.ui.summary.open, data: game.ui.summary.open ? game.summaryData() : null, text: game.ui.summary.open ? game.ui.summary.el.innerText : null }; },
     help() { game.help(); return { card: document.getElementById("helpcard")?.classList.contains("show") ? document.getElementById("helpcard").textContent : null, app: game.ui.app.helpOpen }; },
     // cảnh chuyển đang chạy / vừa chạy: nhịp hiện tại, thời gian (giây game), mốc từng nhịp

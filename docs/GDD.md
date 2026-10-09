@@ -1,6 +1,6 @@
 # GDD – Ngày Đầu Ở F-Ville
 
-Cập nhật: 09/10/2026 (thêm cấu trúc 4 Act, thành tựu cuối)
+Cập nhật: 09/10/2026 (thêm cấu trúc 4 Act, thành tựu cuối; chơi nhiều người mức "thấy nhau")
 
 ## Tổng quan
 
@@ -145,6 +145,19 @@ Trước khi có app (zone 0 và đầu zone 1), giao diện chỉ hiện một 
 | Mở App My FPT | Tab |
 | Menu, cài đặt, mức đồ họa | Esc |
 | Bỏ qua cảnh chuyển | Nút Skip hoặc Esc |
+| Emote, câu chat soạn sẵn (chỉ khi bật chơi nhiều người) | T, rồi 1–9 |
+
+## Chơi nhiều người (mức "thấy nhau")
+
+Mọi người chơi vào một phòng chung, không mã phòng. Mỗi người vẫn tự làm nhiệm vụ của mình; phần chung chỉ là thấy nhau khi ở cùng zone. Chi tiết kỹ thuật, cách đưa máy chủ lên Cloudflare và cách kiểm tra: `docs/multiplayer.md`.
+
+- Bật / tắt bằng `data/net.json` → `url`. Để trống thì game y như chơi một mình (bản gh-pages hiện để trống).
+- Kết nối sau khi bấm "Start my first day". Mất mạng thì vẫn chơi một mình bình thường, game tự vào lại khi có mạng.
+- Người khác có model và bộ đồ của họ (Áo Cam FPT khi đã nhận), bảng tên viền xanh ngọc (NPC viền cam), đi / chạy / đứng mượt. Chỉ hiện 10 người gần nhất cùng zone, không va chạm.
+- Góc dưới phải: "N online · M in this zone".
+- Phím T: 3 emote (Wave, Nod, Cheer) và 6 câu chat soạn sẵn ("Hi!", "Good luck!", "Follow me!", "Thank you!", "See you at lunch!", "Welcome to F-Ville!") hiện thành bong bóng trên đầu. Không có chat tự do.
+- Menu Esc: "Show other players: On / Off".
+- Người khác không ảnh hưởng nhiệm vụ: dấu "!", gợi ý E, camera hội thoại vẫn như chơi một mình. Đang hội thoại thì ẩn người đứng sát; đang mini-game thì ẩn hết.
 
 ## Zone 0 · Điểm đón xe bus (06:30, khoảng 2 phút)
 
@@ -389,7 +402,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
 
 **Cắt được nếu thiếu thời gian**, theo thứ tự cắt trước: Đừng ngủ gật, Một cú bi-a, cảnh hoàng hôn, hạt lúa vàng. Tú là phần đắt nhất nhưng cũng giữ mạch cảm xúc; nếu phải bỏ Tú, chuyển tình huống thẻ báo đỏ sang một intern khác do code đặt tạm ở cửa.
 
-**Ngoài phạm vi:** chơi nhiều người, điều khiển cảm ứng trên điện thoại, lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
+**Ngoài phạm vi:** chơi nhiều người đầy đủ (chat tự do, làm nhiệm vụ cùng nhau, phòng riêng — hiện chỉ có mức "thấy nhau"), điều khiển cảm ứng trên điện thoại, lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
 
 ## Phụ lục: dữ liệu JSON cho Claude Code
 
@@ -406,6 +419,7 @@ Toàn bộ nội dung game nằm trong các file JSON ở thư mục `data/`, đ
 | `data/zones.json` | Danh sách zone (bắt đầu ở zone 0), điểm xuất hiện, ánh sáng riêng từng zone |
 | `data/cutscenes.json` | Cảnh chuyển (cảnh lên xe zone 0 → zone 1): đối tượng, góc máy, thời lượng từng nhịp |
 | `data/characters.json` | Vai, model, tên hiển thị, màu áo/quần tạm cho các NPC còn dùng chung model |
+| `data/net.json` | Chơi nhiều người: URL máy chủ (trống = tắt), nhịp gửi, emote và câu chat soạn sẵn, giới hạn của máy chủ |
 | `data/i18n/en.json` | Chữ giao diện tiếng Anh (thêm ngôn ngữ khác bằng file cùng cấu trúc) |
 
 **Hiệu ứng** dùng chung cho lựa chọn hội thoại và mini-game: `hieu_biet`, `ket_noi` (số cộng thêm), `value` (id giá trị), `reward` (id phần thưởng), `flags` (cờ đánh dấu sự kiện), `quest` (id việc vừa xong). Chữ hiển thị là object theo mã ngôn ngữ, ví dụ `{ "en": "..." }`. Nội dung chờ HR có `"draft": true` (game hiện `[DRAFT]`); bản phát hành báo lỗi nếu còn mục nào như vậy.

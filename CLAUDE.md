@@ -23,9 +23,10 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/characters/<id>/` | GLB nhân vật, chân dung, cấu hình (`chest_logo.json`, `texture_fixes.json`, `mixamo/actions.json`) |
 | `assets/props/<id>/source/` | Mô hình Meshy gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
-| `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`) |
+| `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`) |
 | `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
-| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `debug.js` |
+| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `debug.js` |
+| `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + 1 Durable Object (`wrangler.toml`, `src/index.js`); bật bằng `data/net.json` → `url` (trống = tắt). Xem `docs/multiplayer.md` |
 | `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`; id vai cũng được: `compare=thao,le_tan,prajith` → kèm tint, tên vai) |
 | `references/` | Chỉ có ghi chú `.md` và bảng màu trên repo; video, khung hình gốc chỉ có trên máy làm việc |
 | `dist/` | **git worktree của nhánh gh-pages** (không thuộc nhánh main) |
@@ -70,6 +71,11 @@ python scripts/tools/anim_sheet.py <id>
 # Đo hiệu năng bản build với độ trễ mạng giả lập (~GitHub Pages): xem docs/perf_report.md
 python scripts/tools/slow_server.py --dir game/dist --port 8772 --delay 0.3
 
+# Chơi nhiều người: máy chủ chạy thử trên máy (không cần tài khoản), game dev nhận ?net=ws://127.0.0.1:8787/ws
+npm --prefix server ci && npm --prefix server run dev
+node scripts/tools/net_bots.js --url ws://127.0.0.1:8787/ws --bots 20 --seconds 60   # đo tải, ước tính request Cloudflare
+# đưa máy chủ lên Cloudflare (cần wrangler login, chỉ máy Desktop): docs/multiplayer.md
+
 # Deploy GitHub Pages (chỉ khi người dùng đồng ý)
 python scripts/deploy_site.py        # build → quét riêng tư → commit → push gh-pages
 python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
@@ -78,6 +84,7 @@ python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
 Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug.js`): `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
 `acts` / `cards` (4 Act, thẻ giữa màn hình), `finish()` / `summary` (thành tựu cuối + màn tổng kết),
+`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người),
 `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.

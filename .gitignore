@@ -41,3 +41,6 @@ __pycache__/
 Thumbs.db
 .claude/settings.local.json
 .vscode/
+# máy chủ (server/): trạng thái chạy thử của wrangler dev
+.wrangler/
+.dev.vars

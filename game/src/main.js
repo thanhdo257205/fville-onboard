@@ -18,6 +18,8 @@ import { Menu } from "./ui/menu.js";
 import { DialogueUI } from "./ui/dialogue.js";
 import { MyFptApp } from "./ui/app.js";
 import { Summary } from "./ui/summary.js";
+import { EmotePanel } from "./ui/emotes.js";
+import { Net } from "./net/net.js";
 import { characterCreator, confirmBox } from "./ui/panels.js";
 import { MinigameHost } from "./minigames/host.js";
 import { hud } from "./ui/hud.js";
@@ -27,9 +29,10 @@ async function boot() {
   await loadStrings("en");
   document.title = t("app.title");
   hud.loading(t("app.loading"));
-  const [zones, chars, collision, sceneFixes, content] = await Promise.all([
+  const [zones, chars, collision, sceneFixes, content, netCfg] = await Promise.all([
     loadJSON(url("data/zones.json")), loadJSON(url("data/characters.json")),
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
+    loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
   ]);
   const debugMode = new URLSearchParams(location.search).has("debug");
 
@@ -63,6 +66,12 @@ async function boot() {
   const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters,
     input, settings, nametags, content, progress, ui });
   game.validation = { problems, nodes: nodeCheck };
+  // chơi nhiều người "thấy nhau" (data/net.json → url trống = tắt, game y như chơi một mình)
+  const netUrl = import.meta.env.DEV && new URLSearchParams(location.search).get("net");   // chỉ khi phát triển: ?net=ws://127.0.0.1:8787/ws
+  if (netUrl) netCfg.url = netUrl;
+  const net = new Net({ game, cfg: netCfg, settings });
+  game.net = net;
+  const emotes = net.enabled ? new EmotePanel(net) : null;
   ui.minigame.game = game;
   ui.app.game = game;
 
@@ -73,19 +82,27 @@ async function boot() {
   const loop = { fps: 0 };
   const menu = new Menu({
     info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false,
-      detail: settings.detail ?? "auto", detailLevel: renderer.detail }),
+      detail: settings.detail ?? "auto", detailLevel: renderer.detail, net: net.enabled, players: settings.players !== false }),
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
+    onPlayers: (on) => { settings.players = on; saveSettings(settings); net.setShow(on); menu.draw(); },
     onClose: () => game.setMode("play"),
     onPlayAgain: playAgain,
   });
 
-  // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn · Tab app · H gợi ý · Esc đóng / menu
+  // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn (bảng emote đang mở: 1–9 chọn emote / câu chat) · Tab app
+  // · H gợi ý · T emote + câu chat (chỉ khi bật mạng) · Esc đóng / menu
   input.on("KeyE", () => game.interact());
   input.on("KeyH", () => game.help());
   for (const k of ["Space", "Enter", "NumpadEnter"]) input.on(k, () => ui.dialogue.next());
-  for (let i = 1; i <= 4; i++) { input.on(`Digit${i}`, () => ui.dialogue.choose(i - 1)); input.on(`Numpad${i}`, () => ui.dialogue.choose(i - 1)); }
+  const digit = (i) => () => { if (emotes?.open) emotes.pick(i - 1); else if (i <= 4) ui.dialogue.choose(i - 1); };
+  for (let i = 1; i <= 9; i++) { input.on(`Digit${i}`, digit(i)); input.on(`Numpad${i}`, digit(i)); }
+  if (emotes) input.on("KeyT", () => {
+    if (game.mode !== "play" || game.state.phase !== "playing") return;
+    if (!net.connected) { emotes.hide(); hud.toast(t("net.offline")); return; }
+    emotes.toggle();
+  });
   input.on("Tab", () => game.toggleApp());
   // Esc khi đang khoá con trỏ: trình duyệt tự nhả khoá → mở menu ở onUnlock (bỏ qua phím Esc đi kèm nếu có)
   const pause = () => { if (!menu.open) { menu.show(); game.setMode("menu"); } };
@@ -116,8 +133,10 @@ async function boot() {
     hud.loading(t("app.loading"));
   }
   await game.start(startZone);
+  net.start();                              // sau "Start my first day" (người chơi cũ: khi game bắt đầu)
+  addEventListener("pagehide", () => net.stop());
   if (saved) hud.toast(t("hud.welcome_back", { name: progress.player.name }));
-  hud.hint(t("hud.controls"), 10);
+  hud.hint(t(net.enabled ? "hud.controls_net" : "hud.controls"), 10);
 
   // THREE.Timer (thay THREE.Clock đã bị bỏ): connect(document) → tab ẩn thì dt = 0, quay lại không nhảy cóc
   const timer = new THREE.Timer();
@@ -127,6 +146,8 @@ async function boot() {
     timer.update(time);
     const dt = Math.min(timer.getDelta(), 0.1);
     if (!menu.open) game.update(dt);
+    net.update(dt);                         // người chơi khác vẫn đi lại khi mở menu
+    if (emotes?.open && game.mode !== "play") emotes.hide();
     game.render(dt);
     hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t("hud.click_to_look") : null);
     frames++; acc += dt;

@@ -30,7 +30,7 @@ body.overlay-open #hint { display: none; }   /* hộp thoại / mini-game / app 
 
 #menu { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(10, 12, 16, .45); }
 #menu[hidden] { display: none; }
-#menu .panel { background: #1b1e24; padding: 22px 26px; border-radius: 16px; min-width: 340px; box-shadow: 0 10px 40px rgba(0, 0, 0, .4); }
+#menu .panel { background: #1b1e24; padding: 22px 26px; border-radius: 16px; min-width: 340px; box-shadow: 0 10px 40px rgba(0, 0, 0, .4); max-height: calc(100vh - 24px); overflow-y: auto; box-sizing: border-box; }
 #menu h2 { margin: 0 0 14px; font-weight: 800; }
 #menu .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 #menu .seg { display: flex; background: #2a2e36; border-radius: 10px; padding: 3px; }
@@ -361,3 +361,20 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 #summary .acts em { font-style: normal; color: var(--muted); }
 #summary footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
 #summary kbd { display: inline-block; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; }
+
+/* chơi nhiều người (game/src/net/): góc dưới phải "N online · M in this zone", bảng tên người chơi khác (viền xanh ngọc,
+   khác NPC viền cam), bảng emote + câu chat (phím T) ngay trên góc online */
+#net-online { position: absolute; right: 16px; bottom: 14px; background: var(--panel); padding: 5px 12px 5px 10px; border-radius: 999px; font: 700 13px "Nunito"; color: var(--fg); }
+#net-online::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3fcf8e; margin-right: 7px; vertical-align: 1px; box-shadow: 0 0 6px #3fcf8e; }
+#net-online[hidden] { display: none; }
+.nametag.player-tag { border-color: rgba(47, 165, 143, .95); }
+#emotes { position: absolute; right: 16px; bottom: 52px; width: 230px; background: var(--panel); border-radius: 14px; padding: 10px 12px 9px; pointer-events: auto; box-shadow: 0 6px 24px rgba(0, 0, 0, .3); }
+#emotes[hidden] { display: none; }
+#emotes b { display: block; font-size: 14px; margin-bottom: 6px; }
+#emotes ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+#emotes li { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+#emotes li:hover { background: rgba(255, 255, 255, .1); }
+#emotes li.phrase:nth-child(4) { margin-top: 4px; border-top: 1px solid rgba(255, 255, 255, .1); border-radius: 0 0 8px 8px; padding-top: 7px; }
+#emotes kbd { display: inline-block; min-width: 1.4em; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; text-align: center; color: var(--fg); }
+#emotes small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+body.overlay-open #emotes { display: none; }

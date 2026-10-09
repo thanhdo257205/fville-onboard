@@ -258,6 +258,34 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   lần ra 7 thứ tự khác nhau); câu 2 Cuder cân độ dài phương án: đúng "Farming roots and hard work, now in tech", sai
   "Digging for gold in the hills" / "Building new roads for the city" / "Winning a big sports trophy" (giữ hint, explain).
 
+### Chơi nhiều người mức "thấy nhau" (09/10/2026)
+- **Một phòng chung**, không mã phòng (`docs/multiplayer.md`, GDD mục Chơi nhiều người). `data/net.json` → `url` trống =
+  tắt mạng: bản gh-pages lần này để trống, game y như chơi một mình (đã thử: chơi trọn zone 0 → 5 không teleport trên bản
+  build, không có WebSocket, không góc online / phím T / dòng menu, console sạch).
+- **Máy chủ `server/`**: Cloudflare Worker + 1 Durable Object `fville`, WebSocket Hibernation API, gói Free (Durable Object
+  kiểu SQLite nhưng không ghi gì — trạng thái chỉ trong bộ nhớ + attachment theo từng kết nối). Tin `join` / `state` /
+  `emote` / `phrase` / `leave` / `ping` (ping do runtime tự trả lời). Chỉ phát cho người cùng zone; vào zone nhận danh
+  sách người cùng zone + số online toàn phòng. Kiểm tra đầu vào: tên ≤ 20 ký tự (lọc ký tự lạ), số hữu hạn, zone
+  `zone_NN`, emote / câu chat theo danh sách trong `data/net.json`; 10 tin/s mỗi kết nối (gấp 3 thì ngắt 4003), tối đa
+  60 kết nối (người thứ 61 nhận lý do rồi bị đóng 4001), im lặng > 60 s bị ngắt (4002), chỉ nhận trang github.io +
+  localhost. `GET /status`: số online, số người từng zone (không tên).
+- **Trong game** (`game/src/net/`, `game/src/ui/emotes.js`): kết nối sau "Start my first day"; lỗi mạng → chơi một mình,
+  tự thử lại 2 → 60 s, mất mạng thì chờ có mạng; người khác dùng model + bộ đồ họ gửi (model lạ → model người chơi),
+  bảng tên viền xanh ngọc, idle / walk / run / sit theo state, nội suy trễ 120 ms, 10 người gần nhất cùng zone, không va
+  chạm, ngoài khung nhìn không vẽ, viền nét chỉ trong 12 m; góc dưới phải "N online · M in this zone"; phím T: Wave / Nod /
+  Cheer + 6 câu soạn sẵn thành bong bóng (bong bóng của Tú); menu Esc "Show other players: On / Off" (lưu); dòng điều
+  khiển thêm "T: wave & chat". Hội thoại: ẩn người đứng sát người chơi / người đối thoại; mini-game: ẩn hết; dấu "!",
+  gợi ý E, camera hội thoại không đổi. Bản dev nhận `?net=ws://…` để thử; `__game.net`, `netEmote`, `netPhrase`.
+- **Đã thử** (`wrangler dev`, Chromium headless): 3 trình duyệt cùng lúc thấy nhau, đi (B thấy A đi đúng chỗ, anim walk),
+  emote, câu chat qua bảng T, cooldown, đổi zone, Show other players Off / On, tắt máy chủ (vẫn chơi, ẩn góc online) rồi
+  bật lại (cả 3 tự vào lại sau ~11 s), 1 máy offline rồi online (vào lại ngay); hội thoại / mini-game không bị ảnh hưởng;
+  giao thức (lọc tên, số lỗi, zone lạ, emote lạ, dồn tin → 4003, 61 kết nối → 4001, im lặng 60 s → 4002).
+- **Đo tải** (`scripts/tools/net_bots.js`, 20 bot đi 60% thời gian): máy chủ nhận 62 tin/s (3,1/người), phát ~1.250/s;
+  1 giờ 21 người ≈ 11.800 request → hạn 100.000/ngày đủ ~8,5 giờ (xấu nhất: mọi người đi liên tục ~5,3 giờ). FPS phía
+  người chơi (headless, vẽ bằng CPU): 13,7 → 11,7 (−14%) với 20 bot (hiện 10) — cần đo lại trên laptop thật.
+- **Chưa lên mạng**: máy cloud không đăng nhập Cloudflare được → bản Desktop làm theo `docs/multiplayer.md` (wrangler
+  login, wrangler deploy, điền URL vào `data/net.json`, build, deploy gh-pages, kiểm tra).
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.
@@ -351,6 +379,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   Blender không ghi metadata nữa; `privacy_scan.py` kiểm tra cả metadata ảnh.
 
 ## Việc tiếp theo
+0. Đưa máy chủ chơi nhiều người lên Cloudflare (máy Desktop, `docs/multiplayer.md` mục Đưa lên mạng) rồi chơi thử 2–3
+   người trên bản deploy; đo FPS trên laptop thật với `net_bots.js` (bật / tắt Show other players).
 1. Chơi thử hệ thống hướng dẫn với người mới thật: có ai đứng yên quá 10 s không, câu nhắc có đúng lúc không (thời gian
    chỉnh trong `data/guidance.json` → `settings`; câu chữ trong `goals`), dấu "!" có quá lộ không (tắt trong menu Esc).
 2. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
