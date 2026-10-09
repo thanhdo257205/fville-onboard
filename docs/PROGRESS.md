@@ -278,9 +278,25 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Quần xanh than (`roles.le_tan.tint.pants = #2f3b55`) để khác Ms. Huyền; áo giữ cam. Tint không loang sang áo/logo.
     Loang nhẹ: vài đốm xanh trên chỗ sáng của giày (da giày sáng, ít màu như quần kem) và thắt lưng còn kem lẫn vài mảng
     xanh — chỉ thấy khi nhìn cận; trong game chị đứng sau quầy nên không thấy chân.
+- **intern_nam, intern_nu — nhân vật NGƯỜI CHƠI (hư cấu, Meshy; 10/10/2026), mới tới bước chuẩn bị Mixamo:**
+  - Nam cao 1,70 m (gốc 71k tam giác), nữ 1,60 m (56k) → 25.000 tam giác, đứng chữ A, nhìn -Y, giữ nguyên mặt và vùng
+    logo khi giảm. FBX cho Mixamo: `assets/characters/intern_nam/intern_nam_for_mixamo.fbx`,
+    `assets/characters/intern_nu/intern_nu_for_mixamo.fbx` (không commit).
+  - Sửa texture theo vị trí 3D (`texture_fixes.json`): mặt trong cổ áo Meshy tô màu da lởm chởm → tô lại màu áo (cả
+    hai); mắt intern_nam to hơn 15% (phóng đều đồng tử + lòng trắng, lông mày không đổi) — so trước/sau: giữ.
+  - Logo FPT ngực trái (cùng file logo của nga): nam 7,5 cm tại z 1,275 m, nữ 7 cm tại z 1,19 m (hạ 1 cm cho cách mũi
+    cổ áo như áo nga); cùng tỉ lệ vị trí với nga và prajith.
+  - 2 bộ texture cùng UV (`outfit_textures.py`): `ao_cam` (áo cam + logo, bản chuẩn) và `dau_ngay` (áo xanh nhạt
+    #cfe0ee giữ nếp vải, không logo); mặt nạ vùng 512 px (áo, quần, giày, da, tóc). Đường dẫn ghi ở
+    `data/characters.json` → `models.intern_nam/intern_nu.textures`; vai player chưa đổi, code chưa sửa.
+  - Ảnh: `renders/characters/<id>_trang_phuc.png` (chính diện 2 bộ, mặt nạ trước/sau, cận ngực logo, cận mặt).
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
-    giảm tam giác.
+    giảm tam giác. `texture_fixes.json` thêm `collar` (tô lại mặt trong cổ áo theo pháp tuyến mượt quay vào trục cổ) và
+    `magnify` (phóng to một vùng như mắt, lấy mẫu qua tia chiếu chính diện); chạy lại thì xoá `_basecolor_nologo.jpg`
+    cũ để `apply_chest_logo.py` dựng lại từ ảnh mới.
+  - `outfit_textures.py`: mặt nạ vùng theo hình khối (cắt dưới nách tách tay / thân + chân / phần trên → quần không bao
+    giờ so màu với da), màu chỉ để tách trong từng khu, dọn mảng vụn theo liên thông; đổi màu áo giữ nếp vải.
   - `build_character.py`: ghép animation, retarget giữa hai nhân vật, giảm tam giác có bảo vệ vùng mặt/logo (và lượt
     giảm riêng phần da phẳng của mặt), đo tốc độ và độ cao ngồi.
   - `apply_chest_logo.py`: dán logo ngực bằng phép chiếu chính diện, tô trắng chữ bị công cụ xoá nền làm trong suốt,
@@ -304,6 +320,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
+- intern_nam, intern_nu: chờ người dùng gắn xương trên Mixamo (2 FBX ở trên) → `mixamo/` → `build_character.py`
+  (6k, `--single`), chân dung; sau đó mới đổi vai player và làm đổi texture `dau_ngay` → `ao_cam` khi nhận Áo Cam
+  (cần quyết cách đưa bản `dau_ngay` vào game: texture riêng nén WebP hay cách khác — `textures/` hiện không commit).
+  Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
+  hưởng khi sau này đổi màu tóc.
 - huyen: bàn tay buông lấn vào đùi 3–5 cm ở 7 animation (talk, talk_2, nod, phone, press, wave, cheer) do dùng lại
   animation của prajith; chờ quyết định tải bản Mixamo riêng cho huyen.
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức

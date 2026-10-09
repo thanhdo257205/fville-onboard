@@ -11,10 +11,13 @@ Mô hình nhân vật tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0. G�
   đã đồng ý dùng hình).
   Mô hình tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0; gắn xương Adobe Mixamo; animation dùng lại bộ Mixamo của
   Prajith (retarget sang bộ xương của Nga).
+- `assets/characters/intern_nam/`, `assets/characters/intern_nu/` — nhân vật người chơi nam / nữ (hư cấu). Mô hình tạo
+  bằng Meshy (meshy.ai), giấy phép CC BY 4.0; đang chờ gắn xương Adobe Mixamo (chưa có trong game).
 
 Logo FPT trên ngực áo (Prajith, Huyền) là bản tạm: mảng logo tách từ texture của Prajith
 (chỉ có trên máy làm việc), sẽ thay bằng file logo chính thức của FPT
-(`scripts/blender/characters/apply_chest_logo.py`). Logo trên áo Nga: logo FPT do người dùng cung cấp, chỉ nằm trong texture.
+(`scripts/blender/characters/apply_chest_logo.py`). Logo trên áo Nga và hai nhân vật người chơi (bộ `ao_cam`): logo FPT
+do người dùng cung cấp, chỉ nằm trong texture.
 
 ## Bối cảnh
 - Tượng Cuder ở zone 2 (`zone_02_campus.glb`, mesh `tuong_cuder_tuong` + búi tóc `tuong_cuder_tuong_buitoc`): mô hình

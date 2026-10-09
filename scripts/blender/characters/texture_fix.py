@@ -38,6 +38,32 @@ class Raster:
             return (np.zeros(0, int),) * 2 + (np.zeros((0, 3)),) * 2
         return np.concatenate(ys), np.concatenate(xs), np.concatenate(ps), np.concatenate(ns)
 
+    def texels_bary(self, tri_idx):
+        """→ yy, xx, trọng số barycentric (k×3), chỉ số tam giác (k) của mọi texel thuộc các tam giác tri_idx."""
+        ys, xs, ws, ts = [], [], [], []
+        for t in tri_idx:
+            r = _raster_tri(self.uv[t], self.size)
+            if r is None:
+                continue
+            ys.append(r[0])
+            xs.append(r[1])
+            ws.append(r[2])
+            ts.append(np.full(len(r[0]), t))
+        if not ys:
+            return np.zeros(0, int), np.zeros(0, int), np.zeros((0, 3)), np.zeros(0, int)
+        return np.concatenate(ys), np.concatenate(xs), np.concatenate(ws), np.concatenate(ts)
+
+    def vertex_normals(self):
+        """Pháp tuyến mượt tại 3 đỉnh mỗi tam giác (n×3×3): gộp đỉnh trùng toạ độ, cộng pháp tuyến mặt theo diện tích."""
+        V = self.co.reshape(-1, 3)
+        _, inv = np.unique(np.round(V / 1e-5).astype(np.int64), axis=0, return_inverse=True)
+        inv = inv.ravel()
+        an = np.cross(self.co[:, 1] - self.co[:, 0], self.co[:, 2] - self.co[:, 0])
+        acc = np.zeros((inv.max() + 1, 3))
+        np.add.at(acc, inv, np.repeat(an, 3, axis=0))
+        acc /= np.maximum(np.linalg.norm(acc, axis=1, keepdims=True), 1e-12)
+        return acc[inv].reshape(-1, 3, 3)
+
     def tris_in(self, lo, hi, axes, facing, depth_axis, depth_c, depth=0.08, min_dot=0.2):
         """Tam giác có khung bao giao với hộp [lo, hi] theo `axes` (kể cả tam giác lớn phủ qua hộp mà không có đỉnh nào
         bên trong — mesh đã giảm mạnh), hướng `facing`, gần mặt `depth_c`."""
@@ -210,6 +236,128 @@ def remove_patch(px, R, box, facing, deviation=0.16, margin=0.012, ring_w=0.03, 
     info = {"center": c.round(4).tolist(), "size": (hi - lo).round(4).tolist(), "tris": int(len(tris)),
             "texels": int(len(yy)), "ring": int(ring.sum()), "base": base.round(3).tolist(), "fit_rms": round(rms, 4)}
     return out, info
+
+
+LUMA = np.array([0.2126, 0.7152, 0.0722])
+
+
+class FrontCaster:
+    """Chiếu tia từ phía trước (−Y → +Y) lên các tam giác của Raster: điểm (x, z) trên mặt → toạ độ texel (x, y).
+    Dùng để lấy mẫu ảnh theo vị trí 3D (vd phóng to mắt: texel đích lấy màu ở điểm 3D khác)."""
+
+    def __init__(self, R):
+        from mathutils import Vector
+        from mathutils.bvhtree import BVHTree
+        self.R, self.V = R, Vector
+        n = len(R.co)
+        self.bvh = BVHTree.FromPolygons([Vector(v) for v in R.co.reshape(-1, 3)], np.arange(n * 3).reshape(n, 3).tolist())
+
+    def depth(self, x, z):
+        """y của mặt đầu tiên tia trúng (None nếu trượt)."""
+        loc = self.bvh.ray_cast(self.V((x, -3.0, z)), self.V((0, 1, 0)), 6.0)[0]
+        return None if loc is None else float(loc[1])
+
+    def texel(self, x, z):
+        loc, _, idx, _ = self.bvh.ray_cast(self.V((x, -3.0, z)), self.V((0, 1, 0)), 6.0)
+        if loc is None:
+            return None
+        a, b, c = self.R.co[idx]
+        p = np.array(loc)
+        v0, v1, v2 = b - a, c - a, p - a
+        d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
+        den = d00 * d11 - d01 * d01
+        w1 = (d11 * d20 - d01 * d21) / den
+        w2 = (d00 * d21 - d01 * d20) / den
+        return np.array([1 - w1 - w2, w1, w2]) @ self.R.uv[idx]
+
+
+def _bilinear(px, x, y):
+    h, w = px.shape[:2]
+    x0, y0 = int(np.floor(x)), int(np.floor(y))
+    fx, fy = x - x0, y - y0
+    x0c, x1c = np.clip([x0, x0 + 1], 0, w - 1)
+    y0c, y1c = np.clip([y0, y0 + 1], 0, h - 1)
+    return (px[y0c, x0c] * (1 - fx) * (1 - fy) + px[y0c, x1c] * fx * (1 - fy)
+            + px[y1c, x0c] * (1 - fx) * fy + px[y1c, x1c] * fx * fy)
+
+
+def magnify(px, R, center, radii, scale, inner=0.55, facing=(0, -1, 0), depth=0.03, caster=None):
+    """Phóng to một vùng trên texture theo vị trí 3D (vd mắt): trong elip bán kính `radii` (x, z) m quanh `center`,
+    phần trong `inner` × bán kính phóng ĐỀU ×scale (giữ hình tròng mắt), ra tới mép elip hoà mượt về ×1 (phần ngoài —
+    lông mày, má — giữ nguyên). Texel đích lấy màu ảnh GỐC tại điểm nguồn, qua tia chiếu từ phía trước.
+    center[1] (y) = None → lấy y của mặt tại (x, z)."""
+    caster = caster or FrontCaster(R)
+    cx, cy, cz = center
+    if cy is None:
+        cy = caster.depth(cx, cz)
+    rx, rz = radii
+    lo = np.array([cx - rx, cy - depth, cz - rz])
+    hi = np.array([cx + rx, cy + depth, cz + rz])
+    tris = R.tris_in(lo, hi, (0, 2), facing, 1, cy, depth=depth, min_dot=0.3)
+    yy, xx, P, _ = R.texels(tris)
+    d = P[:, [0, 2]] - np.array([cx, cz])
+    r = np.hypot(d[:, 0] / rx, d[:, 1] / rz)
+    sel = r < 1
+    yy, xx, d, r = yy[sel], xx[sel], d[sel], r[sel]
+    t = np.clip((r - inner) / (1 - inner), 0, 1)
+    s = t * t * (3 - 2 * t)
+    g = (1 / scale) * (1 - s) + s                 # điểm nguồn = tâm + d·g (g = 1/scale ở giữa, 1 ở mép)
+    src = np.array([cx, cz]) + d * g[:, None]
+    out = px.copy()
+    miss = 0
+    for k in range(len(yy)):
+        tx = caster.texel(src[k, 0], src[k, 1])
+        if tx is None:
+            miss += 1
+            continue
+        out[yy[k], xx[k], :3] = _bilinear(px, tx[0], tx[1])[:3]
+    return out, {"center": [round(float(v), 4) for v in (cx, cy, cz)], "radii": list(radii), "scale": scale,
+                 "texels": int(len(yy)), "miss": miss}
+
+
+def collar_fix(px, R, band, axis_xy, neck_z, inward=(0.02, -0.08), dark=0.3):
+    """Mặt TRONG cổ áo (dải z `band`, pháp tuyến quay vào trục cổ `axis_xy`) bị Meshy tô màu da lởm chởm → tô lại
+    màu áo. Pháp tuyến MƯỢT nội suy theo từng texel (không theo mặt) → ranh giới chạy theo nếp gấp cổ áo / cổ, không
+    răng cưa theo cạnh tam giác; mức đổi tăng dần khi thành phần hướng vào trục đi từ inward[0] tới inward[1].
+    Chỉ đổi texel giống màu da hơn màu áo (tóc, viền tối giữ nguyên); texel lẫn đổi theo tỉ lệ. Màu da mẫu: cổ (mặt
+    quay ra, dải `neck_z`); màu áo mẫu: phần mặt trong cổ áo vốn đã đúng màu áo, không đủ thì thân áo dưới cổ."""
+    covered, pos, nrm = R.covered, R.pos, R.nrm
+    ax = np.asarray(axis_xy, np.float64)
+
+    def radial(P, N):
+        v = P[..., :2] - ax
+        rr = np.linalg.norm(v, axis=-1)
+        return rr, (N[..., :2] * v).sum(-1) / np.maximum(rr, 1e-6)
+
+    rr, nr = radial(pos, nrm)
+    lum = px[..., :3] @ LUMA
+    neck = covered & (pos[..., 2] > neck_z[0]) & (pos[..., 2] < neck_z[1]) & (nr > 0.3) & (lum > 0.45)
+    skin = np.median(px[neck][:, :3], 0)
+    below = covered & (pos[..., 2] > band[0] - 0.10) & (pos[..., 2] < band[0] - 0.03) & (nrm[..., 1] < -0.5) \
+        & (np.abs(pos[..., 0]) > 0.03)
+    shirt = np.median(px[below][:, :3], 0)
+    # tam giác trong dải có ít nhất 1 đỉnh quay vào trục (pháp tuyến mượt) → texel: pháp tuyến nội suy
+    vn = R.vertex_normals()
+    cen = R.co.mean(1)
+    vnr = np.stack([radial(R.co[:, k], vn[:, k])[1] for k in range(3)], 1)
+    tris = np.where((cen[:, 2] > band[0]) & (cen[:, 2] < band[1]) & (vnr.min(1) < inward[0]))[0]
+    yy, xx, w, ti = R.texels_bary(tris)
+    P = np.einsum("kj,kjd->kd", w, R.co[ti])
+    N = np.einsum("kj,kjd->kd", w, vn[ti])
+    _, nrs = radial(P, N / np.maximum(np.linalg.norm(N, axis=1, keepdims=True), 1e-9))
+    t = np.clip((nrs - inward[0]) / (inward[1] - inward[0]), 0, 1)
+    g = t * t * (3 - 2 * t)                                           # 0 = quay ra / ngang, 1 = quay hẳn vào cổ
+    C = px[yy, xx, :3].astype(np.float64)
+    sv = skin - shirt
+    a = np.clip(((C - shirt) @ sv) / max(sv @ sv, 1e-9), 0, 1)       # 0 = màu áo, 1 = màu da
+    a[(C @ LUMA) < dark] = 0                                          # tóc / viền tối: giữ
+    good = (a < 0.15) & (g > 0.5)
+    fill = np.median(C[good], 0) if good.sum() > 50 else shirt * 0.92
+    k = a * g
+    out = px.copy()
+    out[yy, xx, :3] = np.clip(C + k[:, None] * (fill - skin), 0, 1)
+    return out, {"tris": int(len(tris)), "texels": int(len(yy)), "changed": int((k > 0.15).sum()),
+                 "skin": skin.round(3).tolist(), "shirt": shirt.round(3).tolist(), "fill": np.round(fill, 3).tolist()}
 
 
 def uv_seam_segments(me, region, facing=None):

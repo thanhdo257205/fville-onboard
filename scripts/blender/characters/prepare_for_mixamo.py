@@ -10,7 +10,8 @@ Ra:   assets/characters/<name>/<name>_for_mixamo.fbx      (FBX nhúng texture, c
       assets/characters/<name>/<name>_prep.blend
       assets/characters/<name>/textures/<name>_basecolor.jpg (1024 px)
       renders/characters/<name>_front.png, <name>_side.png
-      renders/characters/check/<name>_{orig|<tris>}_{face|hair|hand_l|hand_r}.png (soi mặt, kính, tóc, bàn tay)
+      renders/characters/check/<name>_{orig|<tris>}_{face|hair|hand_l|hand_r|eyes|collar}.png (soi mặt, kính, tóc, tay,
+      mắt, cổ áo); có texture_fixes.json: renders/characters/<name>_texture_truoc_sau.png
 
 Nhân vật trong thư mục này có thể là người thật → KHÔNG đưa vào dist/ hay repo công khai.
 """
@@ -55,7 +56,7 @@ SRC = os.path.join(CHAR_DIR, "source", f"{NAME}_meshy.glb")
 FBX = os.path.join(CHAR_DIR, f"{NAME}_for_mixamo.fbx")
 BLEND = os.path.join(CHAR_DIR, f"{NAME}_prep.blend")
 TEX = os.path.join(CHAR_DIR, "textures", f"{NAME}_basecolor.jpg")
-FIXES = os.path.join(CHAR_DIR, "texture_fixes.json")  # tuỳ chọn: tô lại vùng / dán logo (xem texture_fix.py)
+FIXES = os.path.join(CHAR_DIR, "texture_fixes.json")  # tuỳ chọn: collar, magnify, remove, bands, decals (texture_fix.py)
 RENDER_DIR = os.path.join(ROOT, "renders", "characters")
 
 
@@ -278,6 +279,20 @@ def fix_texture(obj, px):
     R = TF.Raster(obj.data, px.shape[0])
     print(f"[texture] raster {px.shape[1]}×{px.shape[0]}: {R.covered.mean():.0%} texel thuộc mesh")
     found = {}
+    for c in cfg.get("collar", []):
+        if c.get("enabled", True):
+            px, info = TF.collar_fix(px, R, c["band_z"], c["axis_xy"], c["neck_z"])
+            found["collar"] = info
+            print(f"[texture] mặt trong cổ áo '{c['name']}': {info}")
+    caster = None
+    for m in cfg.get("magnify", []):
+        if not m.get("enabled", True):
+            print(f"[texture] bỏ qua phóng to '{m['name']}' (enabled: false)")
+            continue
+        caster = caster or TF.FrontCaster(R)
+        px, info = TF.magnify(px, R, m["center"], m["radii"], m["scale"], inner=m.get("inner", 0.55), caster=caster)
+        found.setdefault("magnify", []).append(info)
+        print(f"[texture] phóng to '{m['name']}': {info}")
     for r in cfg.get("remove", []):
         px, info = TF.remove_patch(px, R, r["box"], r["facing"], near=r.get("near"), radius=r.get("radius", 0.06),
                                    margin=r.get("margin", 0.012))
@@ -328,6 +343,11 @@ def build_texture(obj, base_tex):
     except TypeError:
         img.save()
     img.filepath = TEX  # tuyệt đối tới khi lưu .blend (xem save_blend)
+    # bản không logo cũ (apply_chest_logo.py) dựng từ ảnh màu TRƯỚC → xoá để lần dán logo sau tạo lại từ ảnh mới
+    nologo = os.path.join(CHAR_DIR, "textures", f"{NAME}_basecolor_nologo.jpg")
+    if os.path.exists(nologo):
+        os.remove(nologo)
+        print(f"[texture] xoá {os.path.basename(nologo)} cũ: chạy lại apply_chest_logo.py để dán logo lên ảnh mới")
     base_tex.image = img
     for im in [im for im in bpy.data.images if im is not img]:
         bpy.data.images.remove(im)
@@ -380,6 +400,11 @@ def close_ups(obj, chest=None):
         shots[side] = (tuple(hand.mean(0)), (0.35 * sign, -1, 0.15), 0.32)
     if chest is not None:
         shots["chest"] = (tuple(chest), (0.12, -1, 0.05), 0.30)
+    # cận mắt (chính diện) và mặt trong cổ áo (nhìn chếch từ trên-trước) — xem sửa texture
+    shots["eyes"] = ((head[:, 0].mean(), head[:, 1].mean(), top - 0.10 * HEIGHT / 1.7), (0, -1, 0.02), 0.13)
+    neck = np.array(sorted(np.arange(0.78, 0.90, 0.005) * HEIGHT,
+                           key=lambda z: np.ptp(co[np.abs(co[:, 2] - z) < 0.003, 0]) if (np.abs(co[:, 2] - z) < 0.003).any() else 9))
+    shots["collar"] = ((0, head[:, 1].mean(), neck[0] - 0.03), (0.55, -0.8, 0.75), 0.2)
     return shots
 
 
@@ -393,7 +418,8 @@ def texture_before_after(obj, cam, base_tex, before_px, found):
     """Render cùng góc với texture trước/sau khi sửa, ghép 1 ảnh: hàng = góc, cột = trước | sau."""
     chest = found.get("logo_nguc", {}).get("center")
     ups = close_ups(obj, chest)
-    shots = {k: ups[k] for k in ("chest", "hand_r") if k in ups}  # góc đầu tiên nằm trên cùng
+    want = [k for k, f in (("eyes", "magnify"), ("collar", "collar")) if f in found] or ["chest", "hand_r"]
+    shots = {k: ups[k] for k in want if k in ups}  # góc đầu tiên nằm trên cùng
     after = base_tex.image
     before = make_image(f"{NAME}_before", before_px)
     paths = {}

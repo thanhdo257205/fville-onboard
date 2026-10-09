@@ -14,7 +14,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | --- | --- |
 | `scripts/blender/zone_00.py` … `zone_05.py` | Dựng từng zone (chạy trong Blender không giao diện) |
 | `scripts/blender/lib/` | Thư viện dựng chung: kit modular, chất liệu, bảng màu, đồ vật, nội thất, phố, marker đối tượng game, lightmap, render |
-| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `render_portrait.py`, `texture_fix.py`, `char_render.py` |
+| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục), `render_portrait.py`, `texture_fix.py`, `char_render.py` |
 | `scripts/blender/lib/cuder.py`, `scripts/blender/props/cuder_preview.py` | Tượng Cuder zone 2 từ mô hình Meshy (zone_02.py gọi khi build); xem trước riêng tượng |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
@@ -62,6 +62,7 @@ python -m http.server 8765           # ở thư mục gốc, mở http://localho
 # Nhân vật (cần Blender + file riêng trên máy làm việc)
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/prepare_for_mixamo.py -- --id <id> --height 1.60 --tris 25000 [--protect-face] [--protect-logo]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/apply_chest_logo.py -- --id <id> [--logo <png>] [--compare prajith]
+tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/outfit_textures.py -- --id <id> [--shirt cfe0ee]   # sau apply_chest_logo
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/build_character.py -- --id <id> --height 1.60 --tris 6000 --single [--decimate-only]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id>
 python scripts/tools/anim_sheet.py <id>

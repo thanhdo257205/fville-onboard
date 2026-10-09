@@ -1,0 +1,20 @@
+{
+  "_ghi_chu": "Sửa ảnh màu gốc (2048) theo vị trí 3D, prepare_for_mixamo.py áp khi xuất texture. collar: mặt trong cổ áo (tam giác trong dải band_z, quay vào trục cổ axis_xy) Meshy tô màu da lởm chởm → tô lại màu áo; neck_z: dải cổ để lấy màu da mẫu. magnify: phóng to vùng (mắt) quanh center, elip radii (x, z) m, ×scale ở giữa, hoà về ×1 ở mép; enabled: false = tắt.",
+  "collar": [
+    {
+      "name": "mat_trong_co_ao",
+      "band_z": [
+        1.24,
+        1.35
+      ],
+      "axis_xy": [
+        0.0004,
+        0.0185
+      ],
+      "neck_z": [
+        1.31,
+        1.34
+      ]
+    }
+  ]
+}

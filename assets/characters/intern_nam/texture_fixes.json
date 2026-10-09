@@ -1,0 +1,51 @@
+{
+  "_ghi_chu": "Sửa ảnh màu gốc (2048) theo vị trí 3D, prepare_for_mixamo.py áp khi xuất texture. collar: mặt trong cổ áo (tam giác trong dải band_z, quay vào trục cổ axis_xy) Meshy tô màu da lởm chởm → tô lại màu áo; neck_z: dải cổ để lấy màu da mẫu. magnify: phóng to vùng (mắt) quanh center, elip radii (x, z) m, ×scale ở giữa, hoà về ×1 ở mép; enabled: false = tắt.",
+  "collar": [
+    {
+      "name": "mat_trong_co_ao",
+      "band_z": [
+        1.35,
+        1.46
+      ],
+      "axis_xy": [
+        0.0,
+        0.0005
+      ],
+      "neck_z": [
+        1.44,
+        1.49
+      ]
+    }
+  ],
+  "magnify": [
+    {
+      "name": "mat_trai",
+      "center": [
+        0.0306,
+        null,
+        1.5578
+      ],
+      "radii": [
+        0.022,
+        0.012
+      ],
+      "scale": 1.15,
+      "inner": 0.55
+    },
+    {
+      "name": "mat_phai",
+      "center": [
+        -0.0332,
+        null,
+        1.5584
+      ],
+      "radii": [
+        0.022,
+        0.012
+      ],
+      "scale": 1.15,
+      "inner": 0.55
+    }
+  ],
+  "_ghi_chu_magnify": "Mắt intern_nam to hơn ~15%: tâm = tâm đồng tử (đo trên ảnh chiếu chính diện), y = null → lấy theo mặt. Vùng phóng đều ±1,2 × ±0,66 cm (đồng tử + lòng trắng), hoà về ×1 ở ±2,2 × ±1,2 cm; lông mày cách tâm 1,4 cm → không bị kéo."
+}
