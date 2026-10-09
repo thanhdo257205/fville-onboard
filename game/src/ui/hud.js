@@ -59,8 +59,26 @@ export const hud = {
     const el = $("#hint");
     el.textContent = text;
     el.classList.add("show");
+    this._hintLeft = seconds * 1000;
+    this._hintRun();
+  },
+  _hintRun() {
     clearTimeout(this._hint);
-    this._hint = setTimeout(() => el.classList.remove("show"), seconds * 1000);
+    if (this._covered || !this._hintLeft) return;
+    this._hintStart = performance.now();
+    this._hint = setTimeout(() => { this._hintLeft = 0; $("#hint").classList.remove("show"); }, this._hintLeft);
+  },
+  // Hộp thoại / mini-game / app My FPT đang mở: ẩn dòng hướng dẫn điều khiển (cùng chỗ cuối màn hình, bị hộp thoại đè)
+  // và dừng đếm giờ; đóng lại thì hiện nốt phần thời gian còn lại (vd tin nhắn HR mở ngay đầu game).
+  cover(on) {
+    if (on === !!this._covered) return;
+    this._covered = on;
+    document.body.classList.toggle("overlay-open", on);
+    if (on) {
+      clearTimeout(this._hint);
+      if (this._hintLeft && this._hintStart != null) this._hintLeft = Math.max(0, this._hintLeft - (performance.now() - this._hintStart));
+      this._hintStart = null;
+    } else this._hintRun();
   },
   // thông báo lần lượt (mỗi cái ~2,4 s)
   queue: [],

@@ -19,6 +19,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #9cc4e8; col
 #hint { bottom: 18px; color: var(--muted); }
 #toast { top: 70px; font-weight: 700; }
 #hint.show, #toast.show { opacity: 1; }
+body.overlay-open #hint { display: none; }   /* hộp thoại / mini-game / app đang mở (hud.cover) */
 #title-card { position: absolute; top: 28%; left: 50%; transform: translateX(-50%); text-align: center; opacity: 0; text-shadow: 0 2px 12px rgba(0, 0, 0, .45); }
 #title-card .time { font-size: 20px; font-weight: 800; color: #ffd27a; }
 #title-card .name { font-size: 34px; font-weight: 800; }

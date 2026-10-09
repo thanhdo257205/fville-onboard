@@ -32,6 +32,22 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Sửa lỗi chơi thử đợt trước: camera lúc xuất hiện, capsule cho NPC và Tú, Tú đi chếch sau, màu áo/quần riêng từng NPC.
   - Chỗ chuẩn bị âm thanh (`game/src/core/sound.js`, chưa có file âm thanh).
 - Đã chạy thử trọn zone 0 → hết zone 3 (ước tính 12–14 phút theo mạch chính) và đưa lên GitHub Pages.
+- **Sửa 3 lỗi chơi thử (09/10/2026, trên `main`, chưa deploy gh-pages):**
+  - Dòng hướng dẫn điều khiển (cuối màn hình) ẩn khi hộp thoại, mini-game hoặc app My FPT đang mở (`hud.cover`, gọi từ
+    `Game.setMode`); đồng hồ 10 giây của dòng này tạm dừng lúc bị ẩn, đóng lại thì hiện nốt (vd tin nhắn HR mở ngay đầu
+    game).
+  - Camera bị cây che: `game/src/render/seethrough.js` — cây nằm giữa camera và người chơi, hoặc bọc / quẹt sát camera,
+    mờ dần bằng dither (Bayer 4×4, 0,3 s; giữ 0,4 s sau khi hết che rồi hiện lại), cả viền nét. Không sửa GLB: mesh cây
+    gộp chung (`ENV_vegetation`, `ENV_cay_*`) được chia thành từng cây lúc tải zone; dò che khuất bằng 5 tia từ camera
+    tới người chơi (BVH) + lá cách camera < 0,8 m. Cụm thấp hơn 1,2 m (hàng rào, bụi, cỏ) không mờ. 3 chậu cọ sảnh
+    zone 3 nằm chung mesh nội thất (`ENV_noi_that`) → chọn bằng hộp trong `data/scene_fixes.json` → `zone_03.see_through`.
+    Cấu hình chung: `data/scene_fixes.json` → `see_through`. Chi phí dò ≤ 0,2 ms/khung. Xem bằng `__game.seeThrough`.
+  - Console sạch: hết cảnh báo `THREE.Material: parameter 'map' has value of undefined` (túi cầm tay của hành khách tạo
+    chất liệu không có texture → `map: null`), `THREE.Clock` thay bằng `THREE.Timer` (`connect(document)`: tab ẩn thì
+    dt = 0), thêm favicon rỗng trong `game/index.html` (hết lỗi 404 `/favicon.ico`).
+  - Kiểm tra bằng `__game` (Chromium headless): cả 4 zone, đặt người chơi sau cây / cạnh chậu cọ → so ảnh tắt/bật mờ
+    cây; chơi trọn mạch zone 0 → 3 (11 nhiệm vụ, 7 mini-game, cảnh lên xe, lối zone 4 vẫn khóa) trên bản dev và bản
+    build: 32 lần hộp thoại / mini-game / app mở đều ẩn dòng hướng dẫn; console chỉ còn dòng `[kiểm tra dữ liệu] OK`.
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền.
@@ -53,10 +69,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- Lỗi từ lần chơi thử (chưa sửa):
-  - Hộp thoại đè lên dòng hướng dẫn điều khiển.
-  - Camera bị cây che.
-  - Có cảnh báo trong console.
+- Bản sửa 3 lỗi chơi thử mới ở `main`, chưa deploy lên `gh-pages` (chờ người dùng đồng ý).
 - huyen: bàn tay buông lấn vào đùi 3–5 cm ở 7 animation (talk, talk_2, nod, phone, press, wave, cheer) do dùng lại
   animation của prajith; chờ quyết định tải bản Mixamo riêng cho huyen.
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức
@@ -71,7 +84,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   Blender không ghi metadata nữa; `privacy_scan.py` kiểm tra cả metadata ảnh.
 
 ## Việc tiếp theo
-1. Sửa 3 lỗi chơi thử ở trên.
+1. Deploy bản sửa lỗi lên `gh-pages` (`python scripts/deploy_site.py`, khi người dùng đồng ý); chơi thử lại trên máy
+   thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong `data/scene_fixes.json`).
 2. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
 3. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc),
    màn tổng kết, danh hiệu, tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.

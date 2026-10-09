@@ -8,6 +8,7 @@
 //   __game.walkTo(name, {run, maxSec}) → đi thẳng tới node, trả kết quả (tới nơi / bị chặn)
 //   __game.benchmark(frames)  → đo thời gian khung hình thật (ms, FPS tương đương), không phụ thuộc vsync
 //   __game.collisionScan()    → quét lỗi va chạm quanh mọi SPAWN_ của zone hiện tại
+//   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
 import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
@@ -69,6 +70,7 @@ export function installDebug(game, loop) {
     get model() { const c = game.player.character; return { tier: c.tier, glb: game.characters.model(game.characters.role("player").model).glb[c.tier] }; },
     get triggers() { return game.zone.triggers.map((t) => ({ name: t.name, inside: t.inside, cfg: game.triggerCfg(t.name) || null })); },
     get info() { const i = game.renderer.info; return { triangles: i.triangles, calls: i.calls }; },
+    get seeThrough() { return game.seeThrough.info(); },
     get _game() { return game; },          // truy cập nội bộ khi cần soi sâu
     nodes(prefix = "") { return [...game.zone.nodes.keys()].filter((n) => n.startsWith(prefix)); },
     // COL_ nào chứa điểm p (tìm vật cản khi bị kẹt)

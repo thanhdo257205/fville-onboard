@@ -105,10 +105,13 @@ async function boot() {
   if (saved) hud.toast(t("hud.welcome_back", { name: progress.player.name }));
   hud.hint(t("hud.controls"), 10);
 
-  const clock = new THREE.Clock();
+  // THREE.Timer (thay THREE.Clock đã bị bỏ): connect(document) → tab ẩn thì dt = 0, quay lại không nhảy cóc
+  const timer = new THREE.Timer();
+  timer.connect(document);
   let frames = 0, acc = 0;
-  renderer.three.setAnimationLoop(() => {
-    const dt = Math.min(clock.getDelta(), 0.1);
+  renderer.three.setAnimationLoop((time) => {
+    timer.update(time);
+    const dt = Math.min(timer.getDelta(), 0.1);
     if (!menu.open) game.update(dt);
     game.render(dt);
     hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t("hud.click_to_look") : null);

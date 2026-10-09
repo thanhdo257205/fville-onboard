@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes } from "../world/zone.js";
 import { createLights } from "../render/renderer.js";
+import { SeeThrough } from "../render/seethrough.js";
 import { ThirdPersonCamera } from "../player/camera.js";
 import { Player } from "../player/player.js";
 import { Npc } from "../characters/npc.js";
@@ -40,6 +41,7 @@ export class Game {
     this.camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 600);
     this.cam = new ThirdPersonCamera(this.camera);
     this.lights = createLights(this.scene);
+    this.seeThrough = new SeeThrough(data.sceneFixes?.see_through);   // cây che người chơi → mờ dần
     this.zone = null;
     this.npcs = [];          // Npc (đứng/ngồi tại node)
     this.follower = null;    // Tú
@@ -83,6 +85,7 @@ export class Game {
     if (!silent) hud.loading(t("app.loading_zone", { zone: t(`zones.${zoneId}.title`) }));
     const zone = await loadZone(zoneId, file ?? this.zoneCfg(zoneId).file, this.state.tier, this.data.collision?.[zoneId]);
     applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
+    this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
     // dọn zone cũ
     if (this.zone) { this.scene.remove(this.zone.root, this.zone.collider); disposeZone(this.zone); }
     for (const n of this.npcs) n.character.dispose();
@@ -324,6 +327,7 @@ export class Game {
     this.input.enabled = m === "play";
     this.input.setLook(m === "play");   // chơi: khoá + ẩn con trỏ, chuột xoay camera; còn lại: hiện con trỏ để bấm
     if (m !== "play") hud.prompt(null);
+    hud.cover(m === "dialogue" || m === "minigame" || m === "app");   // ẩn dòng hướng dẫn điều khiển
   }
 
   // phím E
@@ -383,7 +387,7 @@ export class Game {
   }
 
   update(dt) {
-    if (this.cutscene) { this.input.consumeDrag(); if (!this.debugHold?.(this.cutscene)) this.cutscene.update(dt); return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
+    if (this.cutscene) { this.input.consumeDrag(); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
     const drag = this.input.consumeDrag();
     const still = { x: 0, y: 0, run: false };
@@ -404,6 +408,7 @@ export class Game {
     this.follower?.update(dt, this.player, this.zone.collider, { view: this.camera.position, obstacles: [...npcCaps, this.player.capsule()] });
     if (this.cameraOverride) this.cameraOverride(dt);
     else this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider);
+    this.seeThrough.update(dt, this.camera.position, this.player.position);
     if (this.mode === "play") {
       this.checkTriggers();
       hud.prompt(this.interaction.update(this.player.position));

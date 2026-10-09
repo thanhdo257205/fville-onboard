@@ -1,5 +1,30 @@
 {
-  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục.",
+  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục; 'see_through' ở gốc = cấu hình chung.",
+  "see_through": {
+    "_ghi_chu": "Cây cối không che người chơi (game/src/render/seethrough.js): cây nằm giữa camera và người chơi, hoặc bọc lấy / quẹt sát camera, mờ dần bằng dither rồi hiện lại khi hết che. meshes = regex tên node có cây (mesh gộp chung, code chia thành từng cây lúc tải zone). rays = [lệch ngang m, cao m] các điểm trên người chơi để dò che khuất từ camera. fade_s = thời gian mờ/hiện, hold_s = giữ mờ thêm sau khi hết che (khỏi nhấp nháy), max = mức mờ tối đa (1 = ẩn hẳn), near_m = lá cách camera dưới mức này thì mờ, min_height_m = cụm cây thấp hơn (hàng rào, bụi, cỏ — zone_01 có hàng rào dài 100 m cao 0,9 m) không bao giờ mờ. Zone có mesh gộp lẫn đồ khác: <zone>.see_through.add = [{ mesh, boxes }] (chỉ lấy mảnh có tâm trong hộp, toạ độ glTF).",
+    "meshes": "^ENV_(vegetation|cay_)",
+    "rays": [[0, 0.3], [0, 0.9], [0, 1.5], [-0.3, 1.15], [0.3, 1.15]],
+    "fade_s": 0.3,
+    "hold_s": 0.4,
+    "max": 0.85,
+    "near_m": 0.8,
+    "min_height_m": 1.2
+  },
+  "zone_03": {
+    "see_through": {
+      "add": [
+        {
+          "mesh": "^ENV_noi_that$",
+          "boxes": [
+            { "center": [-8.625, 1.15, -3.0], "size": [1.45, 2.3, 1.9] },
+            { "center": [-8.625, 1.15, -5.6], "size": [1.45, 2.3, 1.9] },
+            { "center": [-8.625, 1.15, -8.0], "size": [1.45, 2.3, 1.9] }
+          ],
+          "_ly_do": "3 chậu cọ sảnh (scripts/blender/zone_03.py build_furniture: potted_palm tại x0 + 1,2 = −8,8; y Blender 3,0 / 5,6 / 8,0 → z glTF −3,0 / −5,6 / −8,0) gộp chung mesh nội thất với vách lam, cầu thang, đôn, TV. Hộp chỉ ôm chậu + lá (x từ −9,35: chừa vách lam x −9,6 và dây trầu bà rủ x ≈ −9,5)."
+        }
+      ]
+    }
+  },
   "zone_05": {
     "chairs": {
       "_ghi_chu": "Ghế văn phòng nằm chung mesh với bàn (ENV_ban_XX dùng chung ENV_ban_mau/_cay; bàn intern ban_lam_viec_mesh). Đỉnh ghế = phần mesh có z cục bộ (glTF) > 0.69 m (sau mép bàn). Mặt ghế trong GLB cao 0.51 m, animation ngồi cần 0.376 m. mode 'whole' = hạ cả ghế; 'seat' = chỉ hạ phần trên seat_from_m (mặt, lưng ghế) và rút ngắn trụ, đế giữ trên sàn.",

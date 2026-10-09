@@ -73,7 +73,7 @@ export function createLights(scene) {
 export function makeZoneMaterial(src, { lightmap = false } = {}) {
   const lm = lightmap ? src.aoMap || null : null;
   const m = new THREE.MeshToonMaterial({
-    color: src.color, map: src.map, vertexColors: true, gradientMap: toonGradient,
+    color: src.color, map: src.map ?? null, vertexColors: true, gradientMap: toonGradient,
     transparent: src.transparent, opacity: src.opacity, side: src.side,
     emissive: src.emissive, emissiveIntensity: src.emissiveIntensity,
     lightMap: lm, lightMapIntensity: LIGHTMAP_INTENSITY,
@@ -82,7 +82,8 @@ export function makeZoneMaterial(src, { lightmap = false } = {}) {
   return { material: m, hasLightmap: !!lm };
 }
 
-// Chất liệu nhân vật (không có vertex color)
+// Chất liệu nhân vật (không có vertex color). src có thể chỉ có màu (vd túi cầm tay do code dựng) → map = null,
+// không truyền undefined (three.js cảnh báo "parameter 'map' has value of undefined").
 export function makeCharacterMaterial(src) {
-  return new THREE.MeshToonMaterial({ map: src.map, color: src.color, gradientMap: toonGradient });
+  return new THREE.MeshToonMaterial({ map: src.map ?? null, color: src.color, gradientMap: toonGradient });
 }
