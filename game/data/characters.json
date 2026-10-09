@@ -50,8 +50,11 @@
     },
     "tai_xe": {
       "model": "prajith",
-      "place": "node",
+      "place": "near_node",
       "node": "NPC_tai_xe",
+      "offset": [-1.53, -0.85, -2.85],
+      "yaw_deg": -30,
+      "_ghi_chu": "zone_01: NPC_tai_xe trong GLB nằm bên trong vỏ xe kín (xe_bus_mesh_1, cao 1 m) → từ ngoài không góc nào thấy được. Đặt ra vỉa hè cạnh cửa xe, phía đầu xe (thế giới ≈ −6,0; 0,15; −4,55 — cách thân xe 1 m, cách lối bước xuống x −4,68 khoảng 1,3 m), quay về phía vỉa hè / chỗ Ms. Huyền (yaw −30°) như bác tài zone_00. Cảnh xe vào trạm: bác 'xuống trước' cùng Ms. Huyền (cutscenes.json off_before_us).",
       "tint": {
         "shirt": "#4f7cb8",
         "pants": "#3a3a3a"

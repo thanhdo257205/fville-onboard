@@ -16,8 +16,9 @@
         "zone": "zone_01", "spawn": "SPAWN_zone_01_cua_xe",
         "bus": "INT_xe_bus", "door": "xe_bus_cua", "path": "PATH_xe_vao_tram",
         "last_m": 18, "speed_mps": 9.0,
-        "ride_along": ["tai_xe"],
-        "off_before_us": ["thao"],
+        "ride_along": [],
+        "off_before_us": ["thao", "tai_xe"],
+        "_xuong_truoc": "ẩn lúc xe vào trạm, hiện ở chỗ đứng khi cửa mở: Ms. Huyền + bác tài (bác đứng vỉa hè cạnh cửa — characters.json roles.tai_xe; trước đây ngồi trong xe → ride_along)",
         "camera_from": "SPAWN_zone_01_cua_xe", "camera_offset": [-3.3, 1.65, -4.25], "camera_fov_deg": 50,
         "_camera": "góc máy lúc xe vào trạm: lệch so với SPAWN_zone_01_cua_xe (glTF, m) — giữa vỉa hè, giữa 2 cột đèn phía tây cửa xe (không vướng cột đèn / xe đỗ), bám theo xe"
       },
