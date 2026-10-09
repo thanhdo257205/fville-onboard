@@ -185,7 +185,7 @@ button { font-family: "Nunito", sans-serif; }
 .well .snippet { margin-top: 12px; background: #1f3346; border-radius: 12px; padding: 12px 14px; }
 .well .snippet p { margin: 0 0 8px; line-height: 1.45; }
 /* quiz */
-.quiz .story { background: #262a31; border-radius: 12px; padding: 12px 14px; line-height: 1.5; margin-bottom: 12px; }
+.quiz .story { background: #262a31; border-radius: 12px; padding: 12px 14px; line-height: 1.5; margin-bottom: 12px; white-space: pre-line; }   /* đoạn \n\n trong data */
 .quiz .qn { color: var(--muted); font-weight: 800; font-size: 13px; }
 .quiz .q { font-size: 18px; font-weight: 800; margin: 4px 0 10px; }
 .quiz .opts li.no { opacity: .45; text-decoration: line-through; cursor: default; }
@@ -309,3 +309,55 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 .lpath .q { font-weight: 800; margin: 0 0 8px; }
 .lpath .lp-goals li.skip-goal { color: var(--muted); }
 .lpath .lp-goals li.yes { background: #2e9e5b; color: #fff; }
+
+/* ---------- 4 Act + thành tựu (game/acts.js, hud.actCard / hud.achievement) ---------- */
+#act-card, #ach-card { position: absolute; top: 24%; left: 50%; transform: translateX(-50%); text-align: center; opacity: 0; pointer-events: none; white-space: nowrap; }
+#act-card .num { font: 800 15px "Nunito", sans-serif; letter-spacing: .4em; color: #ffd27a; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0, 0, 0, .5); }
+#act-card .title { margin-top: 6px; padding: 8px 30px; font: 800 38px "Nunito", sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #fff;
+  border-top: 2px solid rgba(243, 112, 33, .9); border-bottom: 2px solid rgba(243, 112, 33, .9); background: rgba(18, 20, 24, .55); text-shadow: 0 2px 12px rgba(0, 0, 0, .5); }
+#act-card.show, #ach-card.show { animation: actcard var(--dur, 2.2s) ease forwards; }
+@keyframes actcard { 0% { opacity: 0; transform: translate(-50%, 10px); } 14%, 82% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+#ach-card { padding: 14px 34px; border-radius: 16px; background: linear-gradient(180deg, rgba(48, 36, 10, .92), rgba(24, 18, 6, .92)); border: 2px solid #ffd27a; box-shadow: 0 0 30px rgba(255, 210, 122, .45); }
+#ach-card .label { font: 800 14px "Nunito", sans-serif; letter-spacing: .3em; color: #ffd27a; text-transform: uppercase; }
+#ach-card .title { margin-top: 6px; font: 800 30px "Nunito", sans-serif; color: #fff; }
+@media (max-width: 760px) { #act-card .title { font-size: 26px; padding: 6px 16px; } #ach-card .title { font-size: 22px; } }
+/* checklist theo Act (app My FPT) */
+#myfpt .act { margin-bottom: 10px; }
+#myfpt .act header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin: 4px 2px; }
+#myfpt .act header b { color: #1d1f23; }
+#myfpt .act.now header b { color: #c4520f; }
+#myfpt .act.complete header b::after { content: " ✓"; color: #2e7d4a; }
+#myfpt .actbar { height: 5px; border-radius: 3px; background: #e6e0d6; overflow: hidden; margin: 0 2px 6px; }
+#myfpt .actbar i { display: block; height: 100%; background: var(--orange); }
+#myfpt .act.complete .actbar i { background: #2e9e5b; }
+/* màn tổng kết (ui/summary.js) */
+#summary { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; background: rgba(10, 12, 16, .55); }
+#summary[hidden] { display: none; }
+#summary .panel { background: #1b1e24; color: var(--fg); width: min(520px, calc(100vw - 32px)); max-height: 92vh; overflow: auto; border-radius: 18px; padding: 20px 24px; box-shadow: 0 10px 40px rgba(0, 0, 0, .45); }
+#summary .ach { text-align: center; padding: 12px; border-radius: 14px; border: 2px solid #ffd27a; background: linear-gradient(180deg, #3a2c0c, #221a08); box-shadow: 0 0 24px rgba(255, 210, 122, .3); }
+#summary .ach .label { font-size: 12px; font-weight: 800; letter-spacing: .3em; text-transform: uppercase; color: #ffd27a; }
+#summary .ach .title { font-size: 24px; font-weight: 800; margin: 4px 0; }
+#summary .ach small { color: #e8d9b0; }
+#summary h2 { margin: 14px 0 8px; font-size: 18px; }
+#summary .titles .main { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: #262a31; }
+#summary .titles .main span { font-size: 11px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--orange); }
+#summary .titles .main b { font-size: 18px; }
+#summary small { color: var(--muted); }
+#summary .titles ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+#summary .titles li { display: grid; padding: 6px 12px; border-radius: 10px; background: #22262d; }
+#summary .row { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+#summary .photo { width: 150px; border-radius: 10px; border: 3px solid #f6f3ee; }
+#summary .stats { flex: 1; }
+#summary .stat { display: grid; grid-template-columns: 90px 1fr 32px; gap: 8px; align-items: center; font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+#summary .stat .bar { height: 8px; border-radius: 4px; background: #2e333b; overflow: hidden; }
+#summary .stat .bar i { display: block; height: 100%; background: var(--orange); }
+#summary .stats p { margin: 4px 0 0; font-weight: 700; font-size: 13px; }
+#summary .values { display: flex; flex-wrap: wrap; gap: 6px; }
+#summary .values span { padding: 4px 10px; border-radius: 999px; background: #2a2e36; color: #8a919a; font-size: 12px; font-weight: 800; }
+#summary .values span.lit { background: #ffd27a; color: #2a1f05; }
+#summary .acts { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; font-weight: 700; }
+#summary .acts li { display: flex; justify-content: space-between; padding: 6px 10px; border-radius: 8px; background: #22262d; }
+#summary .acts li.done { color: #8fe0a8; }
+#summary .acts em { font-style: normal; color: var(--muted); }
+#summary footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
+#summary kbd { display: inline-block; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; }

@@ -235,6 +235,29 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   zone 4: người lạ đứng gần đường thẳng từ đầu hành lang tới dấu "!" của cửa (4,8; −1), né sang bên 3 s là qua. Thử riêng 2 nhánh còn lại (cho người lạ vào, Tú quay lại lễ tân), mini-game (gợi ý 8 s,
   sáng thẻ đúng, mục tiêu riêng), bị chặn khi vào cửa FSA chưa làm Lộ trình học, sang zone 5. Console sạch.
 
+### 4 Act, thành tựu cuối, sửa quiz (09/10/2026)
+- **4 Act** (`data/acts.json`, `game/src/game/acts.js`; GDD mục Cấu trúc 4 Act): ACT 1 ENTER THE VILLAGE (Bus — gồm điểm
+  đón zone 0 + bến xe zone 1 và cài app, F-Ville Gate, Village Well, Cuder Statue), ACT 2 BECOMING A FSOFTER (Reception,
+  Rice Grain Room, Card Gate), ACT 3 JOINING FSA (FSA Room, Meet Prajith, Meet Manager), ACT 4 JOINING THE TEAM (Say
+  Hello Team, Your Desk). Act gom các mục checklist có sẵn (đúng id), Act xong khi mọi mục xong.
+  - Thẻ tiêu đề Act ~2,2 s, không chặn điều khiển: lúc bắt đầu game (Act hiện tại, cả khi chơi tiếp bản lưu; trước thẻ
+    tên zone) và ngay khi xong mục cuối của Act trước — không phụ thuộc chuyển zone (Act 2 hiện khi xong việc cuối ở
+    zone 2; Act 3 hiện ngay sau "First card tap!" ở cửa quẹt thẻ). Thẻ chữ lớn giữa màn hình (tên zone, "First card
+    tap!", Act, thành tựu) giờ xếp hàng, không đè nhau (`hud._queueCard`).
+  - App My FPT → Checklist nhóm theo Act: tiêu đề "ACT n · tên", tiến độ x/y + thanh, Act đang làm màu cam, Act xong có
+    ✓; mục zone 5 (chưa có việc) hiện 🔒 "Later today". Kiểm tra dữ liệu: mỗi mục checklist thuộc đúng 1 Act.
+- **Thành tựu cuối** (`data/achievements.json` → `final`): "ACHIEVEMENT UNLOCKED: Welcome to the F-Ville Family" luôn mở
+  khi hoàn thành game — hiệu ứng `"finish": true` (gắn vào việc cuối ở bàn làm việc khi làm zone 5) → `Game.finishGame()`:
+  cờ `achievement_welcome_family` + `game_complete`, thẻ thành tựu vàng giữa màn hình, rồi **màn tổng kết dựng sẵn**
+  (`game/src/ui/summary.js`): thành tựu đứng đầu, rồi danh hiệu chính / phụ (6 danh hiệu GDD, tên tiếng Anh + điều kiện
+  trong `achievements.json → titles`), ảnh check-in, Hiểu biết / Kết nối, hạt lúa, 6 ô giá trị, tiến độ 4 Act, nút Close
+  (Esc) / Play again. Chưa có zone 5 nên chưa có chỗ gọi trong mạch chơi; thử bằng `__game.finish()`, xem
+  `__game.summary`, `__game.acts`, `__game.cards`.
+- **Quiz:** câu chuyện Cuder hiện thành đoạn (`white-space: pre-line` cho `.quiz .story`); phương án xáo lại mỗi lần chơi
+  cho mọi quiz (đáp án, gợi ý khi sai, giải thích vẫn khớp; làm sáng đáp án đúng sau 2 lần sai theo vị trí đã xáo; thử 8
+  lần ra 7 thứ tự khác nhau); câu 2 Cuder cân độ dài phương án: đúng "Farming roots and hard work, now in tech", sai
+  "Digging for gold in the hills" / "Building new roads for the city" / "Winning a big sports trophy" (giữ hint, explain).
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.
@@ -291,11 +314,6 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Tượng Cuder: chờ xác nhận búi tóc sau gáy (giữ / bỏ: `CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`). Khi đã
   chốt, dọn mép búi tóc (còn răng cưa nhỏ khi nhìn cận từ phía sau). zone_03 vẫn còn bản sao tượng cũ nhìn qua vách
   kính (`ENV_tuong_cuder_xa`) — đổi theo tượng mới nếu cần.
-- Quiz tượng Cuder, 2 việc nhỏ ở `game/src/` (phiên 09/10/2026 không được sửa `game/src/`):
-  - Câu chuyện đã chia đoạn bằng `\n\n` trong dữ liệu nhưng game đang hiện liền một khối: cần thêm
-    `white-space: pre-line` cho `.quiz .story` trong `game/src/style.css` (đã thử bằng CSS chèn tạm: đọc dễ hơn hẳn,
-    khung vẫn vừa màn hình 1280 × 760).
-  - Quiz không tự xáo phương án (`games.js` → `quiz`); nếu thêm xáo thì `answer` vẫn là chỉ số trong dữ liệu.
 
 ## Đã quyết
 - 09/10/2026: **mọi nhân vật người thật đưa vào game đều đã đồng ý dùng hình, kể cả nhân vật thêm sau này** — không
@@ -321,8 +339,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
    Đo luôn hiệu năng trên một laptop Intel UHD/Iris Xe: mở `?debug`, gõ `__game.benchmark(120)` ở từng zone; xem
    nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
    Gửi `docs/hr_content_request.md` cho HR.
-4. Giai đoạn 2 tiếp: zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), cảnh kết, màn tổng kết, danh
-   hiệu (Đồng Đội Số 1 dùng cờ `backpack_returned` + `tu_card_fixed`), tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.
+4. Giai đoạn 2 tiếp: zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc — quest gắn vào mục checklist
+   `meet_prajith`, `meet_manager`, `hello_team`, `desk` thì Act 3–4 tự mở khóa), cảnh kết, gắn `"finish": true` vào việc
+   cuối (thành tựu + màn tổng kết đã dựng sẵn), hoàn thiện màn tổng kết (nhân vật áo cam, lời nhắn Prajith, tải ảnh thẻ),
+   tab Bản đồ và Sổ lời khuyên.
 
 ## Việc nhỏ để sau
 - zone_04 (đang chặn bằng dữ liệu, nên sửa trong `scripts/blender/zone_04.py` khi dựng lại zone): thêm lan can thật ở mép

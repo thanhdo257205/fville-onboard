@@ -17,6 +17,7 @@ import { NameTags } from "./ui/nametags.js";
 import { Menu } from "./ui/menu.js";
 import { DialogueUI } from "./ui/dialogue.js";
 import { MyFptApp } from "./ui/app.js";
+import { Summary } from "./ui/summary.js";
 import { characterCreator, confirmBox } from "./ui/panels.js";
 import { MinigameHost } from "./minigames/host.js";
 import { hud } from "./ui/hud.js";
@@ -52,7 +53,11 @@ async function boot() {
   const progress = new GameState(content);
   const saved = save.load();
   if (saved) progress.fromJSON(saved);
-  const ui = { dialogue: new DialogueUI(), app: new MyFptApp(content, progress), minigame: new MinigameHost(content) };
+  const playAgain = async () => {
+    if (await confirmBox(t("menu.play_again_confirm"), t("menu.yes"), t("menu.no"))) { save.clear(); location.reload(); }
+  };
+  const ui = { dialogue: new DialogueUI(), app: new MyFptApp(content, progress), minigame: new MinigameHost(content),
+    summary: new Summary({ onPlayAgain: playAgain }) };
   const characters = new Characters(chars);
   await characters.probe();                 // model chờ người thật đồng ý mà thiếu file → dùng model thay thế
   const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters,
@@ -73,9 +78,7 @@ async function boot() {
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
     onClose: () => game.setMode("play"),
-    onPlayAgain: async () => {
-      if (await confirmBox(t("menu.play_again_confirm"), t("menu.yes"), t("menu.no"))) { save.clear(); location.reload(); }
-    },
+    onPlayAgain: playAgain,
   });
 
   // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn · Tab app · H gợi ý · Esc đóng / menu
@@ -90,6 +93,7 @@ async function boot() {
   input.on("Escape", () => {
     if (game.cutscene) return game.cutscene.skip();
     if (input.locked || performance.now() - input.unlockedAt < 300) return;
+    if (ui.summary.open) return ui.summary.hide();
     if (ui.app.open) return game.toggleApp();
     if (ui.minigame.open) return ui.minigame.close(false);
     if (ui.dialogue.open) return;

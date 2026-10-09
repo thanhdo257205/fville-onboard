@@ -20,19 +20,57 @@ export const hud = {
     el.hidden = !text;
     if (text) el.querySelector(".text").textContent = text;
   },
+  // thẻ chữ lớn giữa màn hình (tên zone, "First card tap!", tiêu đề Act, thành tựu) xếp hàng — mỗi lúc một thẻ, không đè
+  // nhau (vd quẹt thẻ lần đầu xong Act 2: "First card tap!" rồi mới tới "ACT 3"). Không chặn điều khiển.
+  cards: [],
+  _queueCard(kind, show, ms) {
+    this.cards.push({ kind, show, ms });
+    if (!this._cardBusy) this._nextCard();
+  },
+  _nextCard() {
+    const c = this.cards.shift();
+    if (!c) { this._cardBusy = false; return; }
+    this._cardBusy = true;
+    this.lastCards = [...(this.lastCards || []).slice(-9), c.kind];
+    c.show();
+    setTimeout(() => this._nextCard(), c.ms);
+  },
+  _replay(el) { el.classList.remove("show"); void el.offsetWidth; el.classList.add("show"); },
   zoneCard(zoneId) {
-    const el = $("#title-card");
-    el.querySelector(".time").textContent = t(`zones.${zoneId}.time`);
-    el.querySelector(".name").textContent = t(`zones.${zoneId}.title`);
-    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
     $("#clock").textContent = t(`zones.${zoneId}.time`);
+    this._queueCard(`zone:${zoneId}`, () => {
+      const el = $("#title-card");
+      el.querySelector(".time").textContent = t(`zones.${zoneId}.time`);
+      el.querySelector(".name").textContent = t(`zones.${zoneId}.title`);
+      this._replay(el);
+    }, 3000);
   },
   // chữ lớn giữa màn hình như thẻ tên zone (vd "First card tap!"), không đổi đồng hồ
   banner(text, sub = "") {
-    const el = $("#title-card");
-    el.querySelector(".time").textContent = sub;
-    el.querySelector(".name").textContent = text;
-    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+    this._queueCard(`banner:${text}`, () => {
+      const el = $("#title-card");
+      el.querySelector(".time").textContent = sub;
+      el.querySelector(".name").textContent = text;
+      this._replay(el);
+    }, 3000);
+  },
+  // thẻ tiêu đề Act (data/acts.json): "ACT 1" + tên Act, khoảng 2 s
+  actCard(n, title, seconds = 2.2) {
+    this._queueCard(`act:${n}`, () => {
+      const el = slot("act-card");
+      el.innerHTML = `<div class="num">${esc(t("acts.label", { n }))}</div><div class="title">${esc(title)}</div>`;
+      el.style.setProperty("--dur", `${seconds}s`);
+      this._replay(el);
+    }, seconds * 1000 + 250);
+  },
+  // thành tựu (vd hoàn thành game): "ACHIEVEMENT UNLOCKED" + tên thành tựu
+  achievement(label, title, seconds = 3.6) {
+    this._queueCard(`achievement:${title}`, () => {
+      const el = slot("ach-card");
+      el.innerHTML = `<div class="label">🏆 ${esc(label)}</div><div class="title">${esc(title)}</div>`;
+      el.style.setProperty("--dur", `${seconds}s`);
+      this._replay(el);
+    }, seconds * 1000 + 250);
   },
   objective(text) { $("#objective").textContent = text || ""; },
   // cảnh chuyển: viền điện ảnh trên/dưới, ẩn HUD chơi + bảng tên

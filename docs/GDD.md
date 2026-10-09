@@ -1,6 +1,6 @@
 # GDD – Ngày Đầu Ở F-Ville
 
-Cập nhật: 09/10/2026
+Cập nhật: 09/10/2026 (thêm cấu trúc 4 Act, thành tựu cuối)
 
 ## Tổng quan
 
@@ -33,6 +33,25 @@ Người chơi vào vai một intern FPT Software trong ngày đầu tiên, đi 
 | Zone 3 | 08:00 | Sảnh Lễ Tân, Phòng Hạt Lúa | Thẻ nhân viên FPT, Welcome Kit |
 | Zone 4 | 08:30 | Cửa Quẹt Thẻ, Cửa Phòng FSA | Sổ tay học tập (đề xuất) |
 | Zone 5 | 09:00–17:30 | Gặp Prajith, Gặp Manager, Say Hello Team, Ngồi vào bàn làm việc | La bàn nghề nghiệp, Sổ lời khuyên (đề xuất) |
+
+**Cấu trúc 4 Act** (`data/acts.json`)
+
+Hành trình chia thành 4 Act theo mạch "trở thành người F-Ville". Act gom các mục checklist (12 việc của ngày đầu, dùng
+đúng id trong `data/quests.json` → `checklist`), không gom theo zone: một Act có thể kết thúc giữa zone (Act 2 kết thúc
+ở cửa quẹt thẻ zone 4, Act 3 bắt đầu ngay ở đó).
+
+| Act | Tên (trong game) | Mục checklist | Zone |
+| --- | --- | --- | --- |
+| 1 | ENTER THE VILLAGE | Bus (điểm đón zone 0 + bến xe zone 1, gồm cài App My FPT), F-Ville Gate, Village Well, Cuder Statue | 0–2 |
+| 2 | BECOMING A FSOFTER | Reception, Rice Grain Room, Card Gate | 3–4 |
+| 3 | JOINING FSA | FSA Room, Meet Prajith, Meet Manager | 4–5 |
+| 4 | JOINING THE TEAM | Say Hello Team, Your Desk | 5 |
+
+- **Thẻ tiêu đề Act** (khoảng 2 giây, không chặn điều khiển): "ACT n" và tên Act hiện giữa màn hình khi bắt đầu game (Act
+  hiện tại; chơi tiếp bản lưu cũng hiện) và ngay khi xong mục cuối của Act trước, không phụ thuộc chuyển zone. Các thẻ
+  chữ lớn giữa màn hình (tên zone, "First card tap!", tiêu đề Act, thành tựu) xếp hàng lần lượt, không đè nhau.
+- **Checklist trong app nhóm theo Act**, mỗi Act có tiến độ (ví dụ 3/4) và thanh tiến độ; Act đang làm tô màu cam, Act
+  xong có dấu ✓. Mục chưa có việc trong bản hiện tại (zone 5) vẫn hiện tên, để khóa ("Later today").
 
 ## Cốt truyện và nhân vật
 
@@ -87,7 +106,7 @@ App My FPT trên điện thoại nhân vật là giao diện chính của game: 
 
 | Tab | Nội dung |
 | --- | --- |
-| Checklist | 12 việc của ngày đầu, đúng theo bảng ý tưởng; việc hiện tại được tô đậm |
+| Checklist | 12 việc của ngày đầu, đúng theo bảng ý tưởng, nhóm theo 4 Act (tiến độ từng Act); việc hiện tại được tô đậm |
 | Túi đồ | Đồ đã nhận: áo, thẻ, Welcome Kit, laptop, sổ tay |
 | Huy hiệu | Huy hiệu Tinh thần Đồng đội và huy hiệu 6 giá trị |
 | Bản đồ | Sơ đồ đơn giản của zone hiện tại, chấm vị trí người chơi và mục tiêu |
@@ -202,7 +221,7 @@ Zone 2 là nơi người chơi chính thức "gia nhập Làng F" và nhận c�
 | `INT_tuong_cuder` | Đọc câu chuyện về Cuder (CU + DER, người làm IT chăm chỉ, cây cuốc và đống xu 0/1; nội dung từ mentor, `data/quiz.json`), rồi trả lời **quiz 3 câu** | Huy hiệu **Tôn Đổi Đồng Chí Gương Sáng** (6 ô); Hiểu biết +5 mỗi câu đúng |
 | Hạt lúa vàng × 3 | Trong bụi tre trên đảo giếng; trên gò cỏ sau biển chữ; dưới tầng trệt pilotis | |
 
-**Quiz ở Tượng Cuder:** trả lời sai không bị phạt; game hiện lời giải thích ngắn rồi sang câu tiếp. Nhận huy hiệu xong, ô Tôn trọng sáng lên ngay nếu người chơi đã cảm ơn bác tài ở zone 1, kèm lời giải thích "Bạn đã thể hiện điều này từ sáng nay!".
+**Quiz ở Tượng Cuder:** trả lời sai không bị phạt; game hiện lời giải thích ngắn rồi sang câu tiếp. Nhận huy hiệu xong, ô Tôn trọng sáng lên ngay nếu người chơi đã cảm ơn bác tài ở zone 1, kèm lời giải thích "Bạn đã thể hiện điều này từ sáng nay!". Thứ tự các phương án được xáo lại mỗi lần chơi (mọi quiz), các phương án dài gần bằng nhau để không đoán được theo độ dài.
 
 **Lời Tú (mẫu):** đứng trước tượng, Tú nói: "Sáu ô này mình phải lấp đầy trong hôm nay à? Thử thách chấp nhận!". Câu này giới thiệu sợi chỉ xuyên suốt cho người chơi.
 
@@ -283,25 +302,31 @@ Game kết thúc lúc 17:30 bằng một thẻ "Ngày Đầu" tóm tắt những
 3. Tú chạy đến bến xe. Lời Tú đổi theo số lần người chơi đã giúp: giúp cả hai lần → "Hôm nay không có cậu chắc mình toang rồi, cảm ơn nhé!"; còn lại → "Ngày đầu cũng không đáng sợ lắm nhỉ? Mai gặp lại!"
 4. Lên xe, màn tổng kết hiện ra.
 
+**Thành tựu cuối** (`data/achievements.json` → `final`): **"ACHIEVEMENT UNLOCKED: Welcome to the F-Ville Family"**. Luôn
+mở khi hoàn thành game (hiệu ứng `finish` sau bàn làm việc zone 5), hiện thành thẻ chữ lớn rồi đứng đầu màn tổng kết,
+trước mọi danh hiệu.
+
 **Màn tổng kết** hiện trên một thẻ đứng:
 
+- Thành tựu cuối (luôn có)
 - Nhân vật mặc áo cam, đeo các huy hiệu đã nhận, cạnh ảnh check-in ở cổng
 - Huy hiệu 6 giá trị: ô nào sáng, ô nào còn trống (kèm gợi ý ngắn cho ô trống)
 - Hiểu biết, Kết nối, số hạt lúa vàng
 - Danh hiệu chính và các danh hiệu phụ đạt được
+- Tiến độ 4 Act
 - Lời nhắn của Prajith, viết theo kết quả La bàn nghề nghiệp
 - Nút **Tải ảnh thẻ** (PNG) và **Chơi lại**
 
 **Danh hiệu** (danh hiệu chính là dòng cao nhất người chơi đạt; các dòng khác đạt được hiện thành danh hiệu phụ)
 
-| Danh hiệu | Điều kiện |
-| --- | --- |
-| Gương Sáng Làng F | Sáng đủ 6 ô giá trị |
-| Đồng Đội Số 1 | Giúp Tú cả hai lần (lấy balo, nhắn chị Nga kích hoạt thẻ) |
-| Người Kết Nối | Kết nối từ 80 trở lên |
-| Mọt Sách Làng F | Hiểu biết từ 80 trở lên |
-| Nhà Thám Hiểm | Nhặt đủ 10 hạt lúa vàng |
-| Intern Làng F | Hoàn thành game (mặc định) |
+| Danh hiệu | Tên trong game (tiếng Anh) | Điều kiện |
+| --- | --- | --- |
+| Gương Sáng Làng F | Shining Example of F-Ville | Sáng đủ 6 ô giá trị |
+| Đồng Đội Số 1 | Teammate No. 1 | Giúp Tú cả hai lần (lấy balo, nhắn chị Nga kích hoạt thẻ) |
+| Người Kết Nối | The Connector | Kết nối từ 80 trở lên |
+| Mọt Sách Làng F | F-Ville Bookworm | Hiểu biết từ 80 trở lên |
+| Nhà Thám Hiểm | The Explorer | Nhặt đủ 10 hạt lúa vàng |
+| Intern Làng F | F-Ville Intern | Hoàn thành game (mặc định; chỉ hiện khi không đạt danh hiệu nào ở trên) |
 
 Ngưỡng 80 là tạm, sẽ chỉnh sau khi chơi thử để khoảng một phần ba người chơi đạt được.
 
@@ -354,6 +379,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
     - Lưu tiến trình vào trình duyệt; hai mức đồ họa tự chọn theo máy
 2. **Đủ hành trình: zone 4, zone 5 và kết thúc**
     - Hai tình huống ở cửa quẹt thẻ, phòng FSA, bốn cuộc gặp ở văn phòng
+    - Cấu trúc 4 Act (thẻ tiêu đề Act, checklist theo Act), thành tựu cuối
     - Màn tổng kết, danh hiệu, tải ảnh thẻ
     - Hạt lúa vàng, tab Bản đồ và Sổ lời khuyên
 3. **Hoàn thiện**

@@ -64,6 +64,15 @@
     "also": "Also: {text}",
     "phone_label": "New message"
   },
+  "acts": {
+    "label": "Act {n}"
+  },
+  "summary": {
+    "heading": "{name}'s first day at F-Ville",
+    "title": "Title",
+    "grains": "Golden grains: {n} / {total}",
+    "close": "Close"
+  },
   "menu": {
     "title": "Paused",
     "resume": "Resume",
@@ -148,7 +157,8 @@
     "stats_title": "Your day so far",
     "grains": "Golden grains: {n} / {total}",
     "grains_hint": "Hidden around F-Ville. The glass jar in the Rice Grain Room keeps count.",
-    "help": "Help"
+    "help": "Help",
+    "act_progress": "{done}/{total}"
   },
   "cutscene": {
     "skip": "Skip ›",

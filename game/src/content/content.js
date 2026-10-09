@@ -1,11 +1,11 @@
 // Nội dung game từ data/*.json (GDD Phụ lục): dialogues, quests, interactables, quiz, rewards, values, cutscenes,
-// guidance (hướng dẫn người chơi mới: gợi ý H, câu nhắc khi đứng yên).
+// guidance (hướng dẫn người chơi mới: gợi ý H, câu nhắc khi đứng yên), acts (4 Act), achievements (thành tựu cuối, danh hiệu).
 // Chữ hiển thị trong nội dung là object theo mã ngôn ngữ {"en": "..."} → tx() chọn theo ngôn ngữ hiện tại.
 // Kiểm tra khi tải: mọi node mà JSON nhắc tới phải có thật trong GLB của zone đó; tham chiếu nội bộ phải khớp.
 import { loadJSON, url } from "../core/assets.js";
 import { lang, t } from "../i18n.js";
 
-const FILES = ["dialogues", "quests", "interactables", "quiz", "rewards", "values", "cutscenes", "guidance"];
+const FILES = ["dialogues", "quests", "interactables", "quiz", "rewards", "values", "cutscenes", "guidance", "acts", "achievements"];
 
 export async function loadContent() {
   const raw = Object.fromEntries(await Promise.all(FILES.map(async (f) => [f, await loadJSON(url(`data/${f}.json`))])));
@@ -31,6 +31,8 @@ export async function loadContent() {
     badge: raw.values.badge,
     cutscenes: raw.cutscenes.cutscenes,
     guidance: raw.guidance,
+    acts: raw.acts,
+    achievements: raw.achievements,
   };
 }
 
@@ -151,6 +153,15 @@ export function validateLinks(c) {
     if (!c.quests.some((q) => q.zone === zone)) continue;
     if (!gd.zone_exits?.[zone]?.help) errs.push(`guidance.json · zone_exits.${zone}: thiếu help (zone đã xong hết việc)`);
   }
+  // 4 Act: mỗi mục checklist thuộc đúng 1 Act, Act chỉ nhắc mục có thật
+  const inAct = new Map();
+  for (const a of c.acts?.acts || []) for (const id of a.checklist || []) {
+    if (!c.checklist.some((x) => x.id === id)) errs.push(`acts.json · ${a.id}: không có mục checklist ${id}`);
+    if (inAct.has(id)) errs.push(`acts.json: mục checklist ${id} nằm ở cả ${inAct.get(id)} và ${a.id}`);
+    inAct.set(id, a.id);
+  }
+  for (const x of c.checklist) if (!inAct.has(x.id)) errs.push(`acts.json: mục checklist ${x.id} chưa thuộc Act nào`);
+  if (!c.achievements?.final?.title) errs.push("achievements.json: thiếu final (thành tựu cuối)");
   if (!c.rewards.has(c.badge.reward)) errs.push(`values.json: badge.reward ${c.badge.reward} không có`);
   return errs;
 }

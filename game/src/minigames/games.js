@@ -125,11 +125,12 @@ const well = {
 };
 
 // ---------- Quiz (Tượng Cuder, zone 2): đọc câu chuyện, 3 câu hỏi; sai → gợi ý, chọn lại ----------
+// Phương án xáo lại mỗi lần chơi: perm[vị trí hiện] = chỉ số phương án trong dữ liệu (answer, hint, explain theo dữ liệu)
 const quiz = {
   start(ctx) {
     const q = ctx.content.quizzes.get(ctx.data.quiz);
     const per = ctx.data.per_correct ?? 5;
-    let i = -1, knowledge = 0, firstTry = true, answered = false;
+    let i = -1, knowledge = 0, firstTry = true, answered = false, perm = [];
     const story = () => {
       ctx.body.innerHTML = `<div class="quiz"><div class="story">${draftMark(q.draft)}${esc(tx(q.story))}</div>
         <button class="primary go">${t("minigame.start_quiz")} ${kbd("Enter")}</button></div>`;
@@ -139,9 +140,10 @@ const quiz = {
       i = n; firstTry = true; answered = false;
       if (i >= q.questions.length) { ctx.finish({ hieu_biet: knowledge }); return; }
       const qq = q.questions[i];
+      perm = shuffle(qq.options.map((_, k) => k));
       ctx.hint("");
       ctx.body.innerHTML = `<div class="quiz"><div class="qn">${t("minigame.question_n", { n: i + 1, total: q.questions.length })}</div>
-        <p class="q">${esc(tx(qq.q))}</p><ol class="opts">${qq.options.map((o, k) => `<li data-k="${k}">${kbd(k + 1)} ${esc(tx(o))}</li>`).join("")}</ol>
+        <p class="q">${esc(tx(qq.q))}</p><ol class="opts">${perm.map((o, k) => `<li data-k="${k}">${kbd(k + 1)} ${esc(tx(qq.options[o]))}</li>`).join("")}</ol>
         <div class="explain" hidden><p></p><button class="primary next">${t("minigame.next")} ${kbd("Enter")}</button></div></div>`;
       ctx.body.querySelectorAll(".opts li").forEach((li) => li.addEventListener("click", () => choose(+li.dataset.k)));
       ctx.body.querySelector(".next").addEventListener("click", () => ask(i + 1));
@@ -152,7 +154,7 @@ const quiz = {
       const li = ctx.body.querySelector(`.opts li[data-k="${k}"]`);
       if (li.classList.contains("no")) return;
       sound.play("tap");
-      if (k !== qq.answer) { li.classList.add("no"); firstTry = false; ctx.mistake(tx(qq.hint || qq.explain)); return; }
+      if (perm[k] !== qq.answer) { li.classList.add("no"); firstTry = false; ctx.mistake(tx(qq.hint || qq.explain)); return; }
       answered = true;
       li.classList.remove("glow");
       li.classList.add("yes");
@@ -164,7 +166,7 @@ const quiz = {
     };
     story();
     ctx.idleHint = () => (i < 0 ? tx(ctx.data.idle.story) : answered ? tx(ctx.data.idle.next) : tx(q.questions[i].hint || ctx.data.idle.story));
-    ctx.onAssist = () => { if (i >= 0) ctx.body.querySelector(`.opts li[data-k="${q.questions[i].answer}"]`)?.classList.toggle("glow", ctx.assist && !answered); };
+    ctx.onAssist = () => { if (i >= 0) ctx.body.querySelector(`.opts li[data-k="${perm.indexOf(q.questions[i].answer)}"]`)?.classList.toggle("glow", ctx.assist && !answered); };
     ctx.onKey = (e) => {
       if (i < 0 && (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space")) { ask(0); return true; }
       if (i >= 0 && answered && (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space")) { ask(i + 1); return true; }
@@ -174,9 +176,9 @@ const quiz = {
     };
     ctx.skipExtra = () => ({});
     ctx.debug = {
-      solve: () => { if (i < 0) ask(0); while (i < q.questions.length) { if (!answered) choose(q.questions[i].answer); ask(i + 1); } },
-      wrong: () => { if (i < 0) ask(0); const qq = q.questions[i]; const k = qq.options.findIndex((_, n) => n !== qq.answer && !ctx.body.querySelector(`.opts li[data-k="${n}"]`).classList.contains("no")); choose(k); },
-      state: () => ({ i, knowledge, glow: [...ctx.body.querySelectorAll(".opts li.glow")].map((li) => +li.dataset.k) }),
+      solve: () => { if (i < 0) ask(0); while (i < q.questions.length) { if (!answered) choose(perm.indexOf(q.questions[i].answer)); ask(i + 1); } },
+      wrong: () => { if (i < 0) ask(0); const qq = q.questions[i]; const k = perm.findIndex((o, n) => o !== qq.answer && !ctx.body.querySelector(`.opts li[data-k="${n}"]`).classList.contains("no")); choose(k); },
+      state: () => ({ i, knowledge, perm: [...perm], answerAt: i >= 0 ? perm.indexOf(q.questions[i].answer) : null, glow: [...ctx.body.querySelectorAll(".opts li.glow")].map((li) => +li.dataset.k) }),
     };
   },
 };

@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Câu hỏi quiz + giải thích. Trả lời sai không bị phạt: hiện gợi ý (hint) rồi chọn lại; đúng thì hiện giải thích (explain). Tượng Cuder: câu chuyện và 3 câu hỏi từ mentor (09/10/2026), không còn draft. Game KHÔNG xáo phương án: answer = vị trí đáp án đúng, cố ý đặt khác nhau giữa các câu. Câu chuyện chia đoạn bằng \\n\\n.",
+  "_ghi_chu": "Câu hỏi quiz + giải thích. Trả lời sai không bị phạt: hiện gợi ý (hint) rồi chọn lại; đúng thì hiện giải thích (explain). Tượng Cuder: câu chuyện và 3 câu hỏi từ mentor (09/10/2026), không còn draft. Game xáo thứ tự phương án mỗi lần chơi (mọi quiz); answer = vị trí đáp án đúng trong mảng options của dữ liệu. Các phương án nên dài gần bằng nhau (đáp án đúng dài hẳn thì dễ đoán). Câu chuyện chia đoạn bằng \\n\\n.",
   "quizzes": [
     {
       "id": "cuder", "zone": "zone_02", "node": "INT_tuong_cuder",
@@ -14,7 +14,7 @@
         },
         {
           "q": { "en": "What does Cuder's pickaxe stand for?" },
-          "options": [{ "en": "Digging for gold" }, { "en": "Building new roads" }, { "en": "Vietnam's farming roots and hard-working spirit, now applied to tech" }, { "en": "A sports trophy" }],
+          "options": [{ "en": "Digging for gold in the hills" }, { "en": "Building new roads for the city" }, { "en": "Farming roots and hard work, now in tech" }, { "en": "Winning a big sports trophy" }],
           "answer": 2,
           "hint": { "en": "Think about the rice fields around F-Ville." },
           "explain": { "en": "Vietnam grew up farming the land. Cuder's pickaxe carries that hard-working spirit into technology — and the 0/1 coins at his feet show the digital world we build." }

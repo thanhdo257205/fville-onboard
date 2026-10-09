@@ -40,15 +40,21 @@ export class MyFptApp {
       <div class="foot">${t("myfpt.close")}</div></div>`;
   }
 
+  // checklist nhóm theo 4 Act (data/acts.json): tiêu đề Act + tiến độ; mục chưa có việc (zone 5) hiện khóa
   checklist() {
     const cur = this.s.currentQuest(this.s.zone);
     const curCk = cur?.checklist;
-    return `<ol class="check">${this.c.checklist.map((x) => {
-      const done = this.s.checklistDone(x.id);
-      const later = !this.c.quests.some((q) => q.checklist === x.id);
-      return `<li class="${done ? "done" : ""} ${x.id === curCk ? "current" : ""} ${later ? "later" : ""}">
-        <span class="tick">${done ? "✓" : ""}</span>${tx(x.title)}${later ? `<em>${t("myfpt.checklist_soon")}</em>` : ""}</li>`;
-    }).join("")}</ol>`;
+    const status = this.game?.acts.status() || [];
+    const curAct = this.game?.acts.current()?.act.id;
+    const item = (it) => {
+      const x = this.c.checklist.find((c) => c.id === it.id);
+      return `<li class="${it.done ? "done" : ""} ${it.id === curCk ? "current" : ""} ${it.locked ? "later" : ""}">
+        <span class="tick">${it.done ? "✓" : it.locked ? "🔒" : ""}</span>${tx(x.title)}${it.locked ? `<em>${t("myfpt.checklist_soon")}</em>` : ""}</li>`;
+    };
+    return status.map((st) => `<section class="act ${st.complete ? "complete" : ""} ${st.act.id === curAct ? "now" : ""}">
+      <header><b>${t("acts.label", { n: st.act.number })} · ${tx(st.act.title)}</b><span>${t("myfpt.act_progress", { done: st.done, total: st.total })}</span></header>
+      <div class="actbar"><i style="width:${(100 * st.done) / st.total}%"></i></div>
+      <ol class="check">${st.items.map(item).join("")}</ol></section>`).join("");
   }
 
   bag() {

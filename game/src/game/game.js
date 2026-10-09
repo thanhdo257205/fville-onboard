@@ -21,6 +21,7 @@ import { Interaction } from "./interaction.js";
 import { DialogueRunner } from "../ui/dialogue.js";
 import { Cutscene } from "./cutscene.js";
 import { Guide } from "./guide.js";
+import { Acts, earnedTitles } from "./acts.js";
 import { setTint } from "../characters/characters.js";
 import { sound } from "../core/sound.js";
 
@@ -49,6 +50,7 @@ export class Game {
     this.lights = createLights(this.scene);
     this.seeThrough = new SeeThrough(data.sceneFixes?.see_through);   // cây che người chơi → mờ dần
     this.guide = new Guide(this, content);       // dấu "!" + mũi tên chỉ đường, nhắc khi đứng yên, gợi ý phím H
+    this.acts = new Acts(this, content);         // 4 Act (data/acts.json): thẻ tiêu đề Act, checklist theo Act
     this.zone = null;
     this.npcs = [];          // Npc (đứng/ngồi tại node)
     this.follower = null;    // Tú
@@ -79,7 +81,9 @@ export class Game {
     this.player = new Player(await this.characters.create("player", this.state.tier));
     this.scene.add(this.player.character.root);
     this.updateOutfit();
-    await this.enterZone(zoneId, this.data.zones.zones[zoneId].start, { fade: false });
+    await this.enterZone(zoneId, this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
+    this.acts.start();          // thẻ "ACT n" của Act hiện tại trước, rồi tới thẻ tên zone
+    hud.zoneCard(zoneId);
     this.setMode("play");
   }
 
@@ -98,7 +102,7 @@ export class Game {
   }
 
   // silent: tải sau màn tối của cảnh chuyển — không hiện màn chờ, thẻ tên zone, hội thoại vào zone
-  async enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false } = {}) {
+  async enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false, zoneCard = true } = {}) {
     this.state.phase = "transition";
     // đang hội thoại / mini-game / mở app thì đóng lại trước khi rời zone
     if (this.runner.active) this.runner.abort();
@@ -169,7 +173,7 @@ export class Game {
     this.monitor.reset();
     this.detailMonitor.reset();
     hud.loading(null);
-    if (!silent) hud.zoneCard(zoneId);
+    if (!silent && zoneCard) hud.zoneCard(zoneId);
     if (fade) await hud.fade(false);
     this.state.phase = "playing";
     if (!silent) setTimeout(() => this.runOnEnter(zoneId), 600);
@@ -372,8 +376,42 @@ export class Game {
     if (e?.reward) this.updateOutfit();
     this.interaction.refresh();
     this.updateObjective();
+    this.acts.update();                                             // xong mục cuối của một Act → thẻ Act kế tiếp
+    if (e?.finish) this.finishGame();                               // hoàn thành game (vd sau bàn làm việc zone 5)
     this.persist();
     return events;
+  }
+
+  // hoàn thành game: thành tựu cuối luôn mở (data/achievements.json → final), hiện "ACHIEVEMENT UNLOCKED", rồi màn tổng
+  // kết (thành tựu đứng đầu, trước các danh hiệu)
+  finishGame() {
+    const a = this.content.achievements?.final;
+    if (!a) return;
+    const flag = `achievement_${a.id}`;
+    if (!this.progress.flags.has(flag)) this.applyEffects({ flags: [flag, "game_complete"] });
+    hud.achievement(tx(a.label), tx(a.title));
+    clearTimeout(this._summaryTimer);
+    this._summaryTimer = setTimeout(() => this.openSummary(), 3900);
+  }
+
+  summaryData() {
+    const s = this.progress, c = this.content, a = c.achievements?.final;
+    const titles = earnedTitles(c, s);
+    return {
+      achievement: a && s.flags.has(`achievement_${a.id}`) ? { label: tx(a.label), title: tx(a.title), desc: tx(a.desc) } : null,
+      title: titles[0] ? { title: tx(titles[0].title), desc: tx(titles[0].desc) } : null,
+      subtitles: titles.slice(1).map((x) => ({ title: tx(x.title), desc: tx(x.desc) })),
+      name: s.player.name, stats: { ...s.stats }, grains: s.grains.size, grainsTotal: c.grainsTotal ?? 10,
+      values: c.values.map((v) => ({ name: tx(v.name), lit: s.valueLit(v.id) })), photo: s.photos.checkin || null,
+      acts: this.acts.status().map((x) => ({ number: x.act.number, title: tx(x.act.title), done: x.done, total: x.total })),
+    };
+  }
+
+  openSummary() {
+    if (this.mode === "dialogue" || this.mode === "minigame" || this.mode === "cutscene") { this._summaryTimer = setTimeout(() => this.openSummary(), 500); return; }
+    if (this.ui.app.open) this.ui.app.hide();
+    this.setMode("summary");
+    this.ui.summary?.show(this.summaryData(), () => this.setMode("play"));
   }
 
   // effects.walk = { who: vai NPC | "tu", to: node | [x, y, z] | [[x, y, z], …] (Tú: đường đi qua nhiều điểm), hide,
@@ -473,7 +511,7 @@ export class Game {
     this.input.enabled = m === "play";
     this.input.setLook(m === "play");   // chơi: khoá + ẩn con trỏ, chuột xoay camera; còn lại: hiện con trỏ để bấm
     if (m !== "play") { hud.prompt(null); this.guide.hideMarks(); }   // dấu "!" / mũi tên chỉ hiện lúc đang đi lại
-    hud.cover(m === "dialogue" || m === "minigame" || m === "app");   // ẩn dòng hướng dẫn điều khiển
+    hud.cover(m === "dialogue" || m === "minigame" || m === "app" || m === "summary");   // ẩn dòng hướng dẫn điều khiển
   }
 
   // phím E
