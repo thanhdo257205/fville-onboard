@@ -171,6 +171,14 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     - Lựa chọn lưu trong `fville.settings` → `detail`.
   - `scripts/tools/slow_server.py`: server tĩnh có độ trễ để đo trước/sau; cấu hình `perf-before` / `perf-after` trong
     `.claude/launch.json`.
+- **Nội dung tượng Cuder từ mentor (09/10/2026, `data/quiz.json` → quiz `cuder`, bỏ [DRAFT]):**
+  - Câu chuyện 4 đoạn: CU (cucumber) + DER (coder); đầu to, kính, bụng tròn; cây cuốc = gốc nông nghiệp và tinh thần
+    chăm chỉ, đống xu 0/1 = thế giới số; con người là cốt lõi thành công của FPT.
+  - 3 câu hỏi mới: tên Cuder từ đâu, cây cuốc tượng trưng gì, điều gì là cốt lõi thành công của FPT. Câu giải thích do
+    nhóm game viết, chỉ nhắc lại ý câu chuyện.
+  - Game không xáo phương án quiz → đáp án đúng đặt ở vị trí 2, 3, 1. Lời giới thiệu của Tú giữ nguyên.
+  - Đã chạy thử trên bản dev: đọc câu chuyện, trả lời sai (hiện gợi ý) rồi đúng (hiện giải thích), nhận huy hiệu
+    6 giá trị, +10 Hiểu biết, checklist "Cuder Statue" ✓, console sạch.
 
 ### Game web — Giai đoạn 2: zone 4 (09/10/2026, `main` aee0dee, đã deploy `gh-pages` 15f3036 — gồm cả commit hiệu năng 76d9914)
 - **Zone 4 · Cửa quẹt thẻ, cầu thang, Cửa Phòng FSA** (GDD mục Zone 4). Lời thoại: `data/dialogues.json` → `card_gate`,
@@ -283,6 +291,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Tượng Cuder: chờ xác nhận búi tóc sau gáy (giữ / bỏ: `CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`). Khi đã
   chốt, dọn mép búi tóc (còn răng cưa nhỏ khi nhìn cận từ phía sau). zone_03 vẫn còn bản sao tượng cũ nhìn qua vách
   kính (`ENV_tuong_cuder_xa`) — đổi theo tượng mới nếu cần.
+- Quiz tượng Cuder, 2 việc nhỏ ở `game/src/` (phiên 09/10/2026 không được sửa `game/src/`):
+  - Câu chuyện đã chia đoạn bằng `\n\n` trong dữ liệu nhưng game đang hiện liền một khối: cần thêm
+    `white-space: pre-line` cho `.quiz .story` trong `game/src/style.css` (đã thử bằng CSS chèn tạm: đọc dễ hơn hẳn,
+    khung vẫn vừa màn hình 1280 × 760).
+  - Quiz không tự xáo phương án (`games.js` → `quiz`); nếu thêm xáo thì `answer` vẫn là chỉ số trong dữ liệu.
 
 ## Đã quyết
 - 09/10/2026: **mọi nhân vật người thật đưa vào game đều đã đồng ý dùng hình, kể cả nhân vật thêm sau này** — không
@@ -320,7 +333,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá
   gần nó nhất).
 
-## Nội dung [DRAFT] chờ HR (18 mục)
+## Nội dung [DRAFT] chờ HR (17 mục)
 1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45, mã intern FV-2026 để đăng nhập App My FPT.
 2. Giờ xe về (chị Huyền trả lời ở zone 0).
 3. Quy định trên xe công ty (chị Huyền trả lời ở zone 0).
@@ -329,10 +342,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 6. Mô tả phần thưởng Welcome Kit.
 7–12. Tên tiếng Anh của 6 giá trị: Respect, Innovation, Teamwork, Fairness, Role Model, Wisdom.
 13. Dòng giải thích huy hiệu 6 giá trị.
-14. Quiz CUDER: câu chuyện, 3 câu hỏi và gợi ý.
-15. 3 mẩu thông tin trong mini-game kéo nước giếng.
-16. 5 mốc của mini-game dòng thời gian (1988, 1999, 2006, 2018, 2019): năm và cách viết.
-17. Biển sứ mệnh FSA ở cửa phòng FSA (zone 4).
-18. Mini-game Lộ trình học: 3 khóa gợi ý cho mỗi vị trí intern (zone 4).
+14. 3 mẩu thông tin trong mini-game kéo nước giếng.
+15. 5 mốc của mini-game dòng thời gian (1988, 1999, 2006, 2018, 2019): năm và cách viết.
+16. Biển sứ mệnh FSA ở cửa phòng FSA (zone 4).
+17. Mini-game Lộ trình học: 3 khóa gợi ý cho mỗi vị trí intern (zone 4).
 
-Danh sách lấy từ dữ liệu (`"draft": true`); trong game các nội dung này hiện chữ [DRAFT].
+Danh sách lấy từ dữ liệu (`"draft": true`); trong game các nội dung này hiện chữ [DRAFT]. Quiz tượng Cuder đã có nội
+dung từ mentor (09/10/2026), không còn [DRAFT].

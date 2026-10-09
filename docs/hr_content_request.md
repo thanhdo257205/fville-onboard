@@ -17,7 +17,7 @@ trong game nên ngắn, khoảng 1–2 câu (dưới 30 từ), vì hiện trong 
 | 3 | 0 · Điểm đón xe bus | 2–3 quy định khi đi xe bus công ty | Quy định | Câu tạm, [DRAFT] |
 | 4 | 1 · Bến xe F-Ville | Tuyến xe, giờ xe sáng tới nơi, giờ xe về | Thông tin xe | Câu tạm, [DRAFT] |
 | 5 | 2 · Giếng làng | 3 mẩu ngắn về ý nghĩa F-Ville và "Làng Công Nghệ" | Văn hóa | Câu tạm, [DRAFT] |
-| 6 | 2 · Tượng Cuder | Câu chuyện tượng Cuder và 3 câu quiz | Văn hóa | Câu tạm, [DRAFT] |
+| 6 | 2 · Tượng Cuder | Câu chuyện tượng Cuder và 3 câu quiz | Văn hóa | **Đã có** (mentor, 09/10/2026) |
 | 7 | 2 · Huy hiệu | Tên và mô tả huy hiệu "Tôn Đổi Đồng Chí Gương Sáng" | Văn hóa | Câu tạm, [DRAFT] |
 | 8 | Cả game | Tên tiếng Anh và diễn giải chính thức 6 giá trị; rà lại hành động gắn với từng giá trị | Văn hóa | Câu tạm, [DRAFT] |
 | 9 | 3 · Sảnh lễ tân | Welcome Kit thật gồm những gì | Vật phẩm | Câu tạm, [DRAFT] |
@@ -86,21 +86,21 @@ Người chơi đứng ở một điểm đón trong thành phố, đi tìm xe b
 - **Ví dụ câu trả lời:** "1) F-Ville được thiết kế như một ngôi làng… 2) Giếng làng tượng trưng cho… 3) Làng Công Nghệ
   là…"
 
-### 6. Tượng Cuder: câu chuyện và quiz 3 câu
+### 6. Tượng Cuder: câu chuyện và quiz 3 câu — ĐÃ CÓ (mentor, 09/10/2026)
 - **Chỗ xuất hiện:** người chơi đọc câu chuyện về tượng, rồi trả lời 3 câu hỏi trắc nghiệm. Đúng hay sai đều nhận
   huy hiệu.
-- **Câu tạm hiện tại:**
-  - Câu chuyện: "The Cuder statue shows a farmer of the tech age: someone who works the land of technology with
-    patience, care and team spirit."
-  - Câu 1: "What does the Cuder statue stand for?" → đáp án "A tech-age farmer".
-  - Câu 2: "Why is the area around the statue a rice field?" → đáp án "It links F-Ville to the village roots of
-    Vietnam".
-  - Câu 3: "Which badge do you get here?" → đáp án "Tôn Đổi Đồng Chí Gương Sáng".
-- **HR cần cung cấp:**
-  - Câu chuyện chính thức về tượng Cuder, 2–4 câu: tên gọi, ý nghĩa, tác giả hoặc năm dựng nếu muốn nêu.
-  - Xác nhận hoặc thay 3 câu hỏi. Mỗi câu gồm 4 phương án, 1 đáp án đúng, 1 câu gợi ý khi trả lời sai, 1 câu giải
-    thích sau khi trả lời.
-- **Ví dụ câu trả lời:** "Câu chuyện: Tượng Cuder là… Câu 1: …? A… B… C… D… Đáp án B. Gợi ý: … Giải thích: …"
+- **Đã có nội dung từ mentor, game đã dùng, bỏ [DRAFT]** (`data/quiz.json`, quiz `cuder`). HR không cần cung cấp
+  thêm.
+  - Câu chuyện, 4 đoạn: tên Cuder = CU (cucumber) + DER (coder), biệt danh vui của mọi nhân viên FPT Software; đầu to,
+    kính, bụng tròn: người làm IT chăm chỉ; cây cuốc gợi gốc nông nghiệp Việt Nam và tinh thần chăm chỉ nay mang vào
+    công nghệ, đống xu hình 0 và 1 là thế giới số; Cuder tôn vinh sự tận tụy của người FPT Software — con người, không
+    chỉ sản phẩm, là cốt lõi thành công của FPT.
+  - Câu 1: "Where does the name Cuder come from?" → "CU (cucumber) + DER (coder)".
+  - Câu 2: "What does Cuder's pickaxe stand for?" → "Vietnam's farming roots and hard-working spirit, now applied to
+    tech".
+  - Câu 3: "According to Cuder, what is at the heart of FPT's success?" → "Its people".
+  - Câu hỏi, phương án, gợi ý: của mentor. Câu giải thích sau mỗi câu do nhóm làm game viết, chỉ nhắc lại ý trong câu
+    chuyện; mentor muốn sửa thì báo.
 
 ### 7. Huy hiệu "Tôn Đổi Đồng Chí Gương Sáng"
 - **Chỗ xuất hiện:** huy hiệu 6 ô nhận ở tượng Cuder, hiện trong app.

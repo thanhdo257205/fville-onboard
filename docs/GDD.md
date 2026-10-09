@@ -199,7 +199,7 @@ Zone 2 là nơi người chơi chính thức "gia nhập Làng F" và nhận c�
 | --- | --- | --- |
 | `INT_cong_fville` | Check-in gia nhập Làng F: chế độ **chụp ảnh** trước biển chữ FPT SOFTWARE, người chơi chọn tư thế và có thể kéo Tú vào khung | **Áo Cam FPT**, mặc vào ngay; ảnh lưu vào app; Hiểu biết +5 |
 | `INT_gieng_lang` | Mini-game **Kéo nước bằng cần vọt**: 3 lượt, bấm đúng lúc thanh chạy vào vùng xanh. Mỗi gầu kéo lên mở một mẩu về ý nghĩa F-Ville và triết lý "Làng Công Nghệ" *[HR cung cấp 3 mẩu]* | Huy hiệu **Tinh thần Đồng đội** gắn lên áo; Hiểu biết +10 |
-| `INT_tuong_cuder` | Đọc câu chuyện hình tượng người nông dân công nghệ và tinh thần lao động *[HR cung cấp]*, rồi trả lời **quiz 3 câu** | Huy hiệu **Tôn Đổi Đồng Chí Gương Sáng** (6 ô); Hiểu biết +5 mỗi câu đúng |
+| `INT_tuong_cuder` | Đọc câu chuyện về Cuder (CU + DER, người làm IT chăm chỉ, cây cuốc và đống xu 0/1; nội dung từ mentor, `data/quiz.json`), rồi trả lời **quiz 3 câu** | Huy hiệu **Tôn Đổi Đồng Chí Gương Sáng** (6 ô); Hiểu biết +5 mỗi câu đúng |
 | Hạt lúa vàng × 3 | Trong bụi tre trên đảo giếng; trên gò cỏ sau biển chữ; dưới tầng trệt pilotis | |
 
 **Quiz ở Tượng Cuder:** trả lời sai không bị phạt; game hiện lời giải thích ngắn rồi sang câu tiếp. Nhận huy hiệu xong, ô Tôn trọng sáng lên ngay nếu người chơi đã cảm ơn bác tài ở zone 1, kèm lời giải thích "Bạn đã thể hiện điều này từ sáng nay!".
@@ -331,7 +331,7 @@ Mười bốn mục nội dung dưới đây cần nguồn chính thức; trong 
 - [ ] Tuyến xe và giờ các chuyến về (zone 0, zone 1)
 - [ ] 2–3 quy định khi đi xe bus công ty (zone 0)
 - [ ] 3 mẩu về ý nghĩa F-Ville và triết lý "Làng Công Nghệ" (zone 2, giếng làng)
-- [ ] Câu chuyện hình tượng Cuder và 3 câu quiz (zone 2)
+- [x] Câu chuyện hình tượng Cuder và 3 câu quiz (zone 2) — đã có từ mentor, 09/10/2026
 - [ ] Diễn giải chính thức 6 giá trị Tôn Đổi Đồng Chí Gương Sáng; rà lại 6 lựa chọn gắn với từng giá trị (Cơ chế chơi)
 - [ ] Welcome Kit thật gồm những gì (zone 3)
 - [ ] 5 mốc thành tựu, cùng các cá nhân và tập thể xuất sắc được phép nêu tên (zone 3, Phòng Hạt Lúa)

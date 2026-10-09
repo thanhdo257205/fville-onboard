@@ -1,30 +1,30 @@
 {
-  "_ghi_chu": "Câu hỏi quiz + giải thích. Trả lời sai không bị phạt: hiện gợi ý (hint) rồi chọn lại; đúng thì hiện giải thích (explain). Nội dung Tượng Cuder chờ HR → draft: true (game hiện [DRAFT]). Mini-game quiz chạy ở Đợt 3; Đợt 2 chỉ nạp và kiểm tra dữ liệu.",
+  "_ghi_chu": "Câu hỏi quiz + giải thích. Trả lời sai không bị phạt: hiện gợi ý (hint) rồi chọn lại; đúng thì hiện giải thích (explain). Tượng Cuder: câu chuyện và 3 câu hỏi từ mentor (09/10/2026), không còn draft. Game KHÔNG xáo phương án: answer = vị trí đáp án đúng, cố ý đặt khác nhau giữa các câu. Câu chuyện chia đoạn bằng \\n\\n.",
   "quizzes": [
     {
-      "id": "cuder", "zone": "zone_02", "node": "INT_tuong_cuder", "draft": true,
-      "story": { "en": "The Cuder statue shows a farmer of the tech age: someone who works the land of technology with patience, care and team spirit." },
+      "id": "cuder", "zone": "zone_02", "node": "INT_tuong_cuder",
+      "story": { "en": "Meet Cuder! The name mixes CU (cucumber) and DER (coder) — a playful nickname for every FPT Software employee.\n\nBig head, glasses and a round tummy: a hard-working IT person, through and through.\n\nHis pickaxe recalls Vietnam's farming roots and the hard-working spirit we now bring to technology. The coins shaped like 0 and 1 at his feet stand for the digital world we build.\n\nCuder celebrates the dedication of FPT Software people — because people, not just products, are at the heart of FPT's success." },
       "questions": [
         {
-          "q": { "en": "What does the Cuder statue stand for?" },
-          "options": [{ "en": "A tech-age farmer" }, { "en": "A famous athlete" }, { "en": "A city founder" }, { "en": "A space explorer" }],
-          "answer": 0,
-          "hint": { "en": "Look at the story again: what kind of work does the statue celebrate?" },
-          "explain": { "en": "Cuder is a 'tech farmer' — hard work and care, just like tending a rice field." }
-        },
-        {
-          "q": { "en": "Why is the area around the statue a rice field?" },
-          "options": [{ "en": "It's just decoration" }, { "en": "It links F-Ville to the village roots of Vietnam" }, { "en": "It's a parking lot in summer" }, { "en": "It grows food for the canteen" }],
+          "q": { "en": "Where does the name Cuder come from?" },
+          "options": [{ "en": "Cute + leader" }, { "en": "CU (cucumber) + DER (coder)" }, { "en": "Cube + builder" }, { "en": "Customer + order" }],
           "answer": 1,
-          "hint": { "en": "Think about the word 'village' in 'tech village'." },
-          "explain": { "en": "F-Ville is a 'tech village': modern work with Vietnamese village roots." }
+          "hint": { "en": "It's a playful mix of a vegetable and a job." },
+          "explain": { "en": "CU (cucumber) + DER (coder) = Cuder: a playful nickname for every FPT Software employee — and from today, that includes you!" }
         },
         {
-          "q": { "en": "Which badge do you get here?" },
-          "options": [{ "en": "Teamwork Spirit" }, { "en": "Best Photographer" }, { "en": "Tôn Đổi Đồng Chí Gương Sáng" }, { "en": "Early Bird" }],
+          "q": { "en": "What does Cuder's pickaxe stand for?" },
+          "options": [{ "en": "Digging for gold" }, { "en": "Building new roads" }, { "en": "Vietnam's farming roots and hard-working spirit, now applied to tech" }, { "en": "A sports trophy" }],
           "answer": 2,
-          "hint": { "en": "It's the badge with six empty slots — one for each core value." },
-          "explain": { "en": "Its six slots light up when you act on FPT's core values today." }
+          "hint": { "en": "Think about the rice fields around F-Ville." },
+          "explain": { "en": "Vietnam grew up farming the land. Cuder's pickaxe carries that hard-working spirit into technology — and the 0/1 coins at his feet show the digital world we build." }
+        },
+        {
+          "q": { "en": "According to Cuder, what is at the heart of FPT's success?" },
+          "options": [{ "en": "Its people" }, { "en": "Its buildings" }, { "en": "Its logo" }, { "en": "Its coffee" }],
+          "answer": 0,
+          "hint": { "en": "Read the last line of the story again." },
+          "explain": { "en": "People, not just products: Cuder celebrates the dedication of everyone at FPT Software — they're at the heart of FPT's success." }
         }
       ]
     }
