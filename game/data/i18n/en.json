@@ -33,7 +33,7 @@
     }
   },
   "hud": {
-    "controls": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · Esc: menu",
+    "controls": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · H: help · Esc: menu",
     "click_to_look": "Click to look around with the mouse",
     "objective_explore": "Explore {zone}",
     "zone_locked": "This way opens in the next update.",
@@ -58,6 +58,11 @@
     "photo_saved_checkin": "Check-in photo saved to My FPT",
     "photo_saved_id": "Your photo is printed on your card"
   },
+  "guide": {
+    "help_title": "What now?",
+    "also": "Also: {text}",
+    "phone_label": "New message"
+  },
   "menu": {
     "title": "Paused",
     "resume": "Resume",
@@ -67,6 +72,10 @@
     "high": "High",
     "current": "Now: {tier} · {gpu}",
     "fps": "{fps} FPS",
+    "guide": "Objective markers",
+    "on": "On",
+    "off": "Off",
+    "guide_note": "The \"!\" above your next goal, and an arrow at the screen edge when it's out of view.",
     "play_again": "Play again",
     "play_again_confirm": "Start over? Your progress will be erased.",
     "yes": "Yes, start over",
@@ -129,7 +138,8 @@
     "carry": "Carrying",
     "stats_title": "Your day so far",
     "grains": "Golden grains: {n} / {total}",
-    "grains_hint": "Hidden around F-Ville. The glass jar in the Rice Grain Room keeps count."
+    "grains_hint": "Hidden around F-Ville. The glass jar in the Rice Grain Room keeps count.",
+    "help": "Help"
   },
   "cutscene": {
     "skip": "Skip ›",
