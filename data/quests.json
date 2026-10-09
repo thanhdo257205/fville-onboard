@@ -26,7 +26,7 @@
     { "id": "z2_checkin", "zone": "zone_02", "checklist": "gate", "required": true, "target": "INT_cong_fville", "title": { "en": "Check in at the FPT SOFTWARE sign" } },
     { "id": "z2_well", "zone": "zone_02", "checklist": "well", "required": true, "target": "INT_gieng_lang", "title": { "en": "Draw water at the Village Well" } },
     { "id": "z2_cuder", "zone": "zone_02", "checklist": "statue", "required": true, "target": "INT_tuong_cuder", "title": { "en": "Visit the Cuder Statue" } },
-    { "id": "z3_card", "zone": "zone_03", "checklist": "reception", "required": true, "target": "NPC_le_tan", "title": { "en": "Get your employee card" } },
+    { "id": "z3_card", "zone": "zone_03", "checklist": "reception", "required": true, "target": "NPC_le_tan", "title": { "en": "Get your employee card from Ms. Nga" } },
     { "id": "z3_rice_room", "zone": "zone_03", "checklist": "rice_room", "required": true, "target": "INT_hat_lua", "title": { "en": "Explore the Rice Grain Room" } },
     { "id": "z3_wallet", "zone": "zone_03", "required": false, "target": "vi_danh_roi", "title": { "en": "Return the lost wallet" }, "visible_if": { "flags": ["wallet_taken"] } }
   ],

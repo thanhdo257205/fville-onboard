@@ -141,10 +141,16 @@ async function loadConfig() {
 }
 
 // GLB theo mức đồ hoạ đang xem: Thấp = bản 6k, Cao = bản 15k (models.<id>.glb.low|high)
+// model chờ người thật đồng ý (consent_pending) không có trên bản công khai → dùng models.<id>.fallback
 function getModel(id) {
-  const glb = cfg.models[id].glb;
+  const m = cfg.models[id], glb = m.glb;
   const path = typeof glb === "string" ? glb : glb[$("tier").value] ?? glb.high ?? glb.low;
-  if (!modelCache.has(path)) modelCache.set(path, loader.loadAsync("../" + path));
+  if (!modelCache.has(path)) {
+    modelCache.set(path, loader.loadAsync("../" + path).catch((e) => {
+      if (!m.consent_pending || !m.fallback) throw e;
+      return getModel(m.fallback);
+    }));
+  }
   return modelCache.get(path);
 }
 // vai đứng tại node NPC_ (characters.json roles.<vai>.node)

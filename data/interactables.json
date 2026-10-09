@@ -206,7 +206,7 @@
       "area": "TRIGGER_quay_le_tan",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the receptionist"
+        "en": "Talk to Ms. Nga"
       },
       "action": "dialogue:le_tan_main"
     },
@@ -296,7 +296,7 @@
             "en": "Logging in as {player}…"
           },
           "hint": {
-            "en": "Hint: once the app is installed, log in with the code from HR's message."
+            "en": "Hint: once the app is installed, log in with the code from Ms. Nga's message."
           }
         },
         {

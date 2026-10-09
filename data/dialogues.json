@@ -4,7 +4,7 @@
     {
       "id": "hr_message", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! Welcome to FPT Software. Your shuttle today is Bus No. 2 to Hòa Lạc — pickup at 06:45 at this stop. See you at F-Ville!" }, "next": "n2" },
+        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! It's Nga from Recruitment. Your shuttle today is Bus No. 2 to Hòa Lạc — pickup at 06:45 at this stop. See you at F-Ville!" }, "next": "n2" },
         "n2": { "speaker": "narrator", "text": { "en": "Find Bus No. 2 before 06:45." }, "effects": { "flags": ["hr_message_read"] }, "next": null }
       }
     },
@@ -172,18 +172,26 @@
             { "if": { "flags": ["wallet_taken"], "not_flags": ["wallet_returned"] }, "next": "w1" },
             { "if": { "quests": ["z3_card"] }, "next": "after" }
           ], "next": "n1" },
-        "n1": { "speaker": "le_tan", "anim": "wave", "text": { "en": "Good morning! First day, right? Welcome to F-Ville." }, "next": "n2" },
-        "n2": { "speaker": "le_tan", "text": { "en": "Could you check the details on this form for me? If anything's wrong, just fix it." }, "next": "form" },
+        "n1": { "speaker": "le_tan", "anim": "wave", "text": { "en": "{player}? Welcome to F-Ville! I'm Nga from Recruitment — so nice to finally meet you in person." }, "next": "n1b" },
+        "n1b": { "speaker": "le_tan", "text": { "en": "After all our emails and calls, it's lovely to put a face to the name. Did my message get you onto Bus No. 2 all right?" },
+          "choices": [
+            { "text": { "en": "Yes — Ms. Huyền was waiting right at the door!" }, "next": "n1c" },
+            { "text": { "en": "Just in time — I almost got on Bus No. 1!" }, "next": "n1d" }
+          ] },
+        "n1c": { "speaker": "le_tan", "anim": "nod", "text": { "en": "That's Huyền — she never loses an intern. Oh, and look: orange suits you. We match today!" }, "next": "n2" },
+        "n1d": { "speaker": "le_tan", "text": { "en": "Ha! The number on the windshield is the one to trust. Anyway, you made it — and orange suits you. We match today!" }, "next": "n2" },
+        "n2": { "speaker": "le_tan", "text": { "en": "Now, the paperwork. Could you check the details on this form for me? If anything's wrong, just fix it." }, "next": "form" },
         "form": { "action": "minigame:profile_check", "next": "n3" },
-        "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card. Smile!" }, "next": "photo" },
+        "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card. Big smile — you'll be wearing this one every day!" }, "next": "photo" },
         "photo": { "action": "minigame:id_photo", "next": "n4" },
-        "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. Have a wonderful first day!" },
+        "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. From our first call to your first day — I'm so glad you're here!" },
           "effects": { "reward": ["the_nhan_vien", "welcome_kit"], "hieu_biet": 5, "quest": "z3_card" }, "next": null },
-        "after": { "speaker": "le_tan", "text": { "en": "Your card opens the gates upstairs. Have a great day!" }, "next": null },
+        "after": { "speaker": "le_tan", "text": { "en": "Your card opens the gates upstairs. If anything comes up today, just message me in the app!" }, "next": null },
         "w1": { "speaker": "player", "text": { "en": "Excuse me — I found this wallet on the seats over there." }, "next": "w2" },
-        "w2": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Oh, thank you! Someone must be worried sick. I'll take care of it." },
+        "w2": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Oh, thank you! Someone must be worried sick. I'll make sure it gets back to its owner." },
           "effects": { "value": "fairness", "ket_noi": 3, "quest": "z3_wallet", "flags": ["wallet_returned"], "remove_item": "vi_danh_roi" }, "next": "w3" },
-        "w3": { "branch": [{ "if": { "quests": ["z3_card"] }, "next": null }], "next": "n1" }
+        "w3": { "branch": [{ "if": { "quests": ["z3_card"] }, "next": null }], "next": "w4" },
+        "w4": { "speaker": "le_tan", "anim": "wave", "text": { "en": "And you must be {player}! I'm Nga from Recruitment — so nice to finally meet you in person." }, "next": "n1b" }
       }
     },
     {

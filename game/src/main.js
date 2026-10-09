@@ -52,7 +52,9 @@ async function boot() {
   const saved = save.load();
   if (saved) progress.fromJSON(saved);
   const ui = { dialogue: new DialogueUI(), app: new MyFptApp(content, progress), minigame: new MinigameHost(content) };
-  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters: new Characters(chars),
+  const characters = new Characters(chars);
+  await characters.probe();                 // model chờ người thật đồng ý mà thiếu file → dùng model thay thế
+  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters,
     input, settings, nametags, content, progress, ui });
   game.validation = { problems, nodes: nodeCheck };
   ui.minigame.game = game;

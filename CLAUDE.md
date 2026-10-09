@@ -5,7 +5,8 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 
 - Repo công khai `thanhdo257205/fville-onboard`: nhánh **main** = mã nguồn, nhánh **gh-pages** = bản build cho GitHub Pages.
 - Bản chơi: https://thanhdo257205.github.io/fville-onboard/game/ · xem bối cảnh: `/viewer/`
-- Thiết kế: `docs/GDD.md` · tiến độ: `docs/PROGRESS.md` · lời thoại Ms. Huyền: `docs/dialogue_huyen.md`
+- Thiết kế: `docs/GDD.md` · tiến độ: `docs/PROGRESS.md` · lời thoại: `docs/dialogue_huyen.md` (Ms. Huyền),
+  `docs/dialogue_nga.md` (Ms. Nga)
 
 ## Cấu trúc thư mục
 
@@ -59,7 +60,7 @@ python -m http.server 8765           # ở thư mục gốc, mở http://localho
 # Nhân vật (cần Blender + file riêng trên máy làm việc)
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/prepare_for_mixamo.py -- --id <id> --height 1.60 --tris 25000 [--protect-face] [--protect-logo]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/apply_chest_logo.py -- --id <id> [--logo <png>] [--compare prajith]
-tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/build_character.py -- --id <id> --height 1.60 --tris 6000 --single
+tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/build_character.py -- --id <id> --height 1.60 --tris 6000 --single [--decimate-only]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id>
 python scripts/tools/anim_sheet.py <id>
 
@@ -113,8 +114,9 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   va chạm; `data/scene_fixes.json`; vật do code đặt trong `data/interactables.json`) và ghi vào báo cáo. Sửa bối cảnh
   thật thì sửa script Blender rồi build lại zone (cần người dùng đồng ý).
 - Nội dung chờ HR có `"draft": true` → game hiện **[DRAFT]**. Danh sách: `docs/PROGRESS.md`.
-- Vai nhân vật: id vai trong dữ liệu giữ nguyên (vd vai `thao` hiển thị là **Ms. Huyền**, model `huyen`). Lời thoại
-  nhân vật dựa trên người thật (Ms. Huyền, Prajith): tự viết chi tiết cá nhân, giữ nhẹ nhàng, thân thiện, không nói chuyện
+- Vai nhân vật: id vai trong dữ liệu giữ nguyên (vd vai `thao` hiển thị là **Ms. Huyền**, model `huyen`; vai `le_tan`
+  là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại). Lời thoại
+  nhân vật dựa trên người thật (Ms. Huyền, Ms. Nga, Prajith): tự viết chi tiết cá nhân, giữ nhẹ nhàng, thân thiện, không nói chuyện
   sức khỏe, gia đình, tiền bạc hay điều làm họ trông thiếu chuyên nghiệp.
 - Làm theo đợt và **dừng lại báo cáo** sau mỗi đợt; báo cáo bằng tiếng Việt.
 - File chữ tiếng Việt: sửa bằng Edit hoặc Python (UTF-8). Không dùng PowerShell `Get-Content`/`Set-Content` để ghi lại.
@@ -124,6 +126,10 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - KHÔNG BAO GIỜ đưa lên: FBX gốc Mixamo (`mixamo/*.fbx`, điều khoản Mixamo không cho phát tán animation thô), file
   `.blend`, `source/` (file Meshy gốc), texture nhân vật, file logo gốc (`assets/logos/`, logo chỉ nằm trong texture), video/ảnh/khung hình trong `references/` (có khung chụp thẻ nhân
   viên ghi họ tên: `VanPhongLamViec/t_0008.0.jpg`, `t_0010.0.jpg`, `contact_01.jpg`), `renders/`, `tools/bin/`.
+- **Người thật chưa xác nhận đồng ý dùng hình** (`data/characters.json` → `models.<id>.consent_pending`, hiện có `nga`):
+  GLB và chân dung chỉ để trên máy làm việc (.gitignore), không lên nhánh main lẫn gh-pages; `vite build` và
+  `make_site.py` bỏ model đó, `privacy_scan.py` báo lỗi nếu lỡ stage; game và viewer thiếu file thì dùng
+  `models.<id>.fallback`. Khi người đó đồng ý: bỏ `consent_pending` và 2 dòng trong .gitignore, commit GLB + chân dung.
 - Không đưa email, đường dẫn máy cá nhân, token vào file. Ảnh render từ Blender: `char_render.preview_setup()` đã tắt
   metadata (trước đây Blender ghi đường dẫn file vào PNG). Chạy `python scripts/tools/privacy_scan.py` trước khi commit;
   không file nào trên 20 MB.

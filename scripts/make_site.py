@@ -6,10 +6,13 @@ dist/ là git worktree của nhánh gh-pages (repo thanhdo257205/fville-onboard;
 Máy mới: git worktree add dist gh-pages. Script giữ nguyên dist/.git (file trỏ về worktree).
 Commit + push bản build: python scripts/deploy_site.py (chỉ khi người dùng đồng ý đưa bản mới lên mạng).
 
-Được đưa lên: game đã build, viewer, GLB bối cảnh, GLB nhân vật (Prajith đã được duyệt), data/*.json.
+Được đưa lên: game đã build, viewer, GLB bối cảnh, GLB nhân vật đã được duyệt (Prajith, Huyền), data/*.json.
+Model còn chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending, vd nga) KHÔNG được lên dist/:
+game và viewer tự dùng models.<id>.fallback khi thiếu file.
 KHÔNG BAO GIỜ đưa lên: FBX gốc từ Mixamo (điều khoản Mixamo không cho phát tán animation dạng thô), file .blend,
 thư mục source/ và mixamo/ của nhân vật, .raw.glb, references/ (video, ảnh thật), renders/, TASK.md, REPORT.md.
 """
+import json
 import shutil
 import subprocess
 import sys
@@ -55,6 +58,12 @@ def copy(src, dst):
     shutil.copy2(src, dst)
 
 
+def pending_models():
+    """Model chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending): không bao giờ lên dist/."""
+    cfg = json.loads((ROOT / "data" / "characters.json").read_text(encoding="utf-8"))
+    return {k for k, m in cfg.get("models", {}).items() if m.get("consent_pending")}
+
+
 def check_worktree():
     """dist/ phải là worktree của nhánh gh-pages (không thì build ra sẽ không commit/push được đúng chỗ)."""
     if not (DIST / ".git").exists():
@@ -89,7 +98,10 @@ def main():
         for z in ZONES:
             copy(ROOT / "assets" / "glb" / tier / f"{z}.glb", DIST / "assets" / "glb" / tier / f"{z}.glb")
     copy(ROOT / "data" / "characters.json", DIST / "data" / "characters.json")
+    pending = pending_models()
     for d in (ROOT / "assets" / "characters").iterdir():
+        if d.name in pending:
+            continue
         for g in d.glob(f"{d.name}*.glb"):
             if not g.name.endswith(".raw.glb"):
                 copy(g, DIST / "assets" / "characters" / d.name / g.name)
@@ -98,7 +110,8 @@ def main():
     (DIST / ".nojekyll").write_text("", encoding="utf-8")  # GitHub Pages phục vụ file nguyên trạng
 
     files = sorted(p.relative_to(DIST).as_posix() for p in DIST.rglob("*") if p.is_file() and ".git" not in p.parts)
-    leaked = [f for f in files if f.lower().endswith(BLOCK) or BLOCK_PARTS & set(f.split("/"))]
+    leaked = [f for f in files if f.lower().endswith(BLOCK) or BLOCK_PARTS & set(f.split("/"))
+              or any(f"characters/{p}/" in f for p in pending)]
     if leaked:
         shutil.rmtree(DIST / "game", ignore_errors=True)
         raise SystemExit(f"DỪNG: file không được công khai lọt vào dist/: {leaked}")

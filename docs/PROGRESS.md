@@ -50,23 +50,33 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     build: 32 lần hộp thoại / mini-game / app mở đều ẩn dòng hướng dẫn; console chỉ còn dòng `[kiểm tra dữ liệu] OK`.
 
 ### Nhân vật
-- **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền.
+- **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
+  chị Nga.
 - **huyen** (Meshy + Mixamo, người thật, đã đồng ý): bản 6k duy nhất, cao 1,60 m, 15 animation retarget từ bộ của
   prajith, logo FPT trên ngực trái. Đóng vai `thao`, tên hiển thị **Ms. Huyền** (zone 0 và zone 1).
-- **nga** — Ms. Nga, L1 of Recruitment (người thật, **chờ xác nhận đồng ý** — chưa đưa model lên gh-pages trước khi có
-  xác nhận): đã chuẩn bị cho Mixamo (25k tam giác, cao 1,60 m, giữ nguyên mặt và vùng logo khi giảm), dán logo FPT
-  lên ngực trái (7,5 cm, giữ nếp vải); **chờ người dùng duyệt logo** rồi mới upload `nga_for_mixamo.fbx` lên Mixamo.
+- **nga** — Ms. Nga, L1 of Recruitment (Meshy + Mixamo, người thật, **chờ xác nhận đồng ý dùng hình**): bản 6k duy
+  nhất (5.998 tam giác, 0,59 MB), cao 1,60 m, 15 animation retarget từ bộ của prajith, logo FPT trên ngực trái (7,5 cm,
+  giữ nếp vải; WebP 1024 trong GLB vẫn đọc rõ chữ FPT), chân dung. Đóng vai `le_tan` (quầy lễ tân zone 3) và người nói
+  `hr` (tin nhắn hẹn xe zone 0), tên hiển thị **Ms. Nga**; lời thoại mới: `docs/dialogue_nga.md`.
+  - Bản 6k: mặt trước đã giữ nguyên lúc chuẩn bị Mixamo (~10,7k tam giác) → thêm lượt giảm riêng cho mặt
+    (`decimate_protect.face_keep_tris`, `face_detail_pct`: giữ đỉnh có độ tương phản texture cao — mắt, lông mày,
+    gọng kính, môi — chỉ giảm da phẳng); thử nhanh bằng `build_character.py --decimate-only`.
+  - **Chưa công khai:** `nga.glb` và `nga_portrait.png` chỉ có trên máy làm việc (.gitignore), không lên `main` lẫn
+    `gh-pages`. `data/characters.json` → `models.nga.consent_pending` + `fallback: prajith`: game và viewer thiếu file
+    thì dùng Prajith cho vai này (tên vẫn là Ms. Nga); `vite build`, `make_site.py` bỏ model nga; `privacy_scan.py` báo
+    lỗi nếu lỡ stage.
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
     giảm tam giác.
-  - `build_character.py`: ghép animation, retarget giữa hai nhân vật, giảm tam giác có bảo vệ vùng mặt/logo, đo tốc độ
-    và độ cao ngồi.
+  - `build_character.py`: ghép animation, retarget giữa hai nhân vật, giảm tam giác có bảo vệ vùng mặt/logo (và lượt
+    giảm riêng phần da phẳng của mặt), đo tốc độ và độ cao ngồi.
   - `apply_chest_logo.py`: dán logo ngực bằng phép chiếu chính diện, tô trắng chữ bị công cụ xoá nền làm trong suốt,
     giữ nếp vải, lan màu ra lề mảnh UV.
   - `render_portrait.py`: chân dung hộp thoại.
 
 ### Tài liệu và repo
-- `docs/GDD.md` (thiết kế game), `docs/dialogue_huyen.md` (lời thoại Ms. Huyền), `CREDITS.md`, `CLAUDE.md` (hướng dẫn
+- `docs/GDD.md` (thiết kế game), `docs/dialogue_huyen.md` (lời thoại Ms. Huyền), `docs/dialogue_nga.md` (lời thoại
+  Ms. Nga), `CREDITS.md`, `CLAUDE.md` (hướng dẫn
   dự án: cấu trúc, quy ước, lệnh build/chạy/deploy, quy tắc đã chốt).
 - Repo `thanhdo257205/fville-onboard` tách 2 nhánh (09/10/2026): `main` = mã nguồn, `gh-pages` = bản build (giữ nguyên
   lịch sử build cũ). `dist/` là git worktree của `gh-pages`; deploy bằng `scripts/deploy_site.py`, quét riêng tư bằng
@@ -82,8 +92,14 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
 - Lối sang zone 4 đang khóa ("This way opens in the next update"). Còn 3 hạt lúa vàng dành cho zone 4–5.
+- nga: chờ chị Nga xác nhận đồng ý dùng hình. Có xác nhận thì: bỏ `consent_pending` trong `data/characters.json`, xoá
+  2 dòng nga trong `.gitignore`, commit `nga.glb` + `nga_portrait.png`, rồi deploy `gh-pages` (khi người dùng đồng ý).
+- nga: tay lún thân 4–6 cm ở talk, talk_2, nod, think, sit_down (cùng mức huyen, do dùng lại animation của prajith).
 
 ## Đã quyết
+- 09/10/2026: vai `le_tan` → **Ms. Nga** (model `nga`); tin nhắn điện thoại zone 0 (`hr`) cũng hiện Ms. Nga kèm chân dung
+  (`characters.json` → `speaker_as.hr = le_tan`). Zone 4: lựa chọn "gọi lễ tân qua app" → "nhắn Ms. Nga qua app"
+  (mô tả ô Teamwork đã đổi; câu chữ zone 4 viết khi làm tới).
 - GitHub Pages build từ nhánh **`gh-pages`** (Settings → Pages: "being built from the gh-pages branch"); người dùng đã
   chuyển từ trước (xác nhận 09/10/2026). Ghi chú cũ "Pages vẫn lấy từ `main`, cần chuyển nguồn" là sai, đã bỏ.
 - 09/10/2026: **không viết lại lịch sử commit** để xóa metadata đường dẫn máy trong 2 ảnh chân dung cũ
@@ -94,8 +110,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 1. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
    `data/scene_fixes.json` → `see_through`).
 2. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
-3. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc),
-   màn tổng kết, danh hiệu, tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.
+3. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA; lựa chọn nhắn Ms. Nga qua app — câu dự kiến trong
+   `docs/dialogue_nga.md`), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), màn tổng kết, danh hiệu,
+   tải ảnh thẻ, tab Bản đồ và Sổ lời khuyên.
 
 ## Việc nhỏ để sau
 - zone_03, cây ngoài sân (`ENV_cay_san`): một cụm khoảng 8,7 × 6,9 × 7,2 m (x 24,8–33,5; z 1,6–8,8, toạ độ glTF) bị
@@ -104,7 +121,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   gần nó nhất).
 
 ## Nội dung [DRAFT] chờ HR (16 mục)
-1. Tin nhắn HR đầu game: xe số 2 đi Hòa Lạc, đón lúc 06:45.
+1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45.
 2. Giờ xe về (chị Huyền trả lời ở zone 0).
 3. Quy định trên xe công ty (chị Huyền trả lời ở zone 0).
 4. Bản đồ tuyến xe ở zone 1: xe sáng đến 07:30, xe về 17:30 và 18:15.

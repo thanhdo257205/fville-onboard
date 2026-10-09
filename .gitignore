@@ -14,6 +14,10 @@ assets/characters/*/textures/
 *.fbx
 # logo dùng để dán vào texture (file logo gốc không đưa lên repo; logo chỉ nằm trong texture của model)
 assets/logos/
+# Nhân vật người thật CHƯA xác nhận đồng ý dùng hình (data/characters.json → models.<id>.consent_pending):
+# GLB và chân dung chỉ để trên máy làm việc. Khi người đó đồng ý: xoá 2 dòng dưới + bỏ consent_pending, commit 2 file.
+assets/characters/nga/nga.glb
+assets/characters/nga/nga_portrait.png
 
 # --- File Blender, ảnh render, công cụ cài trên máy ---
 *.blend

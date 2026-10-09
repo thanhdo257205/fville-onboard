@@ -9,14 +9,29 @@ import { applyTint, setTint } from "./tint.js";
 import { lang } from "../i18n.js";
 
 export class Characters {
-  constructor(cfg) { this.cfg = cfg; }
+  constructor(cfg) { this.cfg = cfg; this.swap = {}; }
   role(name) { return this.cfg.roles[name]; }
   roles() { return Object.entries(this.cfg.roles).filter(([k]) => !k.startsWith("_")); }
   roleOfNode(nodeName) { return this.roles().find(([, r]) => r.place === "node" && [].concat(r.node).includes(nodeName))?.[0] ?? null; }
   displayName(role) { return this.cfg.names?.[lang]?.[role] ?? this.cfg.names?.en?.[role] ?? role; }
-  model(id) { return this.cfg.models[id]; }
+  model(id) { return this.cfg.models[this.swap[id] ?? id]; }
   tagConfig() { return this.cfg.name_tags || {}; }
-  portrait(role) { const r = this.role(role); return r ? this.model(r.model)?.portrait ?? null : null; }
+  // người nói không có vai trong cảnh (vd "hr": tin nhắn điện thoại) → chân dung của vai speaker_as.<người nói>
+  portrait(role) { const r = this.role(this.cfg.speaker_as?.[role] ?? role); return r ? this.model(r.model)?.portrait ?? null : null; }
+
+  // model chờ người thật đồng ý (models.<id>.consent_pending): GLB + chân dung chỉ có trên máy làm việc, không có trên
+  // repo công khai và bản build → thiếu file thì mọi vai của model đó dùng models.<id>.fallback
+  async probe() {
+    for (const [id, m] of Object.entries(this.cfg.models)) {
+      if (!m.consent_pending || !m.fallback) continue;
+      let ok = false;
+      try {
+        const r = await fetch(url(m.glb.low ?? m.glb.high), { method: "HEAD", cache: "no-store" });
+        ok = r.ok && !(r.headers.get("content-type") || "").includes("text/html");   // dev server: thiếu file → index.html
+      } catch { ok = false; }
+      if (!ok) { this.swap[id] = m.fallback; console.info(`[nhân vật] ${id}: chưa có GLB → dùng ${m.fallback}`); }
+    }
+  }
 
   async create(role, tier) {
     const r = this.role(role);

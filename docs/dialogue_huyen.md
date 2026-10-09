@@ -24,7 +24,7 @@ cạnh chị (lời nhắc trên màn hình: **"Talk to Ms. Huyền"**). Nhiệm
 | 4 | Người chơi hỏi: *"What time does the bus head back?"* | The buses head back to the city in the evening — HR will put the exact times in your app. | | [DRAFT] |
 | 5 | Người chơi hỏi: *"Are there any rules on the company bus?"* | Be at the stop a few minutes early, keep your seatbelt on, and keep the bus clean. Easy! | | [DRAFT] |
 | 6 | Người chơi hỏi: *"Have you been riding this route long?"* | Six years now! Little secret: the window seats near the back have the best view of the rice fields on the way in. | suy nghĩ | |
-| 7 | Người chơi chọn *"That's all — thank you!"* | Great! Hop on whenever you're ready — Bus No. 2 leaves at 06:45 sharp. | gật đầu | giờ xe chạy 06:45 trùng tin nhắn HR [DRAFT] |
+| 7 | Người chơi chọn *"That's all — thank you!"* | Great! Hop on whenever you're ready — Bus No. 2 leaves at 06:45 sharp. | gật đầu | giờ xe chạy 06:45 trùng tin nhắn của Ms. Nga [DRAFT] |
 | 8 | Nói chuyện lại sau khi đã chào xong | Hop on, we're leaving soon! | | |
 | 9 | Người chơi định lên xe khi **chưa** chào chị và **chưa** gặp Tú: chị gọi lại | Hi there! Are you one of the new interns? Come say hello first! | vẫy tay | |
 

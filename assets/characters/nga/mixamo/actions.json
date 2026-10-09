@@ -1,0 +1,32 @@
+{
+  "_ghi_chu": "nga: file gốc nga_rigged.fbx tải từ Mixamo KHÔNG kèm animation (tư thế chữ A tĩnh, Skeleton LOD No Fingers, 25 xương) → idle và 13 animation lấy từ file của prajith (retarget, hông nhân theo tỉ lệ độ cao hông), như huyen. speed_mps: tốc độ chơi (walk 1,4 m/s, run như prajith); game chỉnh tốc độ phát = speed_mps / anim_speed_mps để chân không trượt. Texture lấy từ textures/nga_basecolor.jpg (đã dán logo), không lấy ảnh nhúng trong FBX.",
+  "base": [
+    "nga_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "back_of_head_keep": 0.14,
+    "chest_logo": true,
+    "chest_logo_radius_m": 0.06,
+    "regions": [
+      {
+        "name": "nep_cuc_ao",
+        "center": [
+          0.0,
+          -0.075,
+          1.19
+        ],
+        "radius": 0.03
+      }
+    ],
+    "face_keep_tris": 2600,
+    "face_detail_pct": 0.12
+  },
+  "_decimate_ghi_chu": "Bản 6k: nga_rigged.fbx 25k tam giác, mặt trước ~10,7k (prepare_for_mixamo --protect-face) — giữ cả đầu thì thân chỉ còn ~470 tam giác, bàn chân bị gộp mất. Lượt 0: chỉ giảm phần phẳng của mặt trước còn ~2.600, giữ 12% đỉnh có độ tương phản texture cao nhất (mắt, lông mày, gọng kính, môi; thử 20% thì lông mày, môi vỡ hơn vì phần phẳng không đủ để bớt); lượt 1: tóc sau gáy còn 14%; lượt 2: giữ đầu + logo + nẹp cúc, giảm thân."
+}

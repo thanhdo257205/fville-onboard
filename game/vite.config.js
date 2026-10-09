@@ -1,21 +1,29 @@
 // Vite: game đọc GLB và JSON trực tiếp từ thư mục gốc dự án (assets/, data/) — không chép trùng.
 // Dev: middleware phục vụ /assets/... và /data/... từ thư mục gốc. Build: chép đúng các file cần vào dist/.
-// Nhân vật Prajith đã được duyệt: GLB nhân vật được phép đóng gói; KHÔNG bao giờ chép FBX Mixamo, .blend, source/.
+// Nhân vật Prajith, Huyền đã được duyệt: GLB nhân vật được phép đóng gói; KHÔNG bao giờ chép FBX Mixamo, .blend, source/,
+// và không chép model còn chờ người thật đồng ý (models.<id>.consent_pending, vd nga).
 import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
 import { dirname, join, extname, resolve, sep } from "node:path";
-import { createReadStream, existsSync, statSync, readdirSync, mkdirSync, copyFileSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, statSync, readdirSync, readFileSync, mkdirSync, copyFileSync, writeFileSync } from "node:fs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
 const SHARED = ["/assets/glb/", "/assets/characters/", "/data/"];
 const TYPES = { ".glb": "model/gltf-binary", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp" };
 
-// chỉ các file game dùng (không .raw.glb, .fbx, .blend, ảnh nguồn…)
-function wanted(rel) {
+// model chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending): không bao giờ vào bản build
+function pendingModels() {      // JSON lỗi → build dừng (không lặng lẽ chép hết)
+  const cfg = JSON.parse(readFileSync(join(ROOT, "data", "characters.json"), "utf-8"));
+  return new Set(Object.entries(cfg.models || {}).filter(([, m]) => m.consent_pending).map(([id]) => id));
+}
+
+// chỉ các file game dùng (không .raw.glb, .fbx, .blend, ảnh nguồn…); build: bỏ cả model chờ đồng ý
+function wanted(rel, pending = new Set()) {
   if (rel.startsWith("assets/glb/")) return rel.endsWith(".glb") && !rel.endsWith(".raw.glb");
   if (rel.startsWith("assets/characters/")) {
     const parts = rel.split("/");             // assets/characters/<id>/<id>.glb hoặc <id>_6k.glb (bản nhẹ)
+    if (pending.has(parts[2])) return false;
     const name = parts[3] || "";
     if (parts.length === 4 && name === `${parts[2]}_portrait.png`) return true;   // chân dung hộp thoại
     return parts.length === 4 && name.endsWith(".glb") && !name.endsWith(".raw.glb")
@@ -70,19 +78,21 @@ function sharedAssets() {
     },
     closeBundle() {
       let n = 0;
+      const pending = pendingModels();
       for (const top of ["assets/glb", "assets/characters", "data"]) {
         const dir = join(ROOT, top);
         if (!existsSync(dir)) continue;
         for (const f of walk(dir)) {
           const rel = f.slice(ROOT.length + 1).split(sep).join("/");
-          if (!wanted(rel)) continue;
+          if (!wanted(rel, pending)) continue;
           const dst = resolve(HERE, outDir, rel);
           mkdirSync(dirname(dst), { recursive: true });
           copyFileSync(f, dst);
           n++;
         }
       }
-      console.log(`shared-assets: chép ${n} file (GLB zone, GLB nhân vật, JSON) vào ${outDir}/`);
+      console.log(`shared-assets: chép ${n} file (GLB zone, GLB nhân vật, JSON) vào ${outDir}/`
+        + (pending.size ? `; bỏ model chờ đồng ý: ${[...pending].join(", ")}` : ""));
     },
   };
 }

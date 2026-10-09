@@ -2,9 +2,11 @@
 
 Chạy: python scripts/tools/privacy_scan.py [--worktree dist]   (mặc định: repo ở thư mục gốc dự án)
 Tìm: email, đường dẫn ổ đĩa (chữ ổ đĩa + dấu hai chấm + gạch chéo), thư mục người dùng, token/khoá bí mật,
-đường dẫn máy nhúng trong metadata ảnh/GLB, file lớn hơn 20 MB, file thuộc loại bị cấm (FBX, .blend, .raw.glb, thư mục source/, mixamo/, references/ gốc, renders/).
+đường dẫn máy nhúng trong metadata ảnh/GLB, file lớn hơn 20 MB, file thuộc loại bị cấm (FBX, .blend, .raw.glb, thư mục source/, mixamo/, references/ gốc, renders/),
+GLB/ảnh của nhân vật người thật chưa xác nhận đồng ý dùng hình (data/characters.json → models.<id>.consent_pending).
 Thoát với mã 1 nếu có phát hiện — dùng trước mỗi commit (scripts/deploy_site.py gọi tự động).
 """
+import json
 import re
 import subprocess
 import sys
@@ -29,16 +31,24 @@ BLOCKED_DIRS = {"source", "mixamo", "renders"}
 ALLOWED = set()
 
 
+def pending_models():
+    cfg = json.loads((ROOT / "data" / "characters.json").read_text(encoding="utf-8"))
+    return {k for k, m in cfg.get("models", {}).items() if m.get("consent_pending")}
+
+
 def scan(repo):
     files = subprocess.run(["git", "-C", str(repo), "ls-files", "-z"], capture_output=True, check=True).stdout
     files = [f for f in files.decode("utf-8").split("\0") if f]
     found = []
+    pending = pending_models()
     for f in files:
         p = repo / f
         if not p.exists():
             continue
         low = f.lower()
         parts = set(f.split("/")[:-1])
+        if low.endswith(BINARY) and any(f"characters/{m}/" in f for m in pending):
+            found.append(("consent", f, 0, "nhân vật chưa xác nhận đồng ý dùng hình (consent_pending)"))
         if low.endswith(BLOCKED_EXT) or (BLOCKED_DIRS & parts and not low.endswith("mixamo/actions.json")):
             found.append(("blocked", f, 0, f))
         if p.stat().st_size > MAX_MB * 1024 * 1024:

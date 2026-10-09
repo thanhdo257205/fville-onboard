@@ -52,6 +52,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 CID = ARGS[ARGS.index("--id") + 1] if "--id" in ARGS else "prajith"
 RENDER = "--no-render" not in ARGS
+DECIMATE_ONLY = "--decimate-only" in ARGS                 # thử mức giảm: dừng sau khi giảm + ảnh mặt/thân, không xuất
 TRIS = int(ARGS[ARGS.index("--tris") + 1]) if "--tris" in ARGS else None
 VARIANT = "low" if TRIS else "high"                       # mức đồ hoạ dùng bản này
 SINGLE = "--single" in ARGS                               # bản duy nhất: tên <id>.glb, ghi cả số đo
@@ -303,6 +304,39 @@ def _decimate_pass(mesh, ratio, weights, strength):
         mesh.vertex_groups.remove(tmp)
 
 
+def _texture_detail(mesh, radius_px=3, blur_px=2):
+    """Độ tương phản texture tại mỗi đỉnh: gradient màu RGB của baseColor (hiệu 2 px, sau khi làm mờ blur_px để vân
+    tóc nhỏ không tính là nét), nở max radius_px (đỉnh sát nét cũng được tính), lấy max theo các loop UV của đỉnh.
+    Nét mắt, lông mày, gọng kính, môi (hồng trên da trắng: khác màu, ít khác độ sáng) ≫ da và tóc."""
+    img = next(n.image for n in mesh.data.materials[0].node_tree.nodes if n.type == "TEX_IMAGE")
+    w, h = img.size
+    px = np.empty(w * h * 4, np.float32)
+    img.pixels.foreach_get(px)
+    rgb = px.reshape(h, w, 4)[..., :3]
+    if blur_px:
+        k = 2 * blur_px + 1
+        c = np.cumsum(np.cumsum(np.pad(rgb, ((blur_px + 1, blur_px), (blur_px + 1, blur_px), (0, 0)), mode="edge"),
+                                0), 1)
+        rgb = (c[k:, k:] - c[:-k, k:] - c[k:, :-k] + c[:-k, :-k]) / (k * k)
+    g = np.zeros((h, w), np.float32)
+    g[1:-1, 1:-1] = np.sqrt(((rgb[1:-1, 2:] - rgb[1:-1, :-2]) ** 2 + (rgb[2:, 1:-1] - rgb[:-2, 1:-1]) ** 2).sum(-1))
+    m = g.copy()
+    for dy in range(-radius_px, radius_px + 1):
+        for dx in range(-radius_px, radius_px + 1):
+            m = np.maximum(m, np.roll(np.roll(g, dy, 0), dx, 1))
+    me = mesh.data
+    uv = np.empty(len(me.loops) * 2)
+    me.uv_layers.active.data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    vi = np.empty(len(me.loops), int)
+    me.loops.foreach_get("vertex_index", vi)
+    x = np.clip((uv[:, 0] % 1.0 * w).astype(int), 0, w - 1)
+    y = np.clip((uv[:, 1] % 1.0 * h).astype(int), 0, h - 1)       # ảnh Blender: hàng 0 ở dưới, v hướng lên
+    det = np.zeros(len(me.vertices))
+    np.maximum.at(det, vi, m[y, x])
+    return det
+
+
 def _zones(mesh, protect, opts, regions, hc=None):
     """Mặt nạ đỉnh: trọng số xương đầu/cổ, tóc sau gáy (sau tâm đầu), vùng giữ thêm; + tâm đầu."""
     mw = mesh.matrix_world
@@ -328,7 +362,11 @@ def decimate_skinned(mesh, target, protect=("mixamorig:Head", "mixamorig:Neck"),
     còn quá ít tam giác, texture thân (logo ngực, ống quần) vỡ:
       back_of_head_keep: lượt 1 chỉ giảm tóc sau gáy (đỉnh đầu nằm sau tâm đầu) còn tỉ lệ này, mọi chỗ khác giữ;
       regions / chest_logo: vùng trên thân được giữ như đầu ở lượt 2 (chest_logo: tâm lấy từ chest_logo.json → result,
-                            bán kính chest_logo_radius_m)."""
+                            bán kính chest_logo_radius_m);
+      face_keep_tris: lượt 0 — mặt trước quá dày (vd nga: prepare_for_mixamo --protect-face giữ ~10k tam giác mặt) →
+                      chỉ giảm phần phẳng của mặt (da, má, trán) còn khoảng số tam giác này; đỉnh có độ tương phản
+                      texture cao nhất (face_detail_pct, mặc định 15% — hoặc ngưỡng face_detail_threshold; mắt, lông
+                      mày, gọng kính, môi — _texture_detail) được giữ."""
     opts = opts or {}
     before, head_before = tri_count(mesh), head_tris(mesh)
     regions = list(opts.get("regions", []))
@@ -341,10 +379,27 @@ def decimate_skinned(mesh, target, protect=("mixamorig:Head", "mixamorig:Neck"),
     tris_of = lambda m: sum(1 for p in mesh.data.polygons if all(m[v] for v in p.vertices))
     wb, back, reg, hc = _zones(mesh, protect, opts, regions)
     zb = {"head_front": tris_of((wb > 0.5) & ~back), "head_back": tris_of((wb > 0.5) & back), "regions": tris_of(reg)}
+    if "face_keep_tris" in opts:        # lượt 0: chỉ phần phẳng của mặt trước
+        face = (wb > 0.5) & ~back
+        det = _texture_detail(mesh, opts.get("face_detail_px", 3), opts.get("face_blur_px", 2))
+        if "face_detail_threshold" in opts:
+            thr = opts["face_detail_threshold"]
+        else:                           # giữ đúng tỉ lệ đỉnh có nét cao nhất (mặc định 15%)
+            thr = round(float(np.quantile(det[face], 1 - opts.get("face_detail_pct", 0.15))), 3)
+        plain = face & (det < thr)
+        cut = max(0, zb["head_front"] - opts["face_keep_tris"])
+        zb["face_detail_verts_pct"] = round(float((face & ~plain).sum() / max(face.sum(), 1)), 3)
+        zb["face_plain_tris"] = tris_of(plain)
+        print(f"[giảm] lượt 0 (mặt): {face.sum()} đỉnh mặt trước, giữ {zb['face_detail_verts_pct']:.0%} đỉnh có nét "
+              f"(tương phản ≥ {thr}); phần phẳng {zb['face_plain_tris']} tam giác, cần bớt {cut}")
+        if cut:
+            _decimate_pass(mesh, (before - cut) / before, np.where(plain, 0.0, 1.0), strength)
+            wb, back, reg, hc = _zones(mesh, protect, opts, regions, hc)
+            zb["head_front_after_pass0"] = tris_of((wb > 0.5) & ~back)
     if "back_of_head_keep" in opts:     # lượt 1: chỉ tóc sau gáy
-        n_back = tris_of(back)
+        n_back, now = tris_of(back), tri_count(mesh)
         keep_w = np.where(back, 0.0, 1.0)
-        _decimate_pass(mesh, (before - n_back * (1 - opts["back_of_head_keep"])) / before, keep_w, strength)
+        _decimate_pass(mesh, (now - n_back * (1 - opts["back_of_head_keep"])) / now, keep_w, strength)
         wb, back, reg, hc = _zones(mesh, protect, opts, regions, hc)
         w = np.maximum(wb, reg.astype(float))           # lượt 2: giữ cả đầu (đã giảm gáy) + vùng logo
     else:
@@ -800,6 +855,19 @@ def main():
     report["influences_before"], report["influences_after"] = limit_weights(mesh)
     report["removed_bones"] = remove_unused_bones(arm, mesh)
     report["bones"] = len(arm.data.bones)
+    if DECIMATE_ONLY:
+        face_check(arm, mesh, idle, f"_{TRIS // 1000 if TRIS else 'full'}k_thu")
+        cam = preview_setup()
+        set_action(arm, idle)
+        bpy.context.scene.frame_set(frames_of(idle)[0])
+        chk = os.path.join(ROOT, "renders", "characters", "check", f"{CID}_giam_thu")
+        shoot(cam, chk + "_body.png", (0, 0, HEIGHT / 2), (0.3, -1, 0.1), HEIGHT * 1.15, res=(500, 700))
+        shoot(cam, chk + "_chest.png", (0.06, 0, HEIGHT * 0.745), (0.15, -1, 0.05), 0.32, res=(600, 600))
+        shoot(cam, chk + "_feet.png", (0, 0, 0.1), (0.6, -1, 0.4), 0.55, res=(600, 450))
+        preview_teardown()
+        print(f"[thử giảm] {json.dumps(report.get('decimate', {}), ensure_ascii=False, default=_num)}")
+        print(f"[thử giảm] ảnh: {chk}_body/_chest/_feet.png — không xuất GLB")
+        return
     bones = [b.name for b in arm.data.bones]
     strip_curves(idle, bones)
 

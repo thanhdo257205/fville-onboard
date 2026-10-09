@@ -52,7 +52,7 @@ Người chơi bắt chuyến xe bus sớm lên Hòa Lạc ở một điểm đ�
 | Bác tài | Tài xế xe bus FPT | Zone 1 | `NPC_tai_xe` |
 | Bác tài xe số 1, xe số 3 | Tài xế hai tuyến khác, chỉ đường sang xe số 2 | Zone 0 | `NPC_tai_xe_1`, `NPC_tai_xe_3` |
 | Hành khách mang túi | Người lên xe số 2 cùng lúc với người chơi | Zone 0 | `NPC_hanh_khach` |
-| Lễ tân | Phát thẻ nhân viên và Welcome Kit | Zone 3 | `NPC_le_tan` |
+| Chị Nga (Ms. Nga) | Tuyển dụng (Recruitment): người đã liên lạc với người chơi suốt quá trình tuyển, gửi tin nhắn hẹn xe ở zone 0; ở quầy lễ tân zone 3 lần đầu gặp người chơi trực tiếp, phát thẻ nhân viên và Welcome Kit. Người thật, **chưa xác nhận đồng ý dùng hình**: model riêng `nga` (áo polo cam có logo FPT) chỉ có trên máy làm việc, bản công khai dùng tạm Prajith. Id vai trong dữ liệu vẫn là `le_tan`; tin nhắn điện thoại dùng người nói `hr` | Zone 0 (tin nhắn), zone 3 | `NPC_le_tan` |
 | Prajith | Mentor, định hướng nghề nghiệp | Zone 5, phòng họp mentor | `NPC_mentor` |
 | Manager | Quản lý team, giao nhiệm vụ đầu tiên | Zone 5, phòng họp manager | `NPC_manager` |
 | Lan, Minh, Hà (tên tạm) | Đồng nghiệp trong team | Zone 5, khu team | `NPC_dong_nghiep_1..3` |
@@ -75,9 +75,9 @@ Người chơi tạo nhân vật trên một màn hình duy nhất trước khi 
 
 **Trang phục:** nhân vật bắt đầu với áo sơ mi thường. Khi nhận Áo Cam FPT ở cổng (zone 2), áo được mặc vào ngay, và các huy hiệu nhận về sau hiện trên ngực áo.
 
-**Cách xưng hô:** lời dẫn và giao diện gọi người chơi là "bạn". Người lớn tuổi hơn (chị Huyền, lễ tân, mentor, manager, đồng nghiệp) gọi "em"; người chơi xưng "em" và gọi "anh/chị". Tú và người chơi xưng "mình" – "cậu". Cách này không phụ thuộc giới tính đã chọn, nên không cần viết lời thoại hai phiên bản.
+**Cách xưng hô:** lời dẫn và giao diện gọi người chơi là "bạn". Người lớn tuổi hơn (chị Huyền, chị Nga, mentor, manager, đồng nghiệp) gọi "em"; người chơi xưng "em" và gọi "anh/chị". Tú và người chơi xưng "mình" – "cậu". Cách này không phụ thuộc giới tính đã chọn, nên không cần viết lời thoại hai phiên bản.
 
-**Chi tiết cá nhân của nhân vật dựa trên người thật** (chị Huyền, Prajith): nhóm tự viết, không chờ người thật xác nhận (có thay đổi thì sửa sau). Giữ nhẹ nhàng, thân thiện, không gây ngượng: không nói chuyện sức khỏe, gia đình, tiền bạc, hay chuyện làm họ trông thiếu chuyên nghiệp.
+**Chi tiết cá nhân của nhân vật dựa trên người thật** (chị Huyền, chị Nga, Prajith): nhóm tự viết, không chờ người thật xác nhận (có thay đổi thì sửa sau). Giữ nhẹ nhàng, thân thiện, không gây ngượng: không nói chuyện sức khỏe, gia đình, tiền bạc, hay chuyện làm họ trông thiếu chuyên nghiệp.
 
 ## Cơ chế chơi
 
@@ -105,8 +105,8 @@ Trước khi có app (zone 0 và đầu zone 1), giao diện chỉ hiện một 
 | Giá trị | Ô sáng khi người chơi | Zone |
 | --- | --- | --- |
 | Tôn trọng | Cảm ơn bác tài và nhường lối cho người xuống xe sau | 1 |
-| Chí công | Mang chiếc ví nhặt được đến trả lễ tân thay vì để lại | 3 |
-| Đồng đội | Gọi lễ tân qua App My FPT giúp Tú khi thẻ của Tú báo đỏ | 4 |
+| Chí công | Mang chiếc ví nhặt được đến trả chị Nga ở quầy lễ tân thay vì để lại | 3 |
+| Đồng đội | Nhắn chị Nga qua App My FPT giúp Tú khi thẻ của Tú báo đỏ | 4 |
 | Gương mẫu | Không cho người lạ đi ké qua cửa quẹt thẻ, chỉ đường cho họ về lễ tân | 4 |
 | Đổi mới | Tự đặt thêm một mục tiêu học tập ngoài lộ trình gợi ý ở phòng FSA | 4 |
 | Sáng suốt | Sắp xếp thứ tự ưu tiên công việc hợp lý khi gặp Manager | 5 |
@@ -135,7 +135,7 @@ Zone 0 là đoạn mở đầu chơi được: một điểm đón trong thành 
 
 | Đối tượng | Hoạt động | Kết quả |
 | --- | --- | --- |
-| Điện thoại (tự hiện khi vào zone) | Tin nhắn HR: số xe và giờ đón *[HR cung cấp nội dung tin nhắn]* | Mục tiêu "Tìm xe số 2" |
+| Điện thoại (tự hiện khi vào zone) | Tin nhắn của chị Nga (Tuyển dụng): số xe và giờ đón *[HR cung cấp nội dung tin nhắn]* | Mục tiêu "Tìm xe số 2" |
 | `INT_bien_xe_1..3` | Đọc biển số tuyến trên kính lái; xe số 2 là xe đi Hòa Lạc | Xe số 2: tìm được xe, Hiểu biết +3 |
 | `NPC_tai_xe_1`, `NPC_tai_xe_3` | Hỏi bác tài xe sai: bác chỉ sang xe số 2. Không bị phạt | |
 | Tú ở mái chờ (code đặt, đang xem điện thoại) | Tú bắt chuyện, xem bên dưới; sau đó Tú đi theo người chơi | Lựa chọn A: Kết nối +5 |
@@ -145,7 +145,7 @@ Zone 0 là đoạn mở đầu chơi được: một điểm đón trong thành 
 
 **Diễn biến**
 
-1. Người chơi xuất hiện ở `SPAWN_zone_00_start`, đồng hồ 06:30. Điện thoại rung: tin nhắn HR có số xe và giờ đón.
+1. Người chơi xuất hiện ở `SPAWN_zone_00_start`, đồng hồ 06:30. Điện thoại rung: tin nhắn của chị Nga (Tuyển dụng) có số xe và giờ đón.
 2. Tìm đúng xe: xem biển tuyến `INT_bien_xe_1..3`. Hỏi bác tài xe sai thì được chỉ sang xe số 2.
 3. Tú bắt chuyện ở mái chờ:
     - Tú: "Cậu cũng intern đợt này à? Mình là Tú. Hồi hộp quá, mình còn chưa biết xuống xe thì đi đâu..."
@@ -214,12 +214,12 @@ Người chơi nhận thẻ nhân viên, thứ mở được mọi cánh cửa p
 
 | Đối tượng | Hoạt động | Kết quả |
 | --- | --- | --- |
-| `NPC_le_tan`, `INT_quay_le_tan` | Mini-game **Kiểm tra hồ sơ**: phiếu thông tin điền sẵn có 1 chỗ sai (ví dụ sai tên team), người chơi tìm và sửa. Sau đó **chụp ảnh thẻ**: camera chân dung, chọn 1 trong 3 biểu cảm | **Thẻ nhân viên FPT** (in tên, vị trí, ảnh vừa chụp) và **Welcome Kit** *[HR: Welcome Kit thật gồm những gì]*; Hiểu biết +5 |
-| Chiếc ví đánh rơi (code đặt cạnh đôn lục giác, không có trong GLB) | Nhặt ví, rồi chọn: mang đến trả lễ tân, hoặc để lại chỗ cũ | Trả lễ tân: ô **Chí công**, Kết nối +3 |
+| `NPC_le_tan` (chị Nga), `INT_quay_le_tan` | Mini-game **Kiểm tra hồ sơ**: phiếu thông tin điền sẵn có 1 chỗ sai (ví dụ sai tên team), người chơi tìm và sửa. Sau đó **chụp ảnh thẻ**: camera chân dung, chọn 1 trong 3 biểu cảm | **Thẻ nhân viên FPT** (in tên, vị trí, ảnh vừa chụp) và **Welcome Kit** *[HR: Welcome Kit thật gồm những gì]*; Hiểu biết +5 |
+| Chiếc ví đánh rơi (code đặt cạnh đôn lục giác, không có trong GLB) | Nhặt ví, rồi chọn: mang đến quầy lễ tân trả chị Nga, hoặc để lại chỗ cũ | Trả ví: ô **Chí công**, Kết nối +3 |
 | `INT_hat_lua` | Đọc về các cá nhân, tập thể xuất sắc. Mini-game **Dòng thời gian**: kéo 5 mốc thành tựu vào đúng thứ tự năm *[HR cung cấp 5 mốc]* | Hiểu biết +10; hũ thủy tinh hiện số hạt lúa vàng đã nhặt |
 | Hạt lúa vàng × 2 | Sau chậu cọ cạnh quầy; góc sàn dưới chân cầu thang trang trí, cạnh lối vào Phòng Hạt Lúa (thành cầu thang kín nên hạt đặt trên chiếu nghỉ không nhìn thấy từ sàn) | |
 
-**Lời lễ tân (mẫu):** "Chào em, ngày đầu đúng không? Em kiểm tra giúp chị thông tin trên phiếu này nhé, có gì sai thì sửa luôn."
+**Chị Nga ở quầy (mẫu):** chị tự giới thiệu là người tuyển dụng đã liên lạc với người chơi, vui vì lần đầu gặp trực tiếp, hỏi tin nhắn hẹn xe có giúp người chơi lên đúng xe không, rồi: "Giờ tới giấy tờ nhé. Em kiểm tra giúp chị thông tin trên phiếu này, có gì sai thì sửa luôn." Toàn bộ lời thoại: `docs/dialogue_nga.md`.
 
 **Chuyển zone:** nhận thẻ và Phòng Hạt Lúa là bắt buộc; chiếc ví là tùy chọn. Đi về phía hành lang, người chơi xuất hiện ở `SPAWN_zone_04_from_zone_03`.
 
@@ -246,7 +246,7 @@ Zone 4 có hai tình huống lựa chọn quan trọng nhất game, đều xoay 
 
 - Tú: "Ơ, thẻ mình bị đỏ... Hay cậu quẹt giúp mình đi cùng luôn?"
 - "Ừ, đi cùng mình." → Tú qua được, nhưng chị Huyền nhắn: kể cả bạn bè cũng không nên đi ké. Không có ô.
-- "Để mình gọi lễ tân qua app." → lễ tân kích hoạt thẻ từ xa, thẻ Tú chuyển xanh. Ô **Đồng đội**, Kết nối +5.
+- "Để mình nhắn chị Nga qua app." → chị Nga kích hoạt thẻ từ xa và nhắn lại, thẻ Tú chuyển xanh. Ô **Đồng đội**, Kết nối +5.
 - "Cậu quay lại lễ tân hỏi thử xem." → Tú đi một mình, quay lại sau ít phút. Không có ô, không cộng điểm.
 
 **Tú chia tay:** sau phòng FSA, Tú nói: "Team mình ở tầng trên nữa. Hẹn gặp cậu lúc tan làm nhé!"
@@ -297,7 +297,7 @@ Game kết thúc lúc 17:30 bằng một thẻ "Ngày Đầu" tóm tắt những
 | Danh hiệu | Điều kiện |
 | --- | --- |
 | Gương Sáng Làng F | Sáng đủ 6 ô giá trị |
-| Đồng Đội Số 1 | Giúp Tú cả hai lần (lấy balo, gọi lễ tân kích hoạt thẻ) |
+| Đồng Đội Số 1 | Giúp Tú cả hai lần (lấy balo, nhắn chị Nga kích hoạt thẻ) |
 | Người Kết Nối | Kết nối từ 80 trở lên |
 | Mọt Sách Làng F | Hiểu biết từ 80 trở lên |
 | Nhà Thám Hiểm | Nhặt đủ 10 hạt lúa vàng |
@@ -315,8 +315,8 @@ Game có 11 phần thưởng: 6 lấy từ bảng ý tưởng, 5 là đề xuấ
 | Áo Cam FPT | Trang phục, mặc ngay | Zone 2, cổng | Chụp ảnh check-in | Bảng ý tưởng |
 | Huy hiệu Tinh thần Đồng đội | Huy hiệu trên áo | Zone 2, giếng làng | Kéo xong 3 gầu nước | Bảng ý tưởng |
 | Huy hiệu Tôn Đổi Đồng Chí Gương Sáng | Huy hiệu 6 ô trên áo | Zone 2, tượng Cuder | Làm xong quiz, đúng sai đều nhận | Bảng ý tưởng |
-| Thẻ nhân viên FPT | Vật phẩm, dùng ở cửa quẹt thẻ | Zone 3, lễ tân | Kiểm tra hồ sơ và chụp ảnh thẻ | Bảng ý tưởng |
-| Welcome Kit | Vật phẩm | Zone 3, lễ tân | Nhận cùng thẻ | Bảng ý tưởng |
+| Thẻ nhân viên FPT | Vật phẩm, dùng ở cửa quẹt thẻ | Zone 3, chị Nga ở quầy lễ tân | Kiểm tra hồ sơ và chụp ảnh thẻ | Bảng ý tưởng |
+| Welcome Kit | Vật phẩm | Zone 3, chị Nga ở quầy lễ tân | Nhận cùng thẻ | Bảng ý tưởng |
 | Ảnh check-in | Ảnh trong app và màn tổng kết | Zone 2, cổng | Chụp ảnh check-in | Đề xuất |
 | Sổ tay học tập | Vật phẩm | Zone 4, phòng FSA | Xong mini-game Lộ trình học | Đề xuất |
 | La bàn nghề nghiệp | Thẻ gợi ý hướng phát triển | Zone 5, Prajith | Trả lời đủ 4 câu | Đề xuất |
