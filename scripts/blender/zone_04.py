@@ -207,6 +207,7 @@ def build_doors(cols, rng):
 
 def build_markers(g):
     mk.spawn("zone_04_start", (11.0, 0.0, 0.0), yaw_deg=90, collection=g)
+    mk.spawn("zone_04_from_zone_03", (11.0, 0.0, 0.0), yaw_deg=90, collection=g)   # tên theo GDD (vào từ Hạt Lúa)
     mk.spawn("zone_04_from_zone_05", (UPPER[0] + 1.5, sum(FSA_Y) / 2, UP), yaw_deg=-90, collection=g)
     mk.trigger("zone_03_enter", (11.8, 0.0, 1.4), (0.6, 3.0, 2.8), g)
     mk.trigger("cua_quet_the", (sum(CARD_DOOR) / 2, 0.2, 1.2), (3.2, 2.2, 2.4), g)
@@ -223,6 +224,8 @@ def build_colliders(col):
     C("tuong_bac_phai", ((CARD_DOOR[1] + x1) / 2, y1 - 0.05, 1.8), (x1 - CARD_DOOR[1], 0.4, 3.6), col)
     C("tu_thap", (6, y0 - 0.35, 0.8), (12, 0.7, 1.6), col)
     C("dau_hanh_lang_tay", (x0 - 0.5, 0, 1.8), (0.3, 3, 3.6), col)
+    # đầu phía đông (sau TRIGGER_zone_03_enter x 11.5..12.1): chặn rơi khỏi bản đồ khi trigger không chạy
+    C("dau_hanh_lang_dong", (x1 + 0.15, 0, 1.8), (0.3, 3, 3.6), col)
     C("cua_quet_the", (sum(CARD_DOOR) / 2, y1, 1.3), (CARD_DOOR[1] - CARD_DOOR[0], 0.12, 2.6), col)
     # sảnh cầu thang
     hx0, hx1, hy0, hy1 = HALL

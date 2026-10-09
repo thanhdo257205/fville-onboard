@@ -175,6 +175,7 @@ def build_desks(cols, rng):
 
 def build_markers(g, intern):
     mk.spawn("zone_05_start", (-1.2, 0.0, 0.0), yaw_deg=90, collection=g)
+    mk.spawn("zone_05_from_zone_04", (-1.2, 0.0, 0.0), yaw_deg=90, collection=g)   # tên theo GDD (vào từ cửa FSA)
     x, y, yaw = intern
     r = math.radians(yaw)
     seat = (x + math.sin(r) * 1.0, y - math.cos(r) * 1.0)   # chỗ ngồi (phía -Y của bàn khi yaw 0)
@@ -217,6 +218,8 @@ def build_colliders(col, rooms):
     C("ke_o_vuong_1", (-7.6, -3.5, 1.0), (0.45, 1.3, 2.0), col)
     C("ke_o_vuong_2", (-2.0, -5.75, 0.8), (1.7, 0.45, 1.6), col)
     C("ban_tulip", (-4.2, -3.0, 0.4), (2.0, 2.0, 0.8), col)
+    for x, y in ((-1.0, 5.2), (-7.2, 5.2)):   # 2 chậu cọ khu nghỉ (build_break_area) — trước đây đi xuyên được
+        C(f"chau_cay_{x:+.0f}_{y:+.0f}", (x, y, 0.6), (0.8, 0.8, 1.2), col)
     for key, (x0, x1, y0, y1) in rooms.items():
         cx = (x0 + x1) / 2
         d0, d1 = cx - ROOM_DOOR / 2, cx + ROOM_DOOR / 2
