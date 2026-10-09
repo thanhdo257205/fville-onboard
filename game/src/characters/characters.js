@@ -12,7 +12,7 @@ export class Characters {
   constructor(cfg) { this.cfg = cfg; this.swap = {}; }
   role(name) { return this.cfg.roles[name]; }
   roles() { return Object.entries(this.cfg.roles).filter(([k]) => !k.startsWith("_")); }
-  roleOfNode(nodeName) { return this.roles().find(([, r]) => r.place === "node" && [].concat(r.node).includes(nodeName))?.[0] ?? null; }
+  roleOfNode(nodeName) { return this.roles().find(([, r]) => (r.place === "node" || r.place === "near_node") && [].concat(r.node).includes(nodeName))?.[0] ?? null; }
   displayName(role) { return this.cfg.names?.[lang]?.[role] ?? this.cfg.names?.en?.[role] ?? role; }
   model(id) { return this.cfg.models[this.swap[id] ?? id]; }
   tagConfig() { return this.cfg.name_tags || {}; }

@@ -48,7 +48,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Kiểm tra bằng `__game` (Chromium headless): cả 4 zone, đặt người chơi sau cây / cạnh chậu cọ → so ảnh tắt/bật mờ
     cây; chơi trọn mạch zone 0 → 3 (11 nhiệm vụ, 7 mini-game, cảnh lên xe, lối zone 4 vẫn khóa) trên bản dev và bản
     build: 32 lần hộp thoại / mini-game / app mở đều ẩn dòng hướng dẫn; console chỉ còn dòng `[kiểm tra dữ liệu] OK`.
-- **Camera hội thoại (09/10/2026, trên `main`, chưa deploy `gh-pages`):** `game/src/player/talkcam.js`.
+- **Camera hội thoại (09/10/2026):** `game/src/player/talkcam.js`.
   - Nói chuyện với NPC / Tú: câu đầu tiên của nhân vật → camera chuyển êm 0,4 s sang góc qua vai người chơi, nhìn vào
     mặt người đối thoại: người đối thoại cao ~1/3 khung hình, mặt ở điểm 1/3 (trên, phía không có người chơi), chân nằm
     trên hộp thoại. Đóng hội thoại → chuyển êm 0,4 s về camera chơi (yaw / pitch / khoảng cách như trước khi mở).
@@ -66,6 +66,27 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     Ms. Nga 2/3. Sau: không điểm nào bị che, người đối thoại cao 0,35–0,36 khung (0,51–0,62 khi bị chắn phải thu gần),
     mặt đúng điểm 1/3, camera không cắt `COL_`; đóng hội thoại camera về chỗ cũ (lệch ≤ 4 cm, hướng trùng). Chuyển
     0,4 s = 24 khung ở 60 FPS, không giật. Chơi trọn zone 0 → 3 vẫn qua, console sạch. Xem trạng thái: `__game.talkCam`.
+- **Sửa sau lần kiểm tra camera hội thoại (09/10/2026):**
+  - Camera hội thoại coi tán cây / chậu cây (plant của `seeThrough`) và mọi mesh hiển thị (mái hiên, biển hiệu, ban công…
+    không có `COL_`) là vật cản như tường: lùi qua là dừng trước 0,2 m; góc không dùng nếu camera / điểm qua vai nằm trong
+    hoặc sát (< 0,15 m) bề mặt, trong tán cây, hay camera lùi chưa được 0,3 m. Thử 2 vai × 2 độ cao; không góc nào hợp lệ
+    → giữ camera chơi (vd người chơi ép sát bó vỉa, sau lưng là thân xe). `__game.talkCam.pick` ghi lý do từng góc.
+  - `seeThrough`: camera nằm hẳn trong tán (cụm lá to hơn `near_m`) → mờ cây đó. Kiểm tra "trong tán" theo từng mảnh kín
+    (cụm lá, thân, chậu): tia từ camera cắt mặt mảnh đó số lẻ lần (các cụm lá chồng nhau nên không gộp cả cây); khớp
+    343/343 điểm thử với đếm chẵn lẻ 3 hướng khác. Camera chơi chui vào tán cây số 8 zone 0 (đúng hiện tượng "cả màn hình
+    xanh lá") → cây mờ hẳn.
+  - zone_00: mặt tiền dãy nhà phố bắc (mái hiên vải, biển hiệu, ban công có chậu bụi) gộp chung mesh nhà, không có `COL_`
+    → camera chơi lùi vào trong (cách mesh 0,02 m). Thêm hộp chắn camera `camera_mat_tien_bac` trong
+    `data/collision.json` (z −7 … −5,75, từ cao 2,2 m trở lên — người chơi vẫn đi dưới mái hiên): camera dừng ở z −5,5.
+  - Bác tài zone_01 dời ra vỉa hè cạnh cửa xe, phía đầu xe (`data/characters.json` roles.tai_xe: `near_node` NPC_tai_xe
+    + offset, yaw −30° nhìn về phía vỉa hè / Ms. Huyền); điểm tương tác theo chỗ bác đứng (`interactables.json` `at`);
+    cảnh xe vào trạm: bác "xuống trước" cùng Ms. Huyền (`cutscenes.json` off_before_us, bỏ ride_along). Lời thoại và ô
+    Tôn trọng giữ nguyên (đã thử: chọn câu cảm ơn → `respect`, `z1_thank_driver`). Camera hội thoại thấy mặt bác.
+  - Lời nhắc E với người (NPC_ / Tú): kiểm tra đường nhìn ngang tầm mặt (BVH `COL_`) — đứng trong / bên kia thân xe, sau
+    vách kính mái chờ thì không hiện; qua quầy lễ tân vẫn hiện.
+  - Thử: Ms. Huyền 8 hướng có / không có Tú (phía vỉa hè: góc qua vai, camera cách bề mặt ≥ 0,62 m; sát bó vỉa: giữ camera
+    chơi; trong thân xe: không còn lời nhắc), 7 tình huống camera hội thoại cũ (kể cả bác tài zone_01) đều bật, không bị
+    che; chơi trọn zone 0 → 3 (dev + bản build), console sạch.
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
@@ -117,10 +138,6 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
 - Lối sang zone 4 đang khóa ("This way opens in the next update"). Còn 3 hạt lúa vàng dành cho zone 4–5.
 - nga: tay lún thân 4–6 cm ở talk, talk_2, nod, think, sit_down (cùng mức huyen, do dùng lại animation của prajith).
-- Bác tài zone_01 (`NPC_tai_xe`, vai `tai_xe`) đứng bên trong vỏ xe kín (`xe_bus_mesh_1`): từ bên ngoài không góc nào
-  thấy được bác (đã dò 84 vị trí camera quanh chỗ người chơi đứng nói chuyện) — camera chơi cũng không thấy. Camera
-  hội thoại giữ camera chơi cho cảnh này. Chờ quyết định cách sửa: dời vai `tai_xe` ra bậc cửa / vỉa hè bằng dữ liệu
-  (`data/characters.json`: `place: "near_node"` + offset, như bác tài zone 0) hoặc mở cửa / nội thất xe trong Blender.
 
 ## Đã quyết
 - 09/10/2026: **mọi nhân vật người thật đưa vào game đều đã đồng ý dùng hình, kể cả nhân vật thêm sau này** — không
@@ -138,8 +155,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Việc tiếp theo
 1. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
-   `data/scene_fixes.json` → `see_through`). Deploy camera hội thoại khi người dùng đồng ý; chỉnh khung hình bằng các
-   hằng số đầu `game/src/player/talkcam.js` (`FRAME_FRAC`, `FACE_AT`, `SHOULDER`, `BLEND_S`).
+   `data/scene_fixes.json` → `see_through`), camera hội thoại (chỉnh khung hình bằng các hằng số đầu
+   `game/src/player/talkcam.js`: `FRAME_FRAC`, `FACE_AT`, `SHOULDER`, `BLEND_S`).
 2. Chơi thử với 3–5 người thật trên laptop văn phòng (điều kiện để sang Giai đoạn 2, theo GDD).
 3. Giai đoạn 2: zone 4 (cửa quẹt thẻ, phòng FSA; lựa chọn nhắn Ms. Nga qua app — câu dự kiến trong
    `docs/dialogue_nga.md`), zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc), màn tổng kết, danh hiệu,

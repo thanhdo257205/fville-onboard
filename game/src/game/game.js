@@ -388,8 +388,11 @@ export class Game {
     if (!partner || this.mode !== "dialogue" || n.speaker === "narrator" || n.style === "phone") return;
     const obstacles = this.npcs.filter((x) => x !== partner).map((x) => x.capsule());
     if (this.follower && this.follower !== partner) obstacles.push(this.follower.capsule());
-    this.talkCam.engage(partner, { player: this.player, collider: this.zone.collider, obstacles: obstacles.filter(Boolean), view: this.zone.view });
+    this.talkCam.engage(partner, { player: this.player, env: this.talkEnv(), obstacles: obstacles.filter(Boolean) });
   }
+
+  // vật cản cho camera hội thoại: COL_, lưới mesh hiển thị, tán cây / chậu cây (seeThrough)
+  talkEnv() { return { collider: this.zone.collider, view: this.zone.view, see: this.seeThrough }; }
 
   async runMinigame(id) {
     const prev = this.mode;
@@ -432,7 +435,7 @@ export class Game {
     if (this.cameraOverride) { this.cameraOverride(dt); this.talkCam.overridden(); }
     else {
       this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider);
-      this.talkCam.apply(dt, this.cam.target, { player: this.player, collider: this.zone.collider });
+      this.talkCam.apply(dt, this.cam.target, { player: this.player, env: this.talkEnv() });
     }
     // cây che: lúc nói chuyện thì xét đường nhìn tới người đối thoại
     this.seeThrough.update(dt, this.camera.position, this.talkCam.active ? this.talkCam.partner.character.root.position : this.player.position);

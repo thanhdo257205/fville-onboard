@@ -98,12 +98,13 @@
     {
       "zone": "zone_01",
       "node": "NPC_tai_xe",
-      "radius": 2.5,
+      "at": [-6.0, 0.15, -4.55],
+      "radius": 2.2,
       "prompt": {
         "en": "Talk to the bus driver"
       },
       "action": "dialogue:tai_xe_thanks",
-      "_ly_do": "Bác tài đứng trong xe (cao 1 m); người chơi tới gần nhất 2,15 m → bán kính 2,5 m."
+      "_ly_do": "Bác tài đứng trên vỉa hè cạnh cửa xe (characters.json roles.tai_xe: near_node NPC_tai_xe + offset) → điểm tương tác = chỗ bác đứng (at), bán kính như NPC đứng ngoài khác."
     },
     {
       "zone": "zone_01",

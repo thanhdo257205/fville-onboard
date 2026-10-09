@@ -6,8 +6,10 @@
 // hơn, không bị Tú / NPC khác che; gần bằng nhau thì giữ bên camera đang đứng (đỡ quay nhiều).
 // Camera không thấp hơn tầm mắt người chơi (vd bác tài đứng trên bậc xe cao 1 m: đường thẳng qua vai đổ dốc xuống, thân
 // xe che mất). Chọn góc: 2 vai × 2 độ cao, chấm điểm theo khoảng lùi được, mặt / ngực người đối thoại có bị bối cảnh
-// (mesh hiển thị có BVH, trừ cây vì cây tự mờ) hay Tú / NPC khác che không. Không góc nào thấy mặt (vd bác tài zone_01
-// đứng trong vỏ xe kín) → giữ camera chơi.
+// (mesh hiển thị có BVH, trừ cây vì cây tự mờ) hay Tú / NPC khác che không.
+// Vật cản khi đặt camera: COL_, mesh hiển thị (mái hiên, biển hiệu… không có COL_) và tán cây / chậu cây của seeThrough —
+// không đặt camera bên trong hay sát (< 0,15 m) bề mặt nào, không lùi qua chúng (thu gần lại). Góc hợp lệ: thấy mặt, điểm
+// qua vai và camera không nằm trong vật / tán cây, camera lùi được ít nhất 0,3 m. Không góc nào hợp lệ → giữ camera chơi.
 // Đóng hội thoại → chuyển êm về camera chơi (yaw / pitch / khoảng cách giữ nguyên như trước khi mở).
 import * as THREE from "three";
 import { blocked } from "../world/collision.js";
@@ -21,18 +23,34 @@ const MIN_BACK = 0.8;         // camera lùi sau điểm qua vai ít nhất (m) 
 const MAX_DIST = 6;           // camera cách mặt người đối thoại tối đa (m)
 const PAD = 0.2;              // dừng trước tường / quầy
 const LIFTS = [0, 0.5];       // phương án độ cao camera (m, cộng thêm): người đối thoại đứng cao / sau cửa xe → thử nâng
+const CLEAR = 0.15;           // camera / điểm qua vai cách bề mặt gần nhất ít nhất (m)
+const MIN_FREE = 0.3;         // camera lùi sau điểm qua vai ít nhất (m) khi bị chắn — ít hơn thì góc đó không dùng
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _ray = new THREE.Ray();
 const _v = new THREE.Vector3();
 
-// khoảng trống (m) từ a theo hướng tới b trước khi chạm COL_ (không có giới hạn tối thiểu như clampCamera)
-function freeAlong(collider, a, b) {
+// các BVH vật cản của zone: COL_, lưới mesh hiển thị (zone.view), tán cây (seeThrough)
+const bvhs = (env) => [env.collider?.geometry.boundsTree, env.view?.geometry.boundsTree, env.see?.bvh].filter(Boolean);
+
+// khoảng trống (m) từ a theo hướng tới b trước khi chạm vật cản (không có giới hạn tối thiểu như clampCamera)
+function freeAlong(env, a, b, all = true) {
   const d = _v.subVectors(b, a), L = d.length();
   if (L < 1e-4) return 0;
   _ray.set(a, d.divideScalar(L));
-  const hit = collider.geometry.boundsTree.raycastFirst(_ray, THREE.DoubleSide, 0, L);
-  return hit ? Math.max(0, hit.distance - PAD) : L;
+  let near = L + PAD;
+  for (const bvh of all ? bvhs(env) : [env.collider.geometry.boundsTree]) {
+    const hit = bvh.raycastFirst(_ray, THREE.DoubleSide, 0, L);
+    if (hit) near = Math.min(near, hit.distance);
+  }
+  return Math.max(0, Math.min(L, near - PAD));
+}
+
+// khoảng cách từ p tới bề mặt vật cản gần nhất (≤ 1 m)
+function clearance(env, p) {
+  let best = Infinity;
+  for (const bvh of bvhs(env)) { const h = bvh.closestPointToPoint(p, {}, 0, 1); if (h) best = Math.min(best, h.distance); }
+  return best;
 }
 
 // khoảng cách ngắn nhất giữa đoạn p→q và trục đứng của capsule c ({x, z, y, height})
@@ -64,7 +82,7 @@ export class TalkCamera {
 
   get active() { return !!this.partner && (this.goal === 1 || this.t < 1); }
 
-  // ctx: { player (Player), collider, obstacles: capsule NPC khác / Tú, view: lưới bối cảnh có BVH (che tầm nhìn) }
+  // ctx: { player (Player), env: { collider, view, see }, obstacles: capsule NPC khác / Tú }
   engage(partner, ctx) {
     if (this.goal === 1 && this.partner === partner) return;
     const prev = this.partner;
@@ -83,13 +101,13 @@ export class TalkCamera {
   }
 
   // chuyển zone: bỏ ngay (nhân vật cũ đã bị dọn)
-  reset() { this.partner = null; this.goal = 0; this.t = 1; this.from = null; }
+  reset() { this.partner = null; this.goal = 0; this.t = 1; this.from = null; this.env = null; }
 
   // camera riêng của mini-game (chụp ảnh) vừa điều khiển → chuyển tiếp từ chỗ camera đang đứng
   overridden() { this._overridden = true; }
 
   // tư thế hội thoại cho vai `side`, nâng `lift` → { pos, look, shoulder, face, free, want }
-  pose(side, lift, player, collider) {
+  pose(side, lift, player, env) {
     const ch = this.partner.character, q = ch.root.position, H = ch.model.height_m;
     const P = player.position, ph = player.character.model.height_m;
     const f = new THREE.Vector3(q.x - P.x, 0, q.z - P.z);
@@ -107,7 +125,7 @@ export class TalkCamera {
     const desired = face.clone().addScaledVector(dir, want);
     desired.y = Math.max(desired.y, shoulder.y) + lift;               // không nhìn từ dưới tầm mắt lên
     const back = desired.clone().sub(shoulder), full = back.length();
-    const free = freeAlong(collider, shoulder, desired);              // bị chắn → thu gần lại
+    const free = freeAlong(env, shoulder, desired);                   // bị chắn (tường, mái hiên, tán cây) → thu gần lại
     const pos = shoulder.clone().addScaledVector(back.divideScalar(full), free);
     const look = this.aim(pos, face, side);
     return { pos, look, shoulder, face, free, want: full };
@@ -132,8 +150,10 @@ export class TalkCamera {
     return look;
   }
 
-  // chọn vai + độ cao → true nếu có góc thấy mặt người đối thoại
-  pick({ player, collider, obstacles = [], view = null }) {
+  // chọn vai + độ cao → true nếu có góc hợp lệ (thấy mặt, không nằm trong vật / tán cây)
+  pick({ player, env, obstacles = [] }) {
+    this.env = env;
+    const view = env.view;
     const t0 = performance.now();
     const cur = this.camera.position, P = player.position;
     const ch = this.partner.character, q = ch.root.position, H = ch.model.height_m;
@@ -144,11 +164,15 @@ export class TalkCamera {
     const at = (y) => new THREE.Vector3(q.x, q.y + H * y, q.z);
     const hidden = (from, y) => !!view && blocked(view, from, at(y));
     const score = (side, lift) => {
-      const p = this.pose(side, lift, player, collider);
+      const p = this.pose(side, lift, player, env);
       let s = Math.min(1, p.free / Math.max(p.want, 1e-3));                   // lùi được bao nhiêu so với mong muốn
-      if (freeAlong(collider, head, p.shoulder) < p.shoulder.distanceTo(head) - 1e-3) s -= 2;   // điểm qua vai sau tường
+      // góc không dùng được: điểm qua vai sau vật / trong tán, camera sát bề mặt / trong tán, lùi chưa được 0,3 m, không thấy mặt
+      const why = [];
+      if (freeAlong(env, head, p.shoulder) + PAD < p.shoulder.distanceTo(head) - 1e-3 || clearance(env, p.shoulder) < CLEAR / 2 || env.see?.containing(p.shoulder)) why.push("vai");
+      if (clearance(env, p.pos) < CLEAR || env.see?.containing(p.pos)) why.push("sát vật");
+      if (p.free < MIN_FREE) why.push("không lùi được");
       const faceHidden = hidden(p.pos, 0.93);
-      if (faceHidden) s -= 1.5;                                               // mặt bị che
+      if (faceHidden) { s -= 1.5; why.push("không thấy mặt"); }              // mặt bị che
       if (hidden(p.pos, 0.7)) s -= 0.5;                                       // ngực bị che
       for (const o of obstacles) {                                            // Tú / NPC khác che mặt / ngực
         if (!o) continue;
@@ -158,24 +182,24 @@ export class TalkCamera {
       if (side === camSide) s += 0.15;
       if (side === 1) s += 0.05;
       if (lift === 0) s += 0.1;
-      return s;
+      return { s, why };
     };
     let best = null;
     const all = {};
     for (const side of [1, -1]) for (const lift of LIFTS) {
-      const s = score(side, lift);
-      all[`${side > 0 ? "R" : "L"}${lift}`] = +s.toFixed(2);
-      if (!best || s > best.s) best = { s, side, lift, seen: !hidden(this.pose(side, lift, player, collider).pos, 0.93) };
+      const { s, why } = score(side, lift);
+      all[`${side > 0 ? "R" : "L"}${lift}`] = why.length ? why.join("+") : +s.toFixed(2);
+      if (!why.length && (!best || s > best.s)) best = { s, side, lift };
     }
-    this.info = { ...all, camSide, seen: best.seen, ms: +(performance.now() - t0).toFixed(1) };
-    if (!best.seen) return false;
+    this.info = { ...all, camSide, ok: !!best, ms: +(performance.now() - t0).toFixed(1) };
+    if (!best) return false;
     this.side = best.side;
     this.lift = best.lift;
     return true;
   }
 
   // gọi mỗi khung sau khi camera chơi đã cập nhật (camera đang ở tư thế chơi, nhìn vào `gameLook`)
-  apply(dt, gameLook, { player, collider }) {
+  apply(dt, gameLook, { player, env }) {
     const cam = this.camera;
     if (this._overridden) {        // mini-game vừa đặt camera riêng → chuyển tiếp từ đó
       this._overridden = false;
@@ -190,7 +214,7 @@ export class TalkCamera {
     this.t = Math.min(1, this.t + dt / BLEND_S);
     const e = ease(this.t);
     let pos, look, w;
-    const talk = this.partner ? this.pose(this.side, this.lift, player, collider) : null;
+    const talk = this.partner && this.env ? this.pose(this.side, this.lift, player, this.env) : null;
     const shoulder = talk?.shoulder;
     if (this.goal === 1) ({ pos, look } = talk);
     else { pos = cam.position.clone(); look = gameLook.clone(); }
@@ -202,7 +226,7 @@ export class TalkCamera {
       const P = player.position;
       const head = new THREE.Vector3(P.x, P.y + player.character.model.height_m * EYE, P.z);
       const pivot = shoulder ? head.lerp(shoulder, w) : head;
-      const free = freeAlong(collider, pivot, pos), L = pivot.distanceTo(pos);
+      const free = freeAlong(env, pivot, pos, false), L = pivot.distanceTo(pos);   // chỉ COL_ như camera chơi (2 đầu khớp)
       if (free < L) pos = pivot.clone().add(pos.clone().sub(pivot).multiplyScalar(free / L));
     } else w = this.goal;
     cam.position.copy(pos);

@@ -3,10 +3,11 @@
 // 'actor' = nhân vật do code đặt (vd Tú). Chọn đối tượng gần nhất.
 import * as THREE from "three";
 import { inTrigger, worldPos } from "../world/zone.js";
+import { blocked } from "../world/collision.js";
 import { tx } from "../content/content.js";
 
 const IN_AREA_D = 1.0;  // m
-const MAX_DY = 3.0;   // chênh cao tối đa (vd bác tài trong xe cao 1 m, biển số tuyến trên kính lái xe bus ~3 m)
+const MAX_DY = 3.0;   // chênh cao tối đa (vd biển số tuyến trên kính lái xe bus ~3 m)
 
 const GOLD = new THREE.MeshToonMaterial({ color: 0xf2c14e, emissive: 0x8a5a00, emissiveIntensity: 0.55 });
 
@@ -188,10 +189,21 @@ export class Interaction {
       // đứng trong vùng (area) = trong tầm, tính như cách tối đa 1 m → vật nhỏ sát chân (vd hạt lúa cạnh quầy lễ tân) vẫn được chọn
       if (e.trigger && inTrigger(e.trigger, p)) d = Math.min(h, IN_AREA_D);
       if (pos && Math.abs(pos.y - playerPos.y) <= MAX_DY && h <= e.radius) d = Math.min(d, h);
-      if (d < bestD) { bestD = d; best = e; }
+      if (d < bestD && !this.hiddenPerson(e, playerPos)) { bestD = d; best = e; }
     }
     this.current = best;
     return best ? tx(best.item.prompt) : null;
+  }
+
+  // nói chuyện với người (NPC_ / Tú) mà bị COL_ chắn giữa hai người (vd đứng bên kia thân xe) → không hiện lời nhắc.
+  // Tia ngang tầm mặt (qua được quầy lễ tân cao 1,1 m); bỏ 0,3 m sát người kia (blocked).
+  hiddenPerson(e, playerPos) {
+    const it = e.item;
+    if (!it.actor && !it.node?.startsWith("NPC_")) return false;
+    const who = it.actor === "tu" ? this.game.follower?.character.root.position : this.npcFor(e)?.character.root.position ?? e.pos;
+    if (!who) return false;
+    const eye = playerPos.clone().setY(playerPos.y + 1.5), face = who.clone().setY(who.y + 1.45);
+    return blocked(this.game.zone.collider, eye, face);
   }
 
   // NPC trong zone ứng với đối tượng (để quay mặt / diễn khi nói)

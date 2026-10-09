@@ -1,5 +1,15 @@
 {
   "_ghi_chu": "Chỉnh va chạm bằng code (KHÔNG sửa GLB bối cảnh). Mỗi zone: 'remove' = bỏ hộp COL_ khỏi va chạm (vẫn ẩn), 'add' = hộp mới, toạ độ glTF (m, Y hướng lên): center [x, y, z], size [rộng X, cao Y, sâu Z].",
+  "zone_00": {
+    "add": [
+      {
+        "name": "camera_mat_tien_bac",
+        "center": [0.0, 6.1, -6.375],
+        "size": [60.8, 7.8, 1.25]
+      }
+    ],
+    "_add_ly_do": "Mặt tiền dãy nhà phố bắc (COL_nha_bac ở z −7): mái hiên vải (nhô 1,15 m, cao 2,26–2,9 m), biển hiệu (2,8–3,4 m), ban công có chậu bụi (nhô 0,9 m mỗi tầng) gộp chung mesh nhà, không có COL_ → camera chơi / camera hội thoại lùi vào trong (cả màn hình xanh lá / biển hiệu). Hộp chắn camera z −7 … −5,75, chỉ từ cao 2,2 m trở lên (người chơi cao 1,75 m: vẫn đi dưới mái hiên được), x −30,4 … 30,4 (giữa COL_bien_tay / COL_bien_dong)."
+  },
   "zone_01": {
     "remove": [
       "COL_gian_leo"

@@ -112,6 +112,7 @@ export class SeeThrough {
     this._dir = new THREE.Vector3();
     this._right = new THREE.Vector3();
     this._cp = {};
+    this._upRay = new THREE.Ray(new THREE.Vector3(), new THREE.Vector3(0.013, 1, 0.021).normalize());   // lệch nhẹ: không trượt cạnh
   }
 
   // zoneCfg: data/scene_fixes.json → <zone>.see_through ({ add: [{ mesh, boxes: [{center, size}] }] })
@@ -163,8 +164,9 @@ export class SeeThrough {
     }
     for (let i = 0; i < all.length; i++) parts[all[i].pi].plantOf[all[i].ci] = ids.get(find(i)) ?? 0;
     // số cây theo đỉnh (attribute cho shader) + lưới tam giác thế giới có BVH (dò che khuất)
-    const tri = [], triPlant = [];
+    const tri = [], triPlant = [], triComp = [];
     const v = new THREE.Vector3();
+    let compBase = 0;
     for (const p of parts) {
       const geo = p.mesh.geometry, pos = geo.attributes.position, idx = geo.index;
       const plant = new Float32Array(pos.count);
@@ -178,8 +180,10 @@ export class SeeThrough {
           v.fromBufferAttribute(pos, idx ? idx.getX(t + k) : t + k).applyMatrix4(p.mesh.matrixWorld);
           tri.push(v.x, v.y, v.z);
           triPlant.push(plant[a]);
+          triComp.push(compBase + p.compOf[a]);     // mảnh kín (cụm lá, thân, chậu…) → kiểm tra camera trong tán
         }
       }
+      compBase += p.boxes.length;
       patchMaterial(p.mesh.material);
       hookOutline(p.mesh);
     }
@@ -189,11 +193,27 @@ export class SeeThrough {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(tri, 3));
     this.vertPlant = Int32Array.from(triPlant);   // MeshBVH sắp lại index (không đổi đỉnh) → tra cây theo đỉnh
+    this.vertComp = Int32Array.from(triComp);
     this.bvh = new MeshBVH(g);
     return this.info();
   }
 
   plantOfFace(face) { return this.vertPlant[this.bvh.geometry.index.getX(face * 3)]; }
+
+  // điểm p nằm bên trong cây nào: mỗi mảnh (cụm lá, thân, chậu) là khối kín → tia từ p cắt mặt của mảnh đó số lẻ lần
+  // = p ở trong mảnh (đếm riêng từng mảnh vì các cụm lá chồng lên nhau). Không có → 0
+  containing(p) {
+    if (!this.bvh) return 0;
+    this._upRay.origin.copy(p);
+    const idx = this.bvh.geometry.index, crossings = new Map(), plantOf = new Map();
+    for (const h of this.bvh.raycast(this._upRay, THREE.DoubleSide, 0, 200)) {
+      const v = idx.getX(h.faceIndex * 3), comp = this.vertComp[v];
+      crossings.set(comp, (crossings.get(comp) || 0) + 1);
+      plantOf.set(comp, this.vertPlant[v]);
+    }
+    for (const [comp, n] of crossings) if (n % 2) return plantOf.get(comp);
+    return 0;
+  }
 
   // cam: vị trí camera; player: chân người chơi (null = không dò, vd đang cảnh chuyển → cây hiện lại dần)
   update(dt, cam, player) {
@@ -212,6 +232,9 @@ export class SeeThrough {
       // lá sát ống kính: không nằm trên đường nhìn nhưng che kín một góc màn hình
       const near = this.bvh.closestPointToPoint(cam, this._cp, 0, c.near_m);
       if (near) this.hits.add(this.plantOfFace(near.faceIndex));
+      // camera nằm hẳn trong tán (cụm lá to hơn near_m): cả màn hình xanh lá → mờ cây đang chứa camera
+      const inside = this.containing(cam);
+      if (inside) this.hits.add(inside);
     }
     for (const id of this.hits) if (!this.fades.has(id)) this.fades.set(id, { f: 0, since: 0 });
     const step = dt / Math.max(c.fade_s, 1e-3);
