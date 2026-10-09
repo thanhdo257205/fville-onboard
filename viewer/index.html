@@ -54,6 +54,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { OutlineEffect } from "three/addons/effects/OutlineEffect.js";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import { applyTint } from "./tint.js";
 
 const $ = (id) => document.getElementById(id);
 // Bản đồ hoạ cao đang tạm dừng (2026-10-08): ẩn chọn mức + lightmap. Đổi thành true để bật lại.
@@ -142,8 +143,10 @@ async function loadConfig() {
 
 // GLB theo mức đồ hoạ đang xem: Thấp = bản 6k, Cao = bản 15k (models.<id>.glb.low|high)
 // model chờ người thật đồng ý (consent_pending) không có trên bản công khai → dùng models.<id>.fallback
+// (bản web: make_site.py đánh dấu glb_excluded → đổi thẳng, không tải thử để khỏi lỗi 404)
 function getModel(id) {
   const m = cfg.models[id], glb = m.glb;
+  if (m.consent_pending && m.fallback && m.glb_excluded) return getModel(m.fallback);
   const path = typeof glb === "string" ? glb : glb[$("tier").value] ?? glb.high ?? glb.low;
   if (!modelCache.has(path)) {
     modelCache.set(path, loader.loadAsync("../" + path).catch((e) => {
@@ -164,6 +167,7 @@ function styleChar(c) {
     mesh.material = toon ? new THREE.MeshToonMaterial({ ...p, gradientMap: grad })
                          : new THREE.MeshStandardMaterial({ ...p, roughness: 1, metalness: 0 });
   });
+  if (c.tint) applyTint({ root: c.obj }, c.tint);     // màu áo / quần riêng của vai (characters.json roles.<vai>.tint)
 }
 
 function clearChars() {
@@ -187,14 +191,16 @@ async function addChar(pos, yawDeg, role, label, modelId = null) {
   tag.visible = $("tags").checked;
   obj.add(tag);
   scene.add(obj);
-  const c = { obj, mixer: new THREE.AnimationMixer(obj), id, clips: g.animations, mats, tag, offset: Math.random() };
+  const c = { obj, mixer: new THREE.AnimationMixer(obj), id, clips: g.animations, mats, tag, offset: Math.random(),
+              tint: role ? cfg.roles[role]?.tint : null };
   styleChar(c);
   chars.push(c);
   play(c, $("anim").value || "idle");
   return c;
 }
 
-// ?compare=prajith,huyen — đặt các model cạnh nhau trước điểm xuất hiện, quay mặt về camera (so tỉ lệ, logo áo)
+// ?compare=prajith,huyen — đặt các model cạnh nhau trước điểm xuất hiện, quay mặt về camera (so tỉ lệ, logo áo).
+// Id vai cũng được (vd ?compare=thao,le_tan,prajith): model của vai, kèm tint và tên hiển thị của vai.
 const COMPARE = (new URLSearchParams(location.search).get("compare") || "").split(",").filter(Boolean);
 async function placeCompare() {
   let spawn = null;
@@ -204,10 +210,13 @@ async function placeCompare() {
   const fwd = new THREE.Vector3(-Math.sin(r), 0, -Math.cos(r));         // hướng nhìn của điểm xuất hiện
   const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0));
   const center = base.clone().addScaledVector(fwd, 2.5);
-  const ids = COMPARE.filter((id) => cfg.models[id]);
-  for (const [i, id] of ids.entries()) {
+  const isRole = (k) => !k.startsWith("_") && !cfg.models[k] && cfg.roles[k];
+  const ids = COMPARE.filter((k) => cfg.models[k] || isRole(k));
+  for (const [i, k] of ids.entries()) {
     const pos = center.clone().addScaledVector(right, (i - (ids.length - 1) / 2) * 0.85);
-    await addChar(pos, yaw + 180, null, `${id} · ${cfg.models[id].height_m} m`, id);
+    const id = isRole(k) ? cfg.roles[k].model : k;
+    if (isRole(k)) await addChar(pos, yaw + 180, k, `${displayName(k)} · ${cfg.models[id].height_m} m`);
+    else await addChar(pos, yaw + 180, null, `${id} · ${cfg.models[id].height_m} m`, id);
   }
   controls.target.copy(center).add(new THREE.Vector3(0, 0.95, 0));
   camera.position.copy(center).addScaledVector(fwd, -3.0).add(new THREE.Vector3(0, 1.15, 0));

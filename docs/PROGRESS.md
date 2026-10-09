@@ -63,8 +63,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     gọng kính, môi — chỉ giảm da phẳng); thử nhanh bằng `build_character.py --decimate-only`.
   - **Chưa công khai:** `nga.glb` và `nga_portrait.png` chỉ có trên máy làm việc (.gitignore), không lên `main` lẫn
     `gh-pages`. `data/characters.json` → `models.nga.consent_pending` + `fallback: prajith`: game và viewer thiếu file
-    thì dùng Prajith cho vai này (tên vẫn là Ms. Nga); `vite build`, `make_site.py` bỏ model nga; `privacy_scan.py` báo
-    lỗi nếu lỡ stage.
+    thì dùng Prajith cho vai này (tên vẫn là Ms. Nga) và **không hiện chân dung** (hộp thoại le_tan, tin nhắn hr) — không
+    hiện mặt người khác dưới tên chị; `vite build`, `make_site.py` bỏ model nga; `privacy_scan.py` báo lỗi nếu lỡ stage.
+    Bản dev dò file bằng HEAD; bản build (`import.meta.env.PROD`) đổi thẳng sang fallback, không request → console sạch.
+    Viewer bản web: `make_site.py` đánh dấu `glb_excluded` trong `dist/data/characters.json` → viewer không tải thử.
+  - Quần xanh than (`roles.le_tan.tint.pants = #2f3b55`) để khác Ms. Huyền; áo giữ cam. Tint không loang sang áo/logo.
+    Loang nhẹ: vài đốm xanh trên chỗ sáng của giày (da giày sáng, ít màu như quần kem) và thắt lưng còn kem lẫn vài mảng
+    xanh — chỉ thấy khi nhìn cận; trong game chị đứng sau quầy nên không thấy chân.
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
     giảm tam giác.
@@ -73,6 +78,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - `apply_chest_logo.py`: dán logo ngực bằng phép chiếu chính diện, tô trắng chữ bị công cụ xoá nền làm trong suốt,
     giữ nếp vải, lan màu ra lề mảnh UV.
   - `render_portrait.py`: chân dung hộp thoại.
+  - Viewer: áp tint của vai (dùng chung `game/src/characters/tint.js` qua `viewer/tint.js`); `?compare=` nhận cả id vai
+    (vd `?compare=thao,le_tan,prajith`: model + tint + tên hiển thị của vai).
 
 ### Tài liệu và repo
 - `docs/GDD.md` (thiết kế game), `docs/dialogue_huyen.md` (lời thoại Ms. Huyền), `docs/dialogue_nga.md` (lời thoại

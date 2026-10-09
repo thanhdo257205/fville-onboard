@@ -16,14 +16,21 @@ export class Characters {
   displayName(role) { return this.cfg.names?.[lang]?.[role] ?? this.cfg.names?.en?.[role] ?? role; }
   model(id) { return this.cfg.models[this.swap[id] ?? id]; }
   tagConfig() { return this.cfg.name_tags || {}; }
-  // người nói không có vai trong cảnh (vd "hr": tin nhắn điện thoại) → chân dung của vai speaker_as.<người nói>
-  portrait(role) { const r = this.role(this.cfg.speaker_as?.[role] ?? role); return r ? this.model(r.model)?.portrait ?? null : null; }
+  // người nói không có vai trong cảnh (vd "hr": tin nhắn điện thoại) → chân dung của vai speaker_as.<người nói>.
+  // Model đang dùng fallback → không chân dung (không hiện mặt người khác dưới tên người này)
+  portrait(role) {
+    const r = this.role(this.cfg.speaker_as?.[role] ?? role);
+    if (!r || this.swap[r.model]) return null;
+    return this.model(r.model)?.portrait ?? null;
+  }
 
   // model chờ người thật đồng ý (models.<id>.consent_pending): GLB + chân dung chỉ có trên máy làm việc, không có trên
-  // repo công khai và bản build → thiếu file thì mọi vai của model đó dùng models.<id>.fallback
+  // repo công khai và bản build → thiếu file thì mọi vai của model đó dùng models.<id>.fallback.
+  // Bản build: vite.config.js đã loại model đó khỏi dist → đổi thẳng, không dò (tránh lỗi 404 trong console).
   async probe() {
     for (const [id, m] of Object.entries(this.cfg.models)) {
       if (!m.consent_pending || !m.fallback) continue;
+      if (import.meta.env.PROD) { this.swap[id] = m.fallback; continue; }
       let ok = false;
       try {
         const r = await fetch(url(m.glb.low ?? m.glb.high), { method: "HEAD", cache: "no-store" });

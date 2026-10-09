@@ -4,20 +4,47 @@
     {
       "name": "viewer",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8765"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765"
+      ],
       "port": 8765
     },
     {
       "name": "site",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8766", "--directory", "dist"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8766",
+        "--directory",
+        "dist"
+      ],
       "port": 8766
     },
     {
       "name": "game",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "game", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "game",
+        "run",
+        "dev"
+      ],
       "port": 5180
+    },
+    {
+      "name": "game-build",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8767",
+        "--directory",
+        "game/dist"
+      ],
+      "port": 8767
     }
   ]
 }

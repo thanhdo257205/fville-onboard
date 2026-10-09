@@ -94,11 +94,18 @@ def main():
     shutil.copytree(game_dist, DIST / "game")
     # viewer + GLB bối cảnh + nhân vật cho chế độ "Nhân vật tại NPC_"
     copy(ROOT / "viewer" / "index.html", DIST / "viewer" / "index.html")
+    # viewer/tint.js trên repo chỉ re-export code của game (game/src không lên web) → chép thẳng file gốc
+    copy(ROOT / "game" / "src" / "characters" / "tint.js", DIST / "viewer" / "tint.js")
     for tier in TIERS:
         for z in ZONES:
             copy(ROOT / "assets" / "glb" / tier / f"{z}.glb", DIST / "assets" / "glb" / tier / f"{z}.glb")
-    copy(ROOT / "data" / "characters.json", DIST / "data" / "characters.json")
     pending = pending_models()
+    # viewer: model chờ đồng ý không có GLB trên web → đánh dấu glb_excluded để viewer dùng fallback mà không tải thử
+    cfg = json.loads((ROOT / "data" / "characters.json").read_text(encoding="utf-8"))
+    for k in pending:
+        cfg["models"][k]["glb_excluded"] = True
+    (DIST / "data").mkdir(parents=True, exist_ok=True)
+    (DIST / "data" / "characters.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
     for d in (ROOT / "assets" / "characters").iterdir():
         if d.name in pending:
             continue

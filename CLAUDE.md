@@ -24,7 +24,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung |
 | `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
 | `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `debug.js` |
-| `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`) |
+| `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`; id vai cũng được: `compare=thao,le_tan,prajith` → kèm tint, tên vai) |
 | `references/` | Chỉ có ghi chú `.md` và bảng màu trên repo; video, khung hình gốc chỉ có trên máy làm việc |
 | `dist/` | **git worktree của nhánh gh-pages** (không thuộc nhánh main) |
 | `renders/`, `assets/blend/`, `tools/bin/` | Chỉ có trên máy làm việc (bị .gitignore) |
@@ -129,7 +129,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - **Người thật chưa xác nhận đồng ý dùng hình** (`data/characters.json` → `models.<id>.consent_pending`, hiện có `nga`):
   GLB và chân dung chỉ để trên máy làm việc (.gitignore), không lên nhánh main lẫn gh-pages; `vite build` và
   `make_site.py` bỏ model đó, `privacy_scan.py` báo lỗi nếu lỡ stage; game và viewer thiếu file thì dùng
-  `models.<id>.fallback`. Khi người đó đồng ý: bỏ `consent_pending` và 2 dòng trong .gitignore, commit GLB + chân dung.
+  `models.<id>.fallback` và không hiện chân dung (không hiện mặt người khác dưới tên người này). Khi người đó đồng ý: bỏ `consent_pending` và 2 dòng trong .gitignore, commit GLB + chân dung.
 - Không đưa email, đường dẫn máy cá nhân, token vào file. Ảnh render từ Blender: `char_render.preview_setup()` đã tắt
   metadata (trước đây Blender ghi đường dẫn file vào PNG). Chạy `python scripts/tools/privacy_scan.py` trước khi commit;
   không file nào trên 20 MB.
