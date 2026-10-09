@@ -1,0 +1,17 @@
+{
+  "_ghi_chu": "Thành tựu cuối + danh hiệu ở màn tổng kết (GDD mục Kết thúc và màn tổng kết). final: luôn mở khi hoàn thành game (hiệu ứng 'finish': true, vd sau bàn làm việc zone 5), hiện đầu màn tổng kết, trước mọi danh hiệu. titles: xếp từ cao xuống thấp — danh hiệu chính = dòng đầu tiên đạt, các dòng khác đạt được = danh hiệu phụ (danh hiệu mặc định chỉ hiện khi không đạt dòng nào khác). Điều kiện 'if': values_all (sáng đủ 6 ô giá trị), flags (đủ các cờ), stat ({ chỉ số: ngưỡng }), grains_all (nhặt đủ hạt lúa vàng); null = luôn đạt. Ngưỡng 80 là tạm (GDD).",
+  "final": {
+    "id": "welcome_family",
+    "label": { "en": "Achievement unlocked" },
+    "title": { "en": "Welcome to the F-Ville Family" },
+    "desc": { "en": "You made it through your very first day at F-Ville." }
+  },
+  "titles": [
+    { "id": "shining_example", "vi": "Gương Sáng Làng F", "title": { "en": "Shining Example of F-Ville" }, "desc": { "en": "All six value slots lit up." }, "if": { "values_all": true } },
+    { "id": "teammate_no1", "vi": "Đồng Đội Số 1", "title": { "en": "Teammate No. 1" }, "desc": { "en": "Helped Tú twice: his backpack and his card." }, "if": { "flags": ["backpack_returned", "tu_card_fixed"] } },
+    { "id": "connector", "vi": "Người Kết Nối", "title": { "en": "The Connector" }, "desc": { "en": "Connection 80 or more." }, "if": { "stat": { "ket_noi": 80 } } },
+    { "id": "bookworm", "vi": "Mọt Sách Làng F", "title": { "en": "F-Ville Bookworm" }, "desc": { "en": "Knowledge 80 or more." }, "if": { "stat": { "hieu_biet": 80 } } },
+    { "id": "explorer", "vi": "Nhà Thám Hiểm", "title": { "en": "The Explorer" }, "desc": { "en": "Found all the golden grains." }, "if": { "grains_all": true } },
+    { "id": "intern", "vi": "Intern Làng F", "title": { "en": "F-Ville Intern" }, "desc": { "en": "Finished your first day." }, "if": null }
+  ]
+}

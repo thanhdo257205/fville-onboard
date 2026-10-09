@@ -1,0 +1,11 @@
+{
+  "_ghi_chu": "4 Act của ngày đầu (GDD mục Cấu trúc 4 Act). Mỗi Act gồm các mục checklist (quests.json → checklist, đúng id): Act xong khi mọi mục xong (mục xong = mọi quest bắt buộc gắn với nó xong; mục chưa có quest — zone 5 — hiện khóa). Thẻ tiêu đề Act (card_seconds, không chặn điều khiển) hiện khi bắt đầu game (Act hiện tại) và ngay khi xong mục cuối của Act trước — không phụ thuộc chuyển zone. App My FPT → Checklist nhóm theo Act, có tiến độ từng Act.",
+  "card_seconds": 2.2,
+  "acts": [
+    { "id": "act1", "number": 1, "title": { "en": "Enter the Village" }, "checklist": ["bus", "gate", "well", "statue"],
+      "_ly_do": "Bus = điểm đón zone 0 + bến xe zone 1 (gồm cài App My FPT); F-Ville Gate, Village Well, Cuder Statue ở zone 2." },
+    { "id": "act2", "number": 2, "title": { "en": "Becoming a FSofter" }, "checklist": ["reception", "rice_room", "card_gate"] },
+    { "id": "act3", "number": 3, "title": { "en": "Joining FSA" }, "checklist": ["fsa", "meet_prajith", "meet_manager"] },
+    { "id": "act4", "number": 4, "title": { "en": "Joining the Team" }, "checklist": ["hello_team", "desk"] }
+  ]
+}
