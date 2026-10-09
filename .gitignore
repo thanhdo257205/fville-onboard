@@ -12,6 +12,8 @@ assets/characters/*/mixamo/*
 !assets/characters/*/mixamo/actions.json
 assets/characters/*/textures/
 *.fbx
+# logo dùng để dán vào texture (file logo gốc không đưa lên repo; logo chỉ nằm trong texture của model)
+assets/logos/
 
 # --- File Blender, ảnh render, công cụ cài trên máy ---
 *.blend

@@ -39,14 +39,15 @@ class Raster:
         return np.concatenate(ys), np.concatenate(xs), np.concatenate(ps), np.concatenate(ns)
 
     def tris_in(self, lo, hi, axes, facing, depth_axis, depth_c, depth=0.08, min_dot=0.2):
-        """Tam giác có ít nhất 1 đỉnh trong hộp [lo, hi] theo `axes`, hướng `facing`, gần mặt `depth_c`."""
+        """Tam giác có khung bao giao với hộp [lo, hi] theo `axes` (kể cả tam giác lớn phủ qua hộp mà không có đỉnh nào
+        bên trong — mesh đã giảm mạnh), hướng `facing`, gần mặt `depth_c`."""
         co = self.co
-        inside = np.ones(co.shape[:2], dtype=bool)
+        overlap = np.ones(co.shape[0], dtype=bool)
         for k in axes:
-            inside &= (co[..., k] >= lo[k]) & (co[..., k] <= hi[k])
+            overlap &= (co[..., k].min(1) <= hi[k]) & (co[..., k].max(1) >= lo[k])
         near = np.abs(co[..., depth_axis].mean(1) - depth_c) < depth
         face_ok = self.fn @ np.asarray(facing, dtype=np.float64) > min_dot
-        return np.where(inside.any(1) & near & face_ok)[0]
+        return np.where(overlap & near & face_ok)[0]
 
 
 def _tri_data(me, size):
@@ -294,9 +295,10 @@ def prepare_logo(logo, fill_holes=None, alpha_min=16 / 255):
     return logo[ys.min():ys.max() + 1, xs.min():xs.max() + 1], int(holes.sum()) if fill_holes is not None else 0
 
 
-def paste_decal(px, R, logo, center, width, facing=(0, -1, 0), depth=0.06):
+def paste_decal(px, R, logo, center, width, facing=(0, -1, 0), depth=0.06, shade=None):
     """Dán ảnh RGBA `logo` (H×W×4, hàng 0 = đáy) chiếu song song theo -facing, tâm `center` (3D), rộng `width` m.
-    Chỉ chiếu lên mặt hướng về phía trước. Trục ngang = X, trục đứng = Z (nhân vật nhìn -Y). Dán theo tam giác."""
+    Chỉ chiếu lên mặt hướng về phía trước. Trục ngang = X, trục đứng = Z (nhân vật nhìn -Y). Dán theo tam giác.
+    shade(yy, xx, P) → hệ số (k,) nhân vào màu logo (giữ nếp vải / bóng đổ của texture bên dưới)."""
     lh, lw = logo.shape[:2]
     height = width * lh / lw
     cx, cy, cz = center
@@ -319,6 +321,9 @@ def paste_decal(px, R, logo, center, width, facing=(0, -1, 0), depth=0.06):
     s = (logo[y0, x0] * (1 - fx) * (1 - fy) + logo[y0, x1] * fx * (1 - fy)
          + logo[y1, x0] * (1 - fx) * fy + logo[y1, x1] * fx * fy)
     a = s[:, 3:4]
+    if shade is not None:
+        s = s.copy()
+        s[:, :3] = np.clip(s[:, :3] * shade(yy, xx, P[sel])[:, None], 0, 1)
     out = px.copy()
     out[yy, xx, :3] = s[:, :3] * a + px[yy, xx, :3] * (1 - a)
     area = width * height

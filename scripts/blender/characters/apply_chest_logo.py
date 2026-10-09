@@ -290,6 +290,39 @@ def pad_painted(big, before, covered, iters=6):
 
 
 # ---------- dán ----------
+LUMA = np.array([0.2126, 0.7152, 0.0722])
+
+
+def shirt_fit(px, R, center, w, h, pad=0.02):
+    """Màu nền áo quanh/dưới logo: mặt cong bậc 2 theo (x, z), khớp 2 lượt (bỏ điểm lệch: nút, viền, vết).
+    → (hàm fit(P) → RGB, mặt nạ texel trong khung logo, độ lệch màu của từng texel so với nền)."""
+    cx, cy, cz = center
+    pos, nrm = R.pos, R.nrm
+    sel = R.covered & (nrm @ np.array(FACING, np.float32) > 0.3) & (np.abs(pos[..., 1] - cy) < 0.05)
+    sel &= (np.abs(pos[..., 0] - cx) < w / 2 + pad) & (np.abs(pos[..., 2] - cz) < h / 2 + pad)
+    P, C = pos[sel].astype(np.float64), px[sel][:, :3].astype(np.float64)
+    A = TF._quad_design(P, (0, 2))
+    keep = np.ones(len(P), bool)
+    for _ in range(2):
+        coef, *_ = np.linalg.lstsq(A[keep], C[keep], rcond=None)
+        r = np.linalg.norm(C - A @ coef, axis=1)
+        keep = r < max(2.0 * np.median(r), 0.02)
+    inside = sel & (np.abs(pos[..., 0] - cx) <= w / 2) & (np.abs(pos[..., 2] - cz) <= h / 2)
+    dev = np.zeros(pos.shape[:2], np.float32)
+    dev[sel] = np.linalg.norm(C - A @ coef, axis=1)
+    return (lambda Q: TF._quad_design(np.asarray(Q, np.float64), (0, 2)) @ coef), inside, dev
+
+
+def fold_shade(px, fit, lo=0.85, hi=1.08):
+    """Hệ số giữ nếp vải: độ sáng texel áo / độ sáng nền áo đã làm mượt (nếp gấp tối hơn, chỗ nhô sáng hơn).
+    Giới hạn [lo, hi] (chest_logo.json → fold_range): làm sáng nhiều sẽ khuếch đại vệt bóng/đường nối có sẵn thành quầng."""
+    def shade(yy, xx, P):
+        base = px[yy, xx, :3] @ LUMA
+        smooth = np.maximum(fit(P) @ LUMA, 1e-3)
+        return np.clip(base / smooth, lo, hi)
+    return shade
+
+
 def base_pixels(cid, cfg, me):
     """Ảnh màu không logo. Lần đầu: chép <id>_basecolor.jpg thành _nologo (nếu ảnh đã có logo cũ và cấu hình có
     remove_existing thì tô lại vùng logo cũ trước)."""
@@ -339,7 +372,15 @@ def apply(cid):
     print(f"[ảnh gốc] {px.shape[1]}×{px.shape[0]} không logo: {how}")
     big0 = upsample(px, SS)
     R = TF.Raster(me, big0.shape[0])
-    big, info = TF.paste_decal(big0, R, logo, (x, cy, z), width, FACING)
+    fit, inside, dev = shirt_fit(big0, R, (x, cy, z), width, h)
+    keep_folds = cfg.get("keep_folds", False) or "--keep-folds" in ARGS
+    big, info = TF.paste_decal(big0, R, logo, (x, cy, z), width, FACING,
+                               shade=fold_shade(big0, fit, *cfg.get("fold_range", (0.85, 1.08))) if keep_folds else None)
+    # dưới khung logo phải toàn là vải áo: texel lệch màu nền nhiều (nút trắng, viền cổ, đường may nách) = tràn
+    info["keep_folds"] = keep_folds
+    info["not_shirt_pct"] = round(float((dev[inside] > 0.18).mean() * 100), 2) if inside.any() else None
+    info["rect_x_m"] = [round(x - width / 2, 4), round(x + width / 2, 4)]
+    info["rect_z_m"] = [round(z - h / 2, 4), round(z + h / 2, 4)]
     if PAD:
         big, info["gutter_texels"] = pad_painted(big, big0, R.covered)
     out = downscale(big, SS)
@@ -353,6 +394,8 @@ def apply(cid):
                                "seam_in_logo_m": round(s1, 4), "seam_at_wanted_m": round(s0, 4),
                                "nearest_seam_free": None if free is None else [round(free[0], 4), round(free[1], 4)],
                                "size_m": [round(width, 4), round(h, 4)], "texels": info["texels"],
+                               "rect_x_m": info["rect_x_m"], "rect_z_m": info["rect_z_m"],
+                               "not_shirt_pct": info["not_shirt_pct"], "keep_folds": keep_folds,
                                "texel_mm": info["texel_mm"]}})
         cfg.setdefault("_ghi_chu", "Tâm logo (m) theo toạ độ của <id>_prep.blend: nhìn -Y, gốc giữa 2 bàn chân; ngực trái "
                                    "nhân vật = +X. width_m = bề rộng phần có hình của logo. result = vị trí dán thật "

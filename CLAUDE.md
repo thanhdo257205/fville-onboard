@@ -19,7 +19,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
 | `assets/characters/<id>/` | GLB nhân vật, chân dung, cấu hình (`chest_logo.json`, `texture_fixes.json`, `mixamo/actions.json`) |
-| `assets/textures/`, `assets/logos/` | Texture lặp cho bối cảnh, logo |
+| `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung |
 | `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
 | `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `debug.js` |
@@ -57,7 +57,7 @@ npm --prefix game run dev            # http://localhost:5180  (?debug: FPS, vị
 python -m http.server 8765           # ở thư mục gốc, mở http://localhost:8765/viewer/
 
 # Nhân vật (cần Blender + file riêng trên máy làm việc)
-tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/prepare_for_mixamo.py -- --id <id> --height 1.60 --tris 25000
+tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/prepare_for_mixamo.py -- --id <id> --height 1.60 --tris 25000 [--protect-face] [--protect-logo]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/apply_chest_logo.py -- --id <id> [--logo <png>] [--compare prajith]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/build_character.py -- --id <id> --height 1.60 --tris 6000 --single
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id>
@@ -122,7 +122,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 ## Riêng tư và bản quyền (repo công khai)
 
 - KHÔNG BAO GIỜ đưa lên: FBX gốc Mixamo (`mixamo/*.fbx`, điều khoản Mixamo không cho phát tán animation thô), file
-  `.blend`, `source/` (file Meshy gốc), texture nhân vật, video/ảnh/khung hình trong `references/` (có khung chụp thẻ nhân
+  `.blend`, `source/` (file Meshy gốc), texture nhân vật, file logo gốc (`assets/logos/`, logo chỉ nằm trong texture), video/ảnh/khung hình trong `references/` (có khung chụp thẻ nhân
   viên ghi họ tên: `VanPhongLamViec/t_0008.0.jpg`, `t_0010.0.jpg`, `contact_01.jpg`), `renders/`, `tools/bin/`.
 - Không đưa email, đường dẫn máy cá nhân, token vào file. Ảnh render từ Blender: `char_render.preview_setup()` đã tắt
   metadata (trước đây Blender ghi đường dẫn file vào PNG). Chạy `python scripts/tools/privacy_scan.py` trước khi commit;

@@ -8,8 +8,8 @@ Mô hình nhân vật tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0. G�
   hình). Animation dùng lại bộ Mixamo của Prajith (retarget sang bộ xương của Huyền).
 
 Logo FPT trên ngực áo (Prajith, Huyền) là bản tạm: mảng logo tách từ texture của Prajith
-(`assets/logos/fpt_logo_tu_prajith.png`), sẽ thay bằng file logo chính thức của FPT
-(`scripts/blender/characters/apply_chest_logo.py`).
+(chỉ có trên máy làm việc), sẽ thay bằng file logo chính thức của FPT
+(`scripts/blender/characters/apply_chest_logo.py`). Logo trên áo Nga: logo FPT do người dùng cung cấp, chỉ nằm trong texture.
 
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.

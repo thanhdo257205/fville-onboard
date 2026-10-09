@@ -1,0 +1,50 @@
+{
+  "_ghi_chu": "Tâm logo (m) theo toạ độ nga_prep.blend (cao 1,60 m, nhìn -Y, gốc giữa 2 bàn chân; ngực trái = +X): giữa nẹp cúc (x ≈ 0,012) và đường may vai (x ≈ 0,155), z ≈ 1,20 — cùng tỉ lệ vị trí logo trên áo prajith; rộng 7,5 cm. Logo gốc (FPT, đã xoá nền) nằm trong source/ — không commit; fill_holes tô trắng lại chữ F P T bị công cụ xoá nền làm trong suốt; keep_folds: giữ nếp vải. Chạy lại: scripts/blender/characters/apply_chest_logo.py -- --id nga [--logo <logo chính thức>].",
+  "center": [
+    0.08,
+    -0.0691,
+    1.2
+  ],
+  "width_m": 0.075,
+  "logo": "assets/characters/nga/source/logo_fpt_goc.png",
+  "fill_holes": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "keep_folds": true,
+  "result": {
+    "center": [
+      0.08,
+      -0.0691,
+      1.2
+    ],
+    "shift_m": 0.0,
+    "seam_in_logo_m": 0.1133,
+    "seam_at_wanted_m": 0.1133,
+    "nearest_seam_free": [
+      0.0575,
+      1.165
+    ],
+    "size_m": [
+      0.075,
+      0.0464
+    ],
+    "texels": 7038,
+    "rect_x_m": [
+      0.0425,
+      0.1175
+    ],
+    "rect_z_m": [
+      1.1768,
+      1.2232
+    ],
+    "not_shirt_pct": 0.0,
+    "keep_folds": true,
+    "texel_mm": 0.7
+  },
+  "fold_range": [
+    0.85,
+    1.08
+  ]
+}

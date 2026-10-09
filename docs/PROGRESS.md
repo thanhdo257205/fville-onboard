@@ -53,9 +53,17 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền.
 - **huyen** (Meshy + Mixamo, người thật, đã đồng ý): bản 6k duy nhất, cao 1,60 m, 15 animation retarget từ bộ của
   prajith, logo FPT trên ngực trái. Đóng vai `thao`, tên hiển thị **Ms. Huyền** (zone 0 và zone 1).
-- Công cụ: `prepare_for_mixamo.py` (Meshy → FBX cho Mixamo), `build_character.py` (ghép animation, retarget giữa hai
-  nhân vật, giảm tam giác có bảo vệ vùng mặt/logo, đo tốc độ và độ cao ngồi), `apply_chest_logo.py` (dán logo ngực),
-  `render_portrait.py` (chân dung hộp thoại).
+- **nga** — Ms. Nga, L1 of Recruitment (người thật, **chờ xác nhận đồng ý** — chưa đưa model lên gh-pages trước khi có
+  xác nhận): đã chuẩn bị cho Mixamo (25k tam giác, cao 1,60 m, giữ nguyên mặt và vùng logo khi giảm), dán logo FPT
+  lên ngực trái (7,5 cm, giữ nếp vải); **chờ người dùng duyệt logo** rồi mới upload `nga_for_mixamo.fbx` lên Mixamo.
+- Công cụ:
+  - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
+    giảm tam giác.
+  - `build_character.py`: ghép animation, retarget giữa hai nhân vật, giảm tam giác có bảo vệ vùng mặt/logo, đo tốc độ
+    và độ cao ngồi.
+  - `apply_chest_logo.py`: dán logo ngực bằng phép chiếu chính diện, tô trắng chữ bị công cụ xoá nền làm trong suốt,
+    giữ nếp vải, lan màu ra lề mảnh UV.
+  - `render_portrait.py`: chân dung hộp thoại.
 
 ### Tài liệu và repo
 - `docs/GDD.md` (thiết kế game), `docs/dialogue_huyen.md` (lời thoại Ms. Huyền), `CREDITS.md`, `CLAUDE.md` (hướng dẫn
@@ -63,7 +71,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Repo `thanhdo257205/fville-onboard` tách 2 nhánh (09/10/2026): `main` = mã nguồn, `gh-pages` = bản build (giữ nguyên
   lịch sử build cũ). `dist/` là git worktree của `gh-pages`; deploy bằng `scripts/deploy_site.py`, quét riêng tư bằng
   `scripts/tools/privacy_scan.py`. `.gitignore` loại video/ảnh tham chiếu gốc, FBX Mixamo, file Meshy gốc, texture
-  nhân vật, `.blend`, `renders/`, `tools/bin/`.
+  nhân vật, `.blend`, `renders/`, `tools/bin/`, file logo gốc (`assets/logos/`, gỡ khỏi repo 09/10/2026).
 - Bản clone mới chạy được không cần máy làm việc gốc: `game/.npmrc` ép `registry.npmjs.org`, `package-lock.json` chỉ
   trỏ về npmjs (trước trỏ mirror `registry.npmmirror.com` làm `npm ci` treo trên máy cloud); đã thử `npm ci` +
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".

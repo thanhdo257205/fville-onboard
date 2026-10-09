@@ -2,7 +2,7 @@
 
 Chạy (không giao diện):
   tools/bin/blender.cmd --background --factory-startup \
-      --python scripts/blender/characters/prepare_for_mixamo.py -- [--id prajith] [--tris 15000] [--height 1.75]
+      --python scripts/blender/characters/prepare_for_mixamo.py -- [--id prajith] [--tris 15000] [--height 1.75] [--protect-face] [--protect-logo]
   (--name là tên cũ của --id, vẫn dùng được; vd huyen: -- --id huyen --height 1.60)
 
 Vào:  assets/characters/<name>/source/<name>_meshy.glb   (bản chép — không sửa file gốc)
@@ -39,6 +39,14 @@ NAME = arg("--id", arg("--name", "prajith"))
 # 12.000 làm vỡ texture ở má cạnh gọng kính (prajith) → dùng 15.000; so sánh ở renders/characters/check/
 TARGET_TRIS = arg("--tris", 15000, int)
 HEIGHT = arg("--height", 1.75, float)
+# --protect-face: giữ nguyên nửa trước vùng đầu (mặt, kính, lông mày, tóc mái) khi giảm tam giác. Dùng khi đường nối
+# UV chạy ngang mặt làm lông mày/sống kính vỡ ở mọi mức tam giác (vd nga); thân giảm mạnh hơn để vẫn đủ mục tiêu.
+PROTECT_FACE = "--protect-face" in ARGS
+FACE_DEPTH = 0.30          # m tính từ đỉnh đầu xuống
+# --protect-logo: giữ nguyên tam giác (và UV gốc) quanh vị trí logo ngực trong chest_logo.json — giảm mạnh ở thân làm
+# UV vùng ngực méo, texture bị kéo giãn → logo dán sau bị vệt hình nêm.
+PROTECT_LOGO = "--protect-logo" in ARGS
+LOGO_RADIUS = 0.065        # m quanh tâm logo
 TEX_SIZE = arg("--tex", 1024, int)   # cạnh ảnh màu xuất ra (px)
 MERGE_DIST = 1e-4          # m — gộp đỉnh trùng (Meshy tách đỉnh ở đường nối UV)
 
@@ -156,15 +164,63 @@ def smooth_normals(obj):
     bpy.ops.object.shade_smooth()
 
 
+def face_mask(obj):
+    """Đỉnh thuộc nửa trước vùng đầu: trong FACE_DEPTH m tính từ đỉnh đầu, phía trước tâm đầu (nhân vật nhìn -Y)."""
+    co = coords(obj)
+    top = co[:, 2].max()
+    head = co[:, 2] > top - FACE_DEPTH
+    cy = co[head, 1].mean()
+    return head & (co[:, 1] < cy + 0.01)
+
+
+def logo_mask(obj):
+    """Đỉnh mặt trước thân quanh tâm logo (chest_logo.json → result.center hoặc center), bán kính LOGO_RADIUS."""
+    path = os.path.join(CHAR_DIR, "chest_logo.json")
+    co = coords(obj)
+    if not os.path.exists(path):
+        print("[giảm] --protect-logo: chưa có chest_logo.json — bỏ qua")
+        return np.zeros(len(co), bool)
+    cfg = json.load(open(path, encoding="utf-8"))
+    cx, _, cz = (cfg.get("result") or cfg)["center"]
+    return (np.hypot(co[:, 0] - cx, co[:, 2] - cz) < LOGO_RADIUS) & (co[:, 1] < 0)
+
+
+def protect_mask(obj):
+    co = coords(obj)
+    m = np.zeros(len(co), bool)
+    if PROTECT_FACE:
+        m |= face_mask(obj)
+    if PROTECT_LOGO:
+        m |= logo_mask(obj)
+    return m
+
+
 def decimate(obj, target):
     before = tri_count(obj)
     mod = obj.modifiers.new("decimate", "DECIMATE")
     mod.decimate_type = "COLLAPSE"
     mod.ratio = min(1.0, target / before)
     mod.use_collapse_triangulate = True
+    if PROTECT_FACE or PROTECT_LOGO:
+        mask = protect_mask(obj)
+        vg = obj.vertex_groups.new(name="_protect_face")
+        vg.add([int(i) for i in np.where(mask)[0]], 1.0, "REPLACE")
+        mod.vertex_group = vg.name
+        mod.invert_vertex_group = True      # trọng số 1 → 0 sau khi đảo = được giữ
+        mod.vertex_group_factor = 6.0
+        me = obj.data
+        me.calc_loop_triangles()
+        face_before = sum(1 for t in me.loop_triangles if all(mask[v] for v in t.vertices))
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.modifier_apply(modifier=mod.name)
     after = tri_count(obj)
+    if PROTECT_FACE or PROTECT_LOGO:
+        mask = protect_mask(obj)
+        obj.data.calc_loop_triangles()
+        face_after = sum(1 for t in obj.data.loop_triangles if all(mask[v] for v in t.vertices))
+        obj.vertex_groups.remove(obj.vertex_groups["_protect_face"])
+        print(f"[giảm] vùng giữ ({'mặt ' if PROTECT_FACE else ''}{'logo' if PROTECT_LOGO else ''}) {face_before} → "
+              f"{face_after} tam giác, phần còn lại {before - face_before} → {after - face_after}")
     print(f"[giảm] {before} → {after} tam giác (mục tiêu {target}); UV: {[u.name for u in obj.data.uv_layers]}")
     return after
 
