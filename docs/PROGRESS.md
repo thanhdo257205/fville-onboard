@@ -48,6 +48,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   lịch sử build cũ). `dist/` là git worktree của `gh-pages`; deploy bằng `scripts/deploy_site.py`, quét riêng tư bằng
   `scripts/tools/privacy_scan.py`. `.gitignore` loại video/ảnh tham chiếu gốc, FBX Mixamo, file Meshy gốc, texture
   nhân vật, `.blend`, `renders/`, `tools/bin/`.
+- Bản clone mới chạy được không cần máy làm việc gốc: `game/.npmrc` ép `registry.npmjs.org`, `package-lock.json` chỉ
+  trỏ về npmjs (trước trỏ mirror `registry.npmmirror.com` làm `npm ci` treo trên máy cloud); đã thử `npm ci` +
+  `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
 - Lỗi từ lần chơi thử (chưa sửa):
@@ -59,10 +62,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
 - Lối sang zone 4 đang khóa ("This way opens in the next update"). Còn 3 hạt lúa vàng dành cho zone 4–5.
-- Lịch sử cũ trên GitHub (các commit build trước 09/10/2026) còn 2 ảnh chân dung `prajith_portrait.png`,
-  `huyen_portrait.png` có metadata đường dẫn máy làm việc (Blender ghi vào PNG). Bản mới đã sạch; xóa hẳn khỏi lịch sử
-  thì phải viết lại lịch sử và force-push — chờ người dùng quyết định.
-- GitHub Pages cần chuyển nguồn sang nhánh `gh-pages` (Settings → Pages) — người dùng tự làm.
+- GitHub Pages vẫn lấy từ nhánh `main` (kiểm tra 09/10/2026: `/game/` trả `index.html` mã nguồn, game không chạy) —
+  người dùng cần chuyển nguồn sang nhánh `gh-pages`, thư mục `/` (Settings → Pages).
+
+## Đã quyết
+- 09/10/2026: **không viết lại lịch sử commit** để xóa metadata đường dẫn máy trong 2 ảnh chân dung cũ
+  (`prajith_portrait.png`, `huyen_portrait.png` ở các commit build trước 09/10/2026). Bản hiện tại đã sạch; render
+  Blender không ghi metadata nữa; `privacy_scan.py` kiểm tra cả metadata ảnh.
 
 ## Việc tiếp theo
 1. Sửa 3 lỗi chơi thử ở trên.

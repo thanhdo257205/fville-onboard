@@ -49,8 +49,8 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 # Bối cảnh (cần Blender 5.2 + gltf-transform): mặc định chỉ dựng bản Thấp
 python scripts/build.py zone_02 [zone_03 ...] [--tier low|high|both]
 
-# Game chạy local
-npm --prefix game install
+# Game chạy local (game/.npmrc ép registry.npmjs.org; package-lock.json chỉ trỏ npmjs)
+npm --prefix game ci
 npm --prefix game run dev            # http://localhost:5180  (?debug: FPS, vị trí)
 
 # Viewer bối cảnh
@@ -71,6 +71,38 @@ python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
 Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug.js`): `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
+
+## Bắt đầu từ bản clone mới (Claude Code Web hoặc máy khác)
+
+```bash
+git clone https://github.com/thanhdo257205/fville-onboard.git
+cd fville-onboard
+git config user.name "$(git log -1 --format=%an)"    # repo công khai: commit bằng danh tính noreply
+git config user.email "$(git log -1 --format=%ae)"   # của GitHub, lấy từ commit gần nhất trên main
+git worktree add dist gh-pages        # dist/ = bản build (nhánh gh-pages), cần cho deploy
+cd game && npm ci                     # tải từ registry.npmjs.org (game/.npmrc), chép bộ giải nén Draco vào public/draco
+npm run dev                           # http://localhost:5180 — đọc thẳng ../assets và ../data của repo
+npm run build                         # kiểm tra build (ra game/dist)
+cd .. && python scripts/deploy_site.py   # build → quét riêng tư → commit → push gh-pages (chỉ khi người dùng đồng ý)
+```
+
+Cần Node.js 20+ (đang dùng 24), Python 3 (deploy_site.py, make_site.py, privacy_scan.py chỉ dùng thư viện chuẩn), git.
+`deploy_site.py` từ chối commit nếu `git config user.email` không phải email noreply — đặt 2 dòng `git config` ở trên
+trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`/viewer/`).
+
+**Làm được khi không có Blender:**
+- Chạy game và viewer; thử game bằng `window.__game` (xem dưới).
+- Sửa code game (`game/src/`), dữ liệu và lời thoại (`data/*.json`), chữ giao diện (`data/i18n/en.json`), va chạm bổ sung
+  (`data/collision.json`), vật do code đặt (`data/interactables.json`), vai và tên nhân vật (`data/characters.json`).
+- Sửa viewer, tài liệu (`docs/`, `CLAUDE.md`), script Python không dùng Blender.
+- Build và deploy bản web (`npm run build`, `scripts/deploy_site.py`), quét riêng tư.
+
+**Không làm được khi không có Blender** (cần máy làm việc gốc):
+- Dựng lại hoặc sửa hình khối bối cảnh (`scripts/build.py`, `scripts/blender/`), nướng lightmap, ảnh so sánh với tham
+  chiếu (video/khung hình gốc không có trên repo).
+- Mọi bước của pipeline nhân vật: chuẩn bị cho Mixamo, ghép animation, giảm tam giác, dán logo, chân dung — cần
+  `source/`, `mixamo/*.fbx`, `textures/`, file `.blend` (không có trên repo). GLB nhân vật trên repo chỉ để dùng.
+- Render ảnh kiểm tra bằng Blender, bảng animation.
 
 ## Quy tắc đã chốt
 
@@ -107,5 +139,4 @@ Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game b
   (không có trên repo).
 - Render ảnh kiểm tra, chân dung, bảng animation.
 
-Máy chỉ có Node.js vẫn chạy được game, viewer, sửa dữ liệu JSON và code game, deploy (`deploy_site.py --no-build` cần
-`game/dist` có sẵn; bình thường để script tự build).
+Máy không có Blender: xem mục "Bắt đầu từ bản clone mới" ở trên.
