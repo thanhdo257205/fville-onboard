@@ -98,26 +98,42 @@ button { font-family: "Nunito", sans-serif; }
 
 #myfpt { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center end; padding-right: 6vw; background: rgba(10, 12, 16, .35); }
 #myfpt[hidden] { display: none; }
-#myfpt .phone { width: 360px; max-height: 86vh; overflow: auto; background: #f6f3ee; color: #1d1f23; border-radius: 30px; border: 8px solid #15171b; padding: 16px; box-shadow: 0 16px 50px rgba(0, 0, 0, .45); }
-#myfpt .top { display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
-#myfpt .top b { color: var(--orange); font-weight: 800; }
-#myfpt .stats { margin: 10px 0; display: grid; gap: 6px; }
+/* Điện thoại thông minh: viền tối bo tròn; bên trong là màn hình xếp dọc — thanh trạng thái (giờ trong game, sóng / wifi / pin) ·
+   thanh app (avatar, tên, Help, nút ×) · nội dung cuộn riêng (.screen) · thanh tab dưới có biểu tượng (.dock) · vạch home.
+   Màn hẹp / thấp (điện thoại thật, xoay ngang): chiếm trọn màn hình, bỏ viền + thanh trạng thái giả, hiện nút × (xem @media dưới) */
+#myfpt .phone { width: 390px; height: min(820px, calc(100vh - 32px)); box-sizing: border-box; display: flex; flex-direction: column; background: #f2f3f5; color: #1d1f23;
+  border-radius: 44px; border: 10px solid #121418; box-shadow: 0 24px 60px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(255, 255, 255, .06); overflow: hidden; }
+#myfpt .status { display: flex; justify-content: space-between; align-items: center; padding: 10px 24px 2px; background: #fff; font: 800 14px "Nunito"; }
+#myfpt .status .sys { display: flex; gap: 6px; align-items: center; }
+#myfpt .status .sys svg { height: 13px; width: auto; fill: currentColor; }
+#myfpt .appbar { display: flex; align-items: center; gap: 10px; padding: 8px 14px 10px; background: #fff; border-bottom: 1px solid #e5e7eb; }
+#myfpt .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--orange); color: #fff; display: grid; place-items: center; font: 900 15px "Nunito"; flex: none; }
+#myfpt .who { flex: 1; min-width: 0; line-height: 1.15; }
+#myfpt .who b { display: block; color: var(--orange); font-size: 17px; font-weight: 900; }
+#myfpt .who small { display: block; color: #6b7280; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#myfpt .close { display: none; width: 32px; height: 32px; flex: none; border: 0; border-radius: 50%; background: #eceef1; color: #1d1f23; font: 800 20px/1 "Nunito"; cursor: pointer; place-items: center; }
+#myfpt .screen { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 14px 6px; overscroll-behavior: contain; }
+#myfpt .stats { margin: 0 0 12px; display: grid; gap: 6px; background: #fff; border-radius: 14px; padding: 10px 12px; }
 #myfpt .stat { display: grid; grid-template-columns: 92px 1fr 30px; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
-#myfpt .bar { height: 10px; background: #e2dcd2; border-radius: 6px; overflow: hidden; }
+#myfpt .bar { height: 10px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
 #myfpt .bar i { display: block; height: 100%; background: var(--orange); }
-#myfpt nav { display: flex; gap: 6px; margin: 8px 0; }
-#myfpt nav button { flex: 1; border: 0; border-radius: 10px; padding: 8px; background: #e7e1d7; font-weight: 800; cursor: pointer; }
-#myfpt nav button.on { background: var(--orange); color: #fff; }
+#myfpt .dock { flex: none; background: #fff; border-top: 1px solid #e5e7eb; padding: 6px 4px 0; }
+#myfpt .tabbar { display: flex; }
+#myfpt .tabbar button { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 3px; border: 0; background: none; color: #8a9099; font: 800 10.5px "Nunito"; padding: 4px 2px; border-radius: 10px; cursor: pointer; }
+#myfpt .tabbar button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#myfpt .tabbar button span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#myfpt .tabbar button.on { color: var(--orange); }
+#myfpt .home { display: block; width: 120px; height: 5px; margin: 6px auto 8px; border-radius: 3px; background: #1d1f23; opacity: .85; }
 #myfpt .check { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
-#myfpt .check li { display: flex; gap: 8px; align-items: center; padding: 7px 8px; border-radius: 10px; background: #fff; font-weight: 700; }
+#myfpt .check li { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 12px; background: #fff; font-weight: 700; }
 #myfpt .check li.current { outline: 2px solid var(--orange); font-weight: 800; }
 #myfpt .check li.done { color: #6b7280; text-decoration: line-through; }
 #myfpt .check li.later { color: #9aa0a6; }
 #myfpt .check em { margin-left: auto; font-size: 11px; font-style: normal; }
-#myfpt .tick { width: 20px; height: 20px; border-radius: 6px; background: #e7e1d7; display: grid; place-items: center; color: #fff; flex: none; }
+#myfpt .tick { width: 20px; height: 20px; border-radius: 6px; background: #e5e7eb; display: grid; place-items: center; color: #fff; flex: none; }
 #myfpt .done .tick { background: #2e9e5b; }
 #myfpt .bag { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-#myfpt .bag li, #myfpt .badge { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 12px; padding: 8px 10px; }
+#myfpt .bag li, #myfpt .badge { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 14px; padding: 10px 12px; }
 #myfpt .bag li.carry { outline: 2px dashed #c9b8a0; }
 #myfpt small { display: block; color: #6b7280; font-size: 12px; }
 #myfpt .icon { font-size: 26px; }
@@ -125,12 +141,24 @@ button { font-family: "Nunito", sans-serif; }
 #myfpt .badge.locked { opacity: .45; }
 #myfpt .badge .lock { color: var(--orange); }
 #myfpt .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-#myfpt .slot { background: #fff; border-radius: 12px; padding: 8px; text-align: center; border: 2px solid #e2dcd2; }
+#myfpt .slot { background: #fff; border-radius: 12px; padding: 8px; text-align: center; border: 2px solid #e5e7eb; }
 #myfpt .slot b { display: block; font-size: 15px; }
 #myfpt .slot span { font-size: 12px; font-weight: 700; }
 #myfpt .slot.lit { border-color: #f0b429; background: #fff7df; }
 #myfpt .slot.inactive { opacity: .5; }
 #myfpt .empty, #myfpt .foot { color: #6b7280; text-align: center; font-size: 12px; }
+#myfpt .foot { margin-top: 10px; }
+/* màn cảm ứng: không có phím Tab → nút ×, bỏ dòng "Tab to close" */
+@media (pointer: coarse) { #myfpt .close { display: grid; } #myfpt .foot { display: none; } }
+/* điện thoại thật (hẹp) hoặc màn thấp (điện thoại xoay ngang ~360 px): app chiếm trọn màn hình, thanh trạng thái / vạch home là của máy */
+@media (max-width: 700px), (max-height: 560px) {
+  #myfpt { place-items: stretch; padding: 0; background: none; }
+  #myfpt .phone { width: 100%; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+  #myfpt .status, #myfpt .home, #myfpt .foot { display: none; }
+  #myfpt .close { display: grid; }
+  #myfpt .dock { padding-bottom: env(safe-area-inset-bottom, 0); }
+}
+@media (max-height: 560px) { #myfpt .stats { display: none; } }   /* xoay ngang: nhường chỗ cho nội dung */
 
 #creator, #minigame, .confirm { position: fixed; inset: 0; z-index: 7; display: grid; place-items: center; background: rgba(10, 12, 16, .6); }
 #minigame[hidden] { display: none; }
@@ -336,9 +364,9 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 #helpcard b { color: #ffd27a; }
 #helpcard p { margin: 4px 0 0; line-height: 1.35; }
 #helpcard kbd, #myfpt kbd { display: inline-block; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; color: var(--fg); }
-#myfpt .top .help { background: #fff1e6; color: #c4520f; border: 0; border-radius: 999px; padding: 4px 10px; font: 800 13px "Nunito"; cursor: pointer; }
-#myfpt .top .help.on { background: var(--orange); color: #fff; }
-#myfpt .top .help kbd { background: rgba(0, 0, 0, .1); color: inherit; }
+#myfpt .appbar .help { flex: none; background: #fff1e6; color: #c4520f; border: 0; border-radius: 999px; padding: 6px 10px; font: 800 13px "Nunito"; cursor: pointer; }
+#myfpt .appbar .help.on { background: var(--orange); color: #fff; }
+#myfpt .appbar .help kbd { background: rgba(0, 0, 0, .1); color: inherit; }
 #myfpt .helpbox { background: #fff; border-left: 4px solid var(--orange); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 14px; line-height: 1.35; }
 #myfpt .helpbox b { color: #c4520f; }
 #myfpt .helpbox p { margin: 4px 0 0; }
@@ -480,8 +508,6 @@ body.overlay-open #emotes { display: none; }
 #myfpt .advice li small { color: #8a5a3c; font-weight: 800; }
 #myfpt .empty { color: var(--muted); font-weight: 700; }
 /* tab Bản đồ (ui/map.js): ảnh zone nhìn từ trên + dấu bạn (mũi tên theo hướng mặt), Tú, mục tiêu "!" */
-#myfpt nav { gap: 4px; }
-#myfpt nav button { flex: 1 1 auto; min-width: 0; padding: 8px 5px; font-size: 12px; white-space: nowrap; }   /* 5 tab vừa 1 dòng (vi: "Lời khuyên") */
 #myfpt .map-h { margin: 2px 0 6px; font-size: 14px; }
 #myfpt .map { position: relative; max-width: 100%; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #dfe6e9; box-shadow: inset 0 0 0 2px #e2dcd2; }
 #myfpt .map img { display: block; width: 100%; height: 100%; }

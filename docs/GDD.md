@@ -131,6 +131,12 @@ App My FPT trên điện thoại nhân vật là giao diện chính của game: 
 
 Trước khi có app (zone 0 và đầu zone 1), giao diện chỉ hiện một dòng mục tiêu.
 
+**Bố cục điện thoại thông minh (đã làm 10/10/2026):** app hiện như một chiếc điện thoại thật ở bên phải màn hình — thanh
+trạng thái (giờ trong game, sóng / wifi / pin), thanh app (avatar chữ cái đầu tên, My FPT, tên người chơi, nút Help), nội
+dung cuộn riêng, thanh tab dưới có biểu tượng (Checklist, Túi đồ, Huy hiệu, Bản đồ, Sổ lời khuyên), vạch home. Màn cảm ứng
+có nút × (không có phím Tab); điện thoại thật (màn hẹp) hoặc xoay ngang (màn thấp) thì app chiếm trọn màn hình, bỏ viền và
+thanh trạng thái giả, xoay ngang ẩn thêm 2 thanh chỉ số để còn chỗ nội dung.
+
 **Hai chỉ số**, thang 0–100, chỉ cộng không trừ:
 
 - **Hiểu biết:** trả lời đúng quiz, đọc bảng thông tin, hoàn thành mini-game.
