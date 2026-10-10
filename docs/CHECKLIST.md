@@ -71,6 +71,30 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   cho card đồ hoạ). Sửa: `disposeTree` (`game/src/world/zone.js`), dọn vật do code đặt khi đổi zone, `Character.dispose` dọn
   xương + vật liệu riêng; đồ dùng chung đánh dấu `userData.shared`; smoke: zone_04 ↔ zone_05 2 vòng, số geometry / texture
   không tăng — Phụ trách: Claude
+- [ ] P1 **Lỗi: mô hình bối cảnh bị hở nhiều chỗ** (người dùng gửi 5 ảnh, 10/10/2026; sửa trong script Blender → cần máy có
+  Blender) — Phụ trách: —
+  - Các chỗ trong ảnh (vị trí đoán theo ảnh — đứng đúng chỗ, mở `?debug` ghi lại toạ độ khi sửa):
+    1. zone_04 tầng trên (sàn xanh nhạt): khối tường bao (quanh giếng cầu thang / giếng trời) **hở ở cả 4 góc** — các đoạn
+       tường không khớp nhau ở góc.
+    2. zone_04 chiếu nghỉ cầu thang: khe tối dọc mép chiếu nghỉ sát tường, nhìn xuyên xuống dưới.
+    3. zone_04 tầng trệt (sàn gạch sáng, chậu cây trên tủ trắng cạnh cửa kính): chân tường xám không chạm sàn, lộ dải trời
+       xanh giữa sàn và tường.
+    4. zone_04 cầu thang lên tầng trên: khe hở dọc mép trái bậc thang với tường, nhìn xuyên xuống dưới.
+    5. zone_03 sảnh lễ tân (chỗ chị Nga): nhìn qua vách kính thấy mảng sân / mái màu nâu lơ lửng, bên dưới là trời — mặt đất
+       ngoài sảnh không kéo tới chân kính.
+  - Nguyên nhân chỗ 1 (đọc code): `kit.seg_box` (`scripts/blender/lib/kit.py`) dựng đoạn tường dài đúng bằng khoảng cách 2
+    đầu mút, không cộng bề dày → 2 đoạn gặp nhau ở góc thiếu một ô vuông (nửa bề dày × nửa bề dày) ở góc ngoài. Các chỗ
+    còn lại: sàn / bậc thang / chiếu nghỉ không áp sát tường, mặt đất ngoài nhà không đủ rộng; nhìn rõ vì trời trong nhà là
+    màu xanh sáng (`mood.sky` mặc định `#9cc4e8`).
+  - [ ] Sửa trong script Blender (`scripts/blender/zone_03.py`, `zone_04.py`, `lib/kit.py`, `lib/interior.py`): đoạn tường kéo
+    dài thêm nửa bề dày ở mỗi đầu (tham số mới của `seg_box`, mặc định giữ như cũ để không xê dịch zone khác) hoặc thêm cột
+    góc; sàn chạy dưới chân tường; bậc thang / chiếu nghỉ áp sát tường (hoặc thêm tấm ốp chân tường); mặt đất ngoài sảnh
+    zone_03 kéo ra đủ xa. Build lại zone bản Thấp, `check_glb` 0 lỗi; `COL_` giữ nguyên chỗ cũ
+  - [ ] Rà các zone còn lại tìm chỗ hở tương tự bằng công cụ tự dò (chạy trong game / viewer, không cần Blender): từ các điểm
+    đi được bắn tia ngang và chéo xuống, tia trong nhà mà không chạm lưới nào (lọt ra trời) → ghi toạ độ → danh sách chỗ hở
+  - [ ] Tạm thời (không cần Blender): zone trong nhà 3–5 đặt màu nền tối trung tính (`data/zones.json` → `mood.sky`) để khe
+    hở không lộ dải xanh — chỉ che bớt, không thay việc sửa mô hình
+  - [ ] Kiểm thử: công cụ dò → 0 chỗ hở trong nhà; smoke zone 3–5 (cả bước camera không xuyên trần); ảnh trước / sau 5 chỗ
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
