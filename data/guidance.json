@@ -10,8 +10,10 @@
     "marker_above_head_m": 0.8,
     "marker_above_object_m": 0.6,
     "marker_above_trigger_m": 0.3,
-    "phone_from": { "zone_00": "thao", "zone_01": "thao", "zone_02": "thao", "zone_03": "le_tan", "zone_04": "le_tan", "zone_05": "le_tan" },
-    "_ly_do": "idle_s: không tiến triển nhiệm vụ bao lâu (giây, chỉ tính lúc đang đi lại — không tính hội thoại / mini-game / app / menu / cảnh chuyển) thì nhắc lần 1; repeat_s: lần 2 sau bao lâu nữa; max_nudges: mỗi mục tiêu nhắc tối đa bấy nhiêu lần. phone_from: zone 0–2 Ms. Huyền (vai thao), zone 3–4 Ms. Nga (vai le_tan)."
+    "no_tu_zones": ["zone_05"],
+    "_no_tu_ly_do": "Tú chia tay ở phòng FSA (zone 4) → zone 5 chỉ nhắc bằng tin nhắn điện thoại (Prajith).",
+    "phone_from": { "zone_00": "thao", "zone_01": "thao", "zone_02": "thao", "zone_03": "le_tan", "zone_04": "le_tan", "zone_05": "mentor" },
+    "_ly_do": "idle_s: không tiến triển nhiệm vụ bao lâu (giây, chỉ tính lúc đang đi lại — không tính hội thoại / mini-game / app / menu / cảnh chuyển) thì nhắc lần 1; repeat_s: lần 2 sau bao lâu nữa; max_nudges: mỗi mục tiêu nhắc tối đa bấy nhiêu lần. phone_from: zone 0–2 Ms. Huyền (vai thao), zone 3–4 Ms. Nga (vai le_tan), zone 5 Prajith (vai mentor)."
   },
   "goals": {
     "z0_find_bus": {
@@ -157,6 +159,55 @@
         { "en": "Next stop: the FSA Room, upstairs at the end of the corridor." },
         { "en": "Take the stairs behind the card gate — the FSA Room is at the far end upstairs." }
       ]
+    },
+    "z5_prajith": {
+      "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.2 }, { "pos": [-18.0, 0, -3.7], "r": 0.9 }],
+      "_route_ly_do": "Phòng họp chỉ mở cửa phía lối đi chính (giữa vách nam, x −19,3 … −16,7): dấu \"!\" dẫn tới trước cửa, vào hẳn trong cửa rồi mới tới Prajith (đi thẳng từ trước cửa tới Prajith thì vướng mép vách).",
+      "help": { "en": "Prajith is waiting in the mentor meeting room on the left side of the office. Walk in and press E to talk." },
+      "phone": [
+        { "en": "Hi {player}, I'm in the meeting room on the left — just walk in! 🙂" },
+        { "en": "Head down the corridor on the left: I'm in the first meeting room. See you there!" }
+      ]
+    },
+    "z5_manager": {
+      "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.5 }, { "pos": [-27.0, 0, -1.4], "r": 1.2 }, { "pos": [-27.0, 0, -3.7], "r": 0.9 }],
+      "_route_ly_do": "Từ phòng Prajith ra cửa, đi dọc lối chính tới trước cửa phòng Manager, vào hẳn trong cửa rồi tới Manager.",
+      "help": { "en": "The manager's room is next door to Prajith's, a little further down the corridor. Press E to talk to her." },
+      "phone": [
+        { "en": "The manager's room is right next to mine — she's expecting you!" },
+        { "en": "Just one door further down from my room. Good luck! 🙂" }
+      ]
+    },
+    "z5_lan": {
+      "help": { "en": "Lan sits in the first cluster of desks, next to your own desk near the entrance. Walk up and press E to say hello." },
+      "phone": [
+        { "en": "Say hi to the team! Lan sits in the first cluster of desks, right by your desk." },
+        { "en": "Lan is in the first desk cluster near the entrance — she's lovely, go say hello!" }
+      ]
+    },
+    "z5_minh": {
+      "help": { "en": "Minh sits across from Lan in the first cluster of desks. Walk up and press E to say hello." },
+      "phone": [
+        { "en": "Next up: Minh, across from Lan in the first desk cluster." },
+        { "en": "Minh is right across from Lan — he knows every tool we use!" }
+      ]
+    },
+    "z5_ha": {
+      "help": { "en": "Hà sits in the second cluster of desks, a little further into the office. Walk up and press E to say hello." },
+      "phone": [
+        { "en": "Don't forget Hà — she's in the second cluster of desks, a bit further in." },
+        { "en": "Hà sits in the second desk cluster. Say hello and your team is complete!" }
+      ]
+    },
+    "z5_desk": {
+      "help": { "en": "Your desk is the one near the entrance with the gift box on it. Walk up and press E to sit down." },
+      "phone": [
+        { "en": "Your desk is ready — it's the one near the entrance with the gift box on it!" },
+        { "en": "Time to settle in: your desk is by the entrance, with a gift from the team. 🎁" }
+      ]
+    },
+    "z5_khang": {
+      "help": { "en": "Khang hangs out by the billiard table in the break area near the entrance. Optional — but he has good advice (and a billiard challenge)." }
     }
   },
   "zone_exits": {
@@ -214,7 +265,7 @@
     },
     "zone_05": {
       "target": null,
-      "help": { "en": "Welcome to the office! The meetings with Prajith, the manager and the team open in the next update — feel free to look around (two golden grains are hiding here)." }
+      "help": { "en": "You've done everything on today's list! Two golden grains are hiding in the office if you'd like to look around." }
     }
   }
 }

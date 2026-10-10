@@ -1,6 +1,6 @@
 # GDD – Ngày Đầu Ở F-Ville
 
-Cập nhật: 09/10/2026 (thêm cấu trúc 4 Act, thành tựu cuối; chơi nhiều người mức "thấy nhau")
+Cập nhật: 10/10/2026 (zone 5, cảnh kết, màn tổng kết đầy đủ; trước đó: 4 Act, thành tựu cuối, chơi nhiều người mức "thấy nhau")
 
 ## Tổng quan
 
@@ -91,6 +91,8 @@ Người chơi tạo nhân vật trên một màn hình duy nhất trước khi 
 | Túi | Balo, túi đeo chéo, túi tote | Hiện trên lưng hoặc vai suốt game |
 | Tên hiển thị | Nhập tự do, tối đa 16 ký tự | In lên thẻ nhân viên; lọc từ ngữ không phù hợp |
 | Vị trí intern | Developer, Tester, BA, Designer | Đổi một số lời thoại với Prajith và nhiệm vụ của Manager |
+
+**Đã làm (10/10/2026):** màn tạo nhân vật có tên, giới tính (Male / Female → model `intern_nam` / `intern_nu`) và vị trí intern. Tóc, da, kính, túi chưa có.
 
 **Trang phục:** nhân vật bắt đầu với áo sơ mi thường. Khi nhận Áo Cam FPT ở cổng (zone 2), áo được mặc vào ngay, và các huy hiệu nhận về sau hiện trên ngực áo.
 
@@ -304,6 +306,18 @@ Zone 5 nén cả ngày làm việc thành bốn cuộc gặp, kết thúc khi ng
 
 **Lời Manager (mẫu):** "Chào em, chào mừng em về team! Tuần đầu chưa cần làm gì lớn đâu, nhưng chị muốn xem em sắp xếp công việc thế nào."
 
+**Đã làm (10/10/2026)** — chữ tiếng Anh trong `data/dialogues.json`, mini-game trong `data/interactables.json`:
+
+- **Nhân vật:** Prajith dùng model `prajith` thật. Manager, Lan, Minh, Hà, anh Khang là nhân vật hư cấu, **tạm** dùng model `intern_nu` / `intern_nam` với màu áo khác nhau (Manager xanh than, Lan hồng, Minh vàng, Hà xanh lá, Khang tím), không có chân dung trong hộp thoại.
+- **Vào zone:** tin nhắn app "📅 09:15 · Meeting with Prajith" rồi tin nhắn của Prajith. Ở zone 5, câu nhắc khi đứng yên do Prajith nhắn (Tú đã chia tay ở zone 4). Dấu "!" dẫn tới trước cửa phòng họp rồi mới vào trong.
+- **Gặp Prajith:** chào, kể chuyện ngày đầu của Prajith, rồi mini-game **La bàn nghề nghiệp**: 4 câu, mỗi câu 2 phương án, mỗi phương án nghiêng về một xu hướng (Builder, Problem Solver, Team Player, Explorer). Thẻ kết quả gồm xu hướng chính và hướng phát triển theo vị trí intern (4 vị trí × 4 xu hướng). Thẻ lưu trong My FPT → Bag; Kết nối +5.
+- **Gặp Manager** (chỉ sau Prajith; gặp trước thì Manager nhắc gặp Prajith): mục tiêu team *[DRAFT]*, rồi mini-game **Sắp xếp ưu tiên** với 5 thẻ có nhãn hạn (Due today / This week / Anytime). Xếp chưa hợp lý thì Manager góp ý đúng chỗ sai (thẻ đó sáng lên) và cho xếp lại 1 lần; lần 2 vẫn chưa hợp lý thì vẫn xong nhưng không có ô Wisdom. Nhiệm vụ đầu tiên ("Complete the mandatory Information Security course — due today") ghi vào My FPT. Act 4 mở ngay sau đó.
+- **Ăn trưa:** màn mờ "12:00 · The team invites you to lunch", rồi sáng lại buổi chiều: ánh sáng ấm hơn, đồng hồ 13:30 (`data/zones.json` → `variants`).
+- **Say Hello Team:** Lan, Minh, Hà mỗi người một lời khuyên. Lời khuyên đầu tiên mở tab **Advice** (Sổ lời khuyên) trong My FPT; Kết nối +5 mỗi người. Lan và Hà ngồi phía bắc cụm bàn, nói chuyện được qua mặt bàn.
+- **Anh Khang** (tùy chọn): trò chuyện, mời **Một cú bi-a**: bàn nhìn từ trên xuống, ngắm bằng chuột hoặc ←/→, thanh lực chạy qua lại, bấm để đánh bi cam vào lỗ. Trượt thì thử lại; sai 2 lần hiện đường ngắm gợi ý và vạch lực; sai 3 lần có Skip. Thêm 1 lời khuyên; Kết nối +5. Nói chuyện lại thì được đánh thêm.
+- **Bàn làm việc** (chỉ sau Manager; chưa chào đủ team thì hỏi có muốn chào trước không): hộp quà của team *[DRAFT]*, mini-game **Đăng nhập** *[DRAFT, quy định thật chờ HR/IT]*: 5 quy định mật khẩu tick dần, thanh độ mạnh, rồi bật 2FA. Mật khẩu chỉ kiểm tra trong trình duyệt, không lưu. Sau đó bảng tên trên bàn hiện tên người chơi + vị trí intern, checklist ngày đầu tự tick lần lượt (mục bàn làm việc tick cuối); Hiểu biết +10; hiệu ứng `finish` mở cảnh kết.
+- **Hạt lúa vàng:** trên nóc kệ ô vuông đỏ – trắng và dưới mép bàn bi-a.
+
 ## Kết thúc và màn tổng kết
 
 Game kết thúc lúc 17:30 bằng một thẻ "Ngày Đầu" tóm tắt những gì người chơi đã làm; ai chơi đến cuối cũng có danh hiệu.
@@ -314,6 +328,15 @@ Game kết thúc lúc 17:30 bằng một thẻ "Ngày Đầu" tóm tắt những
 2. Màn hình mờ, chuyển về zone_01 với ánh sáng hoàng hôn. *(Tùy chọn: nếu chưa kịp làm bản hoàng hôn, dùng nền ảnh tĩnh.)*
 3. Tú chạy đến bến xe. Lời Tú đổi theo số lần người chơi đã giúp: giúp cả hai lần → "Hôm nay không có cậu chắc mình toang rồi, cảm ơn nhé!"; còn lại → "Ngày đầu cũng không đáng sợ lắm nhỉ? Mai gặp lại!"
 4. Lên xe, màn tổng kết hiện ra.
+
+**Đã làm (10/10/2026)** — `data/cutscenes.json` → `ending`, `game/src/game/ending.js`:
+
+1. Tin nhắn app "⏰ 17:30 — that's a wrap for today!", Lan đứng cạnh bàn: "17:30 already! Time to head home, {player} — see you tomorrow!"
+2. Màn tối, thẻ "17:30 · Time to head home", rồi về bến xe zone_01 lúc hoàng hôn: trời cam hồng, nắng thấp phía tây (`zones.json` → `variants`, cờ `game_complete`).
+3. Tú chạy từ phía cổng tới. Giúp Tú cả hai lần (lấy balo, nhắn chị Nga kích hoạt thẻ) → "Without you today I'd have been totally lost. Thanks for everything!"; còn lại → "The first day wasn't that scary after all, was it? See you tomorrow!"
+4. Người chơi và Tú bước lên xe, cửa đóng, rồi thẻ "ACHIEVEMENT UNLOCKED · Welcome to the F-Ville Family", rồi màn tổng kết.
+
+Có Skip (Esc). Sau khi đóng màn tổng kết, người chơi đứng ở bến xe lúc hoàng hôn, đi lại tự do (dòng mục tiêu: "Your first day is complete! 🎉"). Tải lại game vẫn giữ hoàng hôn.
 
 **Thành tựu cuối** (`data/achievements.json` → `final`): **"ACHIEVEMENT UNLOCKED: Welcome to the F-Ville Family"**. Luôn
 mở khi hoàn thành game (hiệu ứng `finish` sau bàn làm việc zone 5), hiện thành thẻ chữ lớn rồi đứng đầu màn tổng kết,
@@ -329,6 +352,13 @@ trước mọi danh hiệu.
 - Tiến độ 4 Act
 - Lời nhắn của Prajith, viết theo kết quả La bàn nghề nghiệp
 - Nút **Tải ảnh thẻ** (PNG) và **Chơi lại**
+
+**Đã làm (10/10/2026):**
+- Ảnh thẻ chụp ở lễ tân (nhân vật mặc áo cam), các huy hiệu đã nhận, ảnh check-in.
+- 6 ô giá trị, ô trống kèm gợi ý ngắn (`values.json` → `hint`).
+- Lời nhắn của Prajith theo xu hướng chính ở La bàn nghề nghiệp.
+- Nút **Download card (PNG)** vẽ lại thẻ đứng 720 × 1080 bằng canvas, gồm ảnh thẻ, tên, vị trí, danh hiệu, chỉ số, 6 ô, lời nhắn Prajith, 4 Act, ảnh check-in nhỏ, ngày.
+- Nút **Play again** và **Close** (Esc).
 
 **Danh hiệu** (danh hiệu chính là dòng cao nhất người chơi đạt; các dòng khác đạt được hiện thành danh hiệu phụ)
 
@@ -390,7 +420,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
     - App My FPT với tab Checklist, Túi đồ, Huy hiệu
     - Zone 0 (điểm đón, cảnh lên xe), zone 1, 2, 3 đủ hoạt động bắt buộc; ô Tôn trọng và Chí công
     - Lưu tiến trình vào trình duyệt; hai mức đồ họa tự chọn theo máy
-2. **Đủ hành trình: zone 4, zone 5 và kết thúc**
+2. **Đủ hành trình: zone 4, zone 5 và kết thúc** (đã làm 10/10/2026, trừ tab Bản đồ)
     - Hai tình huống ở cửa quẹt thẻ, phòng FSA, bốn cuộc gặp ở văn phòng
     - Cấu trúc 4 Act (thẻ tiêu đề Act, checklist theo Act), thành tựu cuối
     - Màn tổng kết, danh hiệu, tải ảnh thẻ

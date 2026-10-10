@@ -1,5 +1,6 @@
-// App My FPT (phím Tab): 3 tab Checklist, Túi đồ, Huy hiệu + 2 chỉ số Hiểu biết, Kết nối; nút Help (phím H) = gợi ý của
-// mục tiêu hiện tại (game/guide.js).
+// App My FPT (phím Tab): tab Checklist, Túi đồ, Huy hiệu (+ Sổ lời khuyên khi có phần thưởng so_loi_khuyen, zone 5) + 2 chỉ
+// số Hiểu biết, Kết nối; nút Help (phím H) = gợi ý của mục tiêu hiện tại (game/guide.js). Túi đồ: thẻ nhân viên, ảnh
+// check-in, La bàn nghề nghiệp (kết quả gặp Prajith), Nhiệm vụ đầu tiên (từ Manager).
 // Huy hiệu 6 giá trị: ô sáng khi đã thể hiện giá trị VÀ đã có huy hiệu; Đợt 2 chỉ Respect và Fairness hoạt động.
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
@@ -29,7 +30,9 @@ export class MyFptApp {
   draw() {
     const s = this.s, c = this.c;
     const stat = (k) => `<div class="stat"><span>${t(`stats.${k}`)}</span><div class="bar"><i style="width:${s.stats[k]}%"></i></div><b>${s.stats[k]}</b></div>`;
-    const tabs = ["checklist", "bag", "badges"].map((k) => `<button data-tab="${k}" class="${this.tab === k ? "on" : ""}">${t(`myfpt.tabs.${k}`)}</button>`).join("");
+    const list = ["checklist", "bag", "badges", ...(s.hasReward("so_loi_khuyen") ? ["advice"] : [])];
+    if (!list.includes(this.tab)) this.tab = "checklist";
+    const tabs = list.map((k) => `<button data-tab="${k}" class="${this.tab === k ? "on" : ""}">${t(`myfpt.tabs.${k}`)}</button>`).join("");
     this.el.innerHTML = `<div class="phone">
       <div class="top"><b>${t("myfpt.title")}</b><span>${escape(s.player.name)}</span>
         <button class="help ${this.helpOpen ? "on" : ""}" data-a="help">? ${t("myfpt.help")} <kbd>H</kbd></button></div>
@@ -71,6 +74,17 @@ export class MyFptApp {
           <b>${escape(s.player.name)}</b><span>${escape(tx(pos?.name) || "")} · Intern</span></div>
           <div><b>${tx(r.name)}</b><small>${tx(r.desc)}</small></div></li>`;
       }
+      // La bàn nghề nghiệp: xu hướng + hướng phát triển theo vị trí intern (minigames.career_compass)
+      if (id === "la_ban_nghe_nghiep" && s.compass) {
+        const d = c.minigames.career_compass, tr = d?.traits[s.compass.trait];
+        const dir = d?.directions[s.compass.position]?.[s.compass.trait] ?? d?.directions.developer?.[s.compass.trait];
+        return `<li class="compass-row"><span class="icon">${r.icon}</span><div><b>${tx(r.name)} · ${escape(tx(tr?.name))}</b>
+          <small>${escape(tx(tr?.desc))}</small><small class="dir">→ ${escape(tx(dir))}</small></div></li>`;
+      }
+      // Nhiệm vụ đầu tiên: việc Manager giao (minigames.priorities → mission)
+      if (id === "nhiem_vu_dau_tien") {
+        return `<li class="mission-row"><span class="icon">${r.icon}</span><div><b>${tx(r.name)}</b><small>${escape(tx(c.minigames.priorities?.mission) || tx(r.desc))}</small></div></li>`;
+      }
       if (r.type === "photo" && s.photos.checkin) {
         return `<li class="photo-row"><img class="thumb" src="${s.photos.checkin}" alt=""><div><b>${tx(r.name)}</b><small>${tx(r.desc)}</small></div></li>`;
       }
@@ -81,6 +95,16 @@ export class MyFptApp {
       return `<li class="carry"><span class="icon">${r.icon}</span><div><b>${tx(r.name)}</b><small>${t("myfpt.carry")} · ${tx(r.desc)}</small></div></li>`;
     });
     return `<ul class="bag">${carry.join("")}${rows.join("")}${grains}</ul>`;
+  }
+
+  // Sổ lời khuyên (zone 5): lời khuyên ngày đầu của đồng nghiệp, theo thứ tự nhận
+  advice() {
+    const s = this.s, c = this.c;
+    if (!s.advice.length) return `<p class="empty">${t("myfpt.advice_empty")}</p>`;
+    return `<h3 class="advice-h">📒 ${t("myfpt.advice_title")}</h3><ul class="advice">${s.advice.map((id) => {
+      const a = c.adviceById.get(id);
+      return a ? `<li><p>“${escape(tx(a.text))}”</p><small>— ${escape(c.names?.(a.from) ?? a.from)}</small></li>` : "";
+    }).join("")}</ul>`;
   }
 
   badges() {

@@ -389,8 +389,447 @@ const learning_path = {
   },
 };
 
+// ---------- La bàn nghề nghiệp (gặp Prajith, zone 5): 4 câu không đúng / sai → thẻ gợi ý hướng phát triển theo vị trí
+// intern + xu hướng chính (nhiều nhất; bằng nhau → câu trả lời sớm hơn) ----------
+const compass = {
+  start(ctx) {
+    const d = ctx.data, g = ctx.game, qs = d.questions;
+    const pos = g?.progress.player.position || "developer";
+    const posName = tx(g?.characters.cfg.character_creation?.positions?.find((x) => x.id === pos)?.name) || "";
+    let i = 0, done = false, finished = false;
+    const answers = [];
+    const result = () => {
+      const count = {};
+      let best = null;
+      answers.forEach((k, n) => { const tr = qs[n].options[k].trait; count[tr] = (count[tr] || 0) + 1; });
+      answers.forEach((k, n) => { const tr = qs[n].options[k].trait; if (!best || count[tr] > count[best]) best = tr; });
+      return best;
+    };
+    const draw = () => {
+      if (!done) {
+        const q = qs[i];
+        ctx.body.innerHTML = `<div class="quiz compass"><p class="qn">${t("minigame.question_n", { n: i + 1, total: qs.length })}</p>
+          <p class="q">${esc(tx(q.q))}</p>
+          <ol class="opts">${q.options.map((o, k) => `<li data-k="${k}">${kbd(k + 1)} ${esc(tx(o.text))}</li>`).join("")}</ol></div>`;
+        ctx.body.querySelectorAll(".opts li").forEach((li) => li.addEventListener("click", () => pick(+li.dataset.k)));
+        return;
+      }
+      const tr = result(), trait = d.traits[tr];
+      const dir = d.directions[pos]?.[tr] ?? d.directions.developer[tr];
+      ctx.body.innerHTML = `<div class="compass-card"><div class="needle">🧭</div><small>${esc(tx(d.card_title))}</small>
+        <h3>${esc(tx(trait.name))}</h3><p class="who">${esc(t("myfpt.compass_of", { trait: tx(trait.name), position: posName }))}</p>
+        <p>${esc(tx(trait.desc))}</p><p class="dir"><b>→</b> ${esc(tx(dir))}</p><small class="note">${esc(tx(d.card_note))}</small>
+        <button class="primary done">${t("minigame.done")} ${kbd("Enter")}</button></div>`;
+      ctx.body.querySelector(".done").addEventListener("click", finish);
+    };
+    const pick = (k) => {
+      if (done || k < 0 || k >= qs[i].options.length) return;
+      sound.play("tap");
+      answers.push(k);
+      if (++i >= qs.length) { done = true; ctx.correct(tx(d.done)); }
+      draw();
+    };
+    const finish = () => {
+      if (finished || !done) return;
+      finished = true;
+      ctx.finish({ compass: { trait: result(), answers: [...answers], position: pos } });
+    };
+    draw();
+    ctx.idleHint = () => (done ? null : tx(d.idle));
+    ctx.onKey = (e) => {
+      if (done) { if (["Enter", "NumpadEnter", "Space"].includes(e.code)) { finish(); return true; } return false; }
+      const n = digit(e);
+      if (n < 0) return false;
+      pick(n);
+      return true;
+    };
+    ctx.debug = {
+      solve: (picks = [0, 0, 0, 0]) => { for (const k of picks) if (!done) pick(k); finish(); },
+      state: () => ({ i, answers: [...answers], done, trait: done ? result() : null }),
+    };
+  },
+};
+
+// ---------- Sắp xếp ưu tiên (gặp Manager, zone 5): 5 thẻ việc tuần đầu; việc có hạn hôm nay lên đầu, câu lạc bộ xuống
+// cuối, 3 việc giữa đổi chỗ vẫn đúng. Chưa hợp lý → Manager góp ý 1 câu (thẻ đặt sai được làm sáng) + xếp lại 1 lần ----------
+const priorities = {
+  start(ctx) {
+    const d = ctx.data;
+    const items = d.items.map((it, k) => ({ ...it, k }));
+    const sensible = (o) => o[0].rank === "first" && o[o.length - 1].rank === "last";
+    let order = shuffle(items);
+    for (let n = 0; n < 20 && sensible(order); n++) order = shuffle(items);
+    let sel = 0, done = false, tries = 0, flagged = new Set();
+    const draw = () => {
+      ctx.body.innerHTML = `<div class="timeline prio"><div class="ends">${esc(tx(d.top))}</div>
+        <ol class="cards">${order.map((it, n) => `<li data-k="${it.k}" class="${n === sel && !done ? "sel" : ""} ${flagged.has(it.k) ? "glow" : ""}">
+          <span class="grip">⋮⋮</span><span class="txt">${esc(tx(it.text))}</span><em class="tag">${esc(tx(it.tag))}</em></li>`).join("")}</ol>
+        <div class="ends">${esc(tx(d.bottom))}</div>
+        ${done ? "" : `<button class="primary check">${t("minigame.check")} ${kbd("Enter")}</button>`}</div>`;
+      ctx.body.querySelector(".check")?.addEventListener("click", check);
+      const list = ctx.body.querySelector(".cards");
+      let drag = null;
+      list.addEventListener("pointerdown", (e) => {
+        const li = e.target.closest("li");
+        if (done || !li || e.button !== 0) return;
+        drag = li; list.setPointerCapture(e.pointerId); li.classList.add("drag");
+      });
+      list.addEventListener("pointermove", (e) => {
+        if (!drag) return;
+        const over = document.elementFromPoint(e.clientX, e.clientY)?.closest(".cards li");
+        if (!over || over === drag) return;
+        const r = over.getBoundingClientRect();
+        list.insertBefore(drag, e.clientY > r.top + r.height / 2 ? over.nextSibling : over);
+      });
+      const drop = () => {
+        if (!drag) return;
+        const li = drag;
+        drag = null;
+        order = [...list.querySelectorAll("li")].map((x) => items[+x.dataset.k]);
+        sel = order.findIndex((x) => x.k === +li.dataset.k);
+        sound.play("tap");
+        draw();
+      };
+      list.addEventListener("pointerup", drop);
+      list.addEventListener("pointercancel", drop);
+    };
+    const move = (from, to) => {
+      if (to < 0 || to >= order.length || from === to) return;
+      const [it] = order.splice(from, 1);
+      order.splice(to, 0, it);
+      sel = to; sound.play("tap"); draw();
+    };
+    const check = () => {
+      if (done) return;
+      if (sensible(order)) {
+        done = true; flagged = new Set();
+        ctx.correct(tx(d.done_good)); draw();
+        ctx.later(() => ctx.finish({ value: "wisdom", flags: ["priorities_sensible"] }), 1400);
+        return;
+      }
+      tries++;
+      if (tries >= 2) {                                 // xếp lại 1 lần vẫn chưa hợp lý: vẫn xong, không có ô Wisdom
+        done = true; flagged = new Set();
+        ctx.hint(tx(d.done_ok), "info"); draw();
+        ctx.later(() => ctx.finish({ flags: ["priorities_done"] }), 1800);
+        return;
+      }
+      const firstOk = order[0].rank === "first";
+      flagged = new Set([items.find((x) => x.rank === (firstOk ? "last" : "first")).k]);
+      draw();
+      ctx.mistake(`${tx(firstOk ? d.feedback_last : d.feedback_first)} ${tx(d.retry)}`);
+    };
+    draw();
+    ctx.idleHint = () => (done ? null : tx(d.idle));
+    ctx.onKey = (e) => {
+      if (done) return false;
+      if (e.code === "ArrowUp") { e.shiftKey ? move(sel, sel - 1) : (sel = Math.max(0, sel - 1), draw()); return true; }
+      if (e.code === "ArrowDown") { e.shiftKey ? move(sel, sel + 1) : (sel = Math.min(order.length - 1, sel + 1), draw()); return true; }
+      if (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") { check(); return true; }
+      return false;
+    };
+    const arrange = (good) => {
+      const first = items.find((x) => x.rank === "first"), last = items.find((x) => x.rank === "last");
+      const mid = items.filter((x) => !x.rank);
+      order = good ? [first, ...mid, last] : [last, ...mid, first];
+    };
+    ctx.debug = {
+      solve: () => { arrange(true); check(); ctx.finish({ value: "wisdom", flags: ["priorities_sensible"] }); },
+      wrong: () => { arrange(false); check(); },
+      state: () => ({ order: order.map((x) => x.id), tries, done, flagged: [...flagged] }),
+    };
+  },
+};
+
+// ---------- Một cú bi-a (anh Khang, zone 5, tùy chọn): bàn nhìn từ trên xuống; chỉnh hướng (chuột / ←→), thanh lực chạy
+// qua lại, bấm (click / Space) để đánh. Bi cam vào lỗ = thắng; trượt → thử lại; sai 2 lần → đường ngắm gợi ý ----------
+const billiards = {
+  layout: "panel",
+  start(ctx) {
+    const d = ctx.data;
+    const W = 440, H = 240, R = 9, POCKET_R = 17, DECEL = 120, VMIN = 140, VMAX = 640;
+    const pockets = [[0, 0], [W / 2, 0], [W, 0], [0, H], [W / 2, H], [W, H]];
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const start = { cue: [rnd(95, 125), rnd(140, 175)], ball: [rnd(300, 330), rnd(70, 100)] };
+    let cue, ball, aim = -0.35, power = 0, phase = 0, state = "aim", shots = 0, raf = 0, last = 0;
+    const reset = () => {
+      cue = { p: [...start.cue], v: [0, 0], in: false };
+      ball = { p: [...start.ball], v: [0, 0], in: false };
+      state = "aim";
+    };
+    reset();
+    ctx.body.innerHTML = `<div class="billiards"><canvas width="${W + 24}" height="${H + 24}"></canvas>
+      <div class="pbar"><span>${t("minigame.power")}</span><div class="bar"><i></i><b class="mark" hidden></b></div>
+      <button class="primary shoot">${t("minigame.shoot")} ${kbd("Space")}</button></div></div>`;
+    const cv = ctx.body.querySelector("canvas"), g2 = cv.getContext("2d"), barI = ctx.body.querySelector(".bar i"), mark = ctx.body.querySelector(".bar .mark");
+    // lời giải (đường ngắm gợi ý + __game): bi ma cạnh bi cam, hướng về lỗ dễ nhất; lực đủ để bi cam tới lỗ
+    const solution = () => {
+      let best = null;
+      for (const P of pockets) {
+        const tp = [P[0] - ball.p[0], P[1] - ball.p[1]], dt = Math.hypot(...tp);
+        const ghost = [ball.p[0] - tp[0] / dt * 2 * R, ball.p[1] - tp[1] / dt * 2 * R];
+        const cg = [ghost[0] - cue.p[0], ghost[1] - cue.p[1]], dc = Math.hypot(...cg);
+        const cos = (cg[0] * tp[0] + cg[1] * tp[1]) / (dc * dt);
+        if (cos < 0.45) continue;                                       // cắt quá mỏng
+        const vt = Math.sqrt(2 * DECEL * dt) * 1.25, vc = vt / cos, v0 = Math.sqrt(vc * vc + 2 * DECEL * dc);
+        const pw = (v0 - VMIN) / (VMAX - VMIN);
+        if (pw > 1) continue;
+        const score = cos - dt / 2000;
+        if (!best || score > best.score) best = { angle: Math.atan2(cg[1], cg[0]), power: Math.max(0.05, pw), score };
+      }
+      return best;
+    };
+    let sol = solution();
+    const draw = () => {
+      const o = 12;
+      g2.clearRect(0, 0, cv.width, cv.height);
+      g2.fillStyle = "#6b3f24"; g2.fillRect(0, 0, cv.width, cv.height);
+      g2.fillStyle = "#1f7a4d"; g2.fillRect(o, o, W, H);
+      g2.fillStyle = "#0d1310";
+      for (const [x, y] of pockets) { g2.beginPath(); g2.arc(o + x, o + y, POCKET_R - 3, 0, Math.PI * 2); g2.fill(); }
+      if (state === "aim") {
+        // đường ngắm (sai 2 lần: thêm đường gợi ý chấm vàng tới bi ma)
+        if (ctx.assist && sol) {
+          g2.setLineDash([4, 6]); g2.strokeStyle = "#ffd27a"; g2.lineWidth = 2; g2.beginPath();
+          g2.moveTo(o + cue.p[0], o + cue.p[1]); g2.lineTo(o + cue.p[0] + Math.cos(sol.angle) * 400, o + cue.p[1] + Math.sin(sol.angle) * 400); g2.stroke();
+        }
+        g2.setLineDash([6, 6]); g2.strokeStyle = "rgba(255,255,255,.75)"; g2.lineWidth = 2; g2.beginPath();
+        g2.moveTo(o + cue.p[0], o + cue.p[1]); g2.lineTo(o + cue.p[0] + Math.cos(aim) * 120, o + cue.p[1] + Math.sin(aim) * 120); g2.stroke();
+        g2.setLineDash([]);
+        // gậy
+        g2.strokeStyle = "#d9b77e"; g2.lineWidth = 5; g2.beginPath();
+        const back = 16 + power * 40;
+        g2.moveTo(o + cue.p[0] - Math.cos(aim) * back, o + cue.p[1] - Math.sin(aim) * back);
+        g2.lineTo(o + cue.p[0] - Math.cos(aim) * (back + 150), o + cue.p[1] - Math.sin(aim) * (back + 150)); g2.stroke();
+      }
+      for (const [b, col] of [[ball, "#f37021"], [cue, "#f7f7f2"]]) {
+        if (b.in) continue;
+        g2.fillStyle = col; g2.beginPath(); g2.arc(o + b.p[0], o + b.p[1], R, 0, Math.PI * 2); g2.fill();
+        g2.strokeStyle = "rgba(0,0,0,.35)"; g2.lineWidth = 1; g2.stroke();
+      }
+      barI.style.width = `${Math.round(power * 100)}%`;
+      mark.hidden = !(ctx.assist && sol);
+      if (sol) mark.style.left = `${Math.round(sol.power * 100)}%`;
+    };
+    // vật lý: bước cố định 1/240 s; trả true khi mọi bi đã dừng / rơi lỗ
+    const step = (dt) => {
+      for (const b of [cue, ball]) {
+        if (b.in) continue;
+        const sp = Math.hypot(...b.v);
+        if (sp > 0) { const ns = Math.max(0, sp - DECEL * dt); b.v = [b.v[0] / sp * ns, b.v[1] / sp * ns]; }
+        b.p[0] += b.v[0] * dt; b.p[1] += b.v[1] * dt;
+        for (const [px, py] of pockets) if (Math.hypot(b.p[0] - px, b.p[1] - py) < POCKET_R) { b.in = true; b.v = [0, 0]; }
+        if (b.in) continue;
+        if (b.p[0] < R) { b.p[0] = R; b.v[0] = Math.abs(b.v[0]) * 0.8; }
+        if (b.p[0] > W - R) { b.p[0] = W - R; b.v[0] = -Math.abs(b.v[0]) * 0.8; }
+        if (b.p[1] < R) { b.p[1] = R; b.v[1] = Math.abs(b.v[1]) * 0.8; }
+        if (b.p[1] > H - R) { b.p[1] = H - R; b.v[1] = -Math.abs(b.v[1]) * 0.8; }
+      }
+      if (!cue.in && !ball.in) {                                    // va chạm 2 bi (khối lượng bằng nhau, gần đàn hồi)
+        const dx = ball.p[0] - cue.p[0], dy = ball.p[1] - cue.p[1], dist = Math.hypot(dx, dy);
+        if (dist < 2 * R && dist > 0) {
+          const nx = dx / dist, ny = dy / dist;
+          const rel = (cue.v[0] - ball.v[0]) * nx + (cue.v[1] - ball.v[1]) * ny;
+          if (rel > 0) {
+            const j = rel * 0.97;
+            cue.v[0] -= j * nx; cue.v[1] -= j * ny; ball.v[0] += j * nx; ball.v[1] += j * ny;
+          }
+          const push = (2 * R - dist) / 2;
+          cue.p[0] -= nx * push; cue.p[1] -= ny * push; ball.p[0] += nx * push; ball.p[1] += ny * push;
+        }
+      }
+      return [cue, ball].every((b) => b.in || Math.hypot(...b.v) < 3);
+    };
+    const settle = () => {
+      if (ball.in) {
+        state = "done";
+        ctx.correct(tx(d.potted));
+        draw();
+        ctx.later(() => ctx.finish({ flags: ["billiards_potted", "billiards_last_hit"] }), 1200);
+        return;
+      }
+      ctx.mistake(tx(cue.in ? d.scratch : d.miss));
+      reset();
+      sol = solution();
+      draw();
+    };
+    const shoot = () => {
+      if (state !== "aim") return;
+      sound.play("tap");
+      shots++;
+      const v = VMIN + power * (VMAX - VMIN);
+      cue.v = [Math.cos(aim) * v, Math.sin(aim) * v];
+      state = "rolling";
+    };
+    const frame = (now) => {
+      raf = requestAnimationFrame(frame);
+      const dt = Math.min(0.05, last ? (now - last) / 1000 : 0);
+      last = now;
+      if (state === "aim") { phase += dt * 1.25; power = 0.5 - 0.5 * Math.cos(phase * Math.PI); }
+      if (state === "rolling") {
+        let stopped = false;
+        for (let k = 0; k < Math.round(dt * 240) && !stopped; k++) stopped = step(1 / 240);
+        if (stopped) settle();
+      }
+      draw();
+    };
+    raf = requestAnimationFrame(frame);
+    const toTable = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width - 12, (e.clientY - r.top) * cv.height / r.height - 12]; };
+    cv.addEventListener("pointermove", (e) => { if (state !== "aim") return; const [x, y] = toTable(e); aim = Math.atan2(y - cue.p[1], x - cue.p[0]); });
+    cv.addEventListener("pointerdown", (e) => { if (state !== "aim") return; const [x, y] = toTable(e); aim = Math.atan2(y - cue.p[1], x - cue.p[0]); shoot(); });
+    ctx.body.querySelector(".shoot").addEventListener("click", shoot);
+    ctx.idleHint = () => (state === "aim" ? tx(ctx.assist ? d.assist : d.idle) : null);
+    ctx.onAssist = () => draw();
+    ctx.onKey = (e) => {
+      if (state !== "aim") return false;
+      if (e.code === "ArrowLeft") { aim -= THREE_DEG * (e.shiftKey ? 0.5 : 2); return true; }
+      if (e.code === "ArrowRight") { aim += THREE_DEG * (e.shiftKey ? 0.5 : 2); return true; }
+      if (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter") { shoot(); return true; }
+      return false;
+    };
+    ctx.skipExtra = () => ({});
+    // __game: đánh ngay theo lời giải (mô phỏng tức thì); wrong: đánh trượt hẳn
+    const simulate = () => { for (let k = 0; k < 240 * 20; k++) if (step(1 / 240)) break; settle(); };
+    ctx.debug = {
+      solve: () => {
+        for (let n = 0; n < 6 && state === "aim"; n++) {
+          const s = solution();
+          if (!s) break;
+          const tries = [s.power, s.power * 1.1, s.power * 0.92, Math.min(1, s.power * 1.25)];
+          for (const p of tries) {
+            const save = { cue: JSON.parse(JSON.stringify(cue)), ball: JSON.parse(JSON.stringify(ball)) };
+            aim = s.angle; power = p; shoot();
+            for (let k = 0; k < 240 * 20; k++) if (step(1 / 240)) break;
+            if (ball.in) { settle(); return; }
+            Object.assign(cue, save.cue); Object.assign(ball, save.ball); state = "aim";
+          }
+          break;
+        }
+        if (state === "aim") ctx.finish({ flags: ["billiards_potted", "billiards_last_hit"] });
+      },
+      wrong: () => { aim = Math.atan2(-(cue.p[1] - 0), -(cue.p[0] - 0)) + Math.PI; power = 0.15; shoot(); simulate(); },
+      state: () => ({ state, shots, aim: +aim.toFixed(3), power: +power.toFixed(2), cue: cue.p.map((v) => +v.toFixed(1)), ball: ball.p.map((v) => +v.toFixed(1)), sol }),
+    };
+    return () => cancelAnimationFrame(raf);
+  },
+};
+const THREE_DEG = Math.PI / 180;
+
+// ---------- Đăng nhập lần đầu (bàn làm việc, zone 5): mật khẩu đạt mọi quy định (thanh độ mạnh, quy định thật chờ HR/IT →
+// draft) rồi bật xác thực hai lớp. Mật khẩu chỉ kiểm tra trong trình duyệt, không lưu, không gửi đi ----------
+const login = {
+  start(ctx) {
+    const d = ctx.data;
+    const first = String(ctx.vars.player || "").trim().split(/\s+/)[0].toLowerCase();
+    const tests = {
+      len: (p) => [...p].length >= 12,
+      case: (p) => /\p{Lu}/u.test(p) && /\p{Ll}/u.test(p),
+      digit: (p) => /\d/.test(p),
+      symbol: (p) => /[^\p{L}\p{N}\s]/u.test(p),
+      name: (p) => p.length > 0 && (first.length < 3 || !p.toLowerCase().includes(first)),
+    };
+    let stage = "pw", fails = 0, finished = false;
+    const passed = (p) => d.rules.map((r) => !!tests[r.id]?.(p));
+    const draw = () => {
+      if (stage === "pw") {
+        ctx.body.innerHTML = `<form class="login" autocomplete="off"><input type="text" name="username" autocomplete="username" value="${esc(ctx.vars.player || "")}" hidden><div class="pwrow"><input type="password" class="pw" autocomplete="new-password" spellcheck="false"
+            placeholder="${esc(tx(d.placeholder))}" maxlength="64"><button type="button" class="ghost show">${t("minigame.show_pw")}</button></div>
+          <div class="meter"><i></i></div><p class="level"></p>
+          <b class="rules-t">${t("minigame.rules")}</b><ul class="rules">${d.rules.map((r) => `<li data-r="${r.id}"><span class="tick"></span>${esc(tx(r.text))}</li>`).join("")}</ul>
+          <button type="submit" class="primary set">${esc(tx(d.login_btn))} ${kbd("Enter")}</button></form>`;
+        ctx.body.querySelector("form").addEventListener("submit", (e) => { e.preventDefault(); submit(); });
+        const inp = ctx.body.querySelector(".pw");
+        inp.addEventListener("input", update);
+        ctx.body.querySelector(".show").addEventListener("click", () => { inp.type = inp.type === "password" ? "text" : "password"; inp.focus(); });
+        setTimeout(() => inp.focus(), 30);
+        update();
+      } else {
+        ctx.body.innerHTML = `<div class="login twofa"><div class="ok-pw">✓ ${esc(tx(d.login_btn))}</div>
+          <div class="tf"><div><b>${esc(tx(d.twofa_title))}</b><small>${esc(tx(d.twofa_desc))}</small></div>
+          <button class="switch ${stage === "done" ? "on" : ""} ${ctx.assist && stage === "twofa" ? "glow" : ""}" aria-pressed="${stage === "done"}">
+            <i></i><span>${t(stage === "done" ? "minigame.twofa_onstate" : "minigame.twofa_off")}</span></button></div>
+          ${stage === "twofa" ? `<button class="primary on">${esc(tx(d.twofa_on))} ${kbd("Space")}</button>` : ""}</div>`;
+        ctx.body.querySelector(".switch").addEventListener("click", enable2fa);
+        ctx.body.querySelector(".on")?.addEventListener("click", enable2fa);
+      }
+    };
+    function update() {
+      const p = ctx.body.querySelector(".pw")?.value || "";
+      const ok = passed(p), n = ok.filter(Boolean).length;
+      ctx.body.querySelectorAll(".rules li").forEach((li, k) => li.classList.toggle("ok", ok[k] && p.length > 0));
+      // độ mạnh: đạt đủ mọi quy định = mức cao nhất; còn lại theo số quy định đạt (0–1 → thấp nhất)
+      const top = d.strength.length - 1;
+      const lv = n === d.rules.length ? top : Math.max(0, Math.min(top - 1, n - 1));
+      const bar = ctx.body.querySelector(".meter i");
+      bar.style.width = `${p ? Math.round((100 * n) / d.rules.length) : 0}%`;
+      bar.dataset.lv = p ? lv : 0;
+      ctx.body.querySelector(".level").textContent = p ? t("minigame.strength", { level: tx(d.strength[lv]) }) : "";
+    }
+    function submit() {
+      if (stage !== "pw") return;
+      const p = ctx.body.querySelector(".pw").value;
+      if (passed(p).every(Boolean)) { stage = "twofa"; ctx.correct(""); draw(); return; }
+      fails++;
+      ctx.mistake(`${tx(d.not_yet)}${fails >= 2 ? ` ${tx(d.suggest)}` : ""}`);
+      ctx.body.querySelector(".pw").focus();
+    }
+    function enable2fa() {
+      if (stage !== "twofa") return;
+      stage = "done";
+      sound.play("tap");
+      ctx.correct(tx(d.done));
+      draw();
+      ctx.later(() => { if (!finished) { finished = true; ctx.finish(); } }, 1300);
+    }
+    draw();
+    ctx.idleHint = () => (stage === "pw" ? tx(d.idle.pw) : stage === "twofa" ? tx(d.idle.twofa) : null);
+    ctx.onAssist = () => { if (stage === "twofa") draw(); };
+    ctx.onKey = (e) => {
+      if (stage === "pw" && (e.code === "Enter" || e.code === "NumpadEnter")) { submit(); return true; }
+      if (stage === "twofa" && ["Space", "Enter", "NumpadEnter"].includes(e.code)) { enable2fa(); return true; }
+      return false;
+    };
+    ctx.debug = {
+      solve: () => { if (stage === "pw") { const inp = ctx.body.querySelector(".pw"); inp.value = "Orange-Rice-Field-26!"; update(); submit(); } enable2fa(); if (!finished) { finished = true; ctx.finish(); } },
+      wrong: () => { if (stage === "pw") { const inp = ctx.body.querySelector(".pw"); inp.value = "password"; update(); submit(); } },
+      state: () => ({ stage, fails, rules: passed(ctx.body.querySelector(".pw")?.value || "") }),
+    };
+  },
+};
+
+// ---------- Checklist ngày đầu (bàn làm việc, zone 5): các mục theo 4 Act tự tick lần lượt, mục bàn làm việc tick cuối ----------
+const day_checklist = {
+  start(ctx) {
+    const d = ctx.data, g = ctx.game, c = ctx.content;
+    const acts = g?.acts.status() || [];
+    const ticks = [];
+    acts.forEach((st) => st.items.forEach((it) => { if (it.done) ticks.push(it.id); }));
+    if (!ticks.includes("desk")) ticks.push("desk");                 // đang ngồi vào bàn: tick cuối cùng
+    let n = 0, ready = false, finished = false;
+    ctx.body.innerHTML = `<div class="daylist">${acts.map((st) => `<section><b>${esc(t("acts.label", { n: st.act.number }))} · ${esc(tx(st.act.title))}</b>
+      <ol>${st.items.map((it) => `<li data-id="${it.id}"><span class="tick"></span>${esc(tx(c.checklist.find((x) => x.id === it.id)?.title))}</li>`).join("")}</ol></section>`).join("")}
+      <button class="primary done" disabled>${esc(tx(d.done_btn))} ${kbd("Enter")}</button></div>`;
+    const btn = ctx.body.querySelector(".done");
+    const tickNext = () => {
+      if (n >= ticks.length) { ready = true; btn.disabled = false; return; }
+      ctx.body.querySelector(`li[data-id="${ticks[n++]}"]`)?.classList.add("ok");
+      sound.play("tap");
+      ctx.later(tickNext, 260);
+    };
+    ctx.later(tickNext, 350);
+    const finish = () => { if (!ready || finished) return; finished = true; ctx.finish(); };
+    btn.addEventListener("click", finish);
+    ctx.idleHint = () => (ready ? tx(d.idle) : null);
+    ctx.onKey = (e) => { if (["Enter", "NumpadEnter", "Space"].includes(e.code)) { finish(); return true; } return false; };
+    ctx.debug = {
+      solve: () => { while (n < ticks.length) ctx.body.querySelector(`li[data-id="${ticks[n++]}"]`)?.classList.add("ok"); ready = true; finish(); },
+      state: () => ({ ticked: n, total: ticks.length, ready }),
+    };
+  },
+};
+
 export const GAMES = {
-  install_app, well, quiz, profile_check, timeline, learning_path,
+  install_app, well, quiz, profile_check, timeline, learning_path, compass, priorities, billiards, login, day_checklist,
   photo_checkin: { layout: "photo", start: (ctx) => photo.start(ctx, "checkin") },
   photo_id: { layout: "photo", start: (ctx) => photo.start(ctx, "id") },
 };

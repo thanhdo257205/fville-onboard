@@ -20,6 +20,7 @@ import { save } from "./state.js";
 import { Interaction } from "./interaction.js";
 import { DialogueRunner } from "../ui/dialogue.js";
 import { Cutscene } from "./cutscene.js";
+import { Ending } from "./ending.js";
 import { Guide } from "./guide.js";
 import { Acts, earnedTitles } from "./acts.js";
 import { setTint } from "../characters/characters.js";
@@ -83,11 +84,21 @@ export class Game {
     this.updateOutfit();
     await this.enterZone(zoneId, this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
     this.acts.start();          // thẻ "ACT n" của Act hiện tại trước, rồi tới thẻ tên zone
-    hud.zoneCard(zoneId);
+    hud.zoneCard(zoneId, this.zoneClock(zoneId));
     this.setMode("play");
   }
 
   zoneCfg(id) { return this.data.zones.zones[id]; }
+
+  // zones.json → variants: [{ if, mood, time }] — dòng đầu đạt điều kiện (vd zone_05 buổi chiều sau bữa trưa, zone_01
+  // hoàng hôn ở cảnh kết): ánh sáng riêng + giờ trên đồng hồ
+  zoneVariant(id) { return (this.zoneCfg(id)?.variants || []).find((v) => this.progress.check(v.if)) || null; }
+  zoneClock(id) { const v = this.zoneVariant(id); return v?.time ? tx(v.time) : null; }
+  applyVariant() {
+    const id = this.state.zone;
+    this.applyMood(this.zoneVariant(id)?.mood ?? this.zoneCfg(id)?.mood);
+    hud.clock(this.zoneClock(id) ?? t(`zones.${id}.time`));
+  }
 
   // tải trước trong lúc người chơi điền tên (main.js): GLB zone đầu (bộ nhớ đệm HTTP), GLB nhân vật, bộ giải nén
   preload(zoneId) {
@@ -130,7 +141,7 @@ export class Game {
     this.zone = zone;
     this.scene.add(zone.root, zone.collider);
     this.lights.setLightmapMode(zone.hasLightmap);
-    this.applyMood(this.zoneCfg(zoneId)?.mood);
+    this.applyMood(this.zoneVariant(zoneId)?.mood ?? this.zoneCfg(zoneId)?.mood);
     this.state.zone = zoneId;
     // người chơi: đổi model nếu mức đồ hoạ đổi (Thấp = bản 6k, Cao = 15k)
     if (this.player.character.tier !== this.state.tier) {
@@ -173,7 +184,8 @@ export class Game {
     this.monitor.reset();
     this.detailMonitor.reset();
     hud.loading(null);
-    if (!silent && zoneCard) hud.zoneCard(zoneId);
+    if (!silent && zoneCard) hud.zoneCard(zoneId, this.zoneClock(zoneId));
+    else hud.clock(this.zoneClock(zoneId) ?? t(`zones.${zoneId}.time`));
     if (fade) await hud.fade(false);
     this.state.phase = "playing";
     if (!silent) setTimeout(() => this.runOnEnter(zoneId), 600);
@@ -380,21 +392,68 @@ export class Game {
     this.interaction.refresh();
     this.updateObjective();
     this.acts.update();                                             // xong mục cuối của một Act → thẻ Act kế tiếp
-    if (e?.finish) this.finishGame();                               // hoàn thành game (vd sau bàn làm việc zone 5)
+    // màn mờ chuyển giờ (vd "12:00 · The team invites you to lunch") và hoàn thành game (sau bàn làm việc zone 5):
+    // chạy khi hội thoại đang mở đã đóng
+    if (e?.time_skip) this.afterDialogue(() => this.timeSkip(e.time_skip));
+    if (e?.finish) this.afterDialogue(() => this.finishGame());
     this.persist();
     return events;
   }
 
-  // hoàn thành game: thành tựu cuối luôn mở (data/achievements.json → final), hiện "ACHIEVEMENT UNLOCKED", rồi màn tổng
-  // kết (thành tựu đứng đầu, trước các danh hiệu)
-  finishGame() {
+  // việc chờ hội thoại đang mở đóng lại (hiệu ứng time_skip, finish đặt trong lời thoại / kết quả mini-game)
+  afterDialogue(fn) {
+    if (this.runner.active || this.mode === "dialogue" || this.mode === "minigame") (this._after ||= []).push(fn);
+    else fn();
+  }
+  flushAfterDialogue() {
+    const q = this._after || [];
+    this._after = [];
+    for (const fn of q) fn();
+  }
+
+  // màn mờ chuyển giờ (hiệu ứng time_skip: { card, flags }) — vd sau buổi gặp Manager: "12:00 · The team invites you to
+  // lunch" rồi sáng lại buổi chiều (zones.json → variants: ánh sáng + giờ theo cờ lunch_done)
+  async timeSkip(cfg) {
+    if (this.cutscene) return;
+    this.setMode("cutscene");
+    this.timeSkipping = cfg;
+    try {
+      await hud.fade(true, 700);
+      hud.card(tx(cfg.card));
+      await new Promise((r) => setTimeout(r, (cfg.seconds ?? 2.6) * 1000));
+      if (cfg.flags) this.applyEffects({ flags: cfg.flags });
+      this.applyVariant();
+      hud.card(null);
+      await hud.fade(false, 800);
+    } finally {
+      this.timeSkipping = null;
+      this.setMode("play");
+    }
+  }
+
+  // hoàn thành game: cờ game_complete + thành tựu cuối (data/achievements.json → final); cảnh kết (data/cutscenes.json →
+  // ending: 17:30 Lan ghé bàn → bến xe zone_01 lúc hoàng hôn → Tú chạy tới → lên xe), rồi thẻ "ACHIEVEMENT UNLOCKED" và
+  // màn tổng kết (thành tựu đứng đầu, trước các danh hiệu)
+  async finishGame({ ending = true } = {}) {
     const a = this.content.achievements?.final;
-    if (!a) return;
-    const flag = `achievement_${a.id}`;
-    if (!this.progress.flags.has(flag)) this.applyEffects({ flags: [flag, "game_complete"] });
-    hud.achievement(tx(a.label), tx(a.title));
-    clearTimeout(this._summaryTimer);
-    this._summaryTimer = setTimeout(() => this.openSummary(), 3900);
+    if (!a || this.finishing) return;
+    this.finishing = true;
+    try {
+      const flag = `achievement_${a.id}`;
+      if (!this.progress.flags.has(flag)) this.applyEffects({ flags: [flag, "game_complete"] });
+      const cfg = this.content.cutscenes?.ending;
+      if (ending && cfg && !this.cutscene) await this.playEnding(cfg);
+      hud.achievement(tx(a.label), tx(a.title));
+      clearTimeout(this._summaryTimer);
+      this._summaryTimer = setTimeout(() => this.openSummary(), 3900);
+    } finally { this.finishing = false; }
+  }
+
+  async playEnding(cfg) {
+    this.setMode("cutscene");
+    this.cutscene = new Ending(this, "ending", cfg);
+    this.lastCutscene = this.cutscene;
+    try { await this.cutscene.run(); } catch (e) { console.error("[cảnh kết]", e); } finally { this.cutscene = null; this.setMode("play"); }
   }
 
   summaryData() {
@@ -405,7 +464,13 @@ export class Game {
       title: titles[0] ? { title: tx(titles[0].title), desc: tx(titles[0].desc) } : null,
       subtitles: titles.slice(1).map((x) => ({ title: tx(x.title), desc: tx(x.desc) })),
       name: s.player.name, stats: { ...s.stats }, grains: s.grains.size, grainsTotal: c.grainsTotal ?? 10,
-      values: c.values.map((v) => ({ name: tx(v.name), lit: s.valueLit(v.id) })), photo: s.photos.checkin || null,
+      values: c.values.map((v) => ({ name: tx(v.name), lit: s.valueLit(v.id), hint: tx(v.hint) })), photo: s.photos.checkin || null,
+      idPhoto: s.photos.id || null,
+      position: tx(this.characters.cfg.character_creation?.positions?.find((x) => x.id === s.player.position)?.name) || "",
+      badges: s.rewards.map((id) => c.rewards.get(id)).filter((r) => String(r?.type).startsWith("badge")).map((r) => ({ icon: r.icon, name: tx(r.name) })),
+      // lời nhắn của Prajith theo xu hướng ở La bàn nghề nghiệp (minigames.career_compass → messages)
+      note: s.compass ? tx(c.minigames.career_compass?.messages?.[s.compass.trait], { player: s.player.name }) || null : null,
+      date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),   // chữ trong game: tiếng Anh
       acts: this.acts.status().map((x) => ({ number: x.act.number, title: tx(x.act.title), done: x.done, total: x.total })),
     };
   }
@@ -492,6 +557,7 @@ export class Game {
     const z = this.state.zone, q = this.progress.currentQuest(z);
     // zone chưa có việc (zone_05: các cuộc gặp làm sau) → "Explore <zone>"; zone đã xong hết việc → sang khu tiếp theo
     const none = !this.content.quests.some((x) => x.zone === z);
+    if (this.progress.flags.has("game_complete")) { hud.objective(t("hud.objective_complete")); return; }
     hud.objective(q ? tx(q.title) : none ? t("hud.objective_explore", { zone: t(`zones.${z}.title`) }) : t("hud.objective_done_zone"));
   }
 
@@ -562,6 +628,7 @@ export class Game {
       if (npc) npc.release();
       if (tu) tu.endTalk();
       this.setMode("play");
+      this.flushAfterDialogue();
     }
   }
 
@@ -600,6 +667,7 @@ export class Game {
     this.lastMinigame = { id, ...r };
     if (r.ok) this.applyEffects(r.effects);
     this.setMode(prev === "dialogue" ? "dialogue" : "play");
+    if (prev !== "dialogue") this.flushAfterDialogue();
     return r.ok;
   }
 

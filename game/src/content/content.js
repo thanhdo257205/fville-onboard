@@ -33,6 +33,8 @@ export async function loadContent() {
     guidance: raw.guidance,
     acts: raw.acts,
     achievements: raw.achievements,
+    advice: raw.rewards.advice || [],
+    adviceById: new Map((raw.rewards.advice || []).map((a) => [a.id, a])),
   };
 }
 
@@ -69,6 +71,8 @@ export function nodeRefs(c) {
     for (const cam of cs.cams || []) add(cs.zone, cam, `${w} · cams`);
     const a = cs.arrive || {};
     for (const k of ["spawn", "bus", "door", "path", "camera_from"]) add(a.zone, a[k], `${w} · arrive.${k}`, true);
+    if (cs.office) add(cs.office.zone, cs.office.seat, `${w} · office.seat`);          // cảnh kết
+    for (const k of ["spawn", "door"]) if (cs.bus_stop) add(cs.bus_stop.zone, cs.bus_stop[k], `${w} · bus_stop.${k}`, true);
   }
   return refs;
 }
@@ -99,9 +103,12 @@ export function validateLinks(c) {
   const needItem = (id, where) => { for (const r of [].concat(id || [])) if (!c.carry.has(r)) errs.push(`${where}: không có vật mang theo ${r}`); };
   const needValue = (id, where) => { for (const v of [].concat(id || [])) if (!c.valueById.has(v)) errs.push(`${where}: không có giá trị ${v}`); };
   const needQuest = (id, where) => { for (const q of [].concat(id || [])) if (!c.questById.has(q)) errs.push(`${where}: không có quest ${q}`); };
+  const needAdvice = (id, where) => { for (const a of [].concat(id || [])) if (!c.adviceById.has(a)) errs.push(`${where}: không có lời khuyên ${a} (rewards.json → advice)`); };
   const checkEffects = (e, where) => {
     if (!e) return;
     needReward(e.reward, where); needValue(e.value, where); needQuest(e.quest, where); needItem(e.item, where); needItem(e.remove_item, where);
+    needAdvice(e.advice, where);
+    if (e.time_skip && !e.time_skip.card) errs.push(`${where}: time_skip thiếu card`);
   };
   const checkAction = (a, where) => {
     if (!a) return;
@@ -137,16 +144,19 @@ export function validateLinks(c) {
   for (const [id, cs] of Object.entries(c.cutscenes)) {
     if (id.startsWith("_")) continue;
     if (cs.dialogue && !c.dialogues.has(cs.dialogue)) errs.push(`cutscenes.json · ${id}: không có hội thoại ${cs.dialogue}`);
+    if (cs.office?.dialogue && !c.dialogues.has(cs.office.dialogue)) errs.push(`cutscenes.json · ${id}: không có hội thoại ${cs.office.dialogue}`);
     checkEffects(cs.effects, `cutscenes.json · ${id} · effects`);
   }
   for (const q of c.quests) if (q.checklist && !c.checklist.some((x) => x.id === q.checklist)) errs.push(`quest ${q.id}: không có mục checklist ${q.checklist}`);
-  // hướng dẫn: mỗi quest bắt buộc có gợi ý (help) + 2 câu nhắc của Tú + 2 tin nhắn điện thoại; mọi quest có help
+  // hướng dẫn: mỗi quest bắt buộc có gợi ý (help) + 2 câu nhắc của Tú (trừ zone không có Tú: settings.no_tu_zones)
+  // + 2 tin nhắn điện thoại; mọi quest có help
   const gd = c.guidance || {};
+  const noTu = new Set(gd.settings?.no_tu_zones || []);
   for (const id of Object.keys(gd.goals || {})) if (!c.questById.has(id)) errs.push(`guidance.json · goals.${id}: không có quest ${id}`);
   for (const q of c.quests) {
     const g = gd.goals?.[q.id], where = `guidance.json · goals.${q.id}`;
     if (!g?.help) errs.push(`${where}: thiếu help`);
-    if (q.required && (g?.tu?.length ?? 0) < 2) errs.push(`${where}: cần 2 câu nhắc của Tú (tu)`);
+    if (q.required && !noTu.has(q.zone) && (g?.tu?.length ?? 0) < 2) errs.push(`${where}: cần 2 câu nhắc của Tú (tu)`);
     if (q.required && (g?.phone?.length ?? 0) < 2) errs.push(`${where}: cần 2 tin nhắn điện thoại (phone)`);
   }
   for (const zone of c.zoneOrder || []) {
@@ -161,6 +171,7 @@ export function validateLinks(c) {
     inAct.set(id, a.id);
   }
   for (const x of c.checklist) if (!inAct.has(x.id)) errs.push(`acts.json: mục checklist ${x.id} chưa thuộc Act nào`);
+  for (const a of c.advice) if (!a.text) errs.push(`rewards.json · advice.${a.id}: thiếu text`);
   if (!c.achievements?.final?.title) errs.push("achievements.json: thiếu final (thành tựu cuối)");
   if (!c.rewards.has(c.badge.reward)) errs.push(`values.json: badge.reward ${c.badge.reward} không có`);
   return errs;

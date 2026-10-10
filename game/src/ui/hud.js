@@ -36,11 +36,13 @@ export const hud = {
     setTimeout(() => this._nextCard(), c.ms);
   },
   _replay(el) { el.classList.remove("show"); void el.offsetWidth; el.classList.add("show"); },
-  zoneCard(zoneId) {
-    $("#clock").textContent = t(`zones.${zoneId}.time`);
+  // time: giờ riêng (zones.json → variants, vd zone_05 buổi chiều 13:30), không có thì giờ của zone (data/i18n)
+  zoneCard(zoneId, time = null) {
+    const when = time ?? t(`zones.${zoneId}.time`);
+    $("#clock").textContent = when;
     this._queueCard(`zone:${zoneId}`, () => {
       const el = $("#title-card");
-      el.querySelector(".time").textContent = t(`zones.${zoneId}.time`);
+      el.querySelector(".time").textContent = when;
       el.querySelector(".name").textContent = t(`zones.${zoneId}.title`);
       this._replay(el);
     }, 3000);
@@ -73,6 +75,7 @@ export const hud = {
     }, seconds * 1000 + 250);
   },
   objective(text) { $("#objective").textContent = text || ""; },
+  clock(text) { $("#clock").textContent = text || ""; },
   // cảnh chuyển: viền điện ảnh trên/dưới, ẩn HUD chơi + bảng tên
   cinematic(on) { document.body.classList.toggle("cinematic", on); },
   // thẻ chữ giữa màn hình (nằm trên màn tối), null = ẩn

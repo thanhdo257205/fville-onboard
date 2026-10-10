@@ -58,7 +58,9 @@
     "save_failed": "Couldn't save progress in this browser.",
     "grain_found": "Golden grain found! ({n}/{total})",
     "photo_saved_checkin": "Check-in photo saved to My FPT",
-    "photo_saved_id": "Your photo is printed on your card"
+    "photo_saved_id": "Your photo is printed on your card",
+    "advice_new": "{name}'s tip saved to your Advice Book",
+    "objective_complete": "Your first day is complete! 🎉"
   },
   "guide": {
     "help_title": "What now?",
@@ -72,7 +74,19 @@
     "heading": "{name}'s first day at F-Ville",
     "title": "Title",
     "grains": "Golden grains: {n} / {total}",
-    "close": "Close"
+    "close": "Close",
+    "download": "Download card (PNG)",
+    "play_again": "Play again",
+    "prajith": "A note from Prajith",
+    "values": "Values",
+    "acts": "Your day",
+    "stats": "Stats",
+    "badges": "Badges",
+    "card_title": "First Day at F-Ville",
+    "card_intern": "{position} Intern",
+    "card_date": "First day · {date}",
+    "photos": "Your photos",
+    "no_photo": "No photo yet"
   },
   "menu": {
     "title": "Paused",
@@ -132,7 +146,17 @@
     "check": "Check",
     "take_photo": "Take photo",
     "keep": "Keep",
-    "retake": "Retake"
+    "retake": "Retake",
+    "done": "Done",
+    "power": "Power",
+    "shoot": "Shoot",
+    "most_urgent": "Most urgent",
+    "can_wait": "Can wait",
+    "rules": "Password rules",
+    "strength": "Strength: {level}",
+    "show_pw": "Show",
+    "twofa_off": "Off",
+    "twofa_onstate": "On"
   },
   "creator": {
     "title": "Create your intern",
@@ -141,14 +165,16 @@
     "name_empty": "Please enter a name.",
     "name_bad": "Please choose a different name.",
     "position": "Intern position",
-    "start": "Start my first day"
+    "start": "Start my first day",
+    "gender": "Your character"
   },
   "myfpt": {
     "title": "My FPT",
     "tabs": {
       "checklist": "Checklist",
       "bag": "Bag",
-      "badges": "Badges"
+      "badges": "Badges",
+      "advice": "Advice"
     },
     "close": "Tab to close",
     "bag_empty": "Nothing here yet.",
@@ -160,11 +186,15 @@
     "grains": "Golden grains: {n} / {total}",
     "grains_hint": "Hidden around F-Ville. The glass jar in the Rice Grain Room keeps count.",
     "help": "Help",
-    "act_progress": "{done}/{total}"
+    "act_progress": "{done}/{total}",
+    "advice_title": "Advice Book",
+    "advice_empty": "Tips from your teammates will appear here.",
+    "compass_of": "{trait} · {position}"
   },
   "cutscene": {
     "skip": "Skip ›",
-    "on_the_way": "06:45 · On the way to Hòa Lạc"
+    "on_the_way": "06:45 · On the way to Hòa Lạc",
+    "heading_home": "17:30 · Time to head home"
   },
   "net": {
     "online": "{n} online · {m} in this zone",

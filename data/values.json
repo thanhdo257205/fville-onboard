@@ -33,7 +33,7 @@
       "hint": { "en": "Security rules apply to everyone, even when it feels awkward." }
     },
     {
-      "id": "wisdom", "vi": "Sáng suốt", "name": { "en": "Wisdom" }, "active": false, "zone": "zone_05", "draft": true,
+      "id": "wisdom", "vi": "Sáng suốt", "name": { "en": "Wisdom" }, "active": true, "zone": "zone_05", "draft": true,
       "how": { "en": "Put your first-week tasks in a sensible order with the manager." },
       "hint": { "en": "Deadlines first, nice-to-haves last." }
     }

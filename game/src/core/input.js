@@ -3,6 +3,7 @@
 // `override` cho phép __game giả lập phím khi tự kiểm tra.
 const LOCK_SCALE = 0.5;    // độ nhạy chuột khi khoá so với kéo (camera nhân 0,005 rad/px)
 const MAX_MOVE = 200;      // bỏ cú nhảy movementX/Y bất thường (Chrome trên Windows thỉnh thoảng gửi)
+const typing = (e) => e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
 
 export class Input {
   constructor(canvas) {
@@ -18,6 +19,7 @@ export class Input {
     this.unlockedAt = -Infinity;
     this._releasing = false;     // nhả khoá do game (đổi chế độ), không phải người chơi
     addEventListener("keydown", (e) => {
+      if (typing(e)) return;               // đang gõ vào ô chữ (vd mật khẩu ở mini-game Đăng nhập): không điều khiển game
       if (e.code === "Tab" || e.code.startsWith("Arrow") || e.code === "Space") e.preventDefault();
       if (!e.repeat && this.handlers[e.code]) this.handlers[e.code](e);
       this.keys.add(e.code);

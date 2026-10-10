@@ -88,7 +88,7 @@ python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
 Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug.js`): `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
 `acts` / `cards` (4 Act, thẻ giữa màn hình), `finish()` / `summary` (thành tựu cuối + màn tổng kết),
-`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người),
+`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết),
 `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.

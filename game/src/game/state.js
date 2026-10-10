@@ -1,4 +1,5 @@
-// Trạng thái chơi + hiệu ứng (GDD: hieu_biet, ket_noi, value, reward, flags, quest; thêm item/remove_item cho vật mang theo)
+// Trạng thái chơi + hiệu ứng (GDD: hieu_biet, ket_noi, value, reward, flags, quest; thêm item/remove_item cho vật mang theo,
+// unflags (bỏ cờ, vd kết quả lượt bi-a trước), advice (lời khuyên vào Sổ lời khuyên), compass (kết quả La bàn nghề nghiệp))
 // + lưu vào localStorage (bọc try/catch: trình duyệt chặn bộ nhớ thì vẫn chơi được, chỉ không lưu).
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
@@ -20,6 +21,8 @@ export class GameState {
     this.flags = new Set();
     this.grains = new Set();       // hạt lúa vàng đã nhặt
     this.photos = {};              // ảnh chụp: { checkin, id } = data URL JPEG (đã nén)
+    this.advice = [];              // Sổ lời khuyên: id lời khuyên (rewards.json → advice) theo thứ tự nhận
+    this.compass = null;           // La bàn nghề nghiệp: { trait, answers, position } (mini-game career_compass)
     this.zone = null;
     this.created = false;
   }
@@ -43,7 +46,15 @@ export class GameState {
     const quests = list(e.quest);
     // làm lại việc đã xong: không cộng điểm/phần thưởng lần nữa (chỉ cập nhật cờ)
     const repeat = quests.length > 0 && quests.every((q) => this.quests.has(q));
+    for (const f of list(e.unflags)) this.flags.delete(f);
     for (const f of list(e.flags)) this.flags.add(f);
+    if (e.compass) this.compass = { ...e.compass };
+    for (const a of list(e.advice)) {
+      if (this.advice.includes(a)) continue;
+      this.advice.push(a);
+      const from = this.c.adviceById?.get(a)?.from;
+      out.push(t("hud.advice_new", { name: from ? this.c.names?.(from) ?? from : "" }));
+    }
     for (const g of list(e.grain)) if (!this.grains.has(g)) { this.grains.add(g); out.push(t("hud.grain_found", { n: this.grains.size, total: this.c.grainsTotal })); }
     if (e.photo) { this.photos[e.photo.key] = e.photo.data; out.push(t(`hud.photo_saved_${e.photo.key}`)); }
     for (const id of list(e.item)) if (!this.items.includes(id)) { this.items.push(id); out.push(t("hud.item_new", { name: tx(this.c.carry.get(id)?.name) })); }
@@ -94,6 +105,7 @@ export class GameState {
     return {
       v: 1, player: this.player, stats: this.stats, values: [...this.values], rewards: this.rewards, items: this.items,
       quests: [...this.quests], flags: [...this.flags], grains: [...this.grains], photos: this.photos, zone: this.zone, created: this.created,
+      advice: this.advice, compass: this.compass,
     };
   }
   fromJSON(o) {
@@ -107,6 +119,8 @@ export class GameState {
     this.flags = new Set(o.flags || []);
     this.grains = new Set(o.grains || []);
     this.photos = o.photos || {};
+    this.advice = o.advice || [];
+    this.compass = o.compass || null;
     this.zone = o.zone || null;
     this.created = !!o.created;
     // bản lưu cũ (trước khi có zone_00): đã ở zone sau → coi như xong mọi việc bắt buộc của các zone trước

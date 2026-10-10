@@ -61,6 +61,7 @@ export class Guide {
   // mục tiêu hiện tại của zone
   current() {
     const z = this.g.state.zone, q = this.g.progress.currentQuest(z);
+    if (this.g.progress.flags.has("game_complete")) return { key: "complete", quest: null, target: null, data: null };   // xong game: không dẫn đường
     if (q) return { key: q.id, quest: q, target: q.target ?? null, data: this.goals[q.id] || null };
     const ex = this.exits[z];
     return { key: `exit:${z}`, quest: null, target: ex?.target ?? null, data: ex || null };

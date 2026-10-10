@@ -319,6 +319,155 @@
         "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "My backpack! You're a lifesaver, {player}!" },
           "effects": { "ket_noi": 5, "quest": "z1_backpack", "flags": ["backpack_returned"], "remove_item": "balo_tu" }, "next": null }
       }
+    },
+    {
+      "id": "z5_app_meeting", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "app", "style": "phone", "text": { "en": "📅 09:15 · Meeting with Prajith — Mentor meeting room, on the left side of the office." }, "next": "n2" },
+        "n2": { "speaker": "mentor", "style": "phone", "text": { "en": "Hi {player}, welcome to the office! I'm Prajith, your mentor. I'm in the meeting room on the left — the door's open. See you in a minute! 🙂" }, "next": null }
+      }
+    },
+    {
+      "id": "mentor_main", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z5_prajith"] }, "next": "after" }], "next": "n1" },
+        "n1": { "speaker": "mentor", "anim": "wave", "text": { "en": "There you are, {player}! Welcome to the team. I'm Prajith — I'll be your mentor during your internship." }, "next": "n2" },
+        "n2": { "speaker": "mentor", "text": { "en": "I still remember my own first day here: I spent the morning learning everyone's names, and the afternoon finding the best coffee on this floor. You'll have both sorted by Friday!" }, "next": "n3" },
+        "n3": { "speaker": "mentor", "anim": "point", "text": { "en": "Before we plan anything, I'd like to know how you like to work. Four quick questions — there are no right or wrong answers." }, "next": "go" },
+        "go": { "action": "minigame:career_compass", "next": "n4" },
+        "n4": { "speaker": "mentor", "anim": "nod", "text": { "en": "Thanks, {player} — that tells me a lot. Your Career Compass is saved in My FPT. Let's look at it together again at the end of your first month." },
+          "effects": { "ket_noi": 5, "quest": "z5_prajith" }, "next": "n5" },
+        "n5": { "speaker": "mentor", "text": { "en": "Next, the manager would like to meet you. Her room is next door — just a little further down." }, "next": null },
+        "after": { "speaker": "mentor", "text": { "en": "The manager's room is just next door. And I'm right here all day if you have any questions!" }, "next": null }
+      }
+    },
+    {
+      "id": "manager_wait", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "manager", "anim": "wave", "text": { "en": "Hi there — you must be our new intern! Have a chat with Prajith first; he's in the meeting room next door. I'll be right here." }, "next": null }
+      }
+    },
+    {
+      "id": "manager_main", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z5_manager"] }, "next": "after" }], "next": "n1" },
+        "n1": { "speaker": "manager", "anim": "wave", "text": { "en": "Hi {player}, welcome to the team! I'm really glad you're here." }, "next": "n2" },
+        "n2": { "speaker": "manager", "draft": true, "text": { "en": "Our team builds and looks after software for customers around the world. This quarter our goal is simple: ship reliable releases, and help each other learn along the way." }, "next": "n3" },
+        "n3": { "speaker": "manager", "text": { "en": "Your first week doesn't need anything big. But I'd like to see how you'd organise your work." }, "next": "n4" },
+        "n4": { "speaker": "manager", "anim": "point", "text": { "en": "Here are five tasks for your first week. Put them in order — the most urgent at the top, the one that can wait at the bottom — then press Check." }, "next": "go" },
+        "go": { "action": "minigame:priorities", "next": "r0" },
+        "r0": { "branch": [{ "if": { "flags": ["priorities_sensible"] }, "next": "good" }], "next": "ok" },
+        "good": { "speaker": "manager", "anim": "nod", "text": { "en": "That's exactly how I'd do it: what's due today first, the nice-to-haves last. Very wise!" }, "next": "n5" },
+        "ok": { "speaker": "manager", "text": { "en": "Good effort! Just remember: anything due today comes first, and the extras can wait until you've settled in." }, "next": "n5" },
+        "n5": { "speaker": "manager", "text": { "en": "I've added your first mission to My FPT: finish the mandatory information security course today. Then set up your laptop at your desk." },
+          "effects": { "reward": "nhiem_vu_dau_tien", "quest": "z5_manager", "ket_noi": 3 }, "next": "n6" },
+        "n6": { "speaker": "manager", "anim": "wave", "text": { "en": "Oh — it's almost noon! The whole team is heading out for lunch. Come with us!" },
+          "effects": { "time_skip": { "card": { "en": "12:00 · The team invites you to lunch" }, "flags": ["lunch_done"] } }, "next": null },
+        "after": { "speaker": "manager", "text": { "en": "Your desk is the one near the entrance, with Lan and Minh right beside it. Settle in, and say hello to everyone!" }, "next": null }
+      }
+    },
+    {
+      "id": "lan_hello", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z5_lan"] }, "next": "after" }], "next": "n1" },
+        "n1": { "speaker": "dong_nghiep_1", "anim": "wave", "text": { "en": "Hi! You must be {player} — I'm Lan. We sit in the same cluster, so you'll see a lot of me!" }, "next": "n2" },
+        "n2": { "speaker": "dong_nghiep_1", "text": { "en": "My first-day tip: don't be afraid to ask questions. Everyone here was new once — and we all remember how it felt." },
+          "effects": { "advice": "lan", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_lan" }, "next": null },
+        "after": { "speaker": "dong_nghiep_1", "text": { "en": "If you need anything, just lean over — I'm right here!" }, "next": null }
+      }
+    },
+    {
+      "id": "minh_hello", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z5_minh"] }, "next": "after" }], "next": "n1" },
+        "n1": { "speaker": "dong_nghiep_2", "anim": "wave", "text": { "en": "Hey {player}, welcome aboard! I'm Minh — two years on this team and still loving it." }, "next": "n2" },
+        "n2": { "speaker": "dong_nghiep_2", "anim": "point", "text": { "en": "My tip: write things down. New names, tools, where things live — your notes from this week will save you hours next month." },
+          "effects": { "advice": "minh", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_minh" }, "next": null },
+        "after": { "speaker": "dong_nghiep_2", "text": { "en": "Ask me anything about our tools — I love that stuff." }, "next": null }
+      }
+    },
+    {
+      "id": "ha_hello", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z5_ha"] }, "next": "after" }], "next": "n1" },
+        "n1": { "speaker": "dong_nghiep_3", "anim": "wave", "text": { "en": "Hi, I'm Hà! Welcome to the team, {player}." }, "next": "n2" },
+        "n2": { "speaker": "dong_nghiep_3", "anim": "nod", "text": { "en": "My tip: keep your calendar open and turn on reminders. Meetings move around a lot, and it's easy to miss one in your first week." },
+          "effects": { "advice": "ha", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_ha" }, "next": null },
+        "after": { "speaker": "dong_nghiep_3", "text": { "en": "Good luck today — you're doing great!" }, "next": null }
+      }
+    },
+    {
+      "id": "khang_main", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z5_khang"] }, "next": "again" }], "next": "n1" },
+        "n1": { "speaker": "khang", "anim": "wave", "text": { "en": "Hey, a new face! I'm Khang. Taking a little break?" }, "next": "n2" },
+        "n2": { "speaker": "khang", "anim": "point", "text": { "en": "Fancy a single shot of billiards? Aim, pick your power, and try to sink the orange ball." },
+          "choices": [
+            { "text": { "en": "Sure, one shot!" }, "effects": { "unflags": ["billiards_last_hit"] }, "next": "play" },
+            { "text": { "en": "Maybe later." }, "next": "tip" }
+          ] },
+        "play": { "action": "minigame:billiards", "next": "res" },
+        "res": { "branch": [{ "if": { "flags": ["billiards_last_hit"] }, "next": "nice" }], "next": "close" },
+        "nice": { "speaker": "khang", "anim": "cheer", "text": { "en": "In the pocket! You're a natural." }, "next": "tip" },
+        "close": { "speaker": "khang", "text": { "en": "So close! Honestly, trying is half the fun." }, "next": "tip" },
+        "tip": { "speaker": "khang", "anim": "nod", "text": { "en": "Here's my tip: take real breaks. Step away from the screen for a few minutes — good ideas often turn up over a game of billiards." },
+          "effects": { "advice": "khang", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_khang" }, "next": null },
+        "again": { "speaker": "khang", "text": { "en": "The table's free — want another shot?" },
+          "choices": [
+            { "text": { "en": "Sure!" }, "effects": { "unflags": ["billiards_last_hit"] }, "next": "play2" },
+            { "text": { "en": "Not now, thanks." }, "next": null }
+          ] },
+        "play2": { "action": "minigame:billiards", "next": "res2" },
+        "res2": { "branch": [{ "if": { "flags": ["billiards_last_hit"] }, "next": "nice2" }], "next": "close2" },
+        "nice2": { "speaker": "khang", "anim": "cheer", "text": { "en": "Great shot!" }, "next": null },
+        "close2": { "speaker": "khang", "text": { "en": "Almost! The table will be here tomorrow too." }, "next": null }
+      }
+    },
+    {
+      "id": "desk_wait", "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "narrator", "text": { "en": "A tidy desk with a laptop, a blank name plate and a gift box with an orange ribbon. Meet the manager first — she'll tell you where to start." }, "next": null }
+      }
+    },
+    {
+      "id": "desk_main", "start": "check",
+      "nodes": {
+        "check": { "branch": [{ "if": { "quests": ["z5_desk"] }, "next": "after" }], "next": "t0" },
+        "t0": { "branch": [{ "if": { "quests": ["z5_lan", "z5_minh", "z5_ha"] }, "next": "n1" }], "next": "team_q" },
+        "team_q": { "speaker": "narrator", "text": { "en": "Your teammates Lan, Minh and Hà sit just around the corner. Say hello before you settle in?" },
+          "choices": [
+            { "text": { "en": "I'll say hello first." }, "next": null },
+            { "text": { "en": "Sit down now." }, "next": "n1" }
+          ] },
+        "n1": { "speaker": "narrator", "text": { "en": "Your desk! A laptop, a blank name plate — and a gift box with an orange ribbon." }, "next": "n2" },
+        "n2": { "speaker": "narrator", "draft": true, "text": { "en": "Inside the box: an FPT notebook, a water bottle and a card — \"Welcome to the team, {player}! — Lan, Minh, Hà, Khang & everyone\"." },
+          "effects": { "reward": "qua_cua_team" }, "next": "n3" },
+        "n3": { "speaker": "narrator", "text": { "en": "Time to log in for the first time: create a strong password, then turn on two-factor authentication." }, "next": "login" },
+        "login": { "action": "minigame:login", "next": "n4" },
+        "n4": { "speaker": "narrator", "text": { "en": "The name plate on your desk now reads: {player} · Intern." }, "effects": { "flags": ["nameplate_on"] }, "next": "n5" },
+        "n5": { "speaker": "narrator", "text": { "en": "Your first-day checklist pops up in My FPT…" }, "next": "list" },
+        "list": { "action": "minigame:day_checklist", "next": "n6" },
+        "n6": { "speaker": "narrator", "text": { "en": "You settle in and get to work. The afternoon flies by…" },
+          "effects": { "quest": "z5_desk", "hieu_biet": 10, "finish": true }, "next": null },
+        "after": { "speaker": "narrator", "text": { "en": "Your desk, with your name on it. See you here tomorrow!" }, "next": null }
+      }
+    },
+    {
+      "id": "ending_lan", "start": "n0",
+      "nodes": {
+        "n0": { "speaker": "app", "style": "phone", "text": { "en": "⏰ 17:30 — that's a wrap for today! Time to head home." }, "next": "n1" },
+        "n1": { "speaker": "dong_nghiep_1", "anim": "wave", "text": { "en": "17:30 already! Time to head home, {player} — see you tomorrow!" }, "next": "n2" },
+        "n2": { "speaker": "player", "text": { "en": "See you tomorrow, Lan!" }, "next": null }
+      }
+    },
+    {
+      "id": "ending_tu", "start": "n0",
+      "nodes": {
+        "n0": { "branch": [{ "if": { "flags": ["backpack_returned", "tu_card_fixed"] }, "next": "both" }], "next": "some" },
+        "both": { "speaker": "tu", "anim": "cheer", "text": { "en": "{player}! Without you today I'd have been totally lost. Thanks for everything!" }, "next": "n2" },
+        "some": { "speaker": "tu", "anim": "wave", "text": { "en": "{player}! The first day wasn't that scary after all, was it? See you tomorrow!" }, "next": "n2" },
+        "n2": { "speaker": "tu", "anim": "point", "text": { "en": "Our bus is here — let's go home!" }, "next": null }
+      }
     }
   ]
 }

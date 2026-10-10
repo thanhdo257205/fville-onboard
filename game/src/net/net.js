@@ -73,8 +73,13 @@ export class Net {
     if (!pl || g.state.phase !== "playing" || !g.state.zone) return null;
     const p = pl.position, sp = pl.speed, { walk, run } = pl.character.model.speed_mps;
     const anim = sp < 0.25 ? "idle" : sp < (walk + run) / 2 ? "walk" : "run";
-    return { zone: g.state.zone, pos: [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)], yaw: +pl.character.root.rotation.y.toFixed(2), anim };
+    // đang ngồi trên xe bus (cảnh chuyển zone 0 → 1, cảnh kết): nhân vật khuất → báo "đang di chuyển" (transit_zone) để
+    // người cùng zone thấy mình rời đi, không còn đứng ở cửa xe; máy chủ không cần đổi (zone_NN hợp lệ)
+    const riding = !!g.cutscene && !pl.character.root.visible;
+    const zone = riding ? this.cfg.transit_zone || "zone_99" : g.state.zone;
+    return { zone, pos: [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)], yaw: +pl.character.root.rotation.y.toFixed(2), anim };
   }
+  get inTransit() { return this.sent?.zone === (this.cfg.transit_zone || "zone_99"); }
   changed(a, b) {
     if (!b || a.zone !== b.zone || a.anim !== b.anim) return true;
     const d = Math.hypot(a.pos[0] - b.pos[0], a.pos[1] - b.pos[1], a.pos[2] - b.pos[2]);
@@ -114,9 +119,11 @@ export class Net {
   // ---------- nhận ----------
   onMessage(m) {
     const r = this.remotes;
+    // đang trên xe (transit_zone): bỏ qua người khác (người cùng xe ở zone khác toạ độ) tới khi xuống xe
+    if (this.inTransit && ["join", "state", "emote", "phrase"].includes(m.t)) return;
     switch (m.t) {
       case "welcome": this.myId = m.id; this.online = m.online; this.joined = true; this.client.ok(); break;
-      case "zone": if (m.zone === this.g.state.zone) r.reset(m.players || []); this.online = m.online ?? this.online; break;
+      case "zone": if (m.zone === this.g.state.zone && !this.inTransit) r.reset(m.players || []); this.online = m.online ?? this.online; break;
       case "join": if (m.p?.id && m.p.id !== this.myId) r.upsert(m.p); break;
       case "state": r.state(m); break;
       case "leave": r.remove(m.id); break;
@@ -155,6 +162,7 @@ export class Net {
       if (ps !== this.profileSent) this.sendJoin();              // vd vừa mặc Áo Cam FPT
       const now = performance.now(), s = this.localState();
       if (s && now - this.sentAt >= 1000 / (this.cfg.send_hz ?? 5) && this.changed(s, this.sent)) {
+        if (s.zone !== this.sent?.zone && s.zone === (this.cfg.transit_zone || "zone_99")) this.remotes.reset();
         this.client.send({ t: "state", ...s });
         this.sent = s;
         this.sentAt = now;

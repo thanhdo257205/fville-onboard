@@ -286,6 +286,38 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - **Chưa lên mạng**: máy cloud không đăng nhập Cloudflare được → bản Desktop làm theo `docs/multiplayer.md` (wrangler
   login, wrangler deploy, điền URL vào `data/net.json`, build, deploy gh-pages, kiểm tra).
 
+### Giai đoạn 2: zone 5, cảnh kết, màn tổng kết (10/10/2026)
+- **Màn tạo nhân vật** có mục giới tính (Male / Female → `intern_nam` / `intern_nu`; `character_creation.genders`).
+- **Nhân vật zone 5** (`data/characters.json`): Prajith = model `prajith` thật (bỏ đổi màu áo). Manager (`intern_nu`, áo xanh
+  than), Lan (`intern_nu`, hồng), Minh (`intern_nam`, vàng), Hà (`intern_nu`, xanh lá), anh Khang (`intern_nam`, tím) — **tạm**
+  (`_tam` trong từng vai), `"portrait": false` (không hiện chân dung trùng mặt người chơi; `characters.js` → `portrait()`).
+- **Zone 5** (`dialogues.json`, `quests.json` z5_*, `interactables.json`, `guidance.json`; GDD mục Zone 5 "Đã làm"):
+  - app báo "📅 09:15 · Meeting with Prajith" khi vào zone; Prajith nhắn tin nhắc (zone 5 không có Tú: `no_tu_zones`);
+  - dấu "!" dẫn tới cửa phòng họp rồi mới vào trong (`route`);
+  - Prajith → mini-game La bàn nghề nghiệp (`compass`: 4 câu, 4 xu hướng × 4 vị trí intern) → thẻ trong My FPT → Bag,
+    Kết nối +5;
+  - Manager (chỉ sau Prajith) → mục tiêu team [DRAFT] → mini-game Sắp xếp ưu tiên (`priorities`: sai 1 lần → góp ý đúng
+    chỗ sai + xếp lại 1 lần; hợp lý → ô Wisdom, đã bật `active`) → Nhiệm vụ đầu tiên trong app → Act 4;
+  - màn mờ "12:00 · The team invites you to lunch" (hiệu ứng `time_skip`), sáng lại buổi chiều 13:30 (`zones.json` →
+    `variants`: ánh sáng + giờ theo cờ);
+  - Lan, Minh, Hà: mỗi người 1 lời khuyên → tab **Advice** (Sổ lời khuyên, `rewards.json` → `advice`, hiệu ứng `advice`);
+    Lan / Hà nói chuyện được qua mặt bàn (bán kính 2,4 m);
+  - anh Khang (tùy chọn): mini-game Một cú bi-a (`billiards`: canvas, ngắm + thanh lực, sai 2 lần → đường ngắm gợi ý),
+    thêm 1 lời khuyên;
+  - bàn làm việc (chỉ sau Manager; chưa chào đủ team thì hỏi trước): hộp quà [DRAFT] → mini-game Đăng nhập [DRAFT]
+    (`login`: 5 quy định mật khẩu, thanh độ mạnh, bật 2FA; không lưu mật khẩu) → bảng tên trên bàn hiện tên người
+    chơi (vật code đặt `bang_ten`, canvas) → checklist ngày đầu tự tick (`day_checklist`) → Hiểu biết +10, `finish`.
+- **Cảnh kết** (`cutscenes.json` → `ending`, `game/src/game/ending.js`): 17:30 Lan đứng cạnh bàn → thẻ "17:30 · Time to head
+  home" → bến xe zone_01 hoàng hôn (variant theo cờ `game_complete`) → Tú chạy tới (lời theo số lần đã giúp; Tú hiện lại
+  nhờ `hide_if.not_flags`) → lên xe, cửa đóng → thẻ thành tựu → màn tổng kết. Skip được. Sau đó đi lại tự do ở bến xe lúc
+  hoàng hôn, dòng mục tiêu "Your first day is complete! 🎉", không còn dấu "!".
+- **Màn tổng kết**: ảnh thẻ (áo cam) + huy hiệu + ảnh check-in, danh hiệu, chỉ số, hạt lúa, 6 ô giá trị (ô trống có gợi ý),
+  lời nhắn Prajith theo La bàn, 4 Act; nút **Download card (PNG)** (canvas 720 × 1080), **Play again**, **Close**.
+- **Mạng**: người chơi đang ngồi trên xe bus (cảnh chuyển, cảnh kết) báo `transit_zone` (`data/net.json`, `zone_99`) →
+  người khác thấy họ rời đi lúc bước lên xe, không còn đứng ở cửa xe; máy chủ không cần sửa.
+- Code khác: hiệu ứng `unflags`, `advice`, `compass`, `time_skip`; `finish` / `time_skip` chạy sau khi hội thoại đóng
+  (`Game.afterDialogue`); ô chữ (mật khẩu) không điều khiển nhân vật (`input.js`); __game: `ending`, `summaryCard()`.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.
@@ -408,7 +440,6 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- Màn tạo nhân vật: mở lại mục giới tính (game đã đọc `who.gender` nếu màn tạo trả về: `nam` | `nu`).
 - intern_nam_kinh: chờ người dùng gắn xương trên Mixamo (FBX ở trên) → `build_character.py` 6k, chân dung, WebP
   `dau_ngay`, thêm vào màn chọn nhân vật; sau đó dùng làm model Tú (khác giới với người chơi).
 - Mũ lưỡi trai phần 2 (gắn xương Head của từng intern): chưa làm; phần 1 (`cap.glb`) đã xong.
@@ -418,8 +449,6 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   animation của prajith; chờ quyết định tải bản Mixamo riêng cho huyen.
 - Logo FPT trên áo prajith và huyen là bản tạm (mảng tách từ texture prajith); thay khi có file logo chính thức
   (`apply_chest_logo.py --id <nhân vật> --logo <file>`).
-- Zone 5 vào được nhưng chưa có việc: gặp Prajith (La bàn nghề nghiệp), gặp Manager (Sắp xếp ưu tiên, ô Wisdom), Say
-  Hello Team (Sổ lời khuyên), bàn làm việc; cảnh kết, màn tổng kết, danh hiệu. Đủ 10 hạt lúa vàng (zone 1–5).
 - nga: tay lún thân 4–6 cm ở talk, talk_2, nod, think, sit_down (cùng mức huyen, do dùng lại animation của prajith).
 - Tượng Cuder: chờ xác nhận búi tóc sau gáy (giữ / bỏ: `CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`). Khi đã
   chốt, dọn mép búi tóc (còn răng cưa nhỏ khi nhìn cận từ phía sau). zone_03 vẫn còn bản sao tượng cũ nhìn qua vách
@@ -451,10 +480,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
    Đo luôn hiệu năng trên một laptop Intel UHD/Iris Xe: mở `?debug`, gõ `__game.benchmark(120)` ở từng zone; xem
    nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
    Gửi `docs/hr_content_request.md` cho HR.
-4. Giai đoạn 2 tiếp: zone 5 (gặp Prajith, gặp Manager, Say Hello Team, bàn làm việc — quest gắn vào mục checklist
-   `meet_prajith`, `meet_manager`, `hello_team`, `desk` thì Act 3–4 tự mở khóa), cảnh kết, gắn `"finish": true` vào việc
-   cuối (thành tựu + màn tổng kết đã dựng sẵn), hoàn thiện màn tổng kết (nhân vật áo cam, lời nhắn Prajith, tải ảnh thẻ),
-   tab Bản đồ và Sổ lời khuyên.
+4. Giai đoạn 2 còn lại: tab Bản đồ trong My FPT; model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng
+   intern_nam / intern_nu); người chơi ngồi vào ghế ở bàn làm việc (hiện đứng trước bàn); chơi thử zone 5 + cảnh kết với
+   người thật (độ dài ~8 phút, mini-game bi-a có quá khó không).
 
 ## Việc nhỏ để sau
 - zone_04 (đang chặn bằng dữ liệu, nên sửa trong `scripts/blender/zone_04.py` khi dựng lại zone): thêm lan can thật ở mép
@@ -465,7 +493,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá
   gần nó nhất).
 
-## Nội dung [DRAFT] chờ HR (17 mục)
+## Nội dung [DRAFT] chờ HR (20 mục)
 1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45, mã intern FV-2026 để đăng nhập App My FPT.
 2. Giờ xe về (chị Huyền trả lời ở zone 0).
 3. Quy định trên xe công ty (chị Huyền trả lời ở zone 0).
@@ -478,6 +506,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 15. 5 mốc của mini-game dòng thời gian (1988, 1999, 2006, 2018, 2019): năm và cách viết.
 16. Biển sứ mệnh FSA ở cửa phòng FSA (zone 4).
 17. Mini-game Lộ trình học: 3 khóa gợi ý cho mỗi vị trí intern (zone 4).
+18. Mục tiêu của team trong lời Manager (zone 5).
+19. Hộp quà của team ở bàn làm việc (zone 5): vật trong hộp và mô tả phần thưởng Team Welcome Gift.
+20. Mini-game Đăng nhập (zone 5): quy định mật khẩu thật và cách bật 2FA (HR/IT).
 
 Danh sách lấy từ dữ liệu (`"draft": true`); trong game các nội dung này hiện chữ [DRAFT]. Quiz tượng Cuder đã có nội
 dung từ mentor (09/10/2026), không còn [DRAFT].

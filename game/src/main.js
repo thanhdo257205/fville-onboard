@@ -62,6 +62,7 @@ async function boot() {
   const ui = { dialogue: new DialogueUI(), app: new MyFptApp(content, progress), minigame: new MinigameHost(content),
     summary: new Summary({ onPlayAgain: playAgain }) };
   const characters = new Characters(chars);
+  content.names = (role) => characters.displayName(role);   // tên vai cho thông báo (vd lời khuyên của Lan vào Sổ lời khuyên)
   await characters.probe();                 // model chờ người thật đồng ý mà thiếu file → dùng model thay thế
   // giới tính người chơi → model (roles.player.model_by_gender). Màn tạo nhân vật chưa có mục này → mặc định nam.
   // Thử khi phát triển: ?gender=nu (hoặc nam) — ghi vào bản lưu; hoặc __game.setGender("nu") lúc đang chơi.

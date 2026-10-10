@@ -25,6 +25,19 @@
       "timing": { "walk": 1.6, "dim": 0.35, "door": 0.8, "cam2": 2.6, "cam3": 2.8, "fade_out": 0.8,
         "card": 2.0, "line": 2.3, "door_open": 0.7, "step_out": 0.5, "blend": 0.8,
         "_tong": "≈ 1,6 + 0,7 + 0,8 + 2,6 + 2,8 + 2,0 + 2 × 2,3 + 4,0 (18 m ở 9 m/s, giảm tốc tới 0) + 0,7 + 0,5 + 0,8 ≈ 21 giây" }
+    },
+    "ending": {
+      "_mo_ta": "Cảnh kết (GDD mục Kết thúc, game/src/game/ending.js): 17:30 app báo hết giờ, Lan (vai dong_nghiep_1) ghé bàn intern nói lời chào về (hội thoại ending_lan) → màn tối, thẻ '17:30 · Time to head home' → bến xe zone_01 lúc hoàng hôn (zones.json → variants, cờ game_complete) → Tú chạy tới từ phía cổng F-Ville, lời Tú theo số lần đã giúp (ending_tu) → người chơi + Tú lên xe, cửa đóng → thẻ thành tựu cuối → màn tổng kết. Gọi từ hiệu ứng finish (bàn làm việc zone 5). Toạ độ: glTF, m, lệch so với SPAWN_.",
+      "office": { "zone": "zone_05", "colleague": "dong_nghiep_1", "seat": "SPAWN_ban_lam_viec", "dialogue": "ending_lan",
+        "player_offset": [0, 0, -0.55], "colleague_offset": [1.0, 0, -1.2], "camera_offset": [-1.9, 1.6, -3.0], "camera_fov_deg": 45,
+        "_ly_do": "người chơi đứng trước bàn intern (lệch SPAWN_ban_lam_viec về phía lối đi), Lan đứng chếch phía lối đi; camera đứng giữa lối đi chính nhìn cả hai" },
+      "card": "cutscene.heading_home",
+      "bus_stop": { "zone": "zone_01", "spawn": "SPAWN_zone_01_cua_xe", "door": "xe_bus_cua",
+        "tu_from": [10, 0, -3.5], "tu_to": [1.1, 0, -0.9], "tu_speed_mps": 3.6, "door_offset": [0, 0, 0.6],
+        "camera_offset": [-3.3, 1.65, -4.25], "camera_look": [1.5, 1.2, -0.5], "camera_fov_deg": 50,
+        "_ly_do": "Tú chạy từ phía cổng (đông) tới cạnh người chơi ở cửa xe; camera giữa vỉa hè phía tây cửa xe (như cảnh xuống xe buổi sáng)" },
+      "dialogue": "ending_tu",
+      "timing": { "card": 2.4, "tu_run": 3.0, "walk": 1.6, "door": 0.8, "hold": 1.4 }
     }
   }
 }

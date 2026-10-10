@@ -378,3 +378,68 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 #emotes kbd { display: inline-block; min-width: 1.4em; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; text-align: center; color: var(--fg); }
 #emotes small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
 body.overlay-open #emotes { display: none; }
+
+/* zone 5: La bàn nghề nghiệp, Sắp xếp ưu tiên, Một cú bi-a, Đăng nhập, checklist ngày đầu */
+.compass-card { background: linear-gradient(160deg, #fff7ef, #ffe3cc); color: #1d1f23; border-radius: 14px; padding: 16px 18px; text-align: center; }
+.compass-card .needle { font-size: 40px; line-height: 1; }
+.compass-card small { color: #8a5a3c; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: 11px; }
+.compass-card h3 { margin: 6px 0 2px; font-size: 24px; font-weight: 800; color: #c4520f; }
+.compass-card .who { margin: 0 0 8px; font-weight: 700; color: #555b66; }
+.compass-card .dir { background: #fff; border-radius: 10px; padding: 8px 10px; font-weight: 700; text-align: left; }
+.compass-card .note { display: block; margin: 8px 0 10px; text-transform: none; letter-spacing: 0; font-weight: 700; }
+.compass-card .done { width: 100%; }
+.prio .cards li .tag { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 800; color: #1d1f23; background: #ffd27a; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.billiards canvas { width: 100%; height: auto; border-radius: 12px; display: block; cursor: crosshair; touch-action: none; }
+.billiards .pbar { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-weight: 800; }
+.billiards .bar { position: relative; flex: 1; height: 12px; background: #262a31; border-radius: 999px; overflow: visible; }
+.billiards .bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #8fe0a8, #ffd27a, #f37021); border-radius: 999px; }
+.billiards .bar .mark { position: absolute; top: -5px; width: 4px; height: 22px; margin-left: -2px; background: #ffd27a; border-radius: 2px; box-shadow: 0 0 6px #ffd27a; }
+.login .pwrow { display: flex; gap: 8px; }
+.login .pw { flex: 1; font: 700 17px "Nunito"; padding: 10px 12px; border-radius: 10px; border: 2px solid #343944; background: #262a31; color: var(--fg); }
+.login .pw:focus { outline: none; border-color: var(--orange); }
+.login .meter { height: 8px; background: #262a31; border-radius: 999px; margin: 10px 0 4px; overflow: hidden; }
+.login .meter i { display: block; height: 100%; width: 0; background: #e5533d; transition: width .2s, background .2s; }
+.login .meter i[data-lv="2"] { background: #f0a43a; } .login .meter i[data-lv="3"] { background: #c9cf3c; } .login .meter i[data-lv="4"] { background: #2e9e5b; }
+.login .level { margin: 0 0 8px; color: var(--muted); font-weight: 700; font-size: 13px; min-height: 1.2em; }
+.login .rules-t { font-size: 13px; color: var(--muted); }
+.login .rules { list-style: none; margin: 6px 0 12px; padding: 0; display: grid; gap: 4px; }
+.login .rules li { display: flex; gap: 8px; align-items: center; font-weight: 700; color: #cfd3d9; }
+.login .rules li .tick, .daylist li .tick { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #4a505c; flex: none; display: grid; place-items: center; font-size: 12px; }
+.login .rules li.ok { color: #8fe0a8; }
+.login .rules li.ok .tick, .daylist li.ok .tick { background: #2e9e5b; border-color: #2e9e5b; }
+.login .rules li.ok .tick::after, .daylist li.ok .tick::after { content: "✓"; color: #fff; font-weight: 800; }
+.login .set, .login .on { width: 100%; }
+.login .ok-pw { color: #8fe0a8; font-weight: 800; margin-bottom: 10px; }
+.login .tf { display: flex; gap: 12px; align-items: center; background: #262a31; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+.login .tf div { flex: 1; display: grid; gap: 2px; } .login .tf small { color: var(--muted); font-weight: 700; }
+.login .switch { position: relative; display: flex; align-items: center; gap: 8px; border: 0; background: #3a3f4a; color: #fff; border-radius: 999px; padding: 4px 12px 4px 4px; font: 800 13px "Nunito"; cursor: pointer; }
+.login .switch i { width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.login .switch.on { background: #2e9e5b; } .login .switch.on i { transform: translateX(2px); }
+.login .switch.glow { outline: 3px solid #ffd27a; }
+.daylist section { margin-bottom: 8px; } .daylist section b { font-size: 13px; color: #ffd27a; }
+.daylist ol { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 4px; }
+.daylist li { display: flex; gap: 8px; align-items: center; font-weight: 700; color: #cfd3d9; background: none !important; padding: 2px 0 !important; cursor: default !important; }
+.daylist li.ok { color: #fff; }
+.daylist li .tick { transition: background .2s; }
+.daylist .done { width: 100%; margin-top: 6px; }
+.daylist .done:disabled { opacity: .5; cursor: default; }
+#myfpt .compass-row small.dir, #myfpt .mission-row small { color: #c4520f; font-weight: 800; }
+#myfpt .advice-h { margin: 4px 0 8px; font-size: 15px; }
+#myfpt .advice { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+#myfpt .advice li { background: #fff7ef; border-radius: 12px; padding: 10px 12px; color: #1d1f23; }
+#myfpt .advice li p { margin: 0 0 4px; font-weight: 700; line-height: 1.35; }
+#myfpt .advice li small { color: #8a5a3c; font-weight: 800; }
+#myfpt .empty { color: var(--muted); font-weight: 700; }
+#summary .hero { display: flex; gap: 12px; align-items: stretch; margin: 4px 0 12px; }
+#summary .idc { width: 132px; flex: none; background: #f6f3ee; color: #1d1f23; border-radius: 12px; padding: 8px; display: grid; justify-items: center; gap: 2px; text-align: center; border-top: 6px solid var(--orange); }
+#summary .idc img, #summary .idc .nophoto { width: 96px; height: 128px; object-fit: cover; border-radius: 8px; background: #e7e1d7; display: grid; place-items: center; font-size: 40px; }
+#summary .idc b { font-size: 15px; margin-top: 4px; } #summary .idc span { font-size: 12px; font-weight: 700; color: #555b66; }
+#summary .hero .side { flex: 1; display: grid; gap: 8px; align-content: start; }
+#summary .hero .badges { display: flex; gap: 6px; font-size: 26px; }
+#summary .hero .photo { width: 100%; }
+#summary .stats { margin: 12px 0; }
+#summary .values span { display: grid; gap: 1px; }
+#summary .values span small { font-weight: 700; font-size: 11px; color: #a9b0b8; max-width: 200px; }
+#summary .note { margin: 12px 0 0; background: #fff7ef; color: #1d1f23; border-radius: 12px; padding: 10px 12px; }
+#summary .note b { color: #c4520f; font-size: 13px; } #summary .note p { margin: 4px 0 0; font-weight: 700; line-height: 1.4; }
+#summary footer { flex-wrap: wrap; }

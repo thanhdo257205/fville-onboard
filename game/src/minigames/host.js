@@ -97,7 +97,7 @@ export class MinigameHost {
     if (!a || e.repeat) return;
     this.touched(a);
     if (e.code === "Escape") { this.close(false); }
-    else if (e.code === "KeyS" && !this.el.querySelector("[data-a=skip]").hidden) { this.skip(); }
+    else if (e.code === "KeyS" && !(e.target instanceof HTMLInputElement) && !this.el.querySelector("[data-a=skip]").hidden) { this.skip(); }
     else if (!a.ctx.onKey?.(e)) return;              // trò không dùng phím này → để main.js xử lý (vd Tab bị khoá sẵn)
     e.preventDefault();
     e.stopImmediatePropagation();

@@ -12,7 +12,9 @@
 //   __game.talkCam            → camera hội thoại (đang bật, vai trái/phải, điểm chọn vai, người đối thoại)
 //   __game.guide              → hướng dẫn: mục tiêu, vị trí dấu "!", mũi tên, giờ đứng yên, các lần nhắc; help() = phím H
 //   __game.acts               → 4 Act: Act hiện tại, tiến độ từng Act, các thẻ Act đã hiện; __game.cards = thẻ giữa màn hình gần đây
-//   __game.finish()           → hoàn thành game (thử thành tựu cuối + màn tổng kết khi chưa có zone 5); __game.summary
+//   __game.finish()           → hoàn thành game: cảnh kết (ở zone_05: Lan ghé bàn; rồi bến xe zone_01 hoàng hôn, Tú, lên xe),
+//                               thẻ thành tựu cuối, màn tổng kết; __game.ending (nhịp cảnh kết), __game.summary,
+//                               summaryCard() (thẻ PNG của nút Download card)
 //   __game.net                → chơi nhiều người: trạng thái kết nối, số online, người khác (vị trí, animation, bảng tên, bong bóng),
 //                               emote / câu chat đã nhận; netEmote(id) / netPhrase(id) = chọn trong bảng phím T
 import * as THREE from "three";
@@ -50,6 +52,9 @@ export function installDebug(game, loop) {
     get net() { return game.net?.info(); },
     netEmote(id) { return game.net?.emote(id); },
     netPhrase(id) { return game.net?.phrase(id); },
+    // thẻ PNG của màn tổng kết (nút Download card): kích thước + độ dài data URL
+    async summaryCard() { const cv = await game.ui.summary.card(game.summaryData()); return { width: cv.width, height: cv.height, png: cv.toDataURL("image/png").length }; },
+    get ending() { const c = game.lastCutscene; return c?.id === "ending" ? { running: game.cutscene === c, stage: c.stage, log: c.log, skipped: c.skipped } : null; },
     get summary() { return { open: game.ui.summary.open, data: game.ui.summary.open ? game.summaryData() : null, text: game.ui.summary.open ? game.ui.summary.el.innerText : null }; },
     help() { game.help(); return { card: document.getElementById("helpcard")?.classList.contains("show") ? document.getElementById("helpcard").textContent : null, app: game.ui.app.helpOpen }; },
     // cảnh chuyển đang chạy / vừa chạy: nhịp hiện tại, thời gian (giây game), mốc từng nhịp

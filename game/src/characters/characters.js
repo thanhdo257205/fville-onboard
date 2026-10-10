@@ -22,7 +22,9 @@ export class Characters {
   // người nói không có vai trong cảnh (vd "hr": tin nhắn điện thoại) → chân dung của vai speaker_as.<người nói>.
   // Model đang dùng fallback → không chân dung (không hiện mặt người khác dưới tên người này)
   portrait(role) {
-    const id = this.modelId(this.cfg.speaker_as?.[role] ?? role);
+    const r = this.cfg.speaker_as?.[role] ?? role;
+    if (this.role(r)?.portrait === false) return null;     // vai dùng tạm model của người khác (vd intern) → không chân dung
+    const id = this.modelId(r);
     if (!id || this.swap[id]) return null;
     return this.model(id)?.portrait ?? null;
   }

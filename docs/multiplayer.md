@@ -232,8 +232,10 @@ mình. Muốn dừng hẳn máy chủ: `npx wrangler delete` trong `server/`, ho
   `workers.dev`), chính Chrome in một dòng đỏ "WebSocket connection … failed" cho mỗi lần thử. Code game không in lỗi nào,
   và JavaScript không chặn được dòng này. Các lần thử cách nhau dần tới 60 giây. Khi máy mất mạng hẳn thì không thử, nên
   không có dòng nào.
-- **Cảnh chuyển trên xe bus:** người chơi ngồi xe (zone 0 → 1) thì người khác vẫn thấy họ đứng ở cửa xe cho tới khi sang
-  zone 1.
+- **Ngồi trên xe bus (đã sửa 10/10/2026):** lúc nhân vật khuất vào xe (cảnh chuyển zone 0 → 1, cảnh kết ở bến xe), client
+  báo zone `transit_zone` (`data/net.json`, mặc định `zone_99`, không zone nào dùng). Người cùng zone thấy người đó rời đi
+  ngay khi bước lên xe, không còn đứng ở cửa xe. Lúc xuống xe ở zone 1 thì xuất hiện ở cửa xe như bình thường. Máy chủ
+  không cần sửa: `zone_99` đúng dạng `zone_NN`. Trong lúc ngồi xe, client bỏ qua tin của người khác.
 - **Không thấy Tú và NPC của người khác:** NPC và Tú là riêng từng máy.
 - **Hibernation:** `wrangler dev` không cho Durable Object ngủ như trên Cloudflare thật, nên phần đọc lại attachment khi
   ngủ dậy chỉ thử được sau khi deploy. Ví dụ: đứng yên cả phòng hơn 10 giây rồi đi lại, mọi người vẫn thấy nhau đúng chỗ.

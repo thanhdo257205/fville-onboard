@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { inTrigger, worldPos } from "../world/zone.js";
 import { blocked } from "../world/collision.js";
 import { tx } from "../content/content.js";
+import { t } from "../i18n.js";
 
 const IN_AREA_D = 1.0;  // m
 const MAX_DY = 3.0;   // chênh cao tối đa (vd biển số tuyến trên kính lái xe bus ~3 m)
@@ -59,8 +60,42 @@ function setJarCount(jar, n) {
   while (box.children.length > n) box.remove(box.children[box.children.length - 1]);
 }
 
+// bảng tên trên bàn intern (zone 5): tấm chữ (canvas) dán sát mặt tấm trắng trong GLB; setNameplate vẽ tên người chơi
+function makeNameplate() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512; canvas.height = 160;
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+  mat.userData.outlineParameters = { visible: false };
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.29, 0.09), mat);
+  mesh.userData.nameplate = { canvas, tex, text: null };
+  return mesh;
+}
+function setNameplate(mesh, name, sub) {
+  const np = mesh.userData.nameplate, key = `${name}|${sub}`;
+  if (np.text === key) return;
+  np.text = key;
+  const g = np.canvas.getContext("2d"), W = np.canvas.width, H = np.canvas.height;
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = "#f37021";
+  g.fillRect(0, H - 14, W, 14);
+  g.fillStyle = "#1d1f23";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  let size = 74;
+  do g.font = `800 ${size}px Nunito, sans-serif`; while (g.measureText(name).width > W - 40 && --size > 30);
+  g.fillText(name, W / 2, 62);
+  g.font = "700 30px Nunito, sans-serif";
+  g.fillStyle = "#555b66";
+  g.fillText(sub, W / 2, 121);
+  np.tex.needsUpdate = true;
+}
+
 // vật code đặt: model đơn giản
 function makeObject(kind) {
+  if (kind === "nameplate") return makeNameplate();
   if (kind === "grain") return makeGrain();
   if (kind === "jar") return makeJar();
   if (kind === "wallet") {
@@ -135,6 +170,11 @@ export class Interaction {
         e.mesh = makeObject(it.model);
         e.mesh.position.copy(e.pos);
         if (it.yaw_deg) e.mesh.rotation.y = THREE.MathUtils.degToRad(it.yaw_deg);
+        if (it.face) {                                         // tấm phẳng: quay mặt theo pháp tuyến, nhích ra khỏi mặt tấm thật
+          const n = new THREE.Vector3(...it.face).normalize();
+          e.mesh.position.addScaledVector(n, 0.022);
+          e.mesh.lookAt(e.mesh.position.clone().add(n));
+        }
         e.mesh.name = `object_${it.object}`;
         scene.add(e.mesh);
       }
@@ -147,8 +187,12 @@ export class Interaction {
   refresh() {
     for (const e of this.list) {
       if (!e.mesh) continue;
-      e.mesh.visible = !(e.item.hide_if && this.hideMatch(e.item.hide_if));
+      e.mesh.visible = !(e.item.hide_if && this.hideMatch(e.item.hide_if)) && this.game.progress.check(e.item.show_if);
       if (e.item.model === "jar") setJarCount(e.mesh, this.game.progress.grains.size);
+      if (e.item.model === "nameplate" && e.mesh.visible) {
+        const p = this.game.progress.player, pos = this.game.characters.cfg.character_creation?.positions?.find((x) => x.id === p.position);
+        setNameplate(e.mesh, p.name, t("summary.card_intern", { position: tx(pos?.name) || "" }).trim());
+      }
     }
   }
   hideMatch(cond) {
@@ -169,6 +213,7 @@ export class Interaction {
   }
   available(e) {
     const it = e.item;
+    if (it.action === "none") return false;                     // chỉ để nhìn (vd bảng tên trên bàn)
     if (it.hide_if && this.hideMatch(it.hide_if)) return false;
     return this.game.progress.check(it.requires);
   }
