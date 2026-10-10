@@ -1,4 +1,6 @@
-// App My FPT (phím Tab): tab Checklist, Túi đồ, Huy hiệu, Bản đồ (+ Sổ lời khuyên khi có phần thưởng so_loi_khuyen, zone 5)
+// App My FPT (phím Tab) — bố cục điện thoại thông minh: thanh trạng thái (giờ trong game, sóng / wifi / pin), thanh app (avatar,
+// tên, Help, nút × cho màn cảm ứng), nội dung cuộn riêng, thanh tab dưới có biểu tượng, vạch home; màn hẹp / thấp (điện thoại
+// thật) chiếm trọn màn hình (style.css #myfpt). Tab Checklist, Túi đồ, Huy hiệu, Bản đồ (+ Sổ lời khuyên khi có phần thưởng so_loi_khuyen, zone 5)
 // + 2 chỉ số Hiểu biết, Kết nối; nút Help (phím H) = gợi ý của mục tiêu hiện tại (game/guide.js). Túi đồ: thẻ nhân viên, ảnh
 // check-in, La bàn nghề nghiệp (kết quả gặp Prajith), Nhiệm vụ đầu tiên (từ Manager). Đã xong game: nút xem lại màn tổng kết
 // đầu tab Checklist (như menu Esc → View summary). Bản đồ: ảnh zone chụp từ trên xuống + dấu bạn / Tú / mục tiêu (ui/map.js).
@@ -24,6 +26,7 @@ export class MyFptApp {
       if (b) { if (b.dataset.tab !== this.tab) sound.play("select"); this.tab = b.dataset.tab; this.draw(); }
       if (e.target.closest("[data-a=help]")) { sound.play("tap"); this.toggleHelp(); }
       if (e.target.closest("[data-a=summary]")) this.game?.openSummary();   // tự đóng app, không qua chế độ chơi
+      if (e.target.closest("[data-a=close]")) this.game?.toggleApp();       // nút × (màn cảm ứng không có phím Tab)
     });
   }
   get open() { return !this.el.hidden; }
@@ -36,15 +39,20 @@ export class MyFptApp {
     const stat = (k) => `<div class="stat"><span>${t(`stats.${k}`)}</span><div class="bar"><i style="width:${s.stats[k]}%"></i></div><b>${s.stats[k]}</b></div>`;
     const list = ["checklist", "bag", "badges", "map", ...(s.hasReward("so_loi_khuyen") ? ["advice"] : [])];
     if (!list.includes(this.tab)) this.tab = "checklist";
-    const tabs = list.map((k) => `<button data-tab="${k}" class="${this.tab === k ? "on" : ""}">${t(`myfpt.tabs.${k}`)}</button>`).join("");
+    const tabs = list.map((k) => `<button data-tab="${k}" class="${this.tab === k ? "on" : ""}" aria-pressed="${this.tab === k}"><svg viewBox="0 0 24 24" aria-hidden="true">${TAB_ICONS[k]}</svg><span>${t(`myfpt.tabs.${k}`)}</span></button>`).join("");
+    const clock = document.getElementById("clock")?.textContent || "";
+    const initial = [...String(s.player.name || "").trim()][0]?.toUpperCase() || "·";
     this.el.innerHTML = `<div class="phone">
-      <div class="top"><b>${t("myfpt.title")}</b><span>${escape(s.player.name)}</span>
-        <button class="help ${this.helpOpen ? "on" : ""}" data-a="help">? ${t("myfpt.help")} <kbd>H</kbd></button></div>
+      <div class="status" aria-hidden="true"><span class="clock">${escape(clock)}</span><span class="sys">${SYS_ICONS}</span></div>
+      <header class="appbar"><span class="avatar" aria-hidden="true">${escape(initial)}</span><div class="who"><b>${t("myfpt.title")}</b><small>${escape(s.player.name)}</small></div>
+        <button class="help ${this.helpOpen ? "on" : ""}" data-a="help">? ${t("myfpt.help")} <kbd>H</kbd></button>
+        <button class="close" data-a="close" aria-label="${escape(t("myfpt.close_btn"))}">×</button></header>
+      <div class="screen">
       ${this.helpOpen ? `<div class="helpbox"><b>${t("guide.help_title")}</b>${(this.game?.guide.helpLines() || []).map((l) => `<p>${escape(l)}</p>`).join("")}</div>` : ""}
       <div class="stats">${stat("hieu_biet")}${stat("ket_noi")}</div>
-      <nav>${tabs}</nav>
       <div class="page">${this[this.tab]()}</div>
-      <div class="foot">${t("myfpt.close")}</div></div>`;
+      <div class="foot">${t("myfpt.close")}</div></div>
+      <div class="dock"><nav class="tabbar">${tabs}</nav><i class="home" aria-hidden="true"></i></div></div>`;
   }
 
   // checklist nhóm theo 4 Act (data/acts.json): tiêu đề Act + tiến độ; mục chưa có việc (zone 5) hiện khóa
@@ -154,5 +162,17 @@ export class MyFptApp {
       <div class="slots">${slots}</div>`;
   }
 }
+
+// biểu tượng thanh tab (nét 2 px, màu theo chữ) và thanh trạng thái (sóng, wifi, pin) — vẽ bằng SVG, không phụ thuộc emoji của máy
+const TAB_ICONS = {
+  checklist: '<path d="M4 6h2M4 12h2M4 18h2M9 6h11M9 12h11M9 18h11"/>',
+  bag: '<path d="M6 8h12l1 12H5L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  badges: '<circle cx="12" cy="9" r="5"/><path d="M8.5 13.5 7 21l5-2.5L17 21l-1.5-7.5"/>',
+  map: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
+  advice: '<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h6"/>',
+};
+const SYS_ICONS = '<svg viewBox="0 0 20 14"><rect x="1" y="9" width="3" height="4" rx="1"/><rect x="6" y="6" width="3" height="7" rx="1"/><rect x="11" y="3" width="3" height="10" rx="1"/><rect x="16" y="0" width="3" height="13" rx="1"/></svg>'
+  + '<svg viewBox="0 0 20 14"><path d="M1 5a13 13 0 0 1 18 0M4 8a9 9 0 0 1 12 0M7 11a4.5 4.5 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="13" r="1.2"/></svg>'
+  + '<svg viewBox="0 0 26 14"><rect x="1" y="1.5" width="21" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="3.5" width="15" height="7" rx="1.5"/><path d="M23.5 5v4a2 2 0 0 0 0-4z"/></svg>';
 
 function escape(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); }

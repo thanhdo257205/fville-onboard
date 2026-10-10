@@ -962,6 +962,14 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
 - Kiểm thử: build + smoke như CI (`--build --look intern_nam,intern_nu`) 61/61 bước (2 phút 34 giây); test:data đạt. CI chạy
   tay trên nhánh (3 ngoại hình): test:data, test:pool, build, smoke 78/78 bước (5 phút 8 giây), ảnh thẻ 0,1 s cả 3 lượt.
 
+### App My FPT bố cục điện thoại thông minh (10/10/2026, nhánh `feat/phone-layout`)
+- `game/src/ui/app.js` + `style.css` `#myfpt`: khung điện thoại 390 × ≤ 820 px xếp dọc — thanh trạng thái (giờ lấy từ `#clock`,
+  sóng / wifi / pin vẽ SVG), thanh app (avatar chữ cái đầu, My FPT + tên, Help, nút × `data-a=close` → `toggleApp`), `.screen`
+  cuộn riêng (chỉ số, trang tab, dòng "Tab to close"), `.dock` = thanh tab dưới có biểu tượng SVG nét 2 px (không dùng emoji
+  của máy) + vạch home. `@media (pointer: coarse)`: hiện ×, ẩn "Tab to close"; `(max-width: 700px), (max-height: 560px)`:
+  chiếm trọn màn hình, bỏ viền / thanh trạng thái / vạch home; `(max-height: 560px)` ẩn 2 thanh chỉ số. Chữ mới `myfpt.close_btn`.
+  Selector smoke (`#myfpt [data-tab=map]`, `.map img`…) giữ nguyên.
+
 ### Tab Bản đồ trong app My FPT (10/10/2026, nhánh `feat/map-tab`)
 - GDD: "sơ đồ đơn giản của zone hiện tại, chấm vị trí người chơi và mục tiêu". Tab thứ 4 (Checklist, Túi đồ, Huy hiệu, **Bản đồ**,
   Sổ lời khuyên — thứ tự theo GDD); 5 tab vừa một dòng (chữ 12 px, rộng theo chữ — vi "Lời khuyên").
