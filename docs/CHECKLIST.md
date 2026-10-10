@@ -1,8 +1,8 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 202c71d, build từ `main` ac4d358 — gồm PR #1
+Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 4b0aed0, build từ `main` 9f2c335 — gồm PR #1
 bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5; PR #2 camera / rơi xuyên sàn; PR #3 tiếng Việt; sửa CI + ảnh
-thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình).
+thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình).
 
 ## Cách dùng
 
@@ -112,7 +112,7 @@ thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a t
   `monitor_screen` hiện màn đăng nhập "My FPT", game đổi texture được (`scripts/blender/lib/desktop_computer.py`) — Phụ trách:
   Thanh Do — 94b7938
 - [x] P3 Thay mô hình bối cảnh bằng mô hình Sketchfab (CC BY 4.0; script `scripts/blender/lib/bus.py`, `trees.py`, `bamboo.py`) —
-  Phụ trách: Claude — nhánh `feat/env-models` — 84fcbec (chờ gộp Pull Request, chưa deploy)
+  Phụ trách: Claude — nhánh `feat/env-models` — 84fcbec (PR #5, `main` 9f2c335; đã deploy `gh-pages` 4b0aed0)
   - [x] Xe bus zone 0–1 ("Bus jb5 Low Poly"): sơn trắng–đỏ như xe cũ, cánh cửa tách riêng đúng chỗ TRIGGER_len_xe, biển số
     1/2/3 trên kính, dùng chung lưới mọi xe trong zone — 84fcbec
   - [x] Cây ngoài trời zone 0–3 ("Tree low poly lowpoly"): lá alphaTest không viền, dùng chung lưới, mỗi cây làm mờ riêng — 84fcbec

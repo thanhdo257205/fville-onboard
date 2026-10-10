@@ -917,7 +917,7 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   `zone_00_pickup_cay_via_he.png`, `zone_02_campus_cay_canh_lang.png`, `zone_02_campus_tre_gieng.png`; so trong game trước /
   sau ở đảo giếng zone_02.
 - Commit 84fcbec trên nhánh `feat/env-models` (rebase lên `main` c430b03: test:data, test:pool đạt, smoke 81 bước đạt);
-  Pull Request vào `main`, chưa deploy.
+  gộp vào `main` qua PR #5 (9f2c335, CI xanh) → deploy `gh-pages` 4b0aed0 (106 file, 17,4 MB, quét riêng tư 0 phát hiện).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
