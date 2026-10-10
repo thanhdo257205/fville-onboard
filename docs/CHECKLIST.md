@@ -82,6 +82,22 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
 - [ ] P3 Tab Bản đồ trong app My FPT — Phụ trách: —
 - [ ] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông — Phụ trách: —
+- [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —
+  - [ ] Chốt với nhóm / HR: cho gõ chữ tự do hay chỉ mở rộng câu soạn sẵn (hiện có câu chat soạn sẵn ở phím T); quy tắc ứng xử
+    hiện khi mở khung chat lần đầu
+  - [ ] Máy chủ (`server/`): tin nhắn `chat` với kênh `zone` (người cùng zone), `all` (mọi người đang online), `dm` (một người,
+    theo id phiên); giới hạn độ dài (~120 ký tự), chống spam (vd 1 tin / giây, tối đa 5 tin dồn), lọc từ ngữ thô tục cơ bản;
+    không lưu lịch sử trên máy chủ; tin chào báo `features: ["chat"]` — máy chủ bản cũ thì chỉ có câu soạn sẵn
+  - [ ] Game: khung chat (Enter mở / gửi, Esc đóng; đang gõ không điều khiển nhân vật), 3 tab Zone / All / Private kèm số tin
+    chưa đọc; tin cùng zone hiện thêm bong bóng trên đầu người gửi; nhắn riêng bằng cách bấm vào bảng tên người chơi hoặc
+    chọn trong danh sách người online; giữ ~50 tin gần nhất mỗi kênh trong lượt chơi (không vào bản lưu)
+  - [ ] An toàn: tắt nhận tin từ một người (mute), tắt hẳn chat trong menu Esc; "Show other players" tắt thì ẩn cả bong bóng chat;
+    tên người chơi trong tin là tên tự đặt, không hiện thông tin khác
+  - [ ] Chữ giao diện trong `data/i18n/en.json`; tính lại số lượt Cloudflare (mỗi tin = 1 tin nhắn WebSocket) với hạn miễn phí
+    100.000 lượt / ngày, ghi vào `docs/multiplayer.md`
+  - [ ] Kiểm thử: 3 trình duyệt headless + máy chủ local — tin zone chỉ tới người cùng zone, tin all tới mọi người, tin dm chỉ
+    tới đúng người; chặn tin quá dài / gửi quá nhanh; máy chủ bản cũ không có chat thì không lỗi; thêm vào `test:smoke`
+  - [ ] Build, push `main`, deploy `gh-pages`; bật trên máy chủ thật (`npx wrangler deploy` ở máy Desktop)
 
 ## 6. Ngôn ngữ và âm thanh
 
