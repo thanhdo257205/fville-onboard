@@ -14,13 +14,13 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | --- | --- |
 | `scripts/blender/zone_00.py` … `zone_05.py` | Dựng từng zone (chạy trong Blender không giao diện) |
 | `scripts/blender/lib/` | Thư viện dựng chung: kit modular, chất liệu, bảng màu, đồ vật, nội thất, phố, marker đối tượng game, lightmap, render |
-| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục), `render_portrait.py`, `texture_fix.py`, `char_render.py`, `char_data.py` (ghi `models.<id>` vào `data/characters.json` mà không định dạng lại cả file) |
+| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục; `--glasses`: vùng kính), `render_portrait.py`, `texture_fix.py`, `char_render.py`, `char_data.py` (ghi `models.<id>` vào `data/characters.json` mà không định dạng lại cả file) |
 | `scripts/blender/lib/cuder.py`, `scripts/blender/props/cuder_preview.py` | Tượng Cuder zone 2 từ mô hình Meshy (zone_02.py gọi khi build); xem trước riêng tượng |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
-| `assets/characters/<id>/` | GLB nhân vật, chân dung, texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mixamo/actions.json`) |
+| `assets/characters/<id>/` | GLB nhân vật, chân dung, texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
 | `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc |
 | `assets/props/<id>/source/` | Mô hình Meshy gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
@@ -65,7 +65,9 @@ python -m http.server 8765           # ở thư mục gốc, mở http://localho
 # Nhân vật (cần Blender + file riêng trên máy làm việc)
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/prepare_for_mixamo.py -- --id <id> --height 1.60 --tris 25000 [--protect-face] [--protect-logo]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/apply_chest_logo.py -- --id <id> [--logo <png>] [--compare prajith]
-tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/outfit_textures.py -- --id <id> [--shirt cfe0ee]   # sau apply_chest_logo
+tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/outfit_textures.py -- --id <id> [--shirt cfe0ee] [--glasses]   # sau apply_chest_logo
+#   áo gốc Meshy là bộ ngày đầu (intern_nam_kinh): outfit_textures.py -- --id <id> --original dau_ngay --glasses --no-render
+#   → apply_chest_logo.py (dán lên bản áo cam) → outfit_textures.py lại (render); xem đầu outfit_textures.py
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/build_character.py -- --id <id> --height 1.60 --tris 6000 --single [--decimate-only]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id>
 python scripts/tools/anim_sheet.py <id>

@@ -11,7 +11,8 @@ Ra:   assets/characters/<name>/<name>_for_mixamo.fbx      (FBX nhúng texture, c
       assets/characters/<name>/textures/<name>_basecolor.jpg (1024 px)
       renders/characters/<name>_front.png, <name>_side.png
       renders/characters/check/<name>_{orig|<tris>}_{face|hair|hand_l|hand_r|eyes|collar}.png (soi mặt, kính, tóc, tay,
-      mắt, cổ áo); có texture_fixes.json: renders/characters/<name>_texture_truoc_sau.png
+      mắt, cổ áo); có texture_fixes.json: renders/characters/<name>_texture_truoc_sau.png;
+      có mesh_fixes.json: renders/characters/<name>_hinh_khoi_truoc_sau.png
 
 Nhân vật trong thư mục này có thể là người thật → KHÔNG đưa vào dist/ hay repo công khai.
 """
@@ -57,6 +58,7 @@ FBX = os.path.join(CHAR_DIR, f"{NAME}_for_mixamo.fbx")
 BLEND = os.path.join(CHAR_DIR, f"{NAME}_prep.blend")
 TEX = os.path.join(CHAR_DIR, "textures", f"{NAME}_basecolor.jpg")
 FIXES = os.path.join(CHAR_DIR, "texture_fixes.json")  # tuỳ chọn: collar, magnify, remove, bands, decals (texture_fix.py)
+MESH_FIXES = os.path.join(CHAR_DIR, "mesh_fixes.json")  # tuỳ chọn: shorten (rút ngắn lọn tóc), áp trước khi giảm tam giác
 RENDER_DIR = os.path.join(ROOT, "renders", "characters")
 
 
@@ -163,6 +165,111 @@ def smooth_normals(obj):
     if obj.data.has_custom_normals:
         bpy.ops.mesh.customdata_custom_splitnormals_clear()
     bpy.ops.object.shade_smooth()
+
+
+def vertex_colors(obj):
+    """Màu baseColor (ảnh gốc) trung bình tại UV của mỗi đỉnh — chạy trước simplify_material."""
+    me = obj.data
+    nt = me.materials[0].node_tree
+    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    px = image_pixels(bsdf.inputs["Base Color"].links[0].from_node.image)
+    h, w = px.shape[:2]
+    uv = np.empty(len(me.loops) * 2)
+    me.uv_layers.active.data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    lv = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", lv)
+    acc = np.zeros((len(me.vertices), 3))
+    cnt = np.zeros(len(me.vertices))
+    np.add.at(acc, lv, px[np.clip((uv[:, 1] * h).astype(int), 0, h - 1), np.clip((uv[:, 0] * w).astype(int), 0, w - 1), :3])
+    np.add.at(cnt, lv, 1)
+    return acc / np.maximum(cnt, 1)[:, None]
+
+
+def shorten_lock(obj, f, vc):
+    """Rút ngắn một lọn tóc treo tự do (vd lọn rủ trước trán): lan từ đỉnh gần `seed` qua các cạnh, chỉ trong hộp `box`
+    (x, y tối đa) và dưới `cut_z` — độ cao mà lọn tóc còn tách rời khỏi phần mái (lan không chạm sang lọn khác) — bỏ
+    qua đỉnh màu da (bão hoà r − b > 0,15 và sáng). Mỗi đỉnh trong lọn: khoảng cách d tới cut_z co lại còn
+    keep·d + (1 − keep)·soft·(1 − e^(−d/soft)) (ở cut_z không dời → liền với phần mái; xa cut_z co theo tỉ lệ keep).
+    Chỉ dời theo z: giữ nguyên số đỉnh, UV, độ dày lọn → không phải vá lỗ."""
+    co = coords(obj)
+    me = obj.data
+    edges = np.empty(len(me.edges) * 2, np.int64)
+    me.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    luma = vc @ TF.LUMA
+    skin = (vc[:, 0] - vc[:, 2] > 0.15) & (luma > 0.3)
+    (x0, x1), y_max = f["box_x"], f["box_y_max"]
+    ok = ~skin & (co[:, 2] < f["cut_z"]) & (co[:, 0] > x0) & (co[:, 0] < x1) & (co[:, 1] < y_max)
+    cand = np.where(ok)[0]
+    if not len(cand):
+        raise RuntimeError(f"mesh_fixes '{f['name']}': không có đỉnh nào trong hộp")
+    seed = cand[np.linalg.norm(co[cand] - np.array(f["seed"]), axis=1).argmin()]
+    reg = np.zeros(len(co), bool)
+    reg[seed] = True
+    while True:
+        g = reg.copy()
+        m = reg[edges[:, 0]] & ok[edges[:, 1]]
+        g[edges[m, 1]] = True
+        m = reg[edges[:, 1]] & ok[edges[:, 0]]
+        g[edges[m, 0]] = True
+        if (g == reg).all():
+            break
+        reg = g
+    k, soft, top = f.get("keep", 0.2), f.get("soft", 0.006), f["cut_z"]
+    d = top - co[reg, 2]
+    new = co.copy()
+    new[reg, 2] = top - (k * d + (1 - k) * soft * (1 - np.exp(-d / soft)))
+    me.vertices.foreach_set("co", new.ravel())
+    me.update()
+    p = co[reg]
+    r = lambda v, n=4: round(float(v), n)  # noqa: E731
+    info = {"dinh": int(reg.sum()), "x": [r(p[:, 0].min()), r(p[:, 0].max())],
+            "dau_lon_z": [r(p[:, 2].min()), r(new[reg, 2].min())],
+            "dai_cm": [r((top - p[:, 2].min()) * 100, 1), r((top - new[reg, 2].min()) * 100, 1)]}
+    if reg.sum() > f.get("max_verts", 400):
+        raise RuntimeError(f"mesh_fixes '{f['name']}': lan ra {reg.sum()} đỉnh — cut_z quá cao, lọn tóc dính sang phần khác? {info}")
+    return info, p.mean(0)
+
+
+def mesh_fixes(obj):
+    """Sửa hình khối theo assets/characters/<id>/mesh_fixes.json (trước khi giảm tam giác); render trước | sau."""
+    if not os.path.exists(MESH_FIXES):
+        return
+    cfg = json.load(open(MESH_FIXES, encoding="utf-8"))
+    vc = vertex_colors(obj)
+    todo = [f for f in cfg.get("shorten", []) if f.get("enabled", True)]
+    if not todo:
+        return
+    cam = preview_setup()
+    views = []
+    for f in todo:
+        c = np.array(f["seed"])
+        view = ((c[0], c[1] + 0.03, c[2] + 0.02), (0, -1, 0.02), 0.20)   # mặt + 2 mắt kính quanh lọn tóc
+        before = os.path.join(RENDER_DIR, "check", f"{NAME}_{f['name']}_truoc.png")
+        shoot(cam, before, *view, res=(700, 700))
+        info, center = shorten_lock(obj, f, vc)
+        after = os.path.join(RENDER_DIR, "check", f"{NAME}_{f['name']}_sau.png")
+        shoot(cam, after, *view, res=(700, 700))
+        views.append((before, after))
+        print(f"[hình khối] rút ngắn '{f['name']}': {info}")
+    preview_teardown()
+    rows = []
+    for b, a in views:
+        ims = []
+        for p in (b, a):
+            im = bpy.data.images.load(p)
+            ims.append(image_pixels(im)[..., :3])
+            bpy.data.images.remove(im)
+        rows.append(np.concatenate([ims[0], np.full((ims[0].shape[0], 12, 3), 0.13, np.float32), ims[1]], 1))
+    grid = np.concatenate(rows[::-1], 0)
+    path = os.path.join(RENDER_DIR, f"{NAME}_hinh_khoi_truoc_sau.png")
+    out = make_image("mesh_fix", np.concatenate([grid, np.ones(grid.shape[:2] + (1,), np.float32)], -1))
+    out.filepath_raw = path
+    out.file_format = "PNG"
+    out.save()
+    bpy.data.images.remove(out)
+    print(f"[render] hình khối trước | sau: {path}")
 
 
 def face_mask(obj):
@@ -348,6 +455,11 @@ def build_texture(obj, base_tex):
     if os.path.exists(nologo):
         os.remove(nologo)
         print(f"[texture] xoá {os.path.basename(nologo)} cũ: chạy lại apply_chest_logo.py để dán logo lên ảnh mới")
+    # bộ dau_ngay cũng dựng từ ảnh màu TRƯỚC (outfit_textures.py; --original dau_ngay: là bản chép ảnh gốc) → làm lại
+    dau_ngay = os.path.join(CHAR_DIR, "textures", f"{NAME}_basecolor_dau_ngay.jpg")
+    if os.path.exists(dau_ngay):
+        os.remove(dau_ngay)
+        print(f"[texture] xoá {os.path.basename(dau_ngay)} cũ: chạy lại outfit_textures.py")
     base_tex.image = img
     for im in [im for im in bpy.data.images if im is not img]:
         bpy.data.images.remove(im)
@@ -466,6 +578,7 @@ def main():
     cam = preview_setup()
     check_shots(obj, cam, "orig")
     preview_teardown()
+    mesh_fixes(obj)
 
     tris = decimate(obj, TARGET_TRIS)
     merge_and_clean(obj, "sau giảm")

@@ -13,10 +13,12 @@ Mô hình nhân vật tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0. G�
   Prajith (retarget sang bộ xương của Nga).
 - `assets/characters/intern_nam/`, `assets/characters/intern_nu/` — nhân vật người chơi nam / nữ (hư cấu). Mô hình tạo
   bằng Meshy (meshy.ai), giấy phép CC BY 4.0; gắn xương Adobe Mixamo; animation dùng lại bộ Mixamo của Prajith.
+- `assets/characters/intern_nam_kinh/` — nhân vật người chơi nam đeo kính (hư cấu; sau này cũng là model Tú). Mô hình
+  tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0 (đang chờ gắn xương Mixamo).
 
 Logo FPT trên ngực áo (Prajith, Huyền) là bản tạm: mảng logo tách từ texture của Prajith
 (chỉ có trên máy làm việc), sẽ thay bằng file logo chính thức của FPT
-(`scripts/blender/characters/apply_chest_logo.py`). Logo trên áo Nga và hai nhân vật người chơi (bộ `ao_cam`): logo FPT
+(`scripts/blender/characters/apply_chest_logo.py`). Logo trên áo Nga và các nhân vật người chơi (bộ `ao_cam`): logo FPT
 do người dùng cung cấp, chỉ nằm trong texture.
 
 ## Phụ kiện

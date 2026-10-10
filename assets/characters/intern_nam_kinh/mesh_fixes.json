@@ -1,0 +1,16 @@
+{
+  "_ghi_chu": "Sửa hình khối trước khi giảm tam giác (prepare_for_mixamo.py), toạ độ m sau chuẩn hoá (cao 1,65 m, nhìn -Y, gốc giữa 2 bàn chân). shorten: rút ngắn lọn tóc treo tự do — lan từ đỉnh gần seed, trong hộp box_x × (y < box_y_max), dưới cut_z (độ cao lọn tóc còn tách rời phần mái; cao hơn thì lan sang lọn bên trái, max_verts chặn), bỏ đỉnh màu da; khoảng cách tới cut_z co còn keep (×0,2) + soft (mép mượt). Chỉ dời theo z, giữ UV và số đỉnh.",
+  "shorten": [
+    {
+      "name": "lon_toc_giua_kinh",
+      "_ly_do": "Lọn tóc giữa trán rủ tới sống kính (đầu lọn z 1,477, sống kính 1,457) → nhìn xa thành vết đen giữa hai mắt kính. Rút ngắn còn tới ngang lông mày.",
+      "seed": [0.002, -0.089, 1.478],
+      "box_x": [-0.04, 0.05],
+      "box_y_max": -0.078,
+      "cut_z": 1.505,
+      "keep": 0.2,
+      "soft": 0.006,
+      "max_verts": 400
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "_ghi_chu": "Tâm logo (m) theo toạ độ intern_nam_kinh_prep.blend (cao 1.65 m, nhìn -Y, gốc giữa 2 bàn chân; ngực trái = +X). Áo phông cổ tròn khoét sâu: đáy cổ áo ở z 1,245 (giữa ngực), hai bên cổ ~1,31 → không đặt theo tỉ lệ 0,75 × chiều cao của áo polo (1,2375: mép trên logo cao hơn đáy cổ, trông như leo lên cổ áo). Thử 10 vị trí (apply_chest_logo.py --dry-run): (0,085; 1,1825) không vắt đường nối UV nào (1,222: vắt 12,7 cm, chữ T bị cắt chéo), mép trên logo thấp hơn đáy cổ ~4 cm — cách vai cùng tỉ lệ với logo áo intern_nam; rộng 7 cm. Áo cam = áo phông xanh ngọc gốc đổi màu theo mặt nạ (outfit_textures.py --original dau_ngay) rồi mới dán logo. Logo gốc (FPT, đã xoá nền, giống file của nga) nằm trong source/ — không commit; fill_holes tô trắng chữ F P T; keep_folds: giữ nếp vải. Chạy lại: scripts/blender/characters/apply_chest_logo.py -- --id intern_nam_kinh.",
+  "center": [
+    0.085,
+    -0.0199,
+    1.1825
+  ],
+  "width_m": 0.07,
+  "logo": "assets/characters/intern_nam_kinh/source/logo_fpt_goc.png",
+  "fill_holes": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "keep_folds": true,
+  "fold_range": [
+    0.85,
+    1.08
+  ],
+  "result": {
+    "center": [
+      0.085,
+      -0.0199,
+      1.1825
+    ],
+    "shift_m": 0.0,
+    "seam_in_logo_m": 0.0,
+    "seam_at_wanted_m": 0.0,
+    "nearest_seam_free": [
+      0.085,
+      1.1825
+    ],
+    "size_m": [
+      0.07,
+      0.0433
+    ],
+    "texels": 2330,
+    "rect_x_m": [
+      0.05,
+      0.12
+    ],
+    "rect_z_m": [
+      1.1609,
+      1.2041
+    ],
+    "not_shirt_pct": 0.0,
+    "keep_folds": true,
+    "texel_mm": 1.14
+  }
+}

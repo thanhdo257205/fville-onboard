@@ -1,8 +1,20 @@
-"""Mặt nạ vùng (áo, quần, giày, da, tóc) + các bộ texture trang phục của một nhân vật, cùng UV với <id>_prep.blend.
+"""Mặt nạ vùng (áo, quần, giày, da, tóc, kính) + các bộ texture trang phục của một nhân vật, cùng UV với <id>_prep.blend.
 
 Chạy (không giao diện, sau prepare_for_mixamo.py và apply_chest_logo.py):
   tools/bin/blender.cmd --background --factory-startup \
-      --python scripts/blender/characters/outfit_textures.py -- --id intern_nam [--shirt cfe0ee] [--no-render]
+      --python scripts/blender/characters/outfit_textures.py -- --id intern_nam [--shirt cfe0ee] [--glasses] [--no-render]
+
+Áo gốc Meshy là bộ NGÀY ĐẦU (vd intern_nam_kinh: áo phông xanh ngọc) — --original dau_ngay, chạy TRƯỚC apply_chest_logo.py:
+  ... outfit_textures.py -- --id intern_nam_kinh --original dau_ngay [--orange fb8136] --glasses --no-render
+  ... apply_chest_logo.py -- --id intern_nam_kinh            (dán logo lên bản cam _nologo → _basecolor.jpg)
+  ... outfit_textures.py -- --id intern_nam_kinh --original dau_ngay --glasses   (chạy lại để render bản ao_cam có logo)
+  → textures/<id>_basecolor_dau_ngay.jpg = ảnh màu gốc (chép nguyên byte từ _basecolor.jpg do prepare_for_mixamo.py ghi,
+    các lần sau đọc lại từ đây); textures/<id>_basecolor_nologo.jpg = áo đổi sang cam --orange theo mặt nạ, giữ nếp vải
+    (mặc định = màu mẫu áo cam của intern_nam → hai áo cam giống nhau), chưa logo. Chạy lại prepare_for_mixamo.py thì
+    hai ảnh này bị xoá, làm lại từ bước đầu.
+--glasses: thêm vùng kính (gọng kính dính liền mặt trong lưới Meshy): đỉnh vùng đầu có độ dày < GLASSES_THICK (tia bắn
+từ đỉnh vào trong theo pháp tuyến: gọng là ống ~3 mm, mặt / đầu dày hàng chục cm) trong dải mắt --glasses-band
+(× chiều cao), gom liên thông, giữ mảng lớn (lọn tóc mảnh lẻ trong dải bị loại).
 
 Vào:  assets/characters/<id>/<id>_prep.blend                  (mesh cuối, UV)
       assets/characters/<id>/textures/<id>_basecolor_nologo.jpg (áo gốc, không logo — apply_chest_logo.py tạo)
@@ -26,10 +38,13 @@ tách giữa các vùng có thể có ở chỗ đó:
 """
 import json
 import os
+import shutil
 import sys
 
 import bpy
 import numpy as np
+from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import texture_fix as TF  # noqa: E402
@@ -45,12 +60,18 @@ def arg(name, default=None, cast=str):
 
 CID = arg("--id")
 SHIRT_HEX = arg("--shirt", "cfe0ee")          # bộ "dau_ngay": áo sơ mi xanh nhạt (GDD, giống tint của vai player)
+ORIGINAL = arg("--original", "ao_cam")         # áo gốc Meshy là bộ nào: ao_cam (mặc định) | dau_ngay
+ORANGE_HEX = arg("--orange", "fb8136")         # --original dau_ngay: màu áo cam = màu mẫu áo của intern_nam (đo 10/10/2026)
+GLASSES = "--glasses" in ARGS
+GLASSES_BAND = arg("--glasses-band", (0.855, 0.912), lambda v: tuple(float(x) for x in v.split(",")))
+GLASSES_THICK = 0.012                          # m
 RENDER = "--no-render" not in ARGS
 SIZE = 1024                                    # ảnh màu
 MASK_SIZE = 512
-LABELS = {1: "ao", 2: "quan", 3: "giay", 4: "da", 5: "toc"}
-MASK_COLORS = {0: (0, 0, 0), 1: (255, 0, 0), 2: (0, 0, 255), 3: (0, 255, 0), 4: (255, 255, 0), 5: (255, 0, 255)}
-SHIRT, PANTS, SHOES, SKIN, HAIR = 1, 2, 3, 4, 5
+LABELS = {1: "ao", 2: "quan", 3: "giay", 4: "da", 5: "toc", 6: "kinh"}
+MASK_COLORS = {0: (0, 0, 0), 1: (255, 0, 0), 2: (0, 0, 255), 3: (0, 255, 0), 4: (255, 255, 0), 5: (255, 0, 255),
+               6: (0, 255, 255)}
+SHIRT, PANTS, SHOES, SKIN, HAIR, GLASS = 1, 2, 3, 4, 5, 6
 LUMA = TF.LUMA
 FOLD_RANGE = (0.6, 1.12)                       # giới hạn hệ số nếp vải khi đổi màu áo
 
@@ -241,12 +262,39 @@ def clean_labels(M, vl, vc, min_frac=0.002, hair_keep=0.2, hair_near=0.006):
     return vl, changed_total
 
 
-def texel_labels(M, px, vl, ref):
+def glasses_vertices(M, H):
+    """Gọng kính: đỉnh vùng đầu mỏng (< GLASSES_THICK) trong dải mắt, mảng liên thông lớn. → (mặt nạ đỉnh, thông tin)."""
+    head = np.where(M.co[:, 2] > H * GLASSES_BAND[0] - 0.02)[0]
+    bvh = BVHTree.FromPolygons([Vector(v) for v in M.co], M.tri_v.tolist())
+    thick = np.full(M.n, 9.0)
+    for i in head:
+        hit = bvh.ray_cast(Vector(M.co[i] - M.nrm[i] * 1e-4), Vector(-M.nrm[i]), 0.5)
+        if hit[0] is not None:
+            thick[i] = hit[3]
+    cand = (thick < GLASSES_THICK) & (M.co[:, 2] > H * GLASSES_BAND[0]) & (M.co[:, 2] < H * GLASSES_BAND[1])
+    lab = M.components(cand)
+    ids, cnt = np.unique(lab[cand], return_counts=True)
+    if not len(ids):
+        raise RuntimeError("--glasses: không có đỉnh mỏng nào trong dải mắt")
+    keep = ids[(cnt >= 0.2 * cnt.max()) & (cnt >= 30)]
+    g = np.isin(lab, keep)
+    p = M.co[g]
+    r = lambda v: round(float(v), 3)  # noqa: E731
+    info = {"dinh": int(g.sum()), "mang": len(keep), "bo_manh_le": int(cand.sum() - g.sum()),
+            "x": [r(p[:, 0].min()), r(p[:, 0].max())], "y": [r(p[:, 1].min()), r(p[:, 1].max())],
+            "z": [r(p[:, 2].min()), r(p[:, 2].max())]}
+    return g, info
+
+
+def texel_labels(M, px, vl, ref, mark_v):
     """Nhãn từng texel (SIZE × SIZE): tam giác cùng vùng → vùng đó; giáp ranh → màu mẫu gần nhất trong các vùng của
-    3 đỉnh. Texel ngoài mảnh UV = 0; covered = texel thuộc tam giác nào đó."""
+    3 đỉnh. Texel ngoài mảnh UV = 0; covered = texel thuộc tam giác nào đó.
+    → (nhãn, marked = texel của tam giác có đỉnh trong mark_v)."""
     uvt = M.uv[M.tri_l] * SIZE - 0.5
     tl = vl[M.tri_v]
+    tm = mark_v[M.tri_v].any(1)
     lab = np.zeros((SIZE, SIZE), np.uint8)
+    marked = np.zeros((SIZE, SIZE), bool)
     for t in range(len(uvt)):
         r = TF._raster_tri(uvt[t], SIZE)
         if r is None:
@@ -257,7 +305,9 @@ def texel_labels(M, px, vl, ref):
             lab[yy, xx] = a
         else:
             lab[yy, xx] = nearest(px[yy, xx, :3].astype(np.float64), ref, np.unique(tl[t]))
-    return lab
+        if tm[t]:
+            marked[yy, xx] = True
+    return lab, marked
 
 
 def flood_hair(tlab, px, ref, iters=400):
@@ -300,7 +350,7 @@ def grow_labels(lab, iters):
 def downsample_mode(lab, f):
     h, w = lab.shape[0] // f, lab.shape[1] // f
     blocks = lab.reshape(h, f, w, f).transpose(0, 2, 1, 3).reshape(h, w, f * f)
-    counts = np.stack([(blocks == k).sum(-1) for k in range(6)], -1)
+    counts = np.stack([(blocks == k).sum(-1) for k in range(len(MASK_COLORS))], -1)
     counts[..., 0] = np.where(counts[..., 1:].sum(-1) > 0, -1, counts[..., 0])   # có vùng nào thì không lấy 0
     return counts.argmax(-1).astype(np.uint8)
 
@@ -318,10 +368,12 @@ def hex_rgb(h):
     return np.array([int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)])
 
 
-def recolor_shirt(px, lab, covered, ref, target, ring=3):
+def recolor_shirt(px, lab, covered, ref, target, near3d, ring=3):
     """Áo → màu target, giữ nếp vải: hệ số sáng = độ sáng texel / độ sáng màu áo mẫu (giới hạn FOLD_RANGE).
-    Trong áo: tỉ lệ đổi = độ "cam" của texel (nút áo trắng, chỉ may giữ nguyên). Texel vùng khác sát áo (≤ ring px):
-    đổi theo tỉ lệ lẫn màu áo (mép áo mờ của Meshy không còn viền cam). Sau cùng lan màu lại ra lề mảnh UV."""
+    Trong áo: tỉ lệ đổi = độ "đậm màu áo" của texel (nút áo trắng, chỉ may giữ nguyên). Texel vùng khác sát áo (≤ ring px)
+    VÀ thuộc tam giác giáp áo trên lưới (near3d — mảnh UV mắt, tóc nằm cạnh mảnh áo trong atlas thì không phải mép áo:
+    đồng tử tối bị tính là "lẫn màu áo" → chấm màu áo trên mắt): đổi theo tỉ lệ lẫn màu áo (mép áo mờ của Meshy không
+    còn viền màu cũ). Sau cùng lan màu lại ra lề mảnh UV."""
     rgb = px[..., :3].astype(np.float64)
     S = ref[SHIRT][0]
     lum = rgb @ LUMA
@@ -337,15 +389,19 @@ def recolor_shirt(px, lab, covered, ref, target, ring=3):
     for dy in range(-ring, ring + 1):
         for dx in range(-ring, ring + 1):
             near |= np.roll(np.roll(shirt, dy, 0), dx, 1)
-    border = near & ~shirt & (lab > 0)
+    border = near & ~shirt & (lab > 0) & near3d
     a = np.where(shirt, a_in, 0.0)
-    for k in (PANTS, SHOES, SKIN, HAIR):
+    for k in [k for k in ref if k != SHIRT]:
         sel = border & (lab == k)
         if sel.any():
             o = ref[k][0] if k != SHOES else ref[k][-1]
             sv = S - o
             a[sel] = np.clip(((rgb[sel] - o) @ sv) / (sv @ sv), 0, 1)
-    out = rgb * (1 - a[..., None]) + new * a[..., None]
+    # bỏ đúng phần màu áo cũ (a × màu áo) rồi thêm a × màu mới; trộn rgb·(1 − a) + mới·a để lại a(1 − a) màu áo cũ ở
+    # chỗ lẫn màu (mép cổ, nách) → viền ô liu khi đổi xanh ngọc → cam. Trong áo: màu cũ theo độ sáng texel; ở mép: màu mẫu
+    old = np.where(shirt[..., None], sl, S[None, None])
+    tgt = np.where(shirt[..., None], new, target[None, None])
+    out = np.clip(rgb + a[..., None] * (tgt - old), 0, 1)
     res = px.copy()
     res[..., :3] = out
     res = TF.pad_islands(res, covered, iters=8)
@@ -380,16 +436,17 @@ def render_set(obj, imgs, logo_center):
     snap("mat_na_truoc", imgs["mask"], *body)
     snap("mat_na_sau", imgs["mask"], (0, 0, H / 2), (0, 1, 0), H * 1.04, (560, 1000))
     snap("dau_ngay_sau", imgs["dau_ngay"], (0, 0, H / 2), (0, 1, 0), H * 1.04, (560, 1000))
-    snap("nguc_logo", imgs["ao_cam"], logo_center, (0.12, -1, 0.05), 0.30, (640, 640))
+    snap("nguc_logo", imgs["ao_cam"], logo_center, (0.12, -1, 0.05), 0.30, (560, 560))
     face_c = (head[:, 0].mean(), head[:, 1].mean(), H - 0.12 * H / 1.7)
-    snap("mat", imgs["ao_cam"], face_c, (0.15, -1, 0.03), 0.30, (640, 640))
-    snap("mat_dau_ngay", imgs["dau_ngay"], face_c, (0.15, -1, 0.03), 0.30, (640, 640))
+    snap("mat", imgs["ao_cam"], face_c, (0.15, -1, 0.03), 0.30, (560, 560))
+    snap("mat_dau_ngay", imgs["dau_ngay"], face_c, (0.15, -1, 0.03), 0.30, (560, 560))
+    snap("mat_na_mat", imgs["mask"], face_c, (0.35, -1, 0.05), 0.30, (560, 560))
     preview_teardown()
     return paths
 
 
 def compose(paths, out):
-    """Hàng trên: 4 ảnh toàn thân (560 × 1000); hàng dưới: cận ngực, cận mặt (ảnh vuông, co về cao 500)."""
+    """Hàng trên: 4 ảnh toàn thân (560 × 1000); hàng dưới: cận ngực, cận mặt ao_cam / dau_ngay, cận mặt mặt nạ (560 × 560)."""
     top = [load_pixels(paths[k])[..., :3] for k in ("ao_cam_truoc", "dau_ngay_truoc", "mat_na_truoc", "mat_na_sau")]
     gap = 10
     W = sum(i.shape[1] for i in top) + gap * 3
@@ -399,7 +456,7 @@ def compose(paths, out):
         row1[:, x:x + i.shape[1]] = i
         x += i.shape[1] + gap
     bottom = []
-    for k in ("nguc_logo", "mat", "mat_dau_ngay"):
+    for k in ("nguc_logo", "mat", "mat_dau_ngay", "mat_na_mat"):
         im = load_pixels(paths[k])[..., :3]
         f = im.shape[0] // 500 or 1
         bottom.append(im[::f, ::f] if f > 1 else im)
@@ -425,14 +482,29 @@ def make_img(name, px):
 def main():
     if not CID:
         raise SystemExit("cần --id <nhân vật>")
-    for k in ("blend", "nologo", "ao_cam"):
-        if not os.path.exists(P[k]):
-            raise SystemExit(f"thiếu {P[k]} — chạy prepare_for_mixamo.py rồi apply_chest_logo.py trước")
+    if ORIGINAL == "dau_ngay":
+        # ảnh màu gốc = bộ ngày đầu: lần đầu chép từ _basecolor.jpg (prepare_for_mixamo.py vừa ghi, chưa có _nologo);
+        # các lần sau đọc lại bản chép (lúc đó _basecolor.jpg đã là áo cam + logo)
+        if not os.path.exists(P["dau_ngay"]):
+            if os.path.exists(P["nologo"]) or not os.path.exists(P["ao_cam"]):
+                raise SystemExit(f"thiếu {P['dau_ngay']} và _basecolor.jpg không còn là ảnh gốc — chạy lại prepare_for_mixamo.py")
+            shutil.copy2(P["ao_cam"], P["dau_ngay"])
+            print(f"[gốc] chép {os.path.basename(P['ao_cam'])} → {os.path.basename(P['dau_ngay'])} (bộ dau_ngay = áo gốc)")
+        src = P["dau_ngay"]
+    elif ORIGINAL == "ao_cam":
+        for k in ("nologo", "ao_cam"):
+            if not os.path.exists(P[k]):
+                raise SystemExit(f"thiếu {P[k]} — chạy prepare_for_mixamo.py rồi apply_chest_logo.py trước")
+        src = P["nologo"]
+    else:
+        raise SystemExit("--original: ao_cam | dau_ngay")
+    if not os.path.exists(P["blend"]):
+        raise SystemExit(f"thiếu {P['blend']} — chạy prepare_for_mixamo.py trước")
     bpy.ops.wm.open_mainfile(filepath=P["blend"])
     obj = next(o for o in bpy.context.scene.objects if o.type == "MESH")
     M = Mesh(obj.data)
     H = M.co[:, 2].max()
-    px = load_pixels(P["nologo"])
+    px = load_pixels(src)
     if px.shape[0] != SIZE:
         raise SystemExit(f"ảnh {px.shape[1]}×{px.shape[0]}, cần {SIZE}")
     vc = M.vertex_colors(px)
@@ -444,7 +516,7 @@ def main():
     print(f"[khu] cắt dưới nách z = {zc:.3f} m ({zc / H:.2f} × cao): tay {zone_arm.sum()} đỉnh, thân + chân "
           f"{zone_low.sum()}, trên {zone_up.sum()}")
     ref = reference_colors(M, vc, H, zone_up, zone_arm, zone_low)
-    print("[màu mẫu] " + ", ".join(f"{LABELS[k]} {[np.round(c, 3).tolist() for c in ref[k]]}" for k in LABELS))
+    print("[màu mẫu] " + ", ".join(f"{LABELS[k]} {[np.round(c, 3).tolist() for c in ref[k]]}" for k in ref))
 
     vl = np.zeros(M.n, np.int64)
     co = M.co
@@ -457,9 +529,20 @@ def main():
         vl[ii] = nearest(vc[ii], ref, allowed)
     vl[zone_up] = nearest(vc[zone_up], ref, [SHIRT, SKIN, HAIR])
     vl, changed = clean_labels(M, vl, vc)
+    if GLASSES:
+        g, ginfo = glasses_vertices(M, H)
+        vl[g] = GLASS
+        # 2 màu mẫu: thân gọng (trung vị) + viền tối của gọng (texel giáp ranh với da / tóc chọn theo màu)
+        ref[GLASS] = [np.median(vc[g], 0), np.percentile(vc[g], 10, axis=0)]
+        print(f"[kính] {ginfo}; màu mẫu {[np.round(c, 3).tolist() for c in ref[GLASS]]}")
     print(f"[đỉnh] {', '.join(f'{LABELS[k]} {(vl == k).sum()}' for k in LABELS)}; dọn mảng vụn: {changed} đỉnh")
 
-    tlab = texel_labels(M, px, vl, ref)
+    # đỉnh áo + 1 vòng cạnh quanh áo → texel của tam giác giáp áo trên lưới (mép áo thật, không phải mảnh UV kề nhau)
+    near_v = vl == SHIRT
+    e = M.edges[near_v[M.edges[:, 0]] != near_v[M.edges[:, 1]]]
+    near_v = near_v.copy()
+    near_v[e.ravel()] = True
+    tlab, near3d = texel_labels(M, px, vl, ref, near_v)
     tlab, flooded = flood_hair(tlab, px, ref)
     print(f"[texel] lọn tóc vẽ trên da → tóc: {flooded} texel")
     covered = tlab > 0
@@ -471,15 +554,28 @@ def main():
     print(f"[mặt nạ] {P['mask']} ({MASK_SIZE} px, {os.path.getsize(P['mask']) // 1024} KB): "
           + ", ".join(f"{LABELS[k]} = {MASK_COLORS[k]}" for k in LABELS) + ", ngoài UV = đen")
 
-    target = hex_rgb(SHIRT_HEX)
-    dau_ngay, info = recolor_shirt(px, tlab_g, covered, ref, target)
-    save_pixels(dau_ngay, P["dau_ngay"], "JPEG")
-    print(f"[dau_ngay] áo → #{SHIRT_HEX}: {info} → {P['dau_ngay']} ({os.path.getsize(P['dau_ngay']) // 1024} KB)")
+    ao_cam_img = None
+    if ORIGINAL == "ao_cam":
+        target = hex_rgb(SHIRT_HEX)
+        dau_ngay, info = recolor_shirt(px, tlab_g, covered, ref, target, near3d)
+        save_pixels(dau_ngay, P["dau_ngay"], "JPEG")
+        print(f"[dau_ngay] áo → #{SHIRT_HEX}: {info} → {P['dau_ngay']} ({os.path.getsize(P['dau_ngay']) // 1024} KB)")
+    else:
+        dau_ngay = px
+        cam, info = recolor_shirt(px, tlab_g, covered, ref, hex_rgb(ORANGE_HEX), near3d)
+        save_pixels(cam, P["nologo"], "JPEG")
+        print(f"[ao_cam] áo gốc → cam #{ORANGE_HEX} (chưa logo): {info} → {P['nologo']} "
+              f"({os.path.getsize(P['nologo']) // 1024} KB)")
+        with open(P["ao_cam"], "rb") as a, open(P["dau_ngay"], "rb") as b:
+            has_logo = a.read() != b.read()       # _basecolor.jpg còn là bản chép của ảnh gốc → chưa dán logo
+        if not has_logo:
+            ao_cam_img = make_img("ao_cam", cam)
+            print("[ao_cam] chưa dán logo: chạy apply_chest_logo.py -- --id " + CID + " rồi chạy lại script này để render")
 
     if RENDER:
         cfg = json.load(open(P["logo"], encoding="utf-8")) if os.path.exists(P["logo"]) else {}
         lc = (cfg.get("result") or cfg).get("center", [0.08, -0.07, 0.75 * H])
-        imgs = {"ao_cam": bpy.data.images.load(P["ao_cam"]), "dau_ngay": make_img("dau_ngay", dau_ngay),
+        imgs = {"ao_cam": ao_cam_img or bpy.data.images.load(P["ao_cam"]), "dau_ngay": make_img("dau_ngay", dau_ngay),
                 "mask": make_img("mask", np.concatenate([mask_image(tlab_g), np.ones((SIZE, SIZE, 1), np.float32)], -1))}
         paths = render_set(obj, imgs, lc)
         compose(paths, os.path.join(RENDER_DIR, f"{CID}_trang_phuc.png"))

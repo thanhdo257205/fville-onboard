@@ -743,6 +743,16 @@
         "run": 4.39
       },
       "portrait": "assets/characters/intern_nu/intern_nu_portrait.png"
+    },
+    "intern_nam_kinh": {
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam đeo kính (hư cấu, Meshy), cao 1,65 m — lựa chọn thứ 3 ở màn tạo nhân vật (giới tính Nam), sau này dùng làm model Tú (khác giới với người chơi). CHƯA có GLB: chờ gắn xương trên Mixamo (assets/characters/intern_nam_kinh/intern_nam_kinh_for_mixamo.fbx) rồi build_character.py; chưa vai nào dùng, chưa có trong màn chọn nhân vật. Áo gốc Meshy là bộ ngày đầu: textures.dau_ngay = áo phông xanh ngọc gốc, không logo; ao_cam = áo phông đổi sang cam theo mặt nạ (cùng màu áo intern_nam, giữ nếp vải) + logo FPT ngực trái 7 cm (build_character.py nhúng bản này vào GLB). mask = mặt nạ vùng 512 px: đỏ áo, xanh dương quần jean, xanh lá giày, vàng da, hồng tóc, xanh lơ kính, đen ngoài UV (outfit_textures.py --original dau_ngay --glasses). Lọn tóc rủ giữa hai mắt kính đã rút ngắn (mesh_fixes.json). Ảnh trong textures/ chỉ có trên máy làm việc (không commit).",
+      "gender": "male",
+      "height_m": 1.65,
+      "textures": {
+        "ao_cam": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_basecolor.jpg",
+        "dau_ngay": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_basecolor_dau_ngay.jpg",
+        "mask": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_mask.png"
+      }
     }
   }
 }

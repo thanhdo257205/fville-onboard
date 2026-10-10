@@ -1,6 +1,6 @@
 # Tiến độ — Ngày Đầu Ở F-Ville
 
-Cập nhật: 09/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
+Cập nhật: 10/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
 `/viewer/`).
 
 Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và push nhánh `main`.
@@ -355,13 +355,36 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     cho bước gắn lên đầu intern trong `cap.json` (vòng đội đầu 18,1 × 18,5 cm, vòm cao 11,3 cm). Chưa gắn vào game.
   - Ảnh: `renders/accessories/cap_so_sanh.png` (Meshy | bản thấp: chính diện, 3/4, ngang, từ dưới), `cap_chi_tiet.png`.
   - Còn: ở 2 đầu vành, mép vòm bước từ chân vành xuống mép tự nhiên thành một bậc nhỏ (thấy khi nhìn ngang sát).
+- **intern_nam_kinh — người chơi nam đeo kính (hư cấu, Meshy; 10/10/2026), chuẩn bị cho Mixamo:** lựa chọn thứ 3 ở màn
+  tạo nhân vật (Nam), sau này làm model Tú; chưa có GLB, chưa vai nào dùng, chưa vào màn chọn nhân vật.
+  - Gốc 65.584 tam giác → 25.000, cao 1,65 m, chữ A, giữ nguyên mặt (gọng kính, mắt sau kính, lông mày, môi) + vùng logo.
+    FBX cho Mixamo: `assets/characters/intern_nam_kinh/intern_nam_kinh_for_mixamo.fbx` (0,98 MB, không commit).
+  - Lọn tóc rủ giữa hai mắt kính (đầu lọn chạm sống kính → vết đen) rút ngắn 2,8 → 1,0 cm, tới ngang lông mày
+    (`mesh_fixes.json` → `shorten`: chỉ dời đỉnh theo z, giữ UV, không vá lỗ). Ảnh: `renders/characters/intern_nam_kinh_hinh_khoi_truoc_sau.png`.
+  - Mặt nạ 6 vùng: áo phông, quần jean, giày, da, tóc, **kính** (xanh lơ). Gọng kính dính liền mặt trong lưới Meshy, UV
+    vỡ vụn → tách theo độ dày (tia bắn vào trong theo pháp tuyến: gọng ~3 mm, mặt dày hàng chục cm) trong dải mắt: 1 mảng
+    1.273 đỉnh = 2 vòng gọng + cầu kính + 2 càng; 67 đỉnh tóc mảnh lẻ trong dải bị loại.
+  - 2 bộ texture cùng UV: `dau_ngay` = áo phông xanh ngọc gốc, không logo (chép nguyên ảnh gốc); `ao_cam` = áo đổi sang
+    cam #FB8136 (màu mẫu áo intern_nam) giữ nếp vải + logo FPT ngực trái 7 cm. Áo phông cổ tròn khoét sâu (đáy cổ z 1,245):
+    thử 10 vị trí, chọn (x 0,085; z 1,1825) — không vắt đường nối UV nào, mép trên logo thấp hơn đáy cổ ~4 cm, cách vai
+    cùng tỉ lệ áo intern_nam (tỉ lệ 0,75 × chiều cao của áo polo thì logo leo lên cổ áo). Ghi vào `models.intern_nam_kinh`.
+  - Ảnh: `renders/characters/intern_nam_kinh_ket_qua.png` (chính diện dau_ngay | ao_cam, cận logo, cận mặt),
+    `intern_nam_kinh_trang_phuc.png` (kèm mặt nạ trước/sau, cận mặt mặt nạ), `intern_nam_kinh_logo_nguc_so_sanh.png`
+    (so với logo áo intern_nam).
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
     giảm tam giác. `texture_fixes.json` thêm `collar` (tô lại mặt trong cổ áo theo pháp tuyến mượt quay vào trục cổ) và
     `magnify` (phóng to một vùng như mắt, lấy mẫu qua tia chiếu chính diện); chạy lại thì xoá `_basecolor_nologo.jpg`
-    cũ để `apply_chest_logo.py` dựng lại từ ảnh mới.
+    và `_basecolor_dau_ngay.jpg` cũ để dựng lại từ ảnh mới. `mesh_fixes.json` → `shorten` (10/10/2026): rút ngắn lọn
+    tóc treo tự do trước khi giảm tam giác, render trước | sau.
   - `outfit_textures.py`: mặt nạ vùng theo hình khối (cắt dưới nách tách tay / thân + chân / phần trên → quần không bao
     giờ so màu với da), màu chỉ để tách trong từng khu, dọn mảng vụn theo liên thông; đổi màu áo giữ nếp vải.
+    10/10/2026: `--glasses` (vùng kính theo độ dày), `--original dau_ngay` (áo gốc là bộ ngày đầu → bộ ao_cam = áo đổi
+    sang cam rồi `apply_chest_logo.py`). Sửa 2 lỗi đổi màu áo: (1) trộn `rgb·(1−a) + mới·a` để lại a(1−a) màu áo cũ ở
+    chỗ lẫn màu (viền ô liu ở cổ khi xanh ngọc → cam) → nay bỏ đúng phần màu cũ rồi thêm màu mới; (2) "mép áo" xét theo
+    khoảng cách trên ảnh UV nên mảnh mắt nằm cạnh mảnh áo trong atlas cũng bị đổi (chấm cam trên đồng tử) → nay chỉ
+    texel của tam giác giáp áo trên lưới. Bản `dau_ngay` đã commit của intern_nam / intern_nu dựng bằng cách cũ: chạy
+    lại thử thì chỉ khác ~300 texel ở mép mảnh UV giày, không ở mắt → giữ nguyên.
   - `build_character.py`: ghép animation, retarget giữa hai nhân vật, giảm tam giác có bảo vệ vùng mặt/logo (và lượt
     giảm riêng phần da phẳng của mặt), đo tốc độ và độ cao ngồi.
   - `apply_chest_logo.py`: dán logo ngực bằng phép chiếu chính diện, tô trắng chữ bị công cụ xoá nền làm trong suốt,
@@ -386,8 +409,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đang dở
 - Màn tạo nhân vật: mở lại mục giới tính (game đã đọc `who.gender` nếu màn tạo trả về: `nam` | `nu`).
-- Mũ lưỡi trai (phần 2: gắn xương Head của từng intern): chưa làm — trên repo chưa có phần 1 (chỉ thấy file Meshy gốc
-  trong Downloads).
+- intern_nam_kinh: chờ người dùng gắn xương trên Mixamo (FBX ở trên) → `build_character.py` 6k, chân dung, WebP
+  `dau_ngay`, thêm vào màn chọn nhân vật; sau đó dùng làm model Tú (khác giới với người chơi).
+- Mũ lưỡi trai phần 2 (gắn xương Head của từng intern): chưa làm; phần 1 (`cap.glb`) đã xong.
 - Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
   hưởng khi sau này đổi màu tóc.
 - huyen: bàn tay buông lấn vào đùi 3–5 cm ở 7 animation (talk, talk_2, nod, phone, press, wave, cheer) do dùng lại
