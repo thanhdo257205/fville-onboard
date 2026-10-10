@@ -157,8 +157,8 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [x] P1 GitHub Actions chạy kiểm thử cả cho Pull Request (`pull_request` vào `main`) — Phụ trách: Claude — nhánh `ci/pr-tests`
 - [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
 - [ ] P3 Theo dõi Cloudflare: Workers & Pages → fville-net → Metrics (hạn miễn phí 100.000 lượt/ngày) — Phụ trách: —
-- [ ] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
-  trong `scripts/blender/zone_04.py`) — Phụ trách: —
+- [x] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
+  trong `scripts/blender/zone_04.py`, build lại GLB bản Thấp, bỏ bản vá dữ liệu) — Phụ trách: Claude — nhánh `zone04/rebuild`
 - [ ] P3 zone 3: tách cụm cây ngoài sân bị gộp làm một khi làm mờ (`seeThrough`) — Phụ trách: —
 
 ## Đã xong (tóm tắt)

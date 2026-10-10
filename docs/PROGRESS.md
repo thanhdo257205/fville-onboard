@@ -703,6 +703,21 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Viewer: áp tint của vai (dùng chung `game/src/characters/tint.js` qua `viewer/tint.js`); `?compare=` nhận cả id vai
     (vd `?compare=thao,le_tan,prajith`: model + tint + tên hiển thị của vai).
 
+### Dựng lại zone_04 (10/10/2026, nhánh `zone04/rebuild`; máy có Blender 5.2, không cần file gốc)
+- Trước khi sửa: build lại `zone_04.py` nguyên trạng → GLB **giống hệt bản đang commit từng byte** (48 node, 9.064 tam giác
+  hiện, 336 tam giác COL) → script tái tạo được, làm tiếp.
+- `scripts/blender/zone_04.py`: lan can song sắt thật ở mép tây chiếu trên (trong `ENV_cau_thang`, tay vịn cao 5,2 m, x 3,35,
+  z −3,0 … −1,6) + `COL_lan_can_chieu_tren` (trùng hộp dữ liệu cũ); `COL_tuong_bac_tren_cua` cho vách trên cửa quẹt thẻ (x 1,0–3,6,
+  cao 2,55–4,2 — tới sàn tầng trên); `SPAWN_zone_04_from_zone_03` (11; 0; 0) → (9; 0; 0). Mọi node cũ giữ nguyên chỗ.
+  GLB bản Thấp 97.224 → 99.344 byte; `check_glb` 0 lỗi. Bản Cao không dựng (đang tạm dừng).
+- Bỏ bản vá dữ liệu đã thay bằng đồ thật: `data/collision.json` → zone_04 (`camera_tren_cua_quet_the`, `lan_can_chieu_tren`),
+  `data/zones.json` → `zone_04.spawn_offset` (code đọc `spawn_offset` vẫn giữ cho zone khác).
+- Thử va chạm (so với bản cũ có bản vá: số liệu như nhau): chỗ xuất hiện đứng trên sàn, camera sau lưng; lan can: 9 điểm × 16
+  hướng × 3 s chạy trên chiếu trên → 0 lần rơi, người đi tầng trệt vẫn qua dưới; vách trên cửa: 120 mẫu camera → 0 lần
+  xuyên vách. Còn 7/120 mẫu camera bị che có từ trước (ống gió hành lang không có COL_, cánh cửa quẹt thẻ đang mở).
+- test:data đạt; smoke `--zone 4` 8 bước, `--zone 5` 15 bước đạt. Ảnh: `renders/game/z4_{1_spawn_from_zone_03,2_lan_can_chieu_tren,3_vach_tren_cua_quet_the}.jpg`.
+  Máy làm việc này đã cài `gltf-transform` 4.5.1 (toàn cục) và `tools/bin/blender.cmd` (trỏ tới Blender 5.2 cài trên máy).
+
 ### Rà lời thoại, phiếu chơi thử, đề nghị HR (10/10/2026, nhánh `content/playtest-dialogue`)
 - **Lời thoại tiếng Anh** (~870 chuỗi đã đọc, 42 chuỗi sửa: dialogues 24, interactables 7, guidance 4, quests 2, i18n 2,
   acts / quiz / values 1): mọi câu thoại ≤ 30 từ (trừ câu chuyện tượng Cuder của mentor), câu lựa chọn dài nhất 11 từ;
@@ -785,9 +800,11 @@ Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLI
    người thật (độ dài ~8 phút, mini-game bi-a có quá khó không).
 
 ## Việc nhỏ để sau
-- zone_04 (đang chặn bằng dữ liệu, nên sửa trong `scripts/blender/zone_04.py` khi dựng lại zone): thêm lan can thật ở mép
-  tây chiếu trên (x 3,4, z −3 … −1,65) và COL_ cho vách trên cửa quẹt thẻ; dời `SPAWN_zone_04_from_zone_03` vào trong
-  ~2 m (rồi bỏ `spawn_offset` trong `zones.json`).
+- ~~zone_04: lan can thật ở mép tây chiếu trên, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03`~~ — xong
+  10/10/2026 (xem "Dựng lại zone_04" ở trên).
+- Công cụ build (thấy khi dựng lại zone_04): trên Windows `scripts/tools/check_glb.py` lỗi khi in chữ tiếng Việt (chạy với
+  `PYTHONIOENCODING=utf-8`, cũng như `privacy_scan.py`); `scripts/build.py` không báo lỗi khi `gltf-transform` hỏng / thiếu
+  (vẫn in kích thước GLB cũ) — nên kiểm tra mã thoát.
 - zone_03, cây ngoài sân (`ENV_cay_san`): một cụm khoảng 8,7 × 6,9 × 7,2 m (x 24,8–33,5; z 1,6–8,8, toạ độ glTF) bị
   `seeThrough` gộp thành 1 cây vì các tán dính nhau → khi che thì mờ cả cụm cùng lúc. Chưa cần sửa (cây ngoài vách kính,
   ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá
