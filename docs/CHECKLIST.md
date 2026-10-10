@@ -21,6 +21,13 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 
 ## 1. Trước buổi chơi thử (P1)
 
+- [ ] P1 **Lỗi: không ra được khỏi zone 5** (từ `gh-pages` 04a74b2). Đi ra cửa sang zone 4 → "Couldn't open Card Gate · FSA
+  Room. t.map?.dispose is not a function"; bấm Back / vào lại → "Couldn't open Office." Cảnh kết (zone 5 → bến xe zone 1)
+  cũng hỏng theo. Nguyên nhân: cây cơ của bàn bi-a là bản sao `cue_2` (`cueModel` trong `game/src/pool/table.js`) —
+  `clone()` chép `userData` qua JSON nên `userData.srcMaterial` thành object thường, `map` là chuỗi id → `disposeZone`
+  (`game/src/world/zone.js`) gọi `.dispose()` trên chuỗi khi rời zone. Sửa: xoá `srcMaterial` khỏi bản sao + `disposeZone`
+  chỉ dispose texture thật; thêm vào `test:smoke` bước zone 5 → zone 4 → zone 5 (smoke hiện không đi ngược khỏi zone 5 nên
+  không bắt được); build, deploy lại — Phụ trách: —
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
