@@ -511,6 +511,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   vẽ khớp trạng thái cuối, trong mép băng), rời bàn (cơ hiện lại); anh Khang → thử thách tự giải → bi vào lỗ, cờ gộp đúng.
   Kết quả: test:data đạt; test:pool đạt; test:smoke 1 ngoại hình zone 0 → 5 + bản lưu cũ + mạng: **22 bước đạt (1 phút 39 giây)**.
 - Sửa nhỏ: chọn chỗ đứng cạnh bàn — bản đầu đứng ngay sau bi trắng nên camera lọt vào người chơi (thấy qua ảnh kiểm tra).
+- `main` d86c6d4; đã deploy `gh-pages` 04a74b2 (từ `main` d86c6d4).
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
