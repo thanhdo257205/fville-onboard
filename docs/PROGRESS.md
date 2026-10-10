@@ -368,6 +368,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     ngoại hình; ảnh bước hỏng = artifact `test-results`. Không cần secret.
   - `CLAUDE.md` → mục "Kiểm thử": sau mỗi thay đổi chạy test:data + test:smoke (hoặc `--zone N`); chỉ tự lái trình duyệt
     khi cần xem bằng mắt, tối đa 3 ảnh.
+- `main` 774fb9e; đã deploy `gh-pages` d82183d (từ `main` 774fb9e, chơi nhiều người vẫn bật).
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
