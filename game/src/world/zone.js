@@ -107,7 +107,13 @@ export function disposeZone(zone) {
   zone.root.traverse((o) => {
     if (!o.isMesh) return;
     o.geometry?.dispose();
-    for (const m of [o.material, o.userData.srcMaterial]) if (m) { m.map?.dispose(); m.aoMap?.dispose(); m.dispose(); }
+    // chỉ dọn vật liệu / texture thật (bản sao do code tạo có thể mang userData đã chép qua JSON)
+    for (const m of [o.material, o.userData.srcMaterial].flat()) {
+      if (!m?.isMaterial) continue;
+      if (m.map?.isTexture) m.map.dispose();
+      if (m.aoMap?.isTexture) m.aoMap.dispose();
+      m.dispose();
+    }
   });
   zone.collider.geometry.dispose();
   zone.view?.geometry.dispose();

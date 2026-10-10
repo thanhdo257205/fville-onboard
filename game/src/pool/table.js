@@ -853,6 +853,8 @@ function cueModel(src) {
   const q = new THREE.Quaternion().setFromUnitVectors(tip.clone().sub(butt).normalize(), new THREE.Vector3(0, 0, 1));
   obj.quaternion.copy(q);
   obj.position.copy(tip.clone().applyQuaternion(q).negate());
-  obj.traverse((m) => { m.userData.dynamic = true; m.frustumCulled = false; });
+  // clone() chép userData qua JSON → userData.srcMaterial (vật liệu gốc, zone.js) thành object thường; bỏ đi, nếu không
+  // disposeZone hỏng khi rời zone_05 (cảnh kết không sang được bến xe)
+  obj.traverse((m) => { m.userData = { dynamic: true }; m.frustumCulled = false; });
   return obj;
 }
