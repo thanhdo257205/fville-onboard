@@ -27,6 +27,8 @@ export class Characters {
   roles() { return Object.entries(this.cfg.roles).filter(([k]) => !k.startsWith("_")); }
   roleOfNode(nodeName) { return this.roles().find(([, r]) => (r.place === "node" || r.place === "near_node") && [].concat(r.node).includes(nodeName))?.[0] ?? null; }
   displayName(role) { return this.cfg.names?.[lang]?.[role] ?? this.cfg.names?.en?.[role] ?? role; }
+  // tên khi nhắc trong câu theo vai vế (vi: "chị Lan", "anh Minh" — thông báo, Sổ lời khuyên); không có thì như bảng tên
+  refName(role) { return this.cfg.names_ref?.[lang]?.[role] ?? this.displayName(role); }
   model(id) { return this.cfg.models[this.swap[id] ?? id]; }
   // id model của vai: ngoại hình đã chọn (this.look, bản lưu player.look) nếu có trong looks.<giới tính> của vai, không thì
   // model_by_gender (vd player: nam → intern_nam, nu → intern_nu) theo giới tính người chơi (this.gender, main.js đặt từ

@@ -1,13 +1,14 @@
 // Menu Esc: tạm dừng, chọn mức đồ hoạ (Tự động / Thấp / Cao), độ nét (Auto / Sharper / Faster), bật / tắt dấu chỉ
 // đường, hiện / ẩn người chơi khác (chỉ khi bật mạng, data/net.json), đội / bỏ phụ kiện đã mở khoá (vd mũ lưỡi trai sau khi
-// xong game — chưa có tab Wardrobe), xem FPS, xem lại màn tổng kết (khi đã xong game), Chơi lại.
-import { t } from "../i18n.js";
+// xong game — chưa có tab Wardrobe), ngôn ngữ (English / Tiếng Việt — đổi ngay, không mất tiến trình), xem FPS, xem lại màn
+// tổng kết (khi đã xong game), Chơi lại.
+import { t, lang, LANGS } from "../i18n.js";
 import { TIERS } from "../core/quality.js";
 
 export class Menu {
-  constructor({ onTier, onDetail, onGuide, onPlayers, onAccessory, onSummary, onClose, onPlayAgain, info }) {
+  constructor({ onTier, onDetail, onGuide, onPlayers, onAccessory, onLang, onSummary, onClose, onPlayAgain, info }) {
     this.el = document.getElementById("menu");
-    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onAccessory, onSummary, onClose, onPlayAgain, info });
+    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onAccessory, onLang, onSummary, onClose, onPlayAgain, info });
     this.open = false;
   }
   toggle() { this.open ? this.hide() : this.show(); }
@@ -32,10 +33,13 @@ export class Menu {
     const pbtn = (on) => `<button data-players="${on ? 1 : 0}" class="${i.players === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     // phụ kiện đã mở khoá (vd mũ lưỡi trai sau khi xong game): [{ id, label, on }]
     const abtn = (a, on) => `<button data-acc="${a.id}" data-on="${on ? 1 : 0}" class="${a.on === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
+    // tên ngôn ngữ viết bằng chính ngôn ngữ đó (lang.en = English, lang.vi = Tiếng Việt ở cả 2 file chữ)
+    const lbtn = (l) => `<button data-lang="${l}" lang="${l}" class="${lang === l ? "on" : ""}">${t(`lang.${l}`)}</button>`;
     const accRows = (i.accessories || []).map((a) => `<div class="row"><span>${a.label}</span><div class="seg">${abtn(a, true)}${abtn(a, false)}</div></div>`).join("");
     this.el.innerHTML = `
       <div class="panel">
         <h2>${t("menu.title")}</h2>
+        <div class="row"><span>${t("menu.language")}</span><div class="seg">${LANGS.map(lbtn).join("")}</div></div>
         <div class="row"><span>${t("menu.graphics")}</span><div class="seg">${btn("auto")}${btn("low")}${TIERS.includes("high") ? btn("high") : ""}</div></div>
         <p class="muted current">${t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu })}</p>
         <p class="muted fps">${t("menu.fps", { fps: Math.round(i.fps) })}</p>
@@ -53,6 +57,7 @@ export class Menu {
     this.el.querySelectorAll("[data-detail]").forEach((b) => b.addEventListener("click", () => this.onDetail?.(b.dataset.detail)));
     this.el.querySelectorAll("[data-guide]").forEach((b) => b.addEventListener("click", () => this.onGuide?.(b.dataset.guide === "1")));
     this.el.querySelectorAll("[data-players]").forEach((b) => b.addEventListener("click", () => this.onPlayers?.(b.dataset.players === "1")));
+    this.el.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.lang !== lang) this.onLang?.(b.dataset.lang); }));
     this.el.querySelectorAll("[data-acc]").forEach((b) => b.addEventListener("click", () => this.onAccessory?.(b.dataset.acc, b.dataset.on === "1")));
     this.el.querySelector("[data-act=resume]").addEventListener("click", () => this.hide());
     this.el.querySelector("[data-act=summary]")?.addEventListener("click", () => { clearInterval(this._tick); this.onSummary?.(); });

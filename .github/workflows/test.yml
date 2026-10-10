@@ -3,8 +3,8 @@
 # không đụng máy chủ chơi nhiều người thật) + các test thêm: bản lưu cũ lệch data; với máy chủ local server/ (wrangler dev,
 # không cần tài khoản): vào zone 4 khi có người chơi khác, bi-a 2 người (2 trình duyệt chơi trọn một ván), chia phòng.
 # test:pool gồm cả luật 8 bi + bàn bi-a của máy chủ (scripts/tests/pool_rules.mjs).
-# Tự động chạy 2 ngoại hình: ngoại hình đầu thử tải lại giữa cảnh kết, ngoại hình thứ 2 chạy trọn cảnh kết (rời zone_05 → bến
-# xe — đường người chơi thật đi; 1 ngoại hình thì không phủ được đường này). Chạy tay (Actions → test → Run workflow): cả 3
+# Tự động chạy 2 ngoại hình: ngoại hình đầu (tiếng Anh) thử tải lại giữa cảnh kết, ngoại hình thứ 2 chơi bằng tiếng Việt và
+# chạy trọn cảnh kết (rời zone_05 → bến xe — đường người chơi thật đi; 1 ngoại hình thì không phủ được đường này). Chạy tay (Actions → test → Run workflow): cả 3
 # ngoại hình. Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results.
 # Pull Request từ fork: GitHub chỉ cấp quyền đọc (permissions bên dưới) — workflow không cần secret nên vẫn chạy đủ.
 name: test

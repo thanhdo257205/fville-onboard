@@ -1,8 +1,8 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 0790018, build từ `main` bef8792 — đã
-gộp PR #1 `feat/zone5-seat-cap`: bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5; PR #2 `fix/camera-ceiling`:
-camera không xuyên trần, sửa lỗi rơi xuyên sàn).
+Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 0790018, build từ `main` bef8792 — gồm PR #1
+bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5 và PR #2 camera / rơi xuyên sàn; máy chủ Cloudflare chưa
+`wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình; bản tiếng Việt: nhánh `feat/vietnamese`).
 
 ## Cách dùng
 
@@ -34,13 +34,13 @@ camera không xuyên trần, sửa lỗi rơi xuyên sàn).
 - [x] P1 **Lỗi: camera xuyên trần nhà khi ở trong nhà** (zone 3, 4, 5 — kéo chuột lên thì camera bay lên tận nóc, thấy cả mái
   nhà từ trên xuống; đã sửa — nhánh `fix/camera-ceiling`: camera tránh mặt nằm ngang của lưới hiển thị `zone.view` (trần, gầm
   chiếu nghỉ, mái hiên), không cần hộp trần trong data hay giới hạn độ cao theo zone; smoke zone 3–5 ngẩng / lùi hết cỡ: 0 lần
-  xuyên, chỉ tránh `COL_` thì 30–72 lần; đã deploy `gh-pages` 0790018). Nguyên nhân: camera chỉ tránh hộp `COL_` mà các zone trong nhà không có `COL_` cho trần; góc ngẩng tối
+  xuyên, chỉ tránh `COL_` thì 30–72 lần; PR #2, đã deploy `gh-pages` 0790018). Nguyên nhân: camera chỉ tránh hộp `COL_` mà các zone trong nhà không có `COL_` cho trần; góc ngẩng tối
   đa 1,15 rad × khoảng cách 4,2 m → camera cao ~5 m trên đầu người chơi (trần ~3 m). Sửa: thêm hộp trần cho zone 3–5 bằng
   `data/collision.json` (không cần Blender) hoặc cho camera tránh cả lưới hiển thị (`zone.view`, như camera hội thoại / bàn
   bi-a), kèm giới hạn độ cao camera theo zone; thêm kiểm tra vào `test:smoke` (ngẩng hết cỡ, camera vẫn dưới trần) —
   Phụ trách: Claude
-- [x] P1 **Lỗi: rơi xuyên sàn khi vào zone, không lên lại được** (thấy khi sửa lỗi camera; đã sửa — nhánh `fix/camera-ceiling`;
-  đã deploy `gh-pages` 0790018). Khung đầu tiên sau lúc tải zone / biên dịch shader có dt âm (−0,9 s trên SwiftShader; máy yếu như laptop Intel
+- [x] P1 **Lỗi: rơi xuyên sàn khi vào zone, không lên lại được** (thấy khi sửa lỗi camera; đã sửa — PR #2; đã deploy
+  `gh-pages` 0790018). Khung đầu tiên sau lúc tải zone / biên dịch shader có dt âm (−0,9 s trên SwiftShader; máy yếu như laptop Intel
   của buổi chơi thử cũng có thể gặp) → trọng lực đảo chiều, người chơi bị kéo xuống dưới sàn (thấy rõ khi tải lại trang ở
   zone 5); cứu "rơi khỏi bản đồ" lại đưa về vị trí khung trước + 1 m (đã ở dưới sàn) → rơi mãi quanh y −9 … −10. Sửa: chặn dt
   âm (`game/src/main.js`), rơi thì về chỗ đứng vững gần nhất (`game/src/player/player.js`); smoke kiểm tra lúc vào zone —
@@ -104,7 +104,7 @@ camera không xuyên trần, sửa lỗi rơi xuyên sàn).
   - [x] Kiểm thử: `test:pool` (luật, bàn máy chủ, một ván trọn giữa 2 người chơi giả) + `test:smoke` (2 trình duyệt headless
     + máy chủ local chơi trọn một ván; vị trí bi khớp sau mỗi cú; chặn cú sai lượt; bi trong tay; ghế giải phóng khi rớt mạng;
     người xem vào giữa ván thấy đúng bàn; máy chủ cũ)
-  - [x] Build, push `main` (PR #1, `main` 56537a3); [ ] deploy `gh-pages`; [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
+  - [x] Build, push `main` (PR #1, `main` 56537a3); [x] deploy `gh-pages` (0790018); [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
 - [ ] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
   `/status` (sau khi bản Web xong việc trên) — Phụ trách: —
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
@@ -132,17 +132,19 @@ camera không xuyên trần, sửa lỗi rơi xuyên sàn).
 
 ## 6. Ngôn ngữ và âm thanh
 
-- [ ] P2 Chức năng ngôn ngữ Anh / Việt — Phụ trách: —
-  - [ ] Chốt với nhóm: thêm tiếng Việt (sửa quy tắc "Chữ trong game là tiếng Anh" trong `CLAUDE.md`); tên riêng giữ dấu ở cả
-    hai bản (Tú, Huyền, F-Ville, Hòa Lạc)
-  - [ ] `data/i18n/vi.json` (186 chữ giao diện) + trường `"vi"` cạnh `"en"` trong data (684 chỗ: mini-game 256, lời thoại 179,
-    hướng dẫn 101, …); thiếu bản Việt thì hiện bản Anh
-  - [ ] Nút chọn ngôn ngữ ở màn tạo nhân vật và menu Esc, lưu trong cài đặt; mặc định theo ngôn ngữ trình duyệt; đổi giữa
-    chừng không mất tiến trình
-  - [ ] Chữ vẽ bằng canvas (ảnh thẻ PNG, bảng tên trên bàn) theo ngôn ngữ; font Nunito hiện đủ dấu tiếng Việt
-  - [ ] Kiểm thử: `test:data` báo khóa thiếu / thừa giữa `en` và `vi`, biến `{…}` khớp nhau; `test:smoke` chạy thêm 1 lượt
-    tiếng Việt (vd `?lang=vi`)
-  - [ ] Người Việt rà lại bản dịch (giọng văn trẻ, thân thiện; đúng thuật ngữ FPT: FSofter, FSA, …)
+- [ ] P2 Chức năng ngôn ngữ Anh / Việt — Phụ trách: Claude — nhánh `feat/vietnamese`; còn: người trong team đọc lại, deploy
+  - [x] Chốt (người dùng, 10/10/2026): thêm tiếng Việt, sửa quy tắc trong `CLAUDE.md`; tên riêng giữ dấu ở cả hai bản; xưng hô
+    Tú "mình – cậu", người lớn "chị / anh – em" (tài xế: "anh – em", GDD viết "bác tài"), giao diện gọi "bạn"; giữ từ công sở
+    intern, mentor, team, app, check-in; mặc định theo ngôn ngữ trình duyệt — chi tiết `docs/vi_style.md`
+  - [x] `data/i18n/vi.json` (233 chữ giao diện) + trường `"vi"` cạnh `"en"` trong data (685 chỗ); tên vai `names.vi`, tên gọi
+    trong câu `names_ref.vi` ("chị Lan"); tên danh hiệu lấy theo GDD (Gương Sáng Làng F…); thiếu bản Việt thì hiện bản Anh
+  - [x] Nút chọn ngôn ngữ ở màn tạo nhân vật và menu Esc, lưu trong cài đặt; mặc định theo ngôn ngữ trình duyệt; đổi giữa
+    chừng không mất tiến trình, không tải lại trang
+  - [x] Chữ vẽ bằng canvas (ảnh thẻ PNG, bảng tên trên bàn) theo ngôn ngữ, ngày "10 tháng 10, 2026"; font Nunito có đủ dấu
+  - [x] Kiểm thử: `test:data` báo thiếu `vi`, khóa lệch giữa `en.json` / `vi.json`, biến `{…}` lệch, chữ vi giống hệt en, dấu
+    thanh kiểu mới (hoà / khoá); `test:smoke` ngoại hình thứ 2 chơi trọn bằng tiếng Việt + đổi ngôn ngữ ở menu Esc (CI có luôn)
+  - [ ] Người Việt rà lại bản dịch (giọng văn trẻ, thân thiện; đúng thuật ngữ FPT: FSofter, FSA, …) — đã có 1 lượt soát
+    (3 agent đọc độc lập lời thoại / mini-game / giao diện, ~110 câu đã sửa); cần người trong team chơi thử bản tiếng Việt
 - [ ] P3 Lồng tiếng nhân vật — Phụ trách: —
   - [ ] Chốt phạm vi: chỉ câu quan trọng hay cả 143 câu thoại (lời dẫn 29, Tú 27, Ms. Huyền 20, Ms. Nga 10, Manager 10, …);
     tiếng Anh, tiếng Việt hay cả hai

@@ -1,5 +1,5 @@
 {
-  "_note": "Every on-screen string, English. To add Vietnamese later: copy this file to vi.json with the same keys and translate. Proper names stay in Vietnamese: Tú, Huyền, Lan, Minh, Hà, Khang, F-Ville, Hòa Lạc.",
+  "_note": "Every on-screen string, English. Vietnamese: vi.json with the same keys (style guide: docs/vi_style.md). Proper names stay in Vietnamese: Tú, Huyền, Lan, Minh, Hà, Khang, F-Ville, Hòa Lạc.",
   "app": {
     "title": "First Day at F-Ville",
     "loading": "Loading…",
@@ -122,7 +122,12 @@
     "no": "Cancel",
     "players": "Show other players",
     "accessories_note": "Unlocked by finishing your first day.",
-    "view_summary": "View summary"
+    "view_summary": "View summary",
+    "language": "Language"
+  },
+  "lang": {
+    "en": "English",
+    "vi": "Tiếng Việt"
   },
   "pool": {
     "title": "Pool",

@@ -815,6 +815,41 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   (`--build --look intern_nam,intern_nu`) 58/58 bước (4 phút 5 giây). Lần chạy dev 1 ngoại hình trước đó hỏng 1 lần bước
   "bi-a 2 người · An ngồi → tập một mình" (máy Bình đã phát lại cú, `mismatch` 0, nhưng chưa về trạng thái dừng trong 20 s);
   chạy lại thì đạt — theo dõi trên CI, lặp lại thì xem thời gian phát lại cú ở máy người xem.
+
+### Ngôn ngữ Anh / Việt (10/10/2026, nhánh `feat/vietnamese`)
+- **Chốt với người dùng:** thêm tiếng Việt (bỏ quy tắc "chữ trong game là tiếng Anh" — `CLAUDE.md` đã sửa); bản Việt phải
+  tự nhiên, văn nói cho hội thoại, văn viết gọn cho giao diện. Xưng hô: Tú "mình – cậu"; chị Huyền, chị Nga, chị quản lý, chị
+  Lan, chị Hà ↔ "em"; anh Prajith, anh Minh, anh Khang, anh tài xế, người lạ, hành khách ↔ "em"; lời dẫn + giao diện gọi "bạn".
+  Giữ từ công sở FPT: intern, mentor, team, app, check-in, laptop. Mặc định theo ngôn ngữ trình duyệt. Toàn bộ quy tắc + bảng
+  thuật ngữ: `docs/vi_style.md` (đọc trước khi viết chữ mới).
+- **Nội dung:** `data/i18n/vi.json` (233 chuỗi, cùng khoá `en.json`; `en.json` thêm `menu.language`, `lang.en|vi`), trường
+  `"vi"` ngay sau mọi `"en"` trong data (685 chuỗi: lời thoại 179, mini-game + lời nhắc E 256, hướng dẫn 101, nhiệm vụ 35,
+  phần thưởng 32, quiz 22, giá trị 19, …) — chèn bằng script giữ nguyên định dạng file (diff chỉ thêm `"vi"`). Tên bảng tên
+  `characters.json` → `names.vi` (Chị Huyền, Chị Nga, Tài xế, Quản lý…); mới: `names_ref.vi` = tên gọi khi nhắc trong câu
+  (thông báo "Đã lưu lời khuyên của chị Lan…", chữ ký Sổ lời khuyên; `Characters.refName`). Tên danh hiệu theo GDD (Gương Sáng
+  Làng F, Đồng Đội Số 1, Người Kết Nối, Mọt Sách Làng F, Nhà Thám Hiểm, Intern Làng F), "Sổ tay học tập", "Huy hiệu Tinh thần
+  Đồng đội"; 6 giá trị dùng tên gốc (Tôn trọng, Đổi mới, Đồng đội, Chí công, Gương mẫu, Sáng suốt). Bản tiếng Việt gọi thẳng
+  tên Tú (không cần `{tu_his}`; `{tu_he}` vi = cậu ấy / cô ấy vẫn có). Dấu thanh kiểu cũ như tên Hòa Lạc (hòa, khóa, thủy).
+- **Soát bản dịch:** 3 agent đọc độc lập (lời thoại theo luồng + người nói; mini-game + nhãn nút; giao diện + hướng dẫn +
+  tin nhắn) → ~110 câu sửa: xưng hô (chị Nga gọi "chị Huyền", chị quản lý gọi "chị Lan, anh Minh", lời khuyên của anh Minh /
+  anh Khang gọi "em"), nghĩa ("túi đồ" chứ không phải "đồ mang theo", "việc không gấp" thay "việc làm thêm", "mốc sớm nhất",
+  "nhà chờ xe"), nút trùng chữ ("Để sau" thoát mini-game ↔ "Chưa cần" / "Chưa gấp"), câu dịch sát ("Gặp em ở đó", "Lại là
+  chị Huyền đây", "Cảm ơn cậu vì tất cả"). Giữ ô Tôn trọng "nhường người khác đi trước" (bản Anh ghi "get off first" nhưng
+  cảnh trong game là nhường hành khách lên xe — đã có trong `docs/dialogue_review.md` chờ HR).
+- **Code:** `game/src/i18n.js` — `LANGS`, `pickLang` (?lang= > cài đặt > `navigator.languages` vi… > en), `loadStrings` đặt
+  `<html lang>` + đại từ Tú theo ngôn ngữ. `main.js` → `setLanguage(l)`: tải chữ, lưu `fville.settings.lang`, đổi tiêu đề
+  trang / nút Skip, `Game.onLanguage()` viết lại mục tiêu, bảng tên NPC / Tú, biển tên trên bàn (chữ khác theo ngôn ngữ mới ở
+  lần hiện sau; hội thoại / mini-game / app / bàn bi-a không mở cùng menu Esc được). Màn tạo nhân vật: nút English / Tiếng
+  Việt ở góc (phần tử `data-t` / `data-t-aria` / `data-t-ph` viết lại tại chỗ, giữ tên đang gõ, nhân vật, vị trí); menu Esc:
+  hàng "Ngôn ngữ". Ngày trên thẻ PNG theo `vi-VN`.
+- **Kiểm thử:** `test:data` mục 7 "bản tiếng Việt" (917 cặp: thiếu `vi`, khoá `vi.json` lệch `en.json`, biến `{…}` lệch —
+  bản vi được bỏ `{tu_*}`, chữ vi giống hệt en mà có ≥ 2 từ tiếng Anh, dấu thanh kiểu mới, `names.vi` / `names_ref`); thử cài
+  lỗi → bắt đủ 4/4. `test:smoke`: ngoại hình thứ 2 (CI: intern_nu) bấm "Tiếng Việt" ở màn tạo nhân vật, đổi English ↔ Tiếng
+  Việt ở menu Esc (mục tiêu đổi ngay, tiến trình / vị trí giữ nguyên), chơi trọn zone 0 → 5 + cảnh kết + màn tổng kết bằng
+  tiếng Việt, tải lại trang vẫn tiếng Việt; `--lang vi|en` ép 1 ngôn ngữ. Build + smoke như CI: 60/60 bước (2 phút 25 giây).
+  Ảnh: `renders/game/vi_{summary,card,compass}.png`.
+
+### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
   kỹ thuật) và tóm tắt việc đã xong. Thêm mục 6 "Ngôn ngữ và âm thanh": ngôn ngữ Anh / Việt, lồng tiếng nhân vật, nhạc

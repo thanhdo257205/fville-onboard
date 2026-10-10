@@ -8,6 +8,8 @@
 // Zone 5 thêm: Esc lúc màn mờ ăn trưa, cờ lunch_done lưu trước khi mờ, mini-game Đăng nhập không
 // có form / ô username / autocomplete mật khẩu, tải lại giữa cảnh kết → vẫn ra tổng kết, Close rồi mở lại từ menu Esc,
 // tải ảnh thẻ (tên file bỏ dấu).
+// Ngôn ngữ: ngoại hình thứ 2 chơi bằng tiếng Việt (bấm "Tiếng Việt" ở màn tạo nhân vật — CI: intern_nu), thử đổi ngôn ngữ giữa
+// chừng ở menu Esc, tải lại trang vẫn giữ tiếng Việt (cài đặt); các ngoại hình khác chơi bằng tiếng Anh.
 //
 //   npm run test:smoke                       3 ngoại hình (roles.player.looks), zone 0 → 5, server Vite dev tự bật
 //   npm run test:smoke -- --zone 5           chỉ zone 5 (bản lưu mẫu ?start=zone_05 dựng từ data)
@@ -18,6 +20,7 @@
 //     (server/, wrangler dev; chưa `npm --prefix server ci` thì bỏ qua): vào zone 4 khi có người chơi khác (bot), bi-a 2 người
 //     (2 trình duyệt chơi trọn một ván + người xem vào giữa ván), chia phòng ~30 người. Bản lưu cũ + zone 4 đặt sẵn cài đặt
 //     cũ tier "high"
+//   --lang vi | en: mọi ngoại hình chơi bằng 1 ngôn ngữ (mặc định: ngoại hình thứ 2 tiếng Việt, còn lại tiếng Anh)
 //   --headed: mở cửa sổ trình duyệt · --verbose: in thêm chi tiết từng bước
 // In gọn: mỗi bước 1 dòng ✓/✗, cuối cùng 1 dòng tổng kết + thời gian. Ảnh chụp chỉ khi bước hỏng: test-results/ (không commit).
 import { spawn, spawnSync } from "node:child_process";
@@ -48,15 +51,22 @@ const onlyZone = zoneArg != null;
 const verbose = !!arg("verbose");
 const extra = arg("extra");
 const zoneIsLast = (z) => z === order[order.length - 1];
+const langArg = arg("lang");
+const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
+const I18N = { en: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "en.json"), "utf8")), vi: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "vi.json"), "utf8")) };
+const ACH = JSON.parse(readFileSync(join(ROOT, "data", "achievements.json"), "utf8")).final.title;   // tên thành tựu cuối theo ngôn ngữ
+const QUESTS = JSON.parse(readFileSync(join(ROOT, "data", "quests.json"), "utf8")).quests;
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
 const NAMES = { intern_nam: ["Đỗ Minh Khôi", "do-minh-khoi"], intern_nam_kinh: ["Trần Đức Anh", "tran-duc-anh"], intern_nu: ["Nguyễn Thị Hà", "nguyen-thi-ha"] };
-// Tú khác giới với người chơi (roles.tu): model, bộ đồ trước cổng, chân dung theo bộ đồ, câu dẫn trên xe bus
-const tuOf = (look) => {
+// Tú khác giới với người chơi (roles.tu): model, bộ đồ trước cổng, chân dung theo bộ đồ, câu dẫn trên xe bus (bản tiếng Việt
+// gọi thẳng tên Tú, không cần đại từ; {tu_he} = cậu ấy / cô ấy)
+const tuOf = (look, lang = "en") => {
   const r = chars.roles.tu, id = r.model_by_gender?.[look.gender] ?? r.model, m = chars.models[id];
   const tex = r.outfit?.texture_by_model?.[id] ?? r.outfit?.texture ?? null;
   const female = m.gender === "female";
   return { id, tex, female, portrait: m.outfit_portraits?.[tex] ?? m.portrait, portraitCam: m.portrait,
-    bus: `Tú drops ${female ? "her" : "his"} backpack on the seat beside ${female ? "her" : "him"}` };
+    bus: lang === "vi" ? "Tú đặt balo xuống ghế bên cạnh" : `Tú drops ${female ? "her" : "his"} backpack on the seat beside ${female ? "her" : "him"}`,
+    he: lang === "vi" ? (female ? "cô ấy" : "cậu ấy") : female ? "she" : "he" };
 };
 // cách chọn ở màn tạo nhân vật theo thứ tự ngoại hình trong lần chạy: 3D + phím, 3D + bấm chuột, thẻ ảnh (màn hẹp)
 const PICK = ["keys", "click", "cards"];
@@ -120,10 +130,11 @@ async function runLook(browser, base, look) {
   const problems = watch(page);   // lỗi / cảnh báo console chưa báo
   const ev = (fn, a) => page.evaluate(fn, a);
   const [name, slug] = NAMES[look.id] || ["Test Intern", "test-intern"];
+  const lang = langOf(look), tag = lang === "en" ? look.id : `${look.id} [${lang}]`;
   let failed = false;
   const check = async (ok, text, extra = "") => {
     results.push({ look: look.id, ok, text });
-    line(ok, `${look.id} · ${text}${extra && (verbose || !ok) ? ` — ${extra}` : ""}`);
+    line(ok, `${tag} · ${text}${extra && (verbose || !ok) ? ` — ${extra}` : ""}`);
     if (!ok) {
       failed = true;
       mkdirSync(OUT, { recursive: true });
@@ -164,6 +175,13 @@ async function runLook(browser, base, look) {
     // ảnh chân dung (thẻ thông tin + thẻ ảnh) tải được thật — server dev trả index.html cho file không cho phép (mã 200)
     cr.imgs = await ev(async () => { const im = [...document.querySelectorAll("#creator img")]; await Promise.all(im.map((i) => i.decode().catch(() => null)));
       return im.filter((i) => !i.naturalWidth).map((i) => i.src.split("/").pop()); });
+    // ngôn ngữ: bấm nút ở góc màn → chữ của màn đổi tại chỗ (tiêu đề, nút bắt đầu), nhân vật đang chọn giữ nguyên
+    if (lang !== "en") {
+      await page.click(`#creator [data-lang=${lang}]`);
+      await wait((l) => document.documentElement.lang === l, 10000, lang);
+      cr.lang = await ev(() => ({ lang: document.documentElement.lang, title: document.querySelector("#creator h2").textContent,
+        start: document.querySelector("#creator .primary").textContent, selected: __creator.selected }));
+    }
     await page.fill("#creator input[name=name]", name);
     await page.keyboard.press("Enter");                 // Enter trong ô tên = Start my first day
     const booted = await wait(() => window.__game?.state.phase === "playing", 120000);
@@ -172,8 +190,9 @@ async function runLook(browser, base, look) {
     if (pick !== "cards") await page.setViewportSize({ width: 640, height: 360 });
     const wantMode = pick === "cards" ? "cards" : "3d";
     const crOk = cr.mode === wantMode && (wantMode === "cards" || cr.ready) && cr.selected === look.id && cr.shirtOn[0] && cr.shirtOn[1] === "true"
-      && /_portrait\.png$/.test(cr.shirtOn[2]) && !cr.shirtOff[0] && /_portrait_dau_ngay\.png$/.test(cr.shirtOff[1]) && !cr.imgs.length && cr.disposed;
-    await check(crOk, `màn chọn nhân vật (${wantMode === "3d" ? `3D, ${pick === "keys" ? "phím ←/→" : "bấm chuột"}` : "thẻ ảnh, màn hẹp"}): chọn ${look.id}, xem trước áo FPT, giải phóng cảnh 3D`, JSON.stringify(cr));
+      && /_portrait\.png$/.test(cr.shirtOn[2]) && !cr.shirtOff[0] && /_portrait_dau_ngay\.png$/.test(cr.shirtOff[1]) && !cr.imgs.length && cr.disposed
+      && (lang === "en" || (cr.lang?.lang === lang && cr.lang.title === I18N[lang].creator.title && cr.lang.start === I18N[lang].creator.start && cr.lang.selected === look.id));
+    await check(crOk, `màn chọn nhân vật (${wantMode === "3d" ? `3D, ${pick === "keys" ? "phím ←/→" : "bấm chuột"}` : "thẻ ảnh, màn hẹp"}): chọn ${look.id}, xem trước áo FPT, giải phóng cảnh 3D${lang !== "en" ? `, đổi sang ${I18N[lang].lang[lang]} ("${I18N[lang].creator.title}")` : ""}`, JSON.stringify(cr));
     const m = booted ? await ev(() => __game.model) : null;
     if (!await check(booted && m.id === look.id && m.look === look.id && m.gender === look.gender, `${startZone}: vào game "${name}", model ${look.id}${onlyZone ? `, bản lưu mẫu ?start=${startZone}` : ""}`, JSON.stringify(m))) return;
     // đứng vững trên sàn ngay khi vào zone (khung đầu tiên sau lúc tải zone từng có dt âm → rơi xuyên sàn zone 5 khi vào
@@ -190,13 +209,36 @@ async function runLook(browser, base, look) {
     });
     await check(fall.p0.onGround && !fall.p0.fellOut && fall.p1.onGround && fall.p1.fellOut === 1 && Math.abs(fall.p1.pos[1] - fall.p0.pos[1]) < 0.1,
       `${startZone}: đứng vững trên sàn khi vào zone (y ${fall.p0.pos[1]}); rơi xuyên sàn → về chỗ đứng gần nhất`, JSON.stringify(fall));
+    // đổi ngôn ngữ giữa chừng (menu Esc → Language): mục tiêu, tiêu đề menu đổi ngay, tiến trình / vị trí giữ nguyên, đổi lại
+    if (lang !== "en" && startZone === order[0]) {
+      const q0 = QUESTS.find((q) => q.zone === startZone && q.required)?.title;
+      const sw = {};
+      const snap = () => ev(() => ({ lang: document.documentElement.lang, objective: __game.objective, menu: document.querySelector("#menu h2")?.textContent,
+        quests: __game.progress.quests.length, pos: __game.player.pos, mode: __game._game.mode }));
+      sw.before = await snap();
+      await page.keyboard.press("Escape");
+      sw.menuOpen = await wait(() => !document.getElementById("menu").hidden, 5000);
+      await page.click("#menu [data-lang=en]");
+      await wait(() => document.documentElement.lang === "en", 10000);
+      sw.en = await snap();
+      await page.click(`#menu [data-lang=${lang}]`);
+      await wait((l) => document.documentElement.lang === l, 10000, lang);
+      sw.back = await snap();
+      sw.saved = await ev(() => JSON.parse(localStorage.getItem("fville.settings") || "{}").lang);
+      await page.keyboard.press("Escape");
+      sw.closed = await wait(() => document.getElementById("menu").hidden && __game._game.mode === "play", 5000);
+      await check(sw.before.objective === q0?.[lang] && sw.menuOpen && sw.en.objective === q0?.en && sw.en.menu === I18N.en.menu.title
+        && sw.back.objective === q0?.[lang] && sw.back.menu === I18N[lang].menu.title && sw.saved === lang && sw.closed
+        && sw.en.quests === sw.before.quests && JSON.stringify(sw.en.pos) === JSON.stringify(sw.before.pos),
+        `menu Esc → English → ${I18N[lang].lang[lang]}: mục tiêu "${sw.before.objective}" ↔ "${sw.en.objective}", tiến trình giữ nguyên, lưu cài đặt`, JSON.stringify(sw));
+    }
     // Tú (zone có Tú): đúng model khác giới, áo ngày đầu, chân dung theo bộ đồ, câu dẫn he / she
-    const tu = tuOf(look);
+    const tu = tuOf(look, lang);
     const tuCheck = async (when, cam) => {
       const x = await ev(async () => { const t = __game.tu;
         return { ...t, bus: __game.textOf("tu_bus_ride", "n2"), img: await fetch(t.portrait).then((r) => r.headers.get("content-type"), () => null) }; });
       const ok = x.img?.startsWith("image/png") && x.id === tu.id && x.built === tu.id && x.gender !== chars.models[look.id].gender && x.outfit === (cam ? null : tu.tex)
-        && x.portrait === (cam ? tu.portraitCam : tu.portrait) && x.bus?.startsWith(tu.bus) && x.he === (tu.female ? "she" : "he");
+        && x.portrait === (cam ? tu.portraitCam : tu.portrait) && x.bus?.startsWith(tu.bus) && x.he === tu.he;
       await check(ok, `Tú ${when}: ${tu.id} (${tu.female ? "nữ" : "nam"}), áo ${cam ? "ao_cam" : tu.tex}, chân dung ${(cam ? tu.portraitCam : tu.portrait).split("/").pop()}, "${tu.bus}…"`, JSON.stringify(x));
     };
     if (startZone === order[0]) await tuCheck("trước cổng", false);
@@ -298,7 +340,7 @@ async function runLook(browser, base, look) {
             const back = await wait(() => window.__game?.state.phase === "playing", 120000);
             if (back) await noLock();
             const sum = back && await wait(() => window.__game?.summary.open, 15000);
-            const z = await ev(() => ({ zone: window.__game?.zone, ach: !!window.__game?.summary.text?.includes("Welcome to the F-Ville Family") }));
+            const z = await ev((a) => ({ zone: window.__game?.zone, lang: document.documentElement.lang, ach: !!window.__game?.summary.text?.includes(a) }), ACH[lang]);
             await check(sum && z.zone === "zone_01" && z.ach, "cảnh kết: tải lại giữa chừng → bến xe zone_01, thẻ thành tựu, màn tổng kết", JSON.stringify({ back, sum, ...z }));
             r = { complete: true };
             break;
@@ -332,7 +374,7 @@ async function runLook(browser, base, look) {
           const [d] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), page.click("#summary [data-a=download]")]);
           dl = { name: d.suggestedFilename(), size: statSync(await d.path()).size };
         } catch (e) { dl = { error: e.message.split("\n")[0] }; }
-        await check(open && s.text.includes("Welcome to the F-Ville Family") && s.zone === "zone_01" && s.seen && dl.name === `fville-first-day-${slug}.png` && dl.size > 50000,
+        await check(open && s.text.includes(ACH[lang]) && s.zone === "zone_01" && s.seen && dl.name === `fville-first-day-${slug}.png` && dl.size > 50000,
           `màn tổng kết: thành tựu, summary_seen, ảnh thẻ ${dl.name || "?"} (${Math.round((dl.size || 0) / 1024)} KB)`, JSON.stringify({ open, zone: s.zone, seen: s.seen, dl }));
         await page.click("#summary [data-a=close]");
         await page.keyboard.press("Escape");
@@ -358,6 +400,14 @@ async function runLook(browser, base, look) {
           && cap.fit.scale > 0.8 && cap.fit.scale < 2 && cap.saved?.includes("cap") && !con3.length,
           `tủ đồ: menu Esc → đội mũ lưỡi trai (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), lưu vào bản lưu`,
           JSON.stringify({ row, worn, cap, console: con3.slice(0, 5) }));
+        // tải lại trang (không ?lang): ngôn ngữ đã chọn ở màn tạo nhân vật nằm trong cài đặt → vẫn tiếng Việt
+        if (lang !== "en") {
+          await page.goto(`${base}/?debug&net=off`);
+          const back = await wait(() => window.__game?.state.phase === "playing", 120000);
+          const r = await ev(() => ({ lang: document.documentElement.lang, title: document.title, objective: window.__game?.objective }));
+          await check(back && r.lang === lang && r.title === I18N[lang].app.title && r.objective === I18N[lang].hud.objective_complete && !problems.splice(0).length,
+            `tải lại trang → vẫn ${I18N[lang].lang[lang]}: "${r.title}", "${r.objective}"`, JSON.stringify(r));
+        }
         break;
       }
     }

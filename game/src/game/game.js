@@ -13,7 +13,7 @@ import { Npc } from "../characters/npc.js";
 import { Follower } from "../characters/follower.js";
 import { FpsMonitor, detectTier, saveSettings, DETAIL_FPS, usableTier } from "../core/quality.js";
 import { hud } from "../ui/hud.js";
-import { t } from "../i18n.js";
+import { t, lang } from "../i18n.js";
 import { tx } from "../content/content.js";
 import { url, preloadDecoders } from "../core/assets.js";
 import { save } from "./state.js";
@@ -354,12 +354,12 @@ export class Game {
           chairHeight: r.chair_height_m != null ? r.chair_height_m - (this.zone.chairDrop || 0) : null });
         npc.start();
         this.scene.add(npc.character.root);
-        this.nametags.add(npc.character.root, this.characters.displayName(role), npc.character.model.height_m);
+        this.nametags.add(npc.character.root, this.characters.displayName(role), npc.character.model.height_m).userData.role = role;   // role: đổi ngôn ngữ → viết lại tên
         this.npcs.push(npc);
       } else if (r.place === "follow_player") {
         this.follower = new Follower(await this.characters.create(role, tier));
         this.scene.add(this.follower.character.root);
-        this.nametags.add(this.follower.character.root, this.characters.displayName(role), this.follower.character.model.height_m);
+        this.nametags.add(this.follower.character.root, this.characters.displayName(role), this.follower.character.model.height_m).userData.role = role;
         // chờ ở một chỗ tới khi đạt điều kiện (zone_00: Tú xem điện thoại ở mái chờ tới khi người chơi bắt chuyện)
         const w = r.wait?.[this.state.zone];
         const anchor = w && this.zone.nodes.get(w.near_node);
@@ -568,7 +568,7 @@ export class Game {
       badges: s.rewards.map((id) => c.rewards.get(id)).filter((r) => String(r?.type).startsWith("badge")).map((r) => ({ icon: r.icon, name: tx(r.name) })),
       // lời nhắn của Prajith theo xu hướng ở La bàn nghề nghiệp (minigames.career_compass → messages)
       note: s.compass ? tx(c.minigames.career_compass?.messages?.[s.compass.trait], { player: s.player.name }) || null : null,
-      date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),   // chữ trong game: tiếng Anh
+      date: new Date().toLocaleDateString(lang === "vi" ? "vi-VN" : "en-GB", { day: "numeric", month: "long", year: "numeric" }),   // vi: 10 tháng 10, 2026
       acts: this.acts.status().map((x) => ({ number: x.act.number, title: tx(x.act.title), done: x.done, total: x.total })),
     };
   }
@@ -667,6 +667,16 @@ export class Game {
     zone.collider.geometry.dispose();
     zone.collider = buildCollider(zone.colMeshes, this.data.collision?.[zone.id]?.add || []);
     this.scene.add(zone.collider);
+  }
+
+  // đổi ngôn ngữ giữa chừng (main.js → setLanguage, khi menu Esc đang mở): viết lại chữ đang hiện trên màn — mục tiêu, bảng
+  // tên NPC / Tú, biển tên trên bàn làm việc. Hội thoại, mini-game, app, bàn bi-a không mở được cùng menu; chữ khác lấy theo
+  // ngôn ngữ mới ở lần hiện sau. Đại từ của Tú: loadStrings đã đổi.
+  onLanguage() {
+    if (!this.zone) return;
+    this.updateObjective();
+    for (const tag of this.nametags.tags) if (tag.userData.role) tag.element.textContent = this.characters.displayName(tag.userData.role);
+    this.interaction.refresh();
   }
 
   updateObjective() {
