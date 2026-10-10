@@ -14,8 +14,10 @@
 //   npm run test:smoke -- --look intern_nu   1 ngoại hình (CI: --look intern_nam)
 //   npm run test:smoke -- --build            chạy trên bản build (game/dist, vite preview) — sau npm run build
 //   npm run test:smoke -- --url http://localhost:5180   server đang chạy sẵn
-//   --extra off | only: bỏ / chỉ chạy 2 test thêm — bản lưu cũ lệch data (fixtures/old_save.json) và vào zone 4 khi có người
-//     chơi khác (máy chủ local server/ + bot; chưa `npm --prefix server ci` thì bỏ qua). Cả hai đặt sẵn cài đặt cũ tier "high"
+//   --extra off | only: bỏ / chỉ chạy các test thêm — bản lưu cũ lệch data (fixtures/old_save.json); với máy chủ local
+//     (server/, wrangler dev; chưa `npm --prefix server ci` thì bỏ qua): vào zone 4 khi có người chơi khác (bot), bi-a 2 người
+//     (2 trình duyệt chơi trọn một ván + người xem vào giữa ván), chia phòng ~30 người. Bản lưu cũ + zone 4 đặt sẵn cài đặt
+//     cũ tier "high"
 //   --headed: mở cửa sổ trình duyệt · --verbose: in thêm chi tiết từng bước
 // In gọn: mỗi bước 1 dòng ✓/✗, cuối cùng 1 dòng tổng kết + thời gian. Ảnh chụp chỉ khi bước hỏng: test-results/ (không commit).
 import { spawn, spawnSync } from "node:child_process";
@@ -430,11 +432,8 @@ function startBot(url, zone) {
 // (a) vào zone 4 khi có người chơi khác: máy chủ local + bot chờ sẵn ở zone_04; cài đặt cũ tier high. Khởi động thẳng vào
 // zone_04 (?start), rồi sang zone_03 và đi qua cổng → zone_04 lần nữa (đúng đường người chơi kẹt). Zone phải vào được
 // trong 20 s (đồng hồ của game), người chơi khác hiện sau khi zone xong
-async function runNetZone4(browser, base) {
+async function runNetZone4(browser, base, srv) {
   const label = "mạng + zone 4";
-  const srv = await startNetServer();
-  if (srv.skip) { console.log(`– ${label}: bỏ qua — ${srv.skip}`); return; }
-  if (srv.error) { results.push({ look: label, ok: false, text: "máy chủ local" }); line(false, `${label} · ${srv.error}`); return; }
   let bot = null, ctx = null;
   try {
     bot = await startBot(srv.url, "zone_04");
@@ -474,20 +473,208 @@ async function runNetZone4(browser, base) {
   } finally {
     bot?.close();
     await ctx?.close();
-    srv.stop();
+  }
+}
+
+// (c) bi-a 2 người (bi-a bước 3) trên máy chủ local: An, Bình mở zone_05 ở 2 trình duyệt. An ngồi → tập một mình, cú của An
+// phát lại (có hoạt cảnh) ở máy Bình; Bình ngồi → ván 8 bi, An phá; Bình đánh sai lượt → máy chủ chặn; chơi trọn ván bằng
+// cú tự chọn (__game.pool.autoShot) — sau mỗi cú bàn của 2 người (và người xem) giống hệt bàn máy chủ, cú phát lại khớp
+// từng bit với người đánh; Cường vào xem giữa ván → thấy đúng bàn, hết ghế thì chỉ xem; hết ván → R: ván mới, người thua
+// phá; Bình rớt mạng → ghế được giải phóng, An thắng; Cường ngồi vào ghế trống; máy chủ cũ (không báo "pool") → bàn chỉ
+// tập một mình
+async function runPoolNet(browser, base, srv) {
+  const label = "bi-a 2 người";
+  const pages = [];
+  const open = async (name, look, gender) => {
+    const save = { v: 1, created: true, player: { name, position: "developer", gender, look } };
+    const p = await openPage(browser, `${label} · ${name}`, { settings: { tier: "low", detail: "auto" }, save });
+    pages.push(p);
+    await p.page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&start=zone_05`);
+    p.ready = await p.wait(() => window.__game?.state.phase === "playing" && window.__game.net?.connected && !!window.__game.pool?.net?.on, 120000);
+    // tắt Pointer Lock như runLook (headless: khoá / nhả chồng nhau → main.js tưởng người chơi bấm Esc → rời bàn)
+    await p.ev(() => { const i = __game._game.input; i.lockSupported = false; if (document.pointerLockElement) { i._releasing = true; document.exitPointerLock(); } });
+    return p;
+  };
+  const net = (p) => p.ev(() => __game.pool.net);
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  try {
+    const t1 = Date.now();
+    const [A, B] = await Promise.all([open("An", "intern_nam", "nam"), open("Bình", "intern_nu", "nu")]);
+    const check = A.check;
+    const [a0, b0] = await Promise.all([net(A), net(B)]);
+    const f0 = await A.ev(() => __game.net.features);
+    await check(A.ready && B.ready && f0.includes("pool") && a0.mode === "idle" && same(a0.server, b0.server) && !A.problems.length && !B.problems.length,
+      `2 trình duyệt vào zone_05, máy chủ báo features "pool", cùng một bàn (${Math.round((Date.now() - t1) / 1000)} s)`,
+      JSON.stringify({ ready: [A.ready, B.ready], f0, a0: a0.mode, console: [...A.problems, ...B.problems].slice(0, 5) }));
+    // An ngồi → tập một mình; cú của An phát lại ở máy Bình (có hoạt cảnh)
+    await A.ev(() => __game.pool.enter());
+    const solo = await A.wait(() => { const n = __game.pool.net; return n.seat === 0 && n.mode === "solo" && __game.pool.phase === "aim"; }, 10000);
+    const seq0 = (await net(A)).seq;
+    await A.ev(() => __game.pool.autoShot());
+    const rolled = await B.wait(() => __game.pool.rolling, 10000);
+    const synced = await Promise.all([A, B].map((p) => p.wait((q) => __game.pool.net.seq === q && !__game.pool.rolling, 20000, seq0 + 1)));
+    const [a1, b1] = await Promise.all([net(A), net(B)]);
+    await check(solo && rolled && synced.every(Boolean) && b1.replays === 1 && b1.mismatch === 0 && same(a1.shown, b1.shown)
+      && same(b1.shown, b1.server) && b1.seats.join() === "An,",
+      "An ngồi → tập một mình; cú của An phát lại ở máy Bình (bi lăn rồi dừng), 2 bàn khớp bàn máy chủ",
+      JSON.stringify({ solo, rolled, synced, a1: { seat: a1.seat, mode: a1.mode }, b1: { replays: b1.replays, mismatch: b1.mismatch, seats: b1.seats } }));
+    // Bình ngồi → ván 8 bi, An (ngồi trước) phá
+    await Promise.all([A, B].map((p) => p.ev(() => __game.pool.setFast(true))));
+    await B.ev(() => __game.pool.enter());
+    const started = await Promise.all([A, B].map((p) => p.wait(() => { const n = __game.pool.net; return n.mode === "match" && n.turn === 0 && n.seats.join() === "An,Bình" && n.log.some((l) => l.k === "start"); }, 10000)));
+    const phases = await Promise.all([A, B].map((p) => p.ev(() => __game.pool.phase)));
+    await check(started.every(Boolean) && phases[0] === "aim" && phases[1] === "watch", "Bình ngồi → ván 8 bi, xếp lại bi, An (ngồi trước) phá; Bình chờ lượt", JSON.stringify({ started, phases }));
+    // Bình đánh khi chưa tới lượt: giao diện không cho; gửi thẳng → máy chủ chặn
+    const seqM = (await net(A)).seq;
+    const ui = await B.ev(() => __game.pool.autoShot());
+    await B.ev(() => __game.pool.forceShot(Math.PI / 2, 0.8));
+    const blocked = await B.wait(() => __game.pool.net.log.some((l) => l.err === "turn"), 5000);
+    const aNow = await net(A);
+    await check(ui === null && blocked && aNow.seq === seqM && aNow.turn === 0, "chặn cú sai lượt: giao diện không cho đánh, gửi thẳng → máy chủ từ chối, bàn không đổi",
+      JSON.stringify({ ui, blocked, seq: [seqM, aNow.seq] }));
+    // chơi trọn ván; Cường vào xem sau cú thứ 3
+    let C = null, shots = 0, bad = null, cView = null;
+    for (; shots < 150; shots++) {
+      const n = await net(A);
+      if (n.mode !== "match") break;
+      if (shots === 3 && !C) {
+        C = await open("Cường", "intern_nam_kinh", "nam");
+        await C.ev(() => __game.pool.setFast(true));
+        const cn = await net(C), an = await net(A);
+        cView = { ready: C.ready, same: same(cn.shown, an.server) && cn.seq === an.seq, seats: cn.seats, mode: cn.mode };
+        await C.ev(() => __game.pool.enter());
+        cView.full = await C.wait(() => __game.pool.phase === "watch" && __game.pool.net.seat === -1 && __game.pool.net.log.some((l) => l.err === "full"), 10000);
+      }
+      const shooter = n.turn === 0 ? A : B;
+      const r = await shooter.ev(() => __game.pool.autoShot());
+      const live = [A, B, C].filter(Boolean);
+      const ok = await Promise.all(live.map((p) => p.wait((q) => __game.pool.net.seq === q && !__game.pool.rolling, 20000, n.seq + 1)));
+      const ns = await Promise.all(live.map(net));
+      const ref = JSON.stringify(ns[0].server);
+      if (!r || !ok.every(Boolean) || ns.some((x) => JSON.stringify(x.shown) !== ref || JSON.stringify(x.server) !== ref || x.mismatch)) {
+        bad = { shot: shots, r, ok, ns: ns.map((x) => ({ seq: x.seq, mode: x.mode, turn: x.turn, mismatch: x.mismatch, same: JSON.stringify(x.shown) === ref })) };
+        break;
+      }
+    }
+    const [aE, bE, cE] = await Promise.all([A, B, C].map((p) => (p ? net(p) : null)));
+    await check(!!cView?.ready && cView.same && cView.full && cView.seats.join() === "An,Bình",
+      "Cường vào zone_05 giữa ván → thấy đúng bàn đang chơi; bấm Play pool khi hết ghế → đứng xem", JSON.stringify(cView));
+    const replays = aE.replays + bE.replays + (cE?.replays ?? 0);
+    await check(!bad && aE.mode === "over" && bE.winner === aE.winner && cE?.winner === aE.winner && aE.mismatch + bE.mismatch + (cE?.mismatch ?? 0) === 0,
+      `chơi trọn ván: ${shots} cú, ${aE.seats[aE.winner] ?? "?"} thắng (${aE.reason}); sau mỗi cú bàn của 2 người + người xem = bàn máy chủ, ${replays} lần phát lại khớp từng bit`,
+      JSON.stringify(bad || { mode: aE.mode, winner: [aE.winner, bE.winner, cE?.winner], groups: aE.groups, log: aE.log.slice(-4) }));
+    // hết ván → R (người thua) → ván mới, người thua phá
+    const loserSeat = 1 - aE.winner, loser = loserSeat === 0 ? A : B;
+    await loser.ev(() => __game.pool.rerack());
+    const re = await A.wait((s) => { const n = __game.pool.net; return n.mode === "match" && n.turn === s && n.log.filter((l) => l.k === "start").length >= 2; }, 10000, loserSeat);
+    await check(re, "hết ván → R: ván mới, người thua phá", JSON.stringify(await net(A)));
+    // Bình rớt mạng giữa ván → ghế giải phóng, An thắng; Cường ngồi vào ghế trống
+    pages.splice(pages.indexOf(B), 1);
+    await B.ctx.close();
+    const freed = await A.wait(() => { const n = __game.pool.net; return n.seats[1] === null && n.mode === "solo" && n.log.some((l) => l.k === "forfeit"); }, 15000);
+    const cSeesFree = await C.wait(() => __game.pool.net.seats[1] === null, 10000);
+    await C.ev(() => __game.pool.join());
+    const cSeat = await C.wait(() => { const n = __game.pool.net; return n.seat === 1 && n.mode === "match"; }, 10000);
+    await check(freed && cSeesFree && cSeat, "Bình rớt mạng giữa ván → ghế được giải phóng, An thắng; Cường (đang xem) bấm J → ngồi, ván mới",
+      JSON.stringify({ freed, cSeesFree, cSeat, a: await net(A) }));
+    // An phá bằng cú đánh bi trắng thẳng vào lỗ góc đầu bàn → Cường có bi trong tay: đặt bi trắng ở khu đầu bàn rồi đánh;
+    // An phát lại đúng cú đó (kể cả chỗ đặt bi trắng)
+    const sq = (await net(A)).seq, errs0 = (await net(C)).log.filter((l) => l.err).length;
+    const scr = await A.ev(() => {
+      const p = __game._game.pool, c = p.state.balls[0], k = p.table.pockets.find((q) => q.id === "head_left");
+      return __game.pool.shoot(Math.atan2(k.z - c.z, k.x - c.x), 0.6, { instant: true });
+    });
+    const inHand = await C.wait((q) => { const n = __game.pool.net; return n.seq === q && n.inHand && n.turn === 1 && __game.pool.phase === "place"; }, 10000, sq + 1);
+    const badSpot = await C.ev(() => __game.pool.place(0, 0));                // giữa bàn: ngoài khu đầu bàn → không được
+    const spot = await C.ev(() => { const t = __game._game.pool.table; return __game.pool.place(0.3, -t.rz * 0.75); });
+    const cue = (await C.ev(() => __game.pool.cue));
+    await C.ev(() => __game.pool.autoShot());
+    const after = await Promise.all([A, C].map((p) => p.wait((q) => __game.pool.net.seq === q && !__game.pool.rolling, 20000, sq + 2)));
+    const [aH, cH] = await Promise.all([A, C].map(net));
+    await check(scr?.cueScratch && inHand && !badSpot && spot && Math.abs(cue.x - 0.3) < 1e-4 && after.every(Boolean) && aH.mismatch === 0
+      && JSON.stringify(aH.shown) === JSON.stringify(cH.shown) && cH.log.filter((l) => l.err).length === errs0,
+      "bi trắng rơi → đối thủ có bi trong tay: chỉ đặt được ở khu đầu bàn, đánh từ chỗ đặt; người kia phát lại khớp",
+      JSON.stringify({ scr, inHand, badSpot, spot, cue, after, aMismatch: aH.mismatch, cLog: cH.log.slice(-3) }));
+    // máy chủ cũ (không báo "pool"): bàn chỉ tập một mình, không gửi gì lên máy chủ
+    await C.ev(() => __game.pool.leave());
+    await A.ev(() => __game.pool.leave());
+    const idle = await A.wait(() => __game.pool.net.mode === "idle", 10000);
+    const sBefore = (await net(A)).seq;
+    const old = await C.ev(async () => {
+      __game._game.net.features = [];
+      const p = __game.pool;
+      p.enter();
+      const r = await p.shoot(Math.PI / 2, 0.7, { instant: true });
+      const i = __game.pool;
+      p.leave();
+      return { active: i.net.active, on: i.net.on, shots: i.shots, r: !!r };
+    });
+    await sleep(500);
+    const sAfter = (await net(A)).seq;
+    await check(idle && !old.active && !old.on && old.shots === 1 && old.r && sAfter === sBefore, 'máy chủ cũ (không có features "pool") → bàn chỉ tập một mình, bàn chung không đổi',
+      JSON.stringify({ idle, old, seq: [sBefore, sAfter] }));
+    const con = pages.flatMap((p) => p.problems.splice(0));
+    await check(!con.length, "console sạch (mọi trình duyệt)", JSON.stringify(con.slice(0, 6)));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally {
+    for (const p of pages) await p.ctx.close().catch(() => {});
+  }
+}
+
+// (d) chia phòng: room_size + 1 kết nối → người cuối sang phòng 2; /status cộng mọi phòng; ?room=3 vào thẳng phòng 3
+async function runRooms(srv) {
+  const label = "chia phòng";
+  const size = JSON.parse(readFileSync(join(ROOT, "data", "net.json"), "utf8")).server?.room_size ?? 30;
+  const socks = [];
+  const connect = (i, q = "") => new Promise((resolve, reject) => {
+    const ws = new WebSocket(srv.url + q);
+    socks.push(ws);
+    const to = setTimeout(() => reject(new Error(`bot ${i}: không có welcome`)), 15000);
+    ws.onopen = () => ws.send(JSON.stringify({ t: "join", name: `Bot ${i}`, model: "intern_nam", outfit: "", zone: "zone_02" }));
+    ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.t === "welcome") { clearTimeout(to); resolve(m.room); } };
+    ws.onerror = () => { clearTimeout(to); reject(new Error(`bot ${i}: lỗi kết nối`)); };
+  });
+  try {
+    const rooms = [];
+    for (let i = 0; i <= size; i++) rooms.push(await connect(i));
+    const forced = await connect("x", "?room=3");
+    const st = await (await fetch(srv.url.replace(/^ws/, "http").replace(/\/ws$/, "/status"))).json();
+    const r1 = rooms.filter((r) => r === 1).length, r2 = rooms.filter((r) => r === 2).length;
+    const ok = r1 === size && r2 === 1 && rooms[size] === 2 && forced === 3 && st.online === size + 2
+      && st.rooms.find((r) => r.room === 2)?.online === 1 && st.rooms.find((r) => r.room === 3)?.online === 1;
+    results.push({ look: label, ok, text: "rooms" });
+    line(ok, `${label} · ${size + 1} kết nối → ${r1} ở phòng 1, người thứ ${size + 1} sang phòng 2; ?room=3 vào thẳng phòng 3; /status cộng ${st.online} người`
+      + (ok && !verbose ? "" : ` — ${JSON.stringify({ r1, r2, forced, online: st.online, rooms: st.rooms.map((r) => [r.room, r.online]) })}`));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally {
+    for (const ws of socks) { try { ws.close(1000); } catch { /* đã đóng */ } }
   }
 }
 
 const server = await startServer();
 const browser = await chromium.launch({ headless: !arg("headed"), ...(chromePath ? { executablePath: chromePath } : {}),
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
-console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng + zone 4 · "}${server.mode || server.base}`);
+console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, chia phòng) · "}${server.mode || server.base}`);
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
   if (extra !== "only") for (const look of looks) await runLook(browser, server.base, look);
   if (extra !== "off") {
     await runOldSave(browser, server.base);
-    await runNetZone4(browser, server.base);
+    // các test mạng dùng chung 1 máy chủ local; chia phòng chạy cuối (cần phòng 1 trống)
+    const srv = await startNetServer();
+    if (srv.skip) console.log(`– mạng: bỏ qua — ${srv.skip}`);
+    else if (srv.error) { results.push({ look: "mạng", ok: false, text: "máy chủ local" }); line(false, `mạng · ${srv.error}`); }
+    else {
+      try {
+        await runNetZone4(browser, server.base, srv);
+        await runPoolNet(browser, server.base, srv);
+        await runRooms(srv);
+      } finally { srv.stop(); }
+    }
   }
 } finally {
   await browser.close();
@@ -495,5 +682,5 @@ try {
 }
 const bad = results.filter((r) => !r.ok).length;
 const sec = Math.round((Date.now() - t0) / 1000), dur = sec >= 60 ? `${Math.floor(sec / 60)} phút ${sec % 60} giây` : `${sec} giây`;
-console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng + zone 4"} (${dur})`);
+console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng (zone 4, bi-a 2 người, chia phòng)"} (${dur})`);
 process.exit(bad ? 1 : 0);

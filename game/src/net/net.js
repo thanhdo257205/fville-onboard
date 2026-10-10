@@ -1,7 +1,8 @@
-// Chơi nhiều người mức "thấy nhau" (data/net.json, docs/multiplayer.md): MỘT phòng chung cho mọi người, không mã phòng.
-// url trống = tắt mạng (game y như chơi một mình). Kết nối sau khi bấm "Start my first day"; lỗi mạng thì vẫn chơi bình
-// thường, tự thử lại. Gửi: join {name, model, outfit, zone} (gửi lại khi đổi bộ đồ), state {zone, pos, yaw, anim} tối đa
-// send_hz lần/giây và chỉ khi có thay đổi, emote {id}, phrase {id}. Góc màn hình: "N online · M in this zone".
+// Chơi nhiều người mức "thấy nhau" (data/net.json, docs/multiplayer.md): không mã phòng — máy chủ tự xếp phòng (~30 người
+// mỗi phòng, welcome.room). url trống = tắt mạng (game y như chơi một mình). Kết nối sau khi bấm "Start my first day"; lỗi
+// mạng thì vẫn chơi bình thường, tự thử lại. Gửi: join {name, model, outfit, zone} (gửi lại khi đổi bộ đồ), state {zone,
+// pos, yaw, anim} tối đa send_hz lần/giây và chỉ khi có thay đổi, emote {id}, phrase {id}; bi-a (game/src/pool/table.js):
+// pool_* khi máy chủ báo features "pool". Góc màn hình: "N online · M in this zone" (phòng 2 trở đi: "Room 2 · …").
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { NetClient } from "./client.js";
 import { RemotePlayers } from "./remotes.js";
@@ -20,6 +21,8 @@ export class Net {
     this.online = 0;
     this.myId = null;
     this.joined = false;
+    this.room = 1;
+    this.features = [];         // máy chủ báo trong welcome; máy chủ cũ: [] → bàn bi-a chỉ tập một mình
     this.sent = null;           // state đã gửi gần nhất
     this.sentAt = 0;
     this.profileSent = null;
@@ -50,6 +53,8 @@ export class Net {
   start() { if (this.enabled) this.client.start(); }
   stop() { if (this.enabled) this.client.stop(); }
   get connected() { return this.enabled && this.joined && this.client.open; }
+  get poolOn() { return this.connected && this.features.includes("pool"); }
+  sendPool(msg) { return this.connected ? this.client.send(msg) : false; }
 
   // ---------- gửi ----------
   profile() {
@@ -122,7 +127,15 @@ export class Net {
     // đang trên xe (transit_zone): bỏ qua người khác (người cùng xe ở zone khác toạ độ) tới khi xuống xe
     if (this.inTransit && ["join", "state", "emote", "phrase"].includes(m.t)) return;
     switch (m.t) {
-      case "welcome": this.myId = m.id; this.online = m.online; this.joined = true; this.client.ok(); break;
+      case "welcome":
+        this.myId = m.id; this.online = m.online; this.joined = true;
+        this.room = Number.isInteger(m.room) ? m.room : 1;
+        this.features = Array.isArray(m.features) ? m.features : [];
+        this.client.ok();
+        break;
+      // bàn bi-a chung (chỉ gửi cho người ở zone của bàn): bàn đang dựng thì đưa thẳng, chưa có thì giữ lại cho lúc dựng
+      case "pool":
+      case "pool_shot": if (this.g.pool) this.g.pool.onNet(m); else if (m.tb) this.g.poolShared = { tb: m.tb, state: null }; break;
       case "zone": if (m.zone === this.g.state.zone && !this.inTransit) r.reset(m.players || []); this.online = m.online ?? this.online; break;
       case "join": if (m.p?.id && m.p.id !== this.myId) r.upsert(m.p); break;
       case "state": r.state(m); break;
@@ -146,6 +159,8 @@ export class Net {
   onClose() {
     this.joined = false;
     this.remotes.reset();       // người khác không còn cập nhật → ẩn hết tới khi vào lại
+    this.g.pool?.onNetLost();   // đang ở bàn bi-a chung → tập một mình tiếp với bàn đang có
+    this.g.poolShared = null;
   }
 
   setShow(on) { this.remotes?.setShow(on); }
@@ -181,7 +196,8 @@ export class Net {
     const show = this.connected;
     if (this.hudEl.hidden === show) this.hudEl.hidden = !show;
     if (show) {
-      const text = t("net.online", { n: Math.max(1, this.online), m: this.remotes.list.size + 1 });
+      const vars = { n: Math.max(1, this.online), m: this.remotes.list.size + 1, r: this.room };
+      const text = t(this.room > 1 ? "net.online_room" : "net.online", vars);
       if (this.hudEl.textContent !== text) this.hudEl.textContent = text;
     }
   }
@@ -189,7 +205,7 @@ export class Net {
   info() {
     if (!this.enabled) return { enabled: false };
     const c = this.client;
-    return { enabled: true, status: c.status, connected: this.connected, id: this.myId, online: this.online, inZone: this.remotes.list.size + 1,
+    return { enabled: true, status: c.status, connected: this.connected, id: this.myId, online: this.online, room: this.room, features: [...this.features], inZone: this.remotes.list.size + 1,
       show: this.remotes.show, retryIn: c.retryIn ?? null, attempt: c.attempt, stats: { ...c.stats }, hud: this.hudEl.hidden ? null : this.hudEl.textContent,
       sent: this.sent, myBubble: this.myBubble.visible ? this.myBubble.element.textContent : null, myEmote: this.myEmote ? this.myEmote.getClip().name : null,
       log: [...this.log], remotes: this.remotes.info(), lastError: this.lastError ?? null };

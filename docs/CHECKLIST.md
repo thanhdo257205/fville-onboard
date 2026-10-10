@@ -72,25 +72,28 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 
 ## 5. Tính năng
 
-- [ ] P2 Bi-a bước 3 — chơi 2 người theo lượt qua máy chủ, người khác đứng xem (Claude Code Web) — Phụ trách: —
-  - [ ] Máy chủ (`server/`): mỗi bàn giữ 2 ghế, lượt chơi, vị trí bi, bi đã vào lỗ, số thứ tự cú, nhóm trơn/sọc; tin nhắn
-    `pool_join`, `pool_leave`, `pool_shot`, `pool_state`; chỉ người tới lượt được đánh; giải phóng ghế khi rời bàn, mất kết
-    nối hoặc 60 s không đánh; tin chào báo `features: ["pool"]`
-  - [ ] Game: người đánh tự tính cú bằng `physics.js` rồi gửi thông số + kết quả; người kia và người xem phát lại đúng cú đó,
-    cuối cú chốt theo kết quả người đánh; người vào sau nhận trạng thái bàn hiện tại
-  - [ ] Luật 8 bi rút gọn (nhóm trơn/sọc, đánh tiếp khi vào bi nhóm mình, bi trắng rơi lỗ → đối thủ đặt bi trắng ở khu đầu
-    bàn, bi 8 cuối cùng) + giao diện tên 2 người, "Your turn", thắng/thua
-  - [ ] Máy chủ bản cũ (chưa có `features: ["pool"]`) → bàn chỉ cho tập một mình
-  - [ ] Kiểm thử: 2 trình duyệt headless + máy chủ local chơi một ván; vị trí bi 2 bên khớp sau mỗi cú; chặn cú sai lượt; ghế
-    được giải phóng khi rớt mạng; người xem vào giữa ván thấy đúng bàn; thêm vào `test:smoke`
-  - [ ] Build, push `main`, deploy `gh-pages`; ghi bước bật máy chủ vào `docs/multiplayer.md`
+- [ ] P2 Bi-a bước 3 — chơi 2 người theo lượt qua máy chủ, người khác đứng xem — Phụ trách: Claude — nhánh `feat/pool-step3`
+  - [x] Máy chủ (`server/src/pool.js`): mỗi bàn giữ 2 ghế, lượt chơi, vị trí bi, bi đã vào lỗ, số thứ tự cú, nhóm trơn/sọc; tin
+    nhắn `pool_join`, `pool_leave`, `pool_shot`, `pool_rerack`, `pool_poke` / `pool` (bàn), `pool_shot` (cú + bàn); chỉ người
+    tới lượt được đánh; giải phóng ghế khi rời bàn, sang zone khác, mất kết nối hoặc 60 s không đánh; tin chào báo
+    `features: ["pool"]`; bàn qua được lúc Durable Object ngủ
+  - [x] Game: người đánh tự tính cú bằng `physics.js` rồi gửi thông số + kết quả; người kia và người xem phát lại đúng cú đó,
+    cuối cú chốt theo bàn máy chủ (= kết quả người đánh, làm tròn 0,01 mm); người vào sau nhận trạng thái bàn hiện tại
+  - [x] Luật 8 bi rút gọn (`game/src/pool/rules.js`, dùng chung với máy chủ) + giao diện 2 ghế (tên, nhóm, số bi còn lại),
+    "Your turn", đồng hồ lượt, bi trong tay (W/A/S/D), thắng/thua, R: ván mới, J: ngồi khi có ghế trống
+  - [x] Máy chủ bản cũ (chưa có `features: ["pool"]`) → bàn chỉ cho tập một mình
+  - [x] Kiểm thử: `test:pool` (luật, bàn máy chủ, một ván trọn giữa 2 người chơi giả) + `test:smoke` (2 trình duyệt headless
+    + máy chủ local chơi trọn một ván; vị trí bi khớp sau mỗi cú; chặn cú sai lượt; bi trong tay; ghế giải phóng khi rớt mạng;
+    người xem vào giữa ván thấy đúng bàn; máy chủ cũ)
+  - [ ] Build, push `main`, deploy `gh-pages` (build đã thử được; chờ PR được gộp); [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
 - [ ] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
   `/status` (sau khi bản Web xong việc trên) — Phụ trách: —
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
 - [ ] P3 Bi-a: chốt có thêm đánh xoáy (2D + xoáy) và phím V nhìn từ trên xuống hay không; 3D thật thì bỏ qua — Phụ trách: —
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
 - [ ] P3 Tab Bản đồ trong app My FPT — Phụ trách: —
-- [ ] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông — Phụ trách: —
+- [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
+  Phụ trách: Claude — nhánh `feat/pool-step3`
 - [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —
   - [ ] Chốt với nhóm / HR: cho gõ chữ tự do hay chỉ mở rộng câu soạn sẵn (hiện có câu chat soạn sẵn ở phím T); quy tắc ứng xử
     hiện khi mở khung chat lần đầu

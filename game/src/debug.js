@@ -55,8 +55,12 @@ export function installDebug(game, loop) {
     get cards() { return { recent: hud.lastCards || [], queued: hud.cards.map((c) => c.kind) }; },
     finish() { game.finishGame(); return api.cards; },
     get net() { return game.net?.info(); },
-    // bàn bi-a zone 5 (game/src/pool/table.js): trạng thái + enter() (chơi một mình), shoot(angle, power, {instant}) →
-    // Promise kết quả khi bi dừng, leave(), rerack(), solve() (thử thách của anh Khang: đánh cú tìm được bằng vật lý)
+    // bàn bi-a zone 5 (game/src/pool/table.js): trạng thái + enter() (chơi một mình / bàn chung), shoot(angle, power, {instant})
+    // → Promise kết quả khi bi dừng, leave(), rerack(), solve() (thử thách của anh Khang: đánh cú tìm được bằng vật lý).
+    // Bàn chung (bi-a bước 3): .net (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ, số cú đã phát lại, sự kiện), join(),
+    // autoShot() (cú tự chọn cho người tới lượt), forceShot(angle, power) (gửi bất chấp lượt — máy chủ phải chặn), place(x, z)
+    // (bi trong tay: đặt bi trắng),
+    // setFast(true) (cú của người khác hiện ngay kết quả)
     get pool() {
       const p = game.pool;
       if (!p) return null;
@@ -67,6 +71,11 @@ export function installDebug(game, loop) {
         rerack: () => { p.rerack(); return p.info(); },
         solve: () => p.solve(),
         aim: () => p.aim ?? null,
+        join: () => { p.join(); return p.info(); },
+        autoShot: (opts) => p.autoShot(opts),
+        forceShot: (angle, power = 0.5) => p.forceShot(angle, power),
+        setFast: (on = true) => { p.fast = !!on; return p.fast; },
+        place: (x, z) => p.debugPlace(x, z),
       });
     },
     netEmote(id) { return game.net?.emote(id); },

@@ -677,7 +677,7 @@ export class Game {
     const [kind, id] = e.item.action.split(":");
     if (kind === "dialogue") return this.runDialogue(id, { npc: this.interaction.npcFor(e), actor: e.item.actor });
     if (kind === "minigame") return this.runMinigame(id);
-    if (kind === "pool") return this.pool?.enter();          // bàn bi-a: chơi một mình (pool:play)
+    if (kind === "pool") return this.pool?.enter();          // bàn bi-a (pool:play): tập một mình / bàn chung qua máy chủ
     if (kind === "pickup") { sound.play("pickup"); return this.applyEffects({ item: id, flags: [`has_${id}`] }); }
     if (kind === "grain") { sound.play("grain"); return this.applyEffects({ grain: id }); }
     return null;
@@ -777,7 +777,8 @@ export class Game {
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
     const drag = this.input.consumeDrag();
-    if (this.pool?.active) this.pool.update(dt, drag);      // bi-a: ngắm, nạp lực, bi lăn, camera riêng (cameraOverride)
+    // bi-a: ngắm, nạp lực, bi lăn, camera riêng (cameraOverride); không ở bàn: cú của người khác (bàn chung) vẫn lăn
+    if (this.pool) this.pool.update(dt, this.pool.active ? drag : null);
     const still = { x: 0, y: 0, run: false };
     // Tú hết chờ (vd vừa bắt chuyện ở mái chờ) → đi theo người chơi
     if (this.followerWait && this.follower?.waiting && this.progress.check(this.followerWait)) { this.follower.stopWaiting(); this.followerWait = null; }

@@ -159,7 +159,8 @@ async function boot() {
     if (game.mode === "pool") return game.pool?.leave();
     if (game.mode === "play" && game.state.phase === "playing") pause();
   };
-  input.on("KeyR", () => { if (game.pool?.active) game.pool.rerack(); });   // bi-a: xếp lại bi
+  input.on("KeyR", () => { if (game.pool?.active) game.pool.rerack(); });   // bi-a: xếp lại bi / ván mới (bàn chung)
+  input.on("KeyJ", () => { if (game.pool?.active) game.pool.join(); });     // bi-a bàn chung: đang xem → ngồi vào ghế trống
   input.on("Escape", () => {
     if (game.cutscene) return game.cutscene.skip();
     if (game.timeSkipping) return;            // màn mờ chuyển giờ (vd "12:00 · lunch"): không mở menu giữa chừng

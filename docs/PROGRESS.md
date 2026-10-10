@@ -543,6 +543,41 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - `main` 94b7938; đã deploy `gh-pages` 5b32098 (từ `main` 8347ca1; trước deploy: test:data, test:pool đạt, test:smoke
   `--zone 5` 1 ngoại hình 10 bước đạt). Lỗi không ra được khỏi zone 5 (CHECKLIST mục 1) vẫn còn trong bản này. `docs/CHECKLIST.md` → mục 4: dòng "Máy tính bàn ở bàn intern zone 5" đã đánh dấu xong.
 
+### Bi-a bước 3: 2 người theo lượt qua máy chủ + chia phòng ~30 người (10/10/2026, nhánh `feat/pool-step3`)
+- **Luật 8 bi rút gọn** `game/src/pool/rules.js` (dùng chung game + máy chủ, tất định như physics.js): bàn mở tới khi có
+  người vào bi mà bi trắng không rơi → nhận nhóm của bi vào đầu tiên (trơn 1–7 / sọc 9–15); vào bi nhóm mình → đánh tiếp;
+  bi trắng rơi → đổi lượt + bi trong tay (đặt ở khu đầu bàn, sau vạch z = −rz/2); bi 8: hết nhóm mình từ trước cú đó + bi
+  trắng không rơi → thắng, sớm / kèm bi trắng → thua; bi 8 lúc phá → đặt lại điểm chân bàn. Không phạt chạm sai bi trước.
+  Mã hoá bàn: 16 bi × (x, z) làm tròn 0,01 mm, bi đã vào lỗ = null.
+- **Máy chủ** `server/src/pool.js` (JS thuần, thử bằng Node) + `server/src/index.js`: bàn chung của mỗi phòng — 2 ghế, lượt,
+  vị trí bi, số thứ tự cú, nhóm; một người ngồi → tập một mình (cú vẫn phát cho người xem), người thứ 2 → xếp lại bi, ván 8
+  bi, người ngồi trước phá; hết ván → R: ván mới, người thua phá. Kiểm tra cú: đúng người / lượt / số thứ tự, lực 0..1, 16
+  bi trong bàn, bi đã vào lỗ không quay lại, danh sách bi vào lỗ khớp vị trí, bi trắng chỉ đặt ở khu đầu bàn khi có bi trong
+  tay. Không chạy vật lý trên máy chủ. Giải phóng ghế: rời bàn, sang zone khác, mất kết nối, quá `pool_turn_s` (60 s) không
+  đánh (kiểm tra mỗi khi có tin tới; người chờ gửi `pool_poke`) — giữa ván thì người còn lại thắng. Bàn cất vào attachment
+  của người đang ngồi (qua lúc DO ngủ). `welcome` báo `room`, `features: ["pool"]`.
+- **Chia phòng** (`data/net.json` → `server.room_size` 30, `max_rooms` 6): mỗi phòng một Durable Object (phòng 1 giữ tên cũ
+  `fville`, rồi `fville-2`…); phòng đủ 30 kết nối thì DO chuyển nguyên request WebSocket sang phòng sau (đã thử trên
+  workerd local: 32 kết nối → 30 + 2). `?room=N` vào thẳng phòng N (thử). `/status` cộng mọi phòng + liệt kê phòng có người.
+  Góc màn hình phòng 2 trở đi: "Room 2 · N online · M in this zone".
+- **Game** `game/src/pool/table.js`: máy chủ có "pool" → bàn bi-a là bàn chung (`game.poolShared`). "Play pool" → xin ghế; hết
+  ghế → đứng xem (camera bao quát, xoay bằng A/D / chuột), J: ngồi khi có ghế trống. Người đánh tự tính cú rồi gửi góc / lực
+  / chỗ đặt bi trắng + kết quả; người kia, người xem (kể cả đang đi lại trong zone) phát lại đúng cú đó từ bàn của mình, cuối
+  cú chốt theo bàn máy chủ. Bảng góc trái: 2 ghế (tên, nhóm, số bi còn lại, viền cam = người đang đánh), dòng trạng thái +
+  đồng hồ lượt, nút Rerack / Rematch, Join, Leave; thông báo phá bi, nhận nhóm, bi trắng rơi, thắng / thua. Bi trong tay:
+  camera từ đầu bàn, W/A/S/D (hoặc kéo chuột) dời bi trắng trong khu đầu bàn, Space / nhấp để đặt. Cây cơ dựng / nằm trên
+  bàn ẩn khi có người ngồi. Mất kết nối / máy chủ không trả lời 6 s → tập một mình với bàn đang có. Máy chủ cũ (không báo
+  "pool") → như bước 2. Thử thách của anh Khang luôn là bàn riêng.
+- **Kiểm thử**: `npm run test:pool` thêm `scripts/tests/pool_rules.mjs` (11 tình huống luật, 20 tình huống bàn máy chủ, một ván
+  trọn giữa 2 người chơi giả: 14 cú, người xem phát lại khớp từng bit, chạy lại giống hệt; ván có bi trắng rơi + đặt bi trắng).
+  `test:smoke` thêm "bi-a 2 người" (máy chủ local, 3 trình duyệt: chơi trọn ván 14 cú, 26 lần phát lại khớp từng bit; chặn cú
+  sai lượt; người xem vào giữa ván; bi trong tay; R → ván mới người thua phá; rớt mạng → giải phóng ghế; máy chủ cũ) và "chia
+  phòng" (31 kết nối → người thứ 31 sang phòng 2, `?room=3`, `/status`). Các test mạng dùng chung 1 máy chủ local. Kết quả:
+  test:data, test:pool đạt; test:smoke 1 ngoại hình + phần thêm **34 bước đạt (1 phút 24 giây)**; `npm run build` được.
+  Ảnh kiểm tra (`renders/game/pool_net_{1_aim,2_watch,3_in_hand}.png`): bảng 2 ghế, lượt, bi trong tay.
+- Chưa: `wrangler deploy` máy chủ (máy Desktop, xem `docs/multiplayer.md` → "Bi-a 2 người"), deploy `gh-pages`, chơi thử 2
+  người trên trang thật (cảm giác lực đánh, tốc độ bi, độ nảy băng). Chưa có chọn phòng trong game, chưa có âm thanh bi-a.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.

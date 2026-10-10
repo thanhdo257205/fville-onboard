@@ -1,17 +1,24 @@
-// Máy chủ chơi nhiều người "thấy nhau" (docs/multiplayer.md): Cloudflare Worker + MỘT Durable Object tên "fville" giữ
-// phòng chung. WebSocket Hibernation API: DO được ngủ khi không ai gửi gì, kết nối vẫn mở; ping của client được runtime
-// tự trả lời (không đánh thức DO).
-// Trạng thái chỉ nằm trong bộ nhớ + "attachment" gắn theo từng WebSocket (để DO ngủ dậy vẫn biết ai ở đâu) — KHÔNG ghi gì
-// xuống storage.
+// Máy chủ chơi nhiều người "thấy nhau" (docs/multiplayer.md): Cloudflare Worker + Durable Object, mỗi DO một phòng.
+// Chia phòng: mọi người vào phòng 1 (DO tên "fville"); phòng đủ room_size (~30) kết nối thì người mới được chuyển sang
+// phòng 2 ("fville-2"), 3… tới max_rooms (phòng cuối nhận tới max_connections). Người ở phòng khác nhau không thấy nhau.
+// WebSocket Hibernation API: DO được ngủ khi không ai gửi gì, kết nối vẫn mở; ping của client được runtime tự trả lời
+// (không đánh thức DO).
+// Trạng thái chỉ nằm trong bộ nhớ + "attachment" gắn theo từng WebSocket (để DO ngủ dậy vẫn biết ai ở đâu, bàn bi-a ra
+// sao) — KHÔNG ghi gì xuống storage.
 // Tin nhắn (JSON gọn):
 //   client → máy chủ: join {name, model, outfit, zone} (gửi lại = cập nhật tên / model / bộ đồ) · state {zone, pos, yaw, anim}
 //                      · emote {id} · phrase {id} · leave · ping (tự trả lời)
-//   máy chủ → client: welcome {id, online} · zone {zone, players, online} (vừa vào zone: ai đang ở đó) · join {p} · state
-//                      {id, pos, yaw, anim} · emote {id, e} · phrase {id, p} · leave {id} · online {n} · error {code, msg}
+//                      · bi-a (chỉ ở zone của bàn, data/pool.json): pool_join · pool_leave · pool_shot {seq, a, p, cue, b, k,
+//                        s, d} · pool_rerack · pool_poke (người chờ báo hết giờ lượt)
+//   máy chủ → client: welcome {id, online, room, features} · zone {zone, players, online} (vừa vào zone: ai đang ở đó) ·
+//                      join {p} · state {id, pos, yaw, anim} · emote {id, e} · phrase {id, p} · leave {id} · online {n} ·
+//                      error {code, msg} · pool {tb, err?} (bàn bi-a; vừa vào zone của bàn cũng nhận) · pool_shot {shot, tb}
 // Chỉ phát tin cho người CÙNG zone (riêng số người online gửi cho cả phòng). Danh sách emote / câu chat và giới hạn lấy từ
-// data/net.json (đóng gói lúc wrangler deploy).
+// data/net.json, bàn bi-a từ data/pool.json (đóng gói lúc wrangler deploy).
 import { DurableObject } from "cloudflare:workers";
 import net from "../../data/net.json";
+import poolCfg from "../../data/pool.json";
+import { PoolRoom } from "./pool.js";
 
 const S = net.server || {};
 const MAX_CONN = S.max_connections ?? 60;
@@ -25,8 +32,22 @@ const ANIMS = new Set(["idle", "walk", "run", "sit"]);
 const ZONE_RE = /^zone_\d{2}$/;
 const ID_RE = /^[a-z0-9_]{0,24}$/;
 const MAX_MSG = 512;          // ký tự — tin dài hơn bỏ qua
+const MAX_SHOT_MSG = 1200;    // pool_shot mang vị trí 16 bi (~450 ký tự)
 const COOLDOWN_MS = 800;      // giữa 2 lần emote / câu chat của một người (client tự giữ cooldown_s dài hơn)
-const ROOM = "fville";
+const ROOM_SIZE = S.room_size ?? 30;
+const MAX_ROOMS = Math.max(1, S.max_rooms ?? 6);
+const TURN_MS = (S.pool_turn_s ?? 60) * 1000;
+const POOL_ZONE = poolCfg.zone;
+const FEATURES = ["pool"];    // máy khách thấy "pool" mới chơi bi-a 2 người qua máy chủ (máy chủ cũ: bàn chỉ tập một mình)
+// phòng 1 giữ tên DO cũ "fville" (không đổi phòng của bản đã chạy)
+const roomName = (n) => (n <= 1 ? "fville" : `fville-${n}`);
+// request WebSocket kèm số phòng (header) — chuyển nguyên request sang DO khác vẫn giữ nâng cấp WebSocket
+function withRoom(req, n, forced) {
+  const h = new Headers(req.headers);
+  h.set("X-FVille-Room", String(n));
+  if (forced) h.set("X-FVille-Forced", "1"); else h.delete("X-FVille-Forced");
+  return new Request(req, { headers: h });
+}
 
 // tên: tối đa NAME_MAX ký tự; chỉ chữ (mọi ngôn ngữ, có dấu), số, khoảng trắng và . ' _ -
 export function cleanName(s) {
@@ -50,16 +71,24 @@ function originOk(origin) {
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    const room = () => env.ROOM.get(env.ROOM.idFromName(ROOM));
+    const room = (n) => env.ROOM.get(env.ROOM.idFromName(roomName(n)));
     if (url.pathname === "/ws") {
       if (req.headers.get("Upgrade") !== "websocket") return new Response("Expected a WebSocket upgrade", { status: 426 });
       if (!originOk(req.headers.get("Origin"))) return new Response("Origin not allowed", { status: 403 });
-      return room().fetch(req);
+      // ?room=N: vào thẳng phòng N (thử / kiểm thử); không có thì bắt đầu từ phòng 1, phòng đủ người tự chuyển sang phòng sau
+      const want = Number(url.searchParams.get("room"));
+      const forced = Number.isInteger(want) && want >= 1 && want <= MAX_ROOMS;
+      return room(forced ? want : 1).fetch(withRoom(req, forced ? want : 1, forced));
     }
-    // kiểm tra sau khi lên mạng: số người online, số người từng zone (không có tên)
+    // kiểm tra sau khi lên mạng: số người online, số người từng zone, bàn bi-a (không có tên) — cộng mọi phòng
     if (url.pathname === "/status") {
-      const r = await room().fetch(new Request("https://room/status"));
-      return new Response(r.body, { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" } });
+      const all = await Promise.all(Array.from({ length: MAX_ROOMS }, (_, i) =>
+        room(i + 1).fetch(new Request("https://room/status")).then((r) => r.json()).then((s) => ({ room: i + 1, ...s }))));
+      const zones = {};
+      for (const r of all) for (const [z, n] of Object.entries(r.zones || {})) zones[z] = (zones[z] || 0) + n;
+      const body = { online: all.reduce((k, r) => k + r.online, 0), connections: all.reduce((k, r) => k + r.connections, 0),
+        max: MAX_CONN, room_size: ROOM_SIZE, max_rooms: MAX_ROOMS, zones, rooms: all.filter((r) => r.room === 1 || r.connections) };
+      return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" } });
     }
     if (url.pathname === "/") return new Response("F-Ville net: OK\n", { headers: { "Content-Type": "text/plain; charset=utf-8" } });
     return new Response("Not found", { status: 404 });
@@ -77,8 +106,14 @@ export class FVilleRoom extends DurableObject {
 
   async fetch(req) {
     if (new URL(req.url).pathname === "/status") return Response.json(this.status());
+    const room = Math.min(MAX_ROOMS, Math.max(1, Number(req.headers.get("X-FVille-Room")) || 1));
+    const n = this.ctx.getWebSockets().length;
+    // phòng đã đủ ~room_size người → chuyển nguyên request sang phòng sau (phòng cuối nhận tới MAX_CONN)
+    if (n >= ROOM_SIZE && room < MAX_ROOMS && req.headers.get("X-FVille-Forced") !== "1") {
+      return this.env.ROOM.get(this.env.ROOM.idFromName(roomName(room + 1))).fetch(withRoom(req, room + 1, false));
+    }
     const [client, server] = Object.values(new WebSocketPair());
-    if (this.ctx.getWebSockets().length >= MAX_CONN) {
+    if (n >= MAX_CONN) {
       // phòng đầy: nhận kết nối chỉ để báo lý do rồi đóng (không đưa vào hibernation)
       server.accept();
       server.send(JSON.stringify({ t: "error", code: "full", msg: `The room is full (${MAX_CONN} players). Please try again later.` }));
@@ -86,7 +121,7 @@ export class FVilleRoom extends DurableObject {
       return new Response(null, { status: 101, webSocket: client });
     }
     this.ctx.acceptWebSocket(server);
-    const a = { id: crypto.randomUUID().slice(0, 8), joined: false, left: false, name: "", model: "", outfit: "", zone: null,
+    const a = { id: crypto.randomUUID().slice(0, 8), room, joined: false, left: false, name: "", model: "", outfit: "", zone: null,
       pos: null, yaw: 0, anim: "idle", shown: false, last: Date.now(), rw: 0, rn: 0, cool: 0 };
     this.save(server, a);
     return new Response(null, { status: 101, webSocket: client });
@@ -118,7 +153,52 @@ export class FVilleRoom extends DurableObject {
   status() {
     const zones = {};
     for (const [, a] of this.players()) zones[a.zone] = (zones[a.zone] || 0) + 1;
-    return { online: this.online(), connections: this.ctx.getWebSockets().length, max: MAX_CONN, zones };
+    const p = this.pool;
+    return { online: this.online(), connections: this.ctx.getWebSockets().length, max: MAX_CONN, zones, pool: { mode: p.m.mode, seated: p.seated, shots: p.seq } };
+  }
+
+  // ---------- bàn bi-a (server/src/pool.js) ----------
+  // DO vừa thức dậy (hibernation): dựng lại bàn từ attachment mới nhất của người đang ngồi; ghế của người đã đi → giải phóng
+  get pool() {
+    if (!this._pool) {
+      this._pool = new PoolRoom(poolCfg, { turnMs: TURN_MS });
+      let best = null;
+      const live = new Set();
+      for (const [, a] of this.players()) { live.add(a.id); if (a.pool && (!best || a.pool.v > best.v)) best = a.pool; }
+      if (best && this._pool.restore(best, live, Date.now())) this.poolChanged();
+    }
+    return this._pool;
+  }
+  // bàn đổi → gửi cho cả zone của bàn; cất bản chụp vào attachment của người đang ngồi (bỏ ở người không còn ngồi)
+  poolChanged(msg = null) {
+    const now = Date.now(), p = this.pool;
+    this.toZone(POOL_ZONE, { ...(msg || { t: "pool" }), tb: p.view(now) });
+    const snap = p.snapshot();
+    for (const [ws, a] of this.players()) {
+      if (p.seatOf(a.id) >= 0) { a.pool = snap; this.save(ws, a); }
+      else if (a.pool) { delete a.pool; this.save(ws, a); }
+    }
+  }
+  onPool(ws, a, m, now) {
+    if (!a.joined || a.zone !== POOL_ZONE) return;
+    const p = this.pool;
+    switch (m.t) {
+      case "pool_shot": {
+        const r = p.shot(a.id, m, now);
+        if (r.ok) this.poolChanged({ t: "pool_shot", shot: r.shot });
+        else this.send(ws, { t: "pool", tb: p.view(now), err: r.err });   // sai lượt / lệch số cú…: gửi lại bàn đúng
+        return;
+      }
+      case "pool_join": {
+        const r = p.join(a.id, a.name, now);
+        if (r.changed) this.poolChanged();
+        else this.send(ws, { t: "pool", tb: p.view(now), ...(r.seated ? {} : { err: "full" }) });
+        return;
+      }
+      case "pool_leave": if (p.leave(a.id, now, "left")) this.poolChanged(); return;
+      case "pool_rerack": if (p.rerack(a.id, now)) this.poolChanged(); return;
+      default: return;                // pool_poke: chỉ để chạy tick (đầu webSocketMessage)
+    }
   }
 
   // ---------- gửi ----------
@@ -137,12 +217,15 @@ export class FVilleRoom extends DurableObject {
   enterZone(ws, a) {
     const players = this.players().filter(([w, b]) => w !== ws && b.zone === a.zone && b.shown).map(([, b]) => pub(b));
     this.send(ws, { t: "zone", zone: a.zone, players, online: this.online() });
+    if (a.zone === POOL_ZONE) this.send(ws, { t: "pool", tb: this.pool.view(Date.now()) });
     a.shown = !!a.pos;
     if (a.shown) this.toZone(a.zone, { t: "join", p: pub(a) }, ws);
   }
   leaveZone(ws, a) {
     if (a.shown) this.toZone(a.zone, { t: "leave", id: a.id }, ws);
     a.shown = false;
+    // rời zone của bàn / mất kết nối khi đang ngồi → giải phóng ghế
+    if (a.zone === POOL_ZONE && this.pool.leave(a.id, Date.now(), "left")) this.poolChanged();
   }
 
   // ---------- nhận ----------
@@ -157,13 +240,19 @@ export class FVilleRoom extends DurableObject {
     if (a.rn > RATE * 3) { this.drop(ws, a, 4003, "too many messages"); return; }
     if (a.rn > RATE) return;
     this.sweep(now);
-    if (typeof raw !== "string" || raw.length > MAX_MSG) return;
+    if (this.pool.tick(now)) this.poolChanged();            // tới lượt mà quá giờ → giải phóng ghế
+    if (typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"pool_shot"') ? MAX_SHOT_MSG : MAX_MSG)) return;
     let m;
     try { m = JSON.parse(raw); } catch { return; }
     if (!m || typeof m !== "object") return;
     switch (m.t) {
       case "join": return this.onJoin(ws, a, m);
       case "state": return this.onState(ws, a, m);
+      case "pool_join":
+      case "pool_leave":
+      case "pool_shot":
+      case "pool_rerack":
+      case "pool_poke": return this.onPool(ws, a, m, now);
       case "emote":
       case "phrase": {
         if (!a.joined || !a.shown) return;
@@ -188,7 +277,7 @@ export class FVilleRoom extends DurableObject {
     if (!a.joined) {
       a.joined = true;
       a.zone = m.zone;
-      this.send(ws, { t: "welcome", id: a.id, online: this.online() });
+      this.send(ws, { t: "welcome", id: a.id, online: this.online(), room: a.room || 1, features: FEATURES });
       this.enterZone(ws, a);
       this.save(ws, a);
       this.broadcastOnline();
