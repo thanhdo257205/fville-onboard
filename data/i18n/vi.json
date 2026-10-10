@@ -251,6 +251,7 @@
       "checklist": "Checklist",
       "bag": "Túi đồ",
       "badges": "Huy hiệu",
+      "map": "Bản đồ",
       "advice": "Lời khuyên"
     },
     "close": "Nhấn Tab để đóng",
@@ -266,7 +267,12 @@
     "act_progress": "{done}/{total}",
     "advice_title": "Sổ lời khuyên",
     "advice_empty": "Lời khuyên của đồng nghiệp sẽ hiện ở đây.",
-    "compass_of": "{trait} · {position}"
+    "compass_of": "{trait} · {position}",
+    "map_you": "Bạn",
+    "map_up": "(tầng trên)",
+    "map_down": "(tầng dưới)",
+    "map_loading": "Đang vẽ bản đồ…",
+    "map_empty": "Chỗ này chưa có bản đồ."
   },
   "cutscene": {
     "skip": "Bỏ qua ›",

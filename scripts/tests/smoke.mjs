@@ -344,6 +344,25 @@ async function runLook(browser, base, look) {
           `${zone}: camera ngẩng / lùi hết cỡ không xuyên trần (${cc.fixed.n} góc ở ${cc.fixed.points} điểm, cao nhất ${cc.fixed.maxUp} m trên chân; chỉ tránh COL_: xuyên ${cc.old.through} lần, cao ${cc.old.maxUp} m)`,
           JSON.stringify(cc));
       }
+      // app My FPT → tab Bản đồ (đã có app từ zone 1): ảnh zone nhìn từ trên tải được, dấu bạn + mục tiêu nằm trong ảnh,
+      // đóng app (Tab) → chơi tiếp
+      if (/^zone_0[2-5]$/.test(zone) && look === looks[0]) {
+        await ev(() => __game._game.toggleApp());
+        const opened = await wait(() => !!document.querySelector("#myfpt:not([hidden]) [data-tab=map]"), 5000);
+        if (opened) await page.click("#myfpt [data-tab=map]");
+        const drawn = opened && await wait(() => !!document.querySelector("#myfpt .map img"), 15000);   // ảnh đọc bất đồng bộ
+        const m = await ev(async () => {
+          const img = document.querySelector("#myfpt .map img");
+          if (img && !img.complete) await new Promise((r) => { img.onload = img.onerror = r; });
+          const pos = (sel) => { const el = document.querySelector(`#myfpt .map ${sel}`); return el ? [parseFloat(el.style.left), parseFloat(el.style.top)] : null; };
+          return { img: img ? [img.naturalWidth, img.naturalHeight] : null, me: pos(".mk.me"), goal: pos(".mk.goal"), line: document.querySelector("#myfpt .map-goal span")?.textContent.trim() ?? null, map: __game.map };
+        });
+        await page.keyboard.press("Tab");
+        m.closed = await wait(() => document.getElementById("myfpt").hidden && __game._game.mode === "play", 5000);
+        const inside = (p) => p && p.every((v) => v >= 0 && v <= 100);
+        await check(opened && drawn && m.img?.[0] > 100 && m.img[1] > 100 && inside(m.me) && inside(m.goal) && m.line && m.closed,
+          `${zone}: app → tab Bản đồ — ảnh ${m.map?.w}×${m.map?.h} (${m.map?.ms} ms), dấu bạn + mục tiêu "${m.line}" trong ảnh, đóng app`, JSON.stringify(m));
+      }
       let steps = 0, stepFail = null;
       while (steps++ < 40) {
         const g = await ev(() => ({ key: __game._game.guide.current().key, zone: __game.zone }));
