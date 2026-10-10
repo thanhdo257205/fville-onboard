@@ -404,6 +404,9 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   Kết quả: test:data đạt; test:smoke 3 ngoại hình zone 0 → 5: **43 bước đạt (2 phút 45 giây)**. Thử ngược: bỏ sửa
   `vite.config.js` → test đỏ đúng 2 bước (ảnh màn chọn, chân dung Tú).
 - Ảnh: `renders/game/creator_3d.png`, `creator_the_anh.png`, `tu_nu_hoi_thoai.png`.
+- Deploy (10/10/2026): trước khi deploy chạy lại trên máy cloud — test:data đạt hết (7 mục, 0,3 s), test:smoke 1 ngoại hình
+  (intern_nam, zone 0 → 5) **15 bước đạt (1 phút 17 giây)**. `main` 3bf9623; đã deploy `gh-pages` e6e73ee (từ `main`
+  3bf9623, chơi nhiều người vẫn bật).
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
