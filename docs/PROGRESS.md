@@ -540,7 +540,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   cây cơ bi-a), không do máy tính: GLB zone_05 cũ cũng hỏng y hệt ở ngoại hình thứ 2 (ngoại hình đầu không lộ lỗi vì có bước
   tải lại trang giữa cảnh kết). Ảnh: `renders/zone_05_office_ban_lam_viec_can.png` (camera mới, cận bàn intern); xem trong
   game bản dev: toon + viền nét, màn hình "My FPT" đọc được, console sạch.
-- `main` 94b7938 (chưa deploy). `docs/CHECKLIST.md` → mục 4: dòng "Máy tính bàn ở bàn intern zone 5" đã đánh dấu xong.
+- `main` 94b7938; đã deploy `gh-pages` 5b32098 (từ `main` 8347ca1; trước deploy: test:data, test:pool đạt, test:smoke
+  `--zone 5` 1 ngoại hình 10 bước đạt). Lỗi không ra được khỏi zone 5 (CHECKLIST mục 1) vẫn còn trong bản này. `docs/CHECKLIST.md` → mục 4: dòng "Máy tính bàn ở bàn intern zone 5" đã đánh dấu xong.
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và

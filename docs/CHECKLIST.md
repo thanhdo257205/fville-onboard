@@ -1,6 +1,6 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 04a74b2).
+Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 5b32098, build từ `main` 8347ca1).
 
 ## Cách dùng
 
