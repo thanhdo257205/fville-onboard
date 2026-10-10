@@ -88,6 +88,33 @@ thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a t
 - [x] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (tự ướm theo lưới, mở khoá khi xong game, bật / tắt ở menu Esc,
   người khác thấy mũ) — Phụ trách: Claude — nhánh `feat/zone5-seat-cap`; tab Wardrobe vẫn chờ mục "Tủ đồ"
 - [ ] P3 Huyền, Nga: tay lún vào thân 3–6 cm ở vài động tác (tải animation Mixamo riêng nếu cần) — Phụ trách: —
+- [ ] P2 **Khoảng trống ngoài vùng đi được trông trống trơn** (zone 0, 1, 2; cả chỗ nhìn ra ngoài qua kính zone 3–5) — Phụ trách: —
+  - Hiện trạng: trời chỉ là một màu phẳng (`scene.background` = `mood.sky` trong `data/zones.json`; zone 0 gần như trắng
+    `#dbe4ea`, mặc định `#9cc4e8`, zone 1 hoàng hôn cam `#f3b183`). Mặt cỏ zone 1 (100 × 70 m) hết ở cách người chơi 30–60 m,
+    thành một đường cắt thẳng với trời (sương 45–150 m nên ở mép gần như chưa phủ). Chỗ hết đường là tường vô hình (`COL_bien_*`), người chơi bị chặn mà không
+    thấy lý do.
+  - Hướng đề xuất: dựng 4 lớp như dưới, không tô trời một màu (trắng hay màu khác) và không dùng ảnh nền 360° (lệch phong
+    cách low-poly, nặng cho điện thoại). Lớp 1 + 2 làm được trên máy cloud (không cần Blender), làm xong là hết cảm giác
+    "trống trơn"; lớp 3 + 4 cần máy có Blender.
+  - [ ] Lớp 1 — bầu trời chuyển màu (code): vòm trời bằng shader 2–3 màu (đỉnh → chân trời, quầng sáng phía mặt trời), vài
+    cụm mây low-poly trôi chậm. Màu theo `mood` của từng zone / variant (thêm `sky_top`, `sky_horizon`: sáng sớm, trưa, chiều,
+    hoàng hôn). Sương lấy đúng màu chân trời để mặt đất tan dần vào trời, không còn đường cắt.
+  - [ ] Lớp 2 — phông nền xa (code + data; muốn vẽ tay thì dựng bằng Blender): vòng bóng núi Ba Vì (phía tây Hòa Lạc — xác
+    nhận hướng theo thực tế), hàng cây, dãy nhà khu Công nghệ cao / campus F-Ville ở 150–400 m; 2–3 lớp nhạt dần theo khoảng
+    cách. Một lưới dùng chung cho các zone ngoài trời: màu theo đỉnh, không chiếu sáng, ≤ 5.000 tam giác, 1–2 lệnh vẽ. Cũng
+    hiện qua cửa kính zone 3–5.
+  - [ ] Lớp 3 — vùng đệm giữa chỗ đi được và phông nền (Blender, `scripts/blender/zone_00.py` … `zone_02.py`): kéo mặt đất ra
+    ~200 m (sương phủ hết mép); rải ruộng lúa, bụi cây, cụm cây, cột điện (instancing); khu phố zone 0 thêm dãy nhà / mặt
+    tiền đơn giản.
+  - [ ] Lớp 4 — ranh giới nhìn thấy được thay tường vô hình (Blender): hàng rào thấp, bồn hoa, hàng bụi, mương nước, lan can,
+    rào chắn đặt đúng chỗ `COL_bien_*`, để người chơi hiểu vì sao không đi tiếp được.
+  - [ ] Camera không lùi / chúc xuống tới chỗ thấy mép mặt đất hoặc dưới chân phông nền. Điện thoại và nấc Detail thấp thì tắt
+    mây, bớt lớp phông nền.
+  - [ ] Kiểm thử:
+    - `test:data`: mọi zone ngoài trời có đủ màu trời và phông nền.
+    - Smoke: đứng ở mọi `SPAWN_` zone 0–2, quay 8 hướng, nửa trên khung hình không còn mảng trời một màu (đo độ lệch màu).
+    - Đo FPS trước / sau trên laptop Intel (`__game.benchmark(120)`), ghi vào `docs/perf_report.md`.
+  - [ ] Build lại zone 0–2 bản Thấp (máy có Blender), push `main`, deploy `gh-pages`
 
 ## 5. Tính năng
 
