@@ -45,24 +45,9 @@ thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy ch
   zone 5); cứu "rơi khỏi bản đồ" lại đưa về vị trí khung trước + 1 m (đã ở dưới sàn) → rơi mãi quanh y −9 … −10. Sửa: chặn dt
   âm (`game/src/main.js`), rơi thì về chỗ đứng vững gần nhất (`game/src/player/player.js`); smoke kiểm tra lúc vào zone —
   Phụ trách: Claude
-- [ ] P1 **Lỗi: mất dấu Objective markers ở tất cả các zone** (dấu "!" trên mục tiêu + mũi tên ở mép màn hình; người dùng báo
-  10/10/2026) — Phụ trách: —
-  - Đã thử (Claude, 10/10/2026): bản đang chạy `gh-pages` 6416ec3 trên trình duyệt sạch (Chromium, chưa có cài đặt cũ) —
-    dấu vẫn hiện ở cả 6 zone (zone 0 biển xe số 2, zone 1 chị Huyền, zone 2 cổng, zone 3 chị Nga + mũi tên, zone 4 cửa quẹt
-    thẻ, zone 5 Prajith + mũi tên), cả tiếng Anh lẫn tiếng Việt → code dấu "!" không hỏng; lỗi nằm ở điều kiện trên máy người
-    chơi. Dấu chỉ hiện khi đang đi lại (`mode === "play"`), cài đặt bật và tìm được vị trí mục tiêu
-    (`game/src/game/guide.js` → `update`).
-  - [ ] Kiểm tra trên máy bị lỗi, theo thứ tự:
-    1. Menu Esc → "Objective markers" đang **Off**? (cài đặt lưu trong trình duyệt nên tắt một lần là mất ở mọi zone, cả sau khi
-       tải lại trang) → bật On rồi xem lại. Hoặc mở Console (F12), gõ `localStorage["fville.settings"]` xem có `"guide":false`.
-    2. Nếu đang On mà vẫn mất: mở trang với `?debug`, gõ `__game.guide` (ghi lại `goal`, `target`, `marker`, `arrow`,
-       `enabled`) và `__game._game.mode`; chụp màn hình; ghi trình duyệt + hệ điều hành; thử cửa sổ ẩn danh (không có cài đặt
-       cũ). Nghi vấn còn lại: `mode` kẹt khác `"play"`; dấu "!" là phần tử HTML (CSS2D, chung lớp với bảng tên) bị trình duyệt /
-       tiện ích chặn quảng cáo / phần tử khác che.
-  - [ ] Nếu đúng do cài đặt Off: đề xuất cho người chơi dễ thấy — lúc tắt hiện dòng nhỏ "Objective markers: Off (Esc → bật
-    lại)" vài giây khi vào zone, hoặc bấm H (Help) thì hiện dấu một lúc dù đang tắt
-  - [ ] Thêm vào `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 phải có dấu "!" hoặc mũi tên (`marker` / `arrow` khác
-    null), cả sau khi rời bàn bi-a, đóng app, đổi ngôn ngữ; tắt / bật lại ở menu Esc thì dấu mất / hiện lại
+- [x] P1 **Lỗi: mất dấu Objective markers ở tất cả các zone** (dấu "!" + mũi tên ở mép màn hình) — người dùng kiểm tra lại
+  10/10/2026: đã hết lỗi (bản `gh-pages` 6416ec3 trên trình duyệt sạch cũng hiện đủ ở 6 zone; nếu gặp lại, xem trước menu
+  Esc → "Objective markers" có đang Off không) — Phụ trách: —
 - [ ] P1 **Lỗi: đánh bi-a xong camera nâng lên, bị đèn treo của bàn che** — Phụ trách: —
   - Nguyên nhân (đọc code): lúc bi lăn (`phase === "roll"`, camera trong `game/src/pool/table.js`) camera đặt cao hơn mặt bi
     1,55 m (~2,4 m trên sàn), lùi 1,15 m. 3 chao đèn thả (`pool_lamps`, `scripts/blender/lib/interior.py`: chao ở 1,62–1,87 m,
@@ -277,6 +262,8 @@ thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy ch
   Chromium headless shell `canvas.toBlob` chờ GPU 52 s. Sửa: canvas ảnh thẻ trên CPU (`willReadFrequently`,
   `game/src/ui/summary.js`) — Phụ trách: Claude
 - [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
+- [ ] P3 `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 kiểm tra có dấu "!" hoặc mũi tên (`__game.guide` → `marker` /
+  `arrow`), để lỗi mất dấu không quay lại mà không ai biết — Phụ trách: —
 - [ ] P3 Theo dõi Cloudflare: Workers & Pages → fville-net → Metrics (hạn miễn phí 100.000 lượt/ngày) — Phụ trách: —
 - [x] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
   trong `scripts/blender/zone_04.py`, build lại GLB bản Thấp, bỏ bản vá dữ liệu) — Phụ trách: Claude — nhánh `zone04/rebuild`
