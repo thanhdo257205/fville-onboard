@@ -1,8 +1,8 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 0790018, build từ `main` bef8792 — gồm PR #1
-bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5 và PR #2 camera / rơi xuyên sàn; máy chủ Cloudflare chưa
-`wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình; bản tiếng Việt: nhánh `feat/vietnamese`).
+Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 6416ec3, build từ `main` 680cc30 — gồm PR #1
+bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5; PR #2 camera / rơi xuyên sàn; PR #3 tiếng Việt; sửa CI + ảnh
+thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình).
 
 ## Cách dùng
 
@@ -132,7 +132,8 @@ bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5 và 
 
 ## 6. Ngôn ngữ và âm thanh
 
-- [ ] P2 Chức năng ngôn ngữ Anh / Việt — Phụ trách: Claude — nhánh `feat/vietnamese`; còn: người trong team đọc lại, deploy
+- [ ] P2 Chức năng ngôn ngữ Anh / Việt — Phụ trách: Claude — nhánh `feat/vietnamese` (PR #3, đã deploy `gh-pages` 6416ec3);
+  còn: người trong team đọc lại
   - [x] Chốt (người dùng, 10/10/2026): thêm tiếng Việt, sửa quy tắc trong `CLAUDE.md`; tên riêng giữ dấu ở cả hai bản; xưng hô
     Tú "mình – cậu", người lớn "chị / anh – em" (tài xế: "anh – em", GDD viết "bác tài"), giao diện gọi "bạn"; giữ từ công sở
     intern, mentor, team, app, check-in; mặc định theo ngôn ngữ trình duyệt — chi tiết `docs/vi_style.md`
