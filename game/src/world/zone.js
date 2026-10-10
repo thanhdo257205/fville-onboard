@@ -149,18 +149,24 @@ export function yawDir(yawDeg) {
   return new THREE.Vector3(-Math.sin(a), 0, -Math.cos(a));
 }
 
-export function disposeZone(zone) {
-  zone.root.traverse((o) => {
-    if (!o.isMesh) return;
-    o.geometry?.dispose();
+// giải phóng GPU của cả cây đối tượng: geometry (Mesh, cả Line / Points — vd đường ngắm bàn bi-a), vật liệu, mọi texture của
+// vật liệu. Vật liệu / texture dùng chung giữa các zone (userData.shared, vd vật liệu vàng của hạt lúa, gradient toon) giữ lại.
+// Trước đây chỉ dọn mesh của zone.root, chỉ map + aoMap; vật do code đặt (hạt lúa, hũ, ví, bảng tên…) không dọn → mỗi vòng
+// qua các zone đọng thêm ~25 geometry, ~15 texture trên GPU
+export function disposeTree(root) {
+  root.traverse((o) => {
+    o.geometry?.dispose?.();
     // chỉ dọn vật liệu / texture thật (bản sao do code tạo có thể mang userData đã chép qua JSON)
     for (const m of [o.material, o.userData.srcMaterial].flat()) {
-      if (!m?.isMaterial) continue;
-      if (m.map?.isTexture) m.map.dispose();
-      if (m.aoMap?.isTexture) m.aoMap.dispose();
+      if (!m?.isMaterial || m.userData.shared) continue;
+      for (const v of Object.values(m)) if (v?.isTexture && !v.userData.shared) v.dispose();
       m.dispose();
     }
   });
+}
+
+export function disposeZone(zone) {
+  disposeTree(zone.root);
   zone.collider.geometry.dispose();
   zone.view?.geometry.dispose();
 }

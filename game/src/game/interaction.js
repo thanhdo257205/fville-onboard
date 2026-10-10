@@ -2,7 +2,7 @@
 // 'area' (TRIGGER_) của một đối tượng còn dùng được → hiện gợi ý phím E. 'object' = vật do code đặt (vd chiếc ví),
 // 'actor' = nhân vật do code đặt (vd Tú). Chọn đối tượng gần nhất.
 import * as THREE from "three";
-import { inTrigger, worldPos } from "../world/zone.js";
+import { inTrigger, worldPos, disposeTree } from "../world/zone.js";
 import { blocked } from "../world/collision.js";
 import { tx } from "../content/content.js";
 import { t } from "../i18n.js";
@@ -11,6 +11,7 @@ const IN_AREA_D = 1.0;  // m
 const MAX_DY = 3.0;   // chênh cao tối đa (vd biển số tuyến trên kính lái xe bus ~3 m)
 
 const GOLD = new THREE.MeshToonMaterial({ color: 0xf2c14e, emissive: 0x8a5a00, emissiveIntensity: 0.55 });
+GOLD.userData.shared = true;   // dùng chung mọi zone: disposeTree không dọn
 
 // hạt lúa vàng: hạt thóc thuôn + vầng sáng nhẹ (dễ thấy từ xa)
 function makeGrain() {
@@ -152,7 +153,7 @@ export class Interaction {
   }
 
   setup(zone, scene) {
-    for (const x of this.list) x.mesh?.removeFromParent();
+    for (const x of this.list) if (x.mesh) { x.mesh.removeFromParent(); disposeTree(x.mesh); }   // vật do code đặt của zone cũ
     this.list = [];
     for (const it of this.c.interactables) {
       if (it.zone !== zone.id) continue;

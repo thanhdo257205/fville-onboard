@@ -476,6 +476,24 @@ body.overlay-open #emotes { display: none; }
 #myfpt .advice li p { margin: 0 0 4px; font-weight: 700; line-height: 1.35; }
 #myfpt .advice li small { color: #8a5a3c; font-weight: 800; }
 #myfpt .empty { color: var(--muted); font-weight: 700; }
+/* tab Bản đồ (ui/map.js): ảnh zone nhìn từ trên + dấu bạn (mũi tên theo hướng mặt), Tú, mục tiêu "!" */
+#myfpt nav { gap: 4px; }
+#myfpt nav button { flex: 1 1 auto; min-width: 0; padding: 8px 5px; font-size: 12px; white-space: nowrap; }   /* 5 tab vừa 1 dòng (vi: "Lời khuyên") */
+#myfpt .map-h { margin: 2px 0 6px; font-size: 14px; }
+#myfpt .map { position: relative; max-width: 100%; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #dfe6e9; box-shadow: inset 0 0 0 2px #e2dcd2; }
+#myfpt .map img { display: block; width: 100%; height: 100%; }
+#myfpt .mk { position: absolute; transform: translate(-50%, -50%); font-style: normal; }
+#myfpt .mk.me { width: 22px; height: 22px; transform: translate(-50%, -50%) rotate(var(--r, 0deg)); }
+#myfpt .mk.me svg { display: block; width: 100%; height: 100%; fill: var(--orange); stroke: #fff; stroke-width: 2; stroke-linejoin: round; }
+#myfpt .mk.tu { width: 12px; height: 12px; border-radius: 50%; background: #3b82c4; border: 2px solid #fff; }
+#myfpt .mk.goal { width: 20px; height: 20px; border-radius: 50%; background: #ffd34d; border: 2px solid #c4520f; color: #1d1f23;
+  font: 900 13px/16px "Nunito", sans-serif; text-align: center; box-shadow: 0 0 0 3px rgba(255, 211, 77, .35); }
+#myfpt .map-legend { display: flex; gap: 14px; margin: 8px 2px 0; font-size: 12px; font-weight: 700; color: #555b66; }
+#myfpt .map-legend span, #myfpt .map-goal { display: flex; align-items: center; gap: 6px; }
+#myfpt .map-legend .mk, #myfpt .map-goal .mk { position: static; transform: none; flex: none; }
+#myfpt .map-legend .mk.me { width: 16px; height: 16px; }
+#myfpt .map-goal { margin: 8px 2px 0; font-weight: 800; font-size: 13px; }
+#myfpt .map-goal em { font-style: normal; color: #c4520f; }
 #summary .hero { display: flex; gap: 12px; align-items: stretch; margin: 4px 0 12px; }
 #summary .idc { width: 132px; flex: none; background: #f6f3ee; color: #1d1f23; border-radius: 12px; padding: 8px; display: grid; justify-items: center; gap: 2px; text-align: center; border-top: 6px solid var(--orange); }
 #summary .idc img, #summary .idc .nophoto { width: 96px; height: 128px; object-fit: cover; border-radius: 8px; background: #e7e1d7; display: grid; place-items: center; font-size: 40px; }

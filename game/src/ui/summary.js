@@ -10,6 +10,14 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 // vd "Nguyễn Thị Hà" → "nguyen-thi-ha", "Đỗ Minh" → "do-minh"
 export const fileSlug = (name) => String(name ?? "").replace(/[đĐ]/g, (c) => (c === "đ" ? "d" : "D")).normalize("NFD")
   .replace(/\p{M}+/gu, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "intern";
+// chờ p tối đa ms mili giây, quá hạn → trả late (không ném lỗi): các khâu tạo ảnh thẻ không được treo "Đang tạo thẻ…" mãi
+const within = (p, ms, late) => new Promise((res) => { const id = setTimeout(() => res(late), ms); p.then((v) => { clearTimeout(id); res(v); }, () => { clearTimeout(id); res(late); }); });
+const dataUrlBlob = (url) => {
+  const bin = atob(url.slice(url.indexOf(",") + 1)), a = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return new Blob([a], { type: "image/png" });
+};
+const TIMEOUT_MS = { fonts: 3000, images: 5000 };
 
 export class Summary {
   constructor({ onPlayAgain } = {}) {
@@ -60,16 +68,19 @@ export class Summary {
     this.onClose?.();
   }
 
-  // "Tải ảnh thẻ": vẽ thẻ đứng 720 × 1080 bằng canvas (chữ Nunito, ảnh thẻ + ảnh check-in đã lưu trong bản lưu)
-  async card(d = this.data) {
+  // "Tải ảnh thẻ": vẽ thẻ đứng 720 × 1080 bằng canvas (chữ Nunito, ảnh thẻ + ảnh check-in đã lưu trong bản lưu).
+  // lap(khâu): báo xong từng khâu (download() đo thời gian); phông / ảnh quá hạn → vẽ luôn bằng phông hệ thống / bỏ ảnh.
+  // Canvas vẽ bằng CPU (willReadFrequently): vẽ 1 lần rồi đọc ra PNG. Canvas GPU (mặc định Chromium) dùng chung GPU với game —
+  // lấy ảnh ra phải chờ GPU vẽ xong cảnh 3D phía sau, chặn cả luồng chính: toBlob 52 s trên SwiftShader sau cảnh kết (CI)
+  async card(d = this.data, lap = () => {}) {
     const W = 720, H = 1080, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
-    // canvas trên CPU (willReadFrequently): vẽ 1 lần rồi đọc ra PNG. Canvas GPU (mặc định Chromium) phải chờ GPU vẽ xong
-    // cảnh 3D phía sau → toBlob 52 s trên SwiftShader sau cảnh kết (CI); CPU: 34 ms – 1 s
     const g = cv.getContext("2d", { willReadFrequently: true });
-    try { await Promise.all(["800 40px Nunito", "700 22px Nunito"].map((f) => document.fonts.load(f))); } catch { /* font hệ thống */ }
+    await within(Promise.all(["800 40px Nunito", "700 22px Nunito"].map((f) => document.fonts.load(f))), TIMEOUT_MS.fonts);
+    lap("fonts");
     const img = (src) => new Promise((res) => { if (!src) return res(null); const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
-    const [idImg, checkin] = await Promise.all([img(d.idPhoto), img(d.photo)]);
+    const [idImg, checkin] = await Promise.all([within(img(d.idPhoto), TIMEOUT_MS.images, null), within(img(d.photo), TIMEOUT_MS.images, null)]);
+    lap("images");
     const font = (w, s) => `${w} ${s}px Nunito, sans-serif`;
     // roundRect: Safari < 16, Firefox < 112 chưa có → vẽ bằng arcTo
     const round = (x, y, w, h, r) => {
@@ -151,7 +162,9 @@ export class Summary {
     g.textAlign = "left";
     return cv;
   }
-  // nút Download card: vẽ thẻ → PNG → tải về. Hỏng (canvas / toBlob không có, hết bộ nhớ…) → báo ngay trong màn tổng kết
+  // nút Download card: vẽ thẻ → PNG → tải về. Hỏng (canvas không có, hết bộ nhớ…) → báo ngay trong màn tổng kết.
+  // PNG bằng toDataURL (đồng bộ, ~50 ms): toBlob chờ lúc luồng chính rảnh mà vòng lặp game không để rảnh → 1–2 s.
+  // lastDownload.ms: thời gian từng khâu (đang tạo dở cũng có — smoke test in ra khi hỏng)
   async download() {
     const d = this.data;
     if (!d || this.busy) return;
@@ -160,10 +173,15 @@ export class Summary {
     this.busy = true;
     if (btn) btn.disabled = true;
     say(t("summary.download_busy"));
+    const ms = {};
+    let t0 = performance.now();
+    const lap = (k) => { const now = performance.now(); ms[k] = Math.round(now - t0); t0 = now; };
+    this.lastDownload = { pending: true, ms };
     try {
-      const cv = await this.card(d);
-      const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
-      if (!blob) throw new Error("toBlob trả null");
+      const cv = await this.card(d, lap);
+      lap("draw");
+      const blob = dataUrlBlob(cv.toDataURL("image/png"));
+      lap("png");
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `fville-first-day-${fileSlug(d.name)}.png`;
@@ -171,11 +189,11 @@ export class Summary {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-      this.lastDownload = { name: a.download, bytes: blob.size, width: cv.width, height: cv.height };
+      this.lastDownload = { name: a.download, bytes: blob.size, width: cv.width, height: cv.height, ms };
       say(null);
     } catch (e) {
       console.warn("[ảnh thẻ] không tạo được ảnh:", e?.message || e);
-      this.lastDownload = { error: String(e?.message || e) };
+      this.lastDownload = { error: String(e?.message || e), ms };
       say(t("summary.download_failed"), "error");
     } finally {
       this.busy = false;

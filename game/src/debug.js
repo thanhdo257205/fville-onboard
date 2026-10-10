@@ -16,6 +16,7 @@
 //   __game.finish()           → hoàn thành game: cảnh kết (ở zone_05: Lan ghé bàn; rồi bến xe zone_01 hoàng hôn, Tú, lên xe),
 //                               thẻ thành tựu cuối, màn tổng kết; __game.ending (nhịp cảnh kết), __game.summary,
 //                               summaryCard() (thẻ PNG của nút Download card)
+//   __game.map                → tab Bản đồ của app My FPT: ảnh zone nhìn từ trên (khung, kích thước, ms chụp), vị trí bạn / Tú / mục tiêu
 //   __game.net                → chơi nhiều người: trạng thái kết nối, số online, người khác (vị trí, animation, bảng tên, bong bóng),
 //                               emote / câu chat đã nhận; netEmote(id) / netPhrase(id) = chọn trong bảng phím T
 //   smoke test (scripts/tests/smoke.mjs): step() = làm mục tiêu hiện tại (approach → bấm E / bước vào vùng → resolve);
@@ -87,6 +88,14 @@ export function installDebug(game, loop) {
     async summaryCard() { const cv = await game.ui.summary.card(game.summaryData()); return { width: cv.width, height: cv.height, png: cv.toDataURL("image/png").length }; },
     get ending() { const c = game.lastCutscene; return c?.id === "ending" ? { running: game.cutscene === c, stage: c.stage, log: c.log, skipped: c.skipped } : null; },
     get summary() { return { open: game.ui.summary.open, data: game.ui.summary.open ? game.summaryData() : null, text: game.ui.summary.open ? game.ui.summary.el.innerText : null }; },
+    // tab Bản đồ (app My FPT): ảnh zone (khung m, kích thước, thời gian chụp) + vị trí bạn / Tú / mục tiêu trên ảnh (0…1)
+    get map() {
+      const v = game.ui.app.mapView();
+      if (!v || v.pending) return v;
+      const r = (a) => a.map((x) => +x.toFixed(3));
+      return { key: v.key, w: v.w, h: v.h, ms: v.ms, kb: Math.round(v.url.length * 0.75 / 1024), bounds: [v.b.x0, v.b.z0, v.b.x1, v.b.z1].map((x) => +x.toFixed(1)),
+        me: { uv: r(v.me.uv), deg: v.me.deg }, tu: v.tu && r(v.tu.uv), target: v.target && { uv: r(v.target.uv), floor: v.target.floor } };
+    },
     help() { game.help(); return { card: document.getElementById("helpcard")?.classList.contains("show") ? document.getElementById("helpcard").textContent : null, app: game.ui.app.helpOpen }; },
     // cảnh chuyển đang chạy / vừa chạy: nhịp hiện tại, thời gian (giây game), mốc từng nhịp
     get cutscene() { const c = game.cutscene || game.lastCutscene; return c ? { id: c.id, running: !!game.cutscene, stage: c.stage, t: +c.t.toFixed(2), skipped: c.skipped, log: c.log } : null; },

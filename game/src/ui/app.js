@@ -1,10 +1,11 @@
-// App My FPT (phím Tab): tab Checklist, Túi đồ, Huy hiệu (+ Sổ lời khuyên khi có phần thưởng so_loi_khuyen, zone 5) + 2 chỉ
-// số Hiểu biết, Kết nối; nút Help (phím H) = gợi ý của mục tiêu hiện tại (game/guide.js). Túi đồ: thẻ nhân viên, ảnh
+// App My FPT (phím Tab): tab Checklist, Túi đồ, Huy hiệu, Bản đồ (+ Sổ lời khuyên khi có phần thưởng so_loi_khuyen, zone 5)
+// + 2 chỉ số Hiểu biết, Kết nối; nút Help (phím H) = gợi ý của mục tiêu hiện tại (game/guide.js). Túi đồ: thẻ nhân viên, ảnh
 // check-in, La bàn nghề nghiệp (kết quả gặp Prajith), Nhiệm vụ đầu tiên (từ Manager). Đã xong game: nút xem lại màn tổng kết
-// đầu tab Checklist (như menu Esc → View summary).
+// đầu tab Checklist (như menu Esc → View summary). Bản đồ: ảnh zone chụp từ trên xuống + dấu bạn / Tú / mục tiêu (ui/map.js).
 // Huy hiệu 6 giá trị: ô sáng khi đã thể hiện giá trị VÀ đã có huy hiệu; Đợt 2 chỉ Respect và Fairness hoạt động.
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
+import { ZoneMap } from "./map.js";
 
 export class MyFptApp {
   constructor(content, state) {
@@ -32,7 +33,7 @@ export class MyFptApp {
   draw() {
     const s = this.s, c = this.c;
     const stat = (k) => `<div class="stat"><span>${t(`stats.${k}`)}</span><div class="bar"><i style="width:${s.stats[k]}%"></i></div><b>${s.stats[k]}</b></div>`;
-    const list = ["checklist", "bag", "badges", ...(s.hasReward("so_loi_khuyen") ? ["advice"] : [])];
+    const list = ["checklist", "bag", "badges", "map", ...(s.hasReward("so_loi_khuyen") ? ["advice"] : [])];
     if (!list.includes(this.tab)) this.tab = "checklist";
     const tabs = list.map((k) => `<button data-tab="${k}" class="${this.tab === k ? "on" : ""}">${t(`myfpt.tabs.${k}`)}</button>`).join("");
     this.el.innerHTML = `<div class="phone">
@@ -98,6 +99,30 @@ export class MyFptApp {
       return `<li class="carry"><span class="icon">${r.icon}</span><div><b>${tx(r.name)}</b><small>${t("myfpt.carry")} · ${tx(r.desc)}</small></div></li>`;
     });
     return `<ul class="bag">${carry.join("")}${rows.join("")}${grains}</ul>`;
+  }
+
+  // dữ liệu tab Bản đồ (ảnh chụp lại khi đổi zone / tầng; chụp xong → vẽ lại tab) — __game.map dùng chung
+  mapView() {
+    if (!this.game?.zone) return null;
+    this.zmap ??= new ZoneMap(this.game, () => { if (this.open && this.tab === "map") this.draw(); });
+    return this.zmap.view();
+  }
+
+  map() {
+    const v = this.mapView();
+    if (!v) return `<p class="empty">${t("myfpt.map_empty")}</p>`;
+    if (v.pending) return `<div class="map-h"><b>${escape(t(`zones.${this.s.zone}.title`))}</b></div><p class="empty">${t("myfpt.map_loading")}</p>`;
+    const at = ([u, w]) => `left:${(u * 100).toFixed(1)}%;top:${(w * 100).toFixed(1)}%`;
+    const arrow = `<svg viewBox="-10 -10 20 20"><path d="M0-9L7 7L0 3L-7 7Z"/></svg>`;
+    const tu = this.game.characters.displayName("tu");
+    const floor = v.target?.floor ? ` <em>${t(`myfpt.map_${v.target.floor}`)}</em>` : "";
+    return `<div class="map-h"><b>${escape(t(`zones.${this.s.zone}.title`))}</b></div>
+      <div class="map" style="width:${v.w}px;aspect-ratio:${v.w} / ${v.h}"><img src="${v.url}" alt="">
+        ${v.tu ? `<i class="mk tu" style="${at(v.tu.uv)}"></i>` : ""}
+        ${v.target ? `<i class="mk goal" style="${at(v.target.uv)}">!</i>` : ""}
+        <i class="mk me" style="${at(v.me.uv)};--r:${v.me.deg}deg">${arrow}</i></div>
+      <div class="map-legend"><span><i class="mk me">${arrow}</i>${t("myfpt.map_you")}</span>${v.tu ? `<span><i class="mk tu"></i>${escape(tu)}</span>` : ""}</div>
+      ${v.target ? `<p class="map-goal"><i class="mk goal">!</i><span>${escape(this.game.objectiveText())}${floor}</span></p>` : ""}`;
   }
 
   // Sổ lời khuyên (zone 5): lời khuyên ngày đầu của đồng nghiệp, theo thứ tự nhận

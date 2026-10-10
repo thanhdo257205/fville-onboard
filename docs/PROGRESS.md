@@ -919,6 +919,53 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
 - Commit 84fcbec trên nhánh `feat/env-models` (rebase lên `main` c430b03: test:data, test:pool đạt, smoke 81 bước đạt);
   gộp vào `main` qua PR #5 (9f2c335, CI xanh) → deploy `gh-pages` 4b0aed0 (106 file, 17,4 MB, quét riêng tư 0 phát hiện).
 
+### Sửa lỗi bàn bi-a, rò rỉ bộ nhớ GPU, CI ảnh thẻ (10/10/2026, nhánh `fix/pool-float-card`)
+- **Bay lơ lửng khi chỉnh góc cơ** (người dùng báo): `PoolTable.placePlayer` chạy mỗi khung xoay cơ (A/D, kéo chuột), đặt người
+  chơi ở `y` hiện tại + 2 cm; trọng lực −24 m/s² chỉ kéo xuống ~3 mm / khung 1/60 s → lên ~1 m/s (đo: 2 s → 1,94 m). Sửa: lúc vào
+  bàn lấy độ cao sàn `standY` (= `player.safe.y`, chỗ đứng vững gần nhất), `placePlayer` đặt đúng độ cao đó. Smoke zone 5: giữ D
+  rồi A mỗi phím 1 s ở bàn → đi vòng 1,48 m, chân cách sàn 0 mm (bỏ bản sửa: 1940 mm, bước báo đỏ).
+- **Ảnh thẻ: làm thêm sau 680cc30** (canvas CPU — phiên trên máy cloud sửa song song, xem mục "Gộp 2 nhánh…" ở trên): 3 lượt
+  chạy CI để đo trước khi có bản sửa đó — lượt 1 tạo thẻ 1,7–2,3 s (gần hết ở `toBlob`); lượt 2+ phông 0 ms, ảnh 50 ms, vẽ
+  10–20 ms rồi kẹt ở `toBlob`; trang hiện + có focus, hẹn giờ 0 ms gọi lại ngay, nhưng hẹn giờ 6 s (dự phòng) đặt trước đó không
+  chạy trong 20 s → luồng chính bị chặn ngay trong `toBlob` (cùng kết luận: canvas GPU chờ SwiftShader vẽ xong cảnh 3D). Thêm:
+  `toDataURL` thay `toBlob` (đồng bộ, ~50 ms → ảnh thẻ 0,1 s ở mọi lượt; `toBlob` 1–2 s cả trên máy thật vì chờ lúc luồng chính
+  rảnh, vòng lặp game không để rảnh); phông 3 s / ảnh 5 s có hạn giờ; `Summary.lastDownload.ms` ghi thời gian từng khâu; smoke
+  in ra khi chậm, hỏng thì thử hẹn giờ + khung hình của trang (hẹn giờ phía Node).
+- **Rò rỉ bộ nhớ GPU khi đổi zone** (thấy khi tìm lỗi trên): đo `renderer.info.memory` ở zone_01 — mới mở 27 geometry / 11
+  texture, sau 1 vòng zone 2 → 5 → 1: 53 / 29, 2 vòng: 78 / 44. Lần theo (đánh dấu `dispose`, móc `addEventListener("dispose")`
+  của texture = lúc three.js đưa lên GPU): (1) vật do code đặt (`data/interactables.json` → `object`: hạt lúa, hũ, ví, bảng tên,
+  bàn bi-a…) thêm vào `scene` chứ không vào `zone.root`, đổi zone chỉ gỡ ra; (2) đường ngắm bàn bi-a là `Line`, `disposeZone`
+  chỉ dọn `Mesh`; (3) mỗi nhân vật dựng ra có `DataTexture` 12×12 cho ma trận xương, `Character.dispose` không gọi
+  `skeleton.dispose()` (zone 5: 7 cái mỗi lần vào). Sửa: `disposeTree(root)` (`game/src/world/zone.js`) — geometry của mọi đối
+  tượng, mọi texture của vật liệu, bỏ qua đồ dùng chung `userData.shared` (vật liệu vàng của hạt lúa, gradient toon);
+  `Interaction.setup` dọn vật của zone cũ; `Character.dispose` dọn xương, vật liệu riêng, túi cầm tay, `mixer.uncacheRoot`.
+  Geometry / texture màu của nhân vật dùng chung với GLB trong bộ nhớ đệm → giữ. Sau sửa: 3 vòng vẫn 28 / 14. Smoke (nhóm bản
+  lưu cũ): zone_04 ↔ zone_05 2 vòng, số geometry / texture sau vòng 2 = vòng 1 (bỏ phần sửa xương: texture 18 → 27, báo đỏ).
+- **CI:** chạy tay (Actions → test → Run workflow) giờ chạy đủ 3 ngoại hình (biểu thức cũ `== 'workflow_dispatch' && '' || …`
+  luôn ra vế sau). Smoke "bi-a 2 người · An ngồi → tập một mình": chờ máy Bình phát lại cú 40 s (trước 20 s — lần chạy đầu Vite
+  còn biên dịch, khung hình thấp, cú phá ~8 s có lúc quá 20 s; đã hỏng ngẫu nhiên 2 lần).
+- Kiểm thử: build + smoke như CI (`--build --look intern_nam,intern_nu`) 61/61 bước (2 phút 34 giây); test:data đạt. CI chạy
+  tay trên nhánh (3 ngoại hình): test:data, test:pool, build, smoke 78/78 bước (5 phút 8 giây), ảnh thẻ 0,1 s cả 3 lượt.
+
+### Tab Bản đồ trong app My FPT (10/10/2026, nhánh `feat/map-tab`)
+- GDD: "sơ đồ đơn giản của zone hiện tại, chấm vị trí người chơi và mục tiêu". Tab thứ 4 (Checklist, Túi đồ, Huy hiệu, **Bản đồ**,
+  Sổ lời khuyên — thứ tự theo GDD); 5 tab vừa một dòng (chữ 12 px, rộng theo chữ — vi "Lời khuyên").
+- `game/src/ui/map.js` → `ZoneMap`: chụp zone từ trên xuống 1 lần cho mỗi zone + tầng (khoá `zone:round(sàn / 2)`), camera trực
+  giao đặt ở sàn chỗ đứng + 2,4 m nhìn thẳng xuống — mặt phẳng gần của camera cắt bỏ trần / mái / tán cây (thử `clippingPlanes`
+  trước: mọi shader biên dịch lại, ~3,5 s trên SwiftShader); lượt 2 tô mặt sau màu tối (`overrideMaterial`, BackSide) → chỗ bị cắt
+  thành nét tường; ẩn nhân vật, dấu "!", người chơi khác, trời, sương. Đọc ảnh bất đồng bộ `readRenderTargetPixelsAsync` (đọc
+  đồng bộ làm Chrome báo "GPU stall due to ReadPixels" → smoke báo console bẩn); tab hiện "Đang vẽ bản đồ…" rồi tự vẽ lại. Ảnh
+  gấp đôi khổ hiện (không MSAA), WebP ~6–23 KB; chụp 66–154 ms trên Intel UHD 630 (1,3–4 s trên SwiftShader của CI).
+- Khung: zone trong nhà (hộp va chạm ≤ 45 m: zone 3, 4, 5) → cả hộp va chạm; ngoài trời (hộp va chạm 100–200 m: zone 0, 1, 2) →
+  các điểm SPAWN_ / NPC_ / INT_ / TRIGGER_ + lề 10 m; nới cạnh ngắn cho tỉ lệ ≤ 2,2. Ghi đè được bằng `zones.json` →
+  `<zone>.map: { bounds: [x0, z0, x1, z1], clip_m }` (hiện chưa zone nào cần).
+- Dấu: mũi tên cam "Bạn" xoay theo hướng mặt (180° − yaw), chấm xanh Tú, dấu "!" vàng = `guide.targetPos` của mục tiêu hiện tại
+  (kẹp vào mép nếu ngoài khung), dưới ảnh là dòng mục tiêu (`Game.objectiveText()`, tách từ `updateObjective`); mục tiêu khác
+  tầng (zone_04: phòng FSA tầng trên) → "(tầng trên)" / "(tầng dưới)". Chữ mới: `myfpt.tabs.map`, `map_you`, `map_up`,
+  `map_down`, `map_loading`, `map_empty` (en + vi). `__game.map`: khung, kích thước, ms chụp, vị trí các dấu.
+- Smoke (ngoại hình đầu, zone 2–5 — zone 0–1 chưa có app): mở app → bấm tab Bản đồ → ảnh tải được, dấu bạn + mục tiêu trong
+  ảnh, có dòng mục tiêu, Tab đóng app → chơi tiếp.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
@@ -979,7 +1026,7 @@ Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLI
    Đo luôn hiệu năng trên một laptop Intel UHD/Iris Xe: mở `?debug`, gõ `__game.benchmark(120)` ở từng zone; xem
    nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
    Gửi `docs/hr_content_request.md` cho HR.
-4. Giai đoạn 2 còn lại: tab Bản đồ trong My FPT; model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng
+4. Giai đoạn 2 còn lại: ~~tab Bản đồ trong My FPT~~ (xong 10/10/2026, nhánh `feat/map-tab`); model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng
    intern_nam / intern_nu); ~~người chơi ngồi vào ghế ở bàn làm việc~~ (xong 10/10/2026); chơi thử zone 5 + cảnh kết với
    người thật (độ dài ~8 phút, mini-game bi-a có quá khó không).
 

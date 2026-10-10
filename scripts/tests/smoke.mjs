@@ -281,6 +281,23 @@ async function runLook(browser, base, look) {
           const prompt = __game.prompt?.text;
           __game.interact();
           const inPool = { mode: g.mode, ...__game.pool };
+          // giữ D rồi A (xoay góc cơ, mỗi phím 1 s): người chơi đi vòng quanh bàn, chân vẫn trên sàn (lỗi cũ: +2 cm mỗi khung →
+          // bay lên ~1 m/s)
+          const turn = { yMax: -Infinity, turned: 0, moved: 0 };
+          const a0 = g.pool.angle, p0 = g.player.position.clone();
+          for (const key of ["KeyD", "KeyA"]) {
+            g.input.keys.add(key);
+            for (let i = 0; i < 60; i++) {
+              g.update(1 / 60);
+              turn.yMax = Math.max(turn.yMax, g.player.position.y);
+              turn.turned = Math.max(turn.turned, Math.abs(g.pool.angle - a0));
+              turn.moved = Math.max(turn.moved, g.player.position.distanceTo(p0));
+            }
+            g.input.keys.delete(key);
+          }
+          for (let i = 0; i < 30; i++) g.update(1 / 60);
+          turn.rise = +(turn.yMax - g.player.position.y).toFixed(3);
+          turn.turned = +turn.turned.toFixed(2); turn.moved = +turn.moved.toFixed(2);
           const before = __game.pool.cue;
           const shot = __game.pool.shoot(Math.PI / 2 + 0.01, 0.9);
           for (let i = 0; i < 2000 && g.pool.playback; i++) { g.update(1 / 20); if (i % 20 === 0) await new Promise((r) => setTimeout(r, 0)); }
@@ -296,14 +313,15 @@ async function runLook(browser, base, look) {
           const k = await __game.approach("NPC_ban_bi_a");
           __game.interact();
           const r = await __game.resolve({ maxMs: 60000 });
-          return { scene, ok: a.ok && k.ok, prompt, inPool: { mode: inPool.mode, active: inPool.active, hidden: inPool.cuesHidden }, before, res, after: { phase: after.phase, shots: after.shots, cue: after.cue }, drawn, inside, out,
+          return { scene, ok: a.ok && k.ok, prompt, inPool: { mode: inPool.mode, active: inPool.active, hidden: inPool.cuesHidden }, turn, before, res, after: { phase: after.phase, shots: after.shots, cue: after.cue }, drawn, inside, out,
             khang: { minigames: r.minigames, dialogues: r.dialogues, played: g.progress.flags.has("billiards_played"), potted: g.progress.flags.has("billiards_potted"),
               hit: g.progress.flags.has("billiards_last_hit"), pool: g.pool.active, mode: g.mode } };
         });
         await check(bi.scene.table && bi.scene.balls === 16 && bi.scene.cue && bi.scene.col && bi.ok && bi.prompt === "Play pool" && bi.inPool.mode === "pool" && bi.inPool.active && bi.inPool.hidden
+          && bi.turn.turned > 0.5 && bi.turn.moved > 0.3 && bi.turn.rise < 0.01
           && bi.res && bi.res.frames > 10 && bi.res.time > 0.3 && bi.after.phase === "aim" && bi.after.shots === 1 && (bi.after.cue.z !== bi.before.z || !bi.after.cue.on) && bi.drawn && bi.inside
           && bi.out.mode === "play" && bi.out.cuesBack,
-          `zone_05: bàn bi-a — "Play pool", phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
+          `zone_05: bàn bi-a — "Play pool", xoay cơ (đi vòng ${bi.turn.moved} m, chân cách sàn tối đa ${Math.round(bi.turn.rise * 1000)} mm), phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
         await check(bi.khang.minigames.includes("billiards") && bi.khang.played && bi.khang.potted && bi.khang.hit && !bi.khang.pool && bi.khang.mode === "play",
           "zone_05: anh Khang → Một cú bi-a trên bàn thật: bi vào lỗ, billiards_potted + billiards_played (gộp)", JSON.stringify(bi.khang));
         // đi ngược khỏi zone 5 (bàn bi-a đã dựng cây cơ) → zone 4 → zone 5: trước đây rời zone 5 báo "Couldn't open …"
@@ -325,6 +343,25 @@ async function runLook(browser, base, look) {
         await check(cc.fixed.through === 0 && cc.fixed.pitch >= 1.1 && cc.fixed.distance >= 7 && cc.fixed.maxUp < cc.old.maxUp,
           `${zone}: camera ngẩng / lùi hết cỡ không xuyên trần (${cc.fixed.n} góc ở ${cc.fixed.points} điểm, cao nhất ${cc.fixed.maxUp} m trên chân; chỉ tránh COL_: xuyên ${cc.old.through} lần, cao ${cc.old.maxUp} m)`,
           JSON.stringify(cc));
+      }
+      // app My FPT → tab Bản đồ (đã có app từ zone 1): ảnh zone nhìn từ trên tải được, dấu bạn + mục tiêu nằm trong ảnh,
+      // đóng app (Tab) → chơi tiếp
+      if (/^zone_0[2-5]$/.test(zone) && look === looks[0]) {
+        await ev(() => __game._game.toggleApp());
+        const opened = await wait(() => !!document.querySelector("#myfpt:not([hidden]) [data-tab=map]"), 5000);
+        if (opened) await page.click("#myfpt [data-tab=map]");
+        const drawn = opened && await wait(() => !!document.querySelector("#myfpt .map img"), 15000);   // ảnh đọc bất đồng bộ
+        const m = await ev(async () => {
+          const img = document.querySelector("#myfpt .map img");
+          if (img && !img.complete) await new Promise((r) => { img.onload = img.onerror = r; });
+          const pos = (sel) => { const el = document.querySelector(`#myfpt .map ${sel}`); return el ? [parseFloat(el.style.left), parseFloat(el.style.top)] : null; };
+          return { img: img ? [img.naturalWidth, img.naturalHeight] : null, me: pos(".mk.me"), goal: pos(".mk.goal"), line: document.querySelector("#myfpt .map-goal span")?.textContent.trim() ?? null, map: __game.map };
+        });
+        await page.keyboard.press("Tab");
+        m.closed = await wait(() => document.getElementById("myfpt").hidden && __game._game.mode === "play", 5000);
+        const inside = (p) => p && p.every((v) => v >= 0 && v <= 100);
+        await check(opened && drawn && m.img?.[0] > 100 && m.img[1] > 100 && inside(m.me) && inside(m.goal) && m.line && m.closed,
+          `${zone}: app → tab Bản đồ — ảnh ${m.map?.w}×${m.map?.h} (${m.map?.ms} ms), dấu bạn + mục tiêu "${m.line}" trong ảnh, đóng app`, JSON.stringify(m));
       }
       let steps = 0, stepFail = null;
       while (steps++ < 40) {
@@ -395,9 +432,27 @@ async function runLook(browser, base, look) {
         try {
           const [d] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), page.click("#summary [data-a=download]")]);
           dl = { name: d.suggestedFilename(), size: statSync(await d.path()).size };
-        } catch (e) { dl = { error: e.message.split("\n")[0] }; }
+        } catch (e) {
+          dl = { error: e.message.split("\n")[0] };
+          // trang còn chạy hẹn giờ / khung hình không (hẹn giờ phía Node: luồng chính của trang có thể đang bị chặn). Máy CI
+          // từng kẹt ở đây khi canvas thẻ còn vẽ bằng GPU: toBlob chờ GPU (phần mềm) vẽ xong hàng đợi, quá 20 s
+          const probe = (fn) => Promise.race([ev(fn), new Promise((r) => setTimeout(() => r("quá 3 s"), 3000))]).catch((x) => String(x));
+          dl.page = { vis: await ev(() => [document.visibilityState, document.hasFocus()]),
+            timer: await probe(() => new Promise((r) => { const t0 = performance.now(); setTimeout(() => r(Math.round(performance.now() - t0)), 0); })),
+            raf: await probe(() => new Promise((r) => { const t0 = performance.now(); requestAnimationFrame(() => r(Math.round(performance.now() - t0))); })) };
+        }
+        // thời gian từng khâu (phông, ảnh, vẽ, png) — quá hạn thì thấy khâu đang kẹt
+        dl.game = await ev(() => __game._game.ui.summary.lastDownload ?? null).catch(() => null);
+        const took = dl.game?.ms ? Object.values(dl.game.ms).reduce((a, b) => a + b, 0) : null;
+        // chậm (> 2 s): in từng khâu + thời gian 1 khung hình lúc đó (máy CI: lượt 2 từng mất 11,8 s, lượt 1 chỉ 1,7 s)
+        let slow = "";
+        if (took > 2000) {
+          const frame = await ev(() => new Promise((r) => { const t0 = performance.now(); let n = 0; const f = () => (++n < 10 ? requestAnimationFrame(f) : r(Math.round((performance.now() - t0) / 10))); requestAnimationFrame(f); })).catch(() => null);
+          slow = `: ${Object.entries(dl.game.ms).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}`).join(" · ")}; khung hình ${frame} ms`;
+        }
+        const how = took != null ? `${(took / 1000).toFixed(1)} s${slow}` : "";
         await check(open && s.text.includes(ACH[lang]) && s.zone === "zone_01" && s.seen && dl.name === `fville-first-day-${slug}.png` && dl.size > 50000,
-          `màn tổng kết: thành tựu, summary_seen, ảnh thẻ ${dl.name || "?"} (${Math.round((dl.size || 0) / 1024)} KB)`, JSON.stringify({ open, zone: s.zone, seen: s.seen, dl }));
+          `màn tổng kết: thành tựu, summary_seen, ảnh thẻ ${dl.name || "?"} (${Math.round((dl.size || 0) / 1024)} KB${how ? `, ${how}` : ""})`, JSON.stringify({ open, zone: s.zone, seen: s.seen, dl }));
         await page.click("#summary [data-a=close]");
         await page.keyboard.press("Escape");
         const menu = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-act=summary]"), 5000);
@@ -510,6 +565,18 @@ async function runOldSave(browser, base) {
     const con3 = problems.splice(0).filter((p) => !/không vào được zone_05|khong_co_file|Failed to load resource/.test(p));
     await check(r3 === false && shown?.buttons.length === 2 && /^Couldn't open/.test(shown.title) && logged && ok3 && !con3.length,
       `zone lỗi (GLB hỏng) → bảng lỗi "${shown?.title}" [${shown?.buttons.join(" | ")}], console.error; bấm Back → zone_04`, JSON.stringify({ r3, shown, logged, ok3, console: con3.slice(0, 5) }));
+    // bộ nhớ GPU không tăng dần khi đổi zone: zone_04 ↔ zone_05 (7 nhân vật, bàn bi-a, hạt lúa, bảng tên) 2 vòng, số geometry /
+    // texture sau vòng 2 = sau vòng 1 (vòng 1 còn nạp mô hình NPC vào bộ nhớ đệm). Trước đây mỗi vòng đọng thêm: vật do code đặt,
+    // đường ngắm bàn bi-a, texture xương của nhân vật
+    const mem = await ev(async () => {
+      const g = __game._game, r = g.renderer.three, at = () => { g.render(1 / 30); return { geo: r.info.memory.geometries, tex: r.info.memory.textures }; };
+      const round = async () => { for (const z of ["zone_05", "zone_04"]) { await __game.goto(z); for (let i = 0; i < 3; i++) g.update(1 / 30); } return at(); };
+      const start = at(), a = await round(), b = await round();
+      return { start, a, b };
+    });
+    const con4 = problems.splice(0);
+    await check(mem.b.geo === mem.a.geo && mem.b.tex === mem.a.tex && !con4.length,
+      `bộ nhớ GPU: zone_04 ↔ zone_05 2 vòng → geometry ${mem.a.geo} → ${mem.b.geo}, texture ${mem.a.tex} → ${mem.b.tex} (không tăng), console sạch`, JSON.stringify({ ...mem, console: con4.slice(0, 5) }));
   } catch (e) {
     await check(false, `lỗi script: ${e.message.split("\n")[0]}`);
   } finally {
@@ -640,7 +707,9 @@ async function runPoolNet(browser, base, srv) {
     const seq0 = (await net(A)).seq;
     await A.ev(() => __game.pool.autoShot());
     const rolled = await B.wait(() => __game.pool.rolling, 10000);
-    const synced = await Promise.all([A, B].map((p) => p.wait((q) => __game.pool.net.seq === q && !__game.pool.rolling, 20000, seq0 + 1)));
+    // máy Bình phát lại theo thời gian thực, mỗi khung tối đa 0,1 s: lần chạy đầu (Vite còn biên dịch) khung hình thấp → cú phá
+    // ~8 s có lúc quá 20 s (từng hỏng ngẫu nhiên) → chờ 40 s
+    const synced = await Promise.all([A, B].map((p) => p.wait((q) => __game.pool.net.seq === q && !__game.pool.rolling, 40000, seq0 + 1)));
     const [a1, b1] = await Promise.all([net(A), net(B)]);
     await check(solo && rolled && synced.every(Boolean) && b1.replays === 1 && b1.mismatch === 0 && same(a1.shown, b1.shown)
       && same(b1.shown, b1.server) && b1.seats.join() === "An,",

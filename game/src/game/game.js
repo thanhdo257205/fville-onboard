@@ -679,12 +679,14 @@ export class Game {
     this.interaction.refresh();
   }
 
-  updateObjective() {
+  updateObjective() { hud.objective(this.objectiveText()); }
+  // dòng mục tiêu (HUD, tab Bản đồ)
+  objectiveText() {
     const z = this.state.zone, q = this.progress.currentQuest(z);
     // zone chưa có việc (zone_05: các cuộc gặp làm sau) → "Explore <zone>"; zone đã xong hết việc → sang khu tiếp theo
     const none = !this.content.quests.some((x) => x.zone === z);
-    if (this.progress.flags.has("game_complete")) { hud.objective(t("hud.objective_complete")); return; }
-    hud.objective(q ? tx(q.title) : none ? t("hud.objective_explore", { zone: t(`zones.${z}.title`) }) : t("hud.objective_done_zone"));
+    if (this.progress.flags.has("game_complete")) return t("hud.objective_complete");
+    return q ? tx(q.title) : none ? t("hud.objective_explore", { zone: t(`zones.${z}.title`) }) : t("hud.objective_done_zone");
   }
 
   // lưu bản lưu (gộp nhiều thay đổi liền nhau: chờ 300 ms); now = lưu ngay (trước màn mờ chuyển giờ, cảnh kết)

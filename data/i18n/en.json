@@ -251,6 +251,7 @@
       "checklist": "Checklist",
       "bag": "Bag",
       "badges": "Badges",
+      "map": "Map",
       "advice": "Advice"
     },
     "close": "Tab to close",
@@ -266,7 +267,12 @@
     "act_progress": "{done}/{total}",
     "advice_title": "Advice Book",
     "advice_empty": "Tips from your teammates will appear here.",
-    "compass_of": "{trait} · {position}"
+    "compass_of": "{trait} · {position}",
+    "map_you": "You",
+    "map_up": "(upstairs)",
+    "map_down": "(downstairs)",
+    "map_loading": "Drawing the map…",
+    "map_empty": "No map for this place yet."
   },
   "cutscene": {
     "skip": "Skip ›",
