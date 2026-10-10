@@ -53,7 +53,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Ảnh check-in và ảnh thẻ chụp từ canvas (JPEG có giới hạn dung lượng), hiện trong app.
   - Sự kiện Tú quên balo ở zone 1; 7 hạt lúa vàng ở zone 1–3; hũ thủy tinh ở Phòng Hạt Lúa đếm số hạt.
   - Sửa lỗi chơi thử đợt trước: camera lúc xuất hiện, capsule cho NPC và Tú, Tú đi chếch sau, màu áo/quần riêng từng NPC.
-  - Chỗ chuẩn bị âm thanh (`game/src/core/sound.js`, chưa có file âm thanh).
+  - Chỗ chuẩn bị âm thanh (`game/src/core/sound.js`, chưa có file âm thanh — có từ 10/10/2026, xem "Hiệu ứng âm thanh + tiếng
+    nền").
 - Đã chạy thử trọn zone 0 → hết zone 3 (ước tính 12–14 phút theo mạch chính) và đưa lên GitHub Pages.
 - **Sửa 3 lỗi chơi thử (09/10/2026, `main` 9d0fe4a, đã deploy `gh-pages` 0af09a2):**
   - Dòng hướng dẫn điều khiển (cuối màn hình) ẩn khi hộp thoại, mini-game hoặc app My FPT đang mở (`hud.cover`, gọi từ
@@ -982,6 +983,44 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   online ở zone_02.
 - Thấy lại lỗi đã ghi trong CHECKLIST P1 "đánh bi-a xong camera nâng lên, bị đèn treo của bàn che": máy người đang chờ lượt
   (An) nhìn vào trần / đèn, chỉ thấy mép bàn.
+
+### Hiệu ứng âm thanh + tiếng nền (10/10/2026, nhánh `feat/sfx`)
+- Người dùng chốt: nguồn CC0 + tự tạo bằng code; đợt này làm hiệu ứng, bi-a / cửa / xe bus, bước chân + tiếng nền; nhạc nền
+  để đợt sau. Danh sách mọi file + nguồn + bằng chứng giấy phép: `docs/audio_credits.md` (tự sinh).
+- Nguồn: 5 gói Kenney CC0 (Interface Sounds, Impact Sounds, RPG Audio, Music Jingles, Casino Audio — 4,7 MB, người dùng đồng ý
+  tải; trang gói và `License.txt` trong zip đều ghi CC0, dùng thương mại được, không bắt buộc ghi công), zip để ở
+  `assets/sfx/source/` (không lên repo; link tải + SHA-256 ở `data/sounds.json` → `sources`). 10 tiếng tự tạo
+  (`scripts/blender/audio/synth.py`: tin nhắn, hạt lúa, thanh tải, màn trập, nước đổ, cánh cửa kính, bíp thẻ xanh / đỏ, cửa xe
+  bus, phanh xe bus). Chọn file theo số đo (độ dài, đỉnh, độ sáng tiếng, số nhịp, cao độ đầu / cuối của đoạn nhạc), chưa
+  ai nghe bằng tai → CHECKLIST: nhờ team nghe thử.
+- `scripts/blender/audio/build_sfx.py` (chạy trong Blender: audaspace đọc OGG + ghi MP3, numpy; máy không có ffmpeg): kiểm
+  SHA-256 zip, chỉ nhận gói CC0, trộn mono, cắt khoảng lặng, chuẩn hoá đỉnh −1 dBFS, MP3 96 kbps → `assets/sfx/` (58 file,
+  286 KB; MP3 chỉ có thẻ bộ mã hoá "Lavf", không đường dẫn máy), chép `License.txt` → `assets/sfx/licenses/`, xoá file thừa,
+  sinh `docs/audio_credits.md`. MP3 thay OGG (CHECKLIST cũ ghi OGG): Safari cũ không đọc OGG; vài chục ms im lặng đầu file MP3
+  (độ trễ bộ mã hoá) bỏ qua lúc giải mã.
+- `game/src/core/sound.js` viết lại bằng Web Audio (giữ `sound.play(tên)` cũ): AudioContext tạo ở lần bấm / phím đầu tiên
+  (`main.js`, trình duyệt chặn tự phát), tải trước tiếng chung + tiếng của zone đang ở (`sounds.json` → `zones`), nhiều bản
+  chọn ngẫu nhiên + lệch cao độ, giới hạn số tiếng cùng lúc, tiếng theo vị trí (PannerNode, tai nghe ở camera), 2 đường ui /
+  world (world qua tiếng vang theo zone), tab ẩn → tạm dừng. Tiếng nền, tiếng máy xe bus, tiếng vang: `game/src/core/ambience.js`
+  tạo bằng code lúc chơi (nhiễu lọc + sự kiện ngẫu nhiên: chim, dế, xe máy / ô tô chạy qua, gõ phím, bước chân xa), cấu
+  hình `zones.json` → `audio: { ambience, steps, reverb }`, `variants[].audio` (zone_01 hoàng hôn → `evening`).
+- Gắn tiếng: hội thoại (sang câu, chọn đáp án, câu kiểu tin nhắn; trường `sfx` mới của câu — `card_gate`: bíp xanh / đỏ);
+  `GameState.apply` trả thêm `kinds` → `Game.applyEffects` phát 1 tiếng ưu tiên nhất (reward > checklist > value > quest >
+  grain > item > advice); thẻ Act, thẻ thành tựu (`hud`); app My FPT (mở / đóng / đổi tab); menu Esc; cửa mở được
+  (`scene_fixes.json → doors`: khoá nhả + cánh cửa); cảnh chuyển (cửa xe bus — `Cutscene.swingDoor`; tiếng máy bám theo xe,
+  tốc độ tự tính từ quãng đường xe đi, màn tối = đang ngồi trong xe, phanh khi vào bến; cảnh kết: xe nổ máy chờ ở bến —
+  `cutscenes.json → ending.bus_stop.bus`); bi-a (`pool/table.js`: đầu cơ lúc bi cái bắt đầu lăn, sự kiện ball / rail / pocket
+  của các khung vừa phát lại, mỗi khung tối đa 3 + 2 + 2 tiếng, âm lượng theo lực va — cả khi phát lại cú của người khác);
+  bước chân (`game/src/game/footsteps.js`: người chơi + Tú, cả lúc cảnh chuyển dắt đi; mặt đất dò bằng 1 tia xuống lưới,
+  M_palette màu xanh lá → cỏ, còn lại theo `audio.steps`, nhớ theo ô 1 m).
+- Menu Esc: Âm thanh Bật / Tắt, thanh Hiệu ứng, Tiếng nền (kéo: đổi ngay; thả: lưu `settings.sound`, nghe thử). Chữ mới
+  `menu.sound`, `sfx_volume`, `amb_volume`, `sound_note` (en + vi). `__game.audio` (trạng thái, số file đã tải, số tiếng đã
+  phát theo tên, số bước chân).
+- Kiểm thử: `test:data` mục 8 (file thiếu / thừa, giấy phép, `audio_credits.md`, tên gọi trong code / câu thoại / zones.json,
+  dung lượng ≤ 100 KB mỗi file, ≤ 1 MB tổng); smoke thêm 2 bước mỗi ngoại hình (vào game: AudioContext chạy, ≥ 30 file đã tải,
+  tiếng nền đúng zone, đi 2 m → 2 bước chân; qua zone 0 → 4: các tiếng chính đã phát). Trên máy: build + smoke như CI 73/73
+  bước; thử tay trong trình duyệt: bi-a (cơ 1, bi chạm bi 7, băng 8, lỗ 1), cửa quẹt thẻ, cảnh lên / xuống xe (tiếng máy 0 →
+  12 m/s rồi 7,4 → 0 khi vào bến).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
