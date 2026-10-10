@@ -171,7 +171,49 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   tin chào `features: ["pool"]`; 2 trình duyệt độc lập trên trang thật (`gh-pages` a9a3dcc) ngồi 2 ghế zone_05, 4 cú → bàn 2
   bên = bàn máy chủ sau mọi cú, phát lại không lệch, rời bàn thì ghế trống
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
-- [ ] P3 Bi-a: chốt có thêm đánh xoáy (2D + xoáy) và phím V nhìn từ trên xuống hay không; 3D thật thì bỏ qua — Phụ trách: —
+- [ ] P3 Bi-a: chốt có thêm phím V nhìn bàn từ trên xuống hay không — Phụ trách: —
+- [ ] P2 Bi-a: đánh xoáy ngang (side spin / "xoáy trái – phải") — Phụ trách: —
+  - Hiện trạng: `game/src/pool/physics.js` chỉ có vị trí + vận tốc mỗi bi (đầu file: "Chưa có xoáy"); bi trắng luôn đánh vào
+    giữa tâm.
+  - [ ] Chọn điểm chạm trên bi trắng: lệch trái / phải (đề xuất 5 nấc: −2 … +2; xoáy lên / xuống — follow / draw — chốt làm
+    cùng hay để sau). Bảng bi-a có hình bi trắng với chấm điểm chạm (bấm / kéo chấm, hoặc phím riêng — đề xuất Z / X, không
+    trùng A / D ngắm, E, R, J, Space); điện thoại: kéo chấm bằng ngón tay
+  - [ ] Vật lý (mỗi bi thêm 1 số `spin`): chạm băng → góc bật lệch theo chiều xoáy (xoáy thuận tay "running" mở góc, ngược
+    "check" khép góc), mỗi lần chạm băng xoáy giảm; bi trắng lệch nhẹ ngược phía xoáy lúc vừa đánh (squirt, ~1°); va bi →
+    truyền một phần xoáy, bi mục tiêu lệch hướng rất nhẹ (throw); xoáy giảm dần theo thời gian lăn trên nỉ
+  - [ ] Giữ **tất định**: chỉ + − × ÷, `Math.sqrt`, `dsin` / `dcos` / `datan2` (quy tắc bi-a trong `CLAUDE.md`); `spin = 0`
+    phải cho kết quả **giống từng bit** như hiện nay (ván cũ, phát lại, thử thách của anh Khang không đổi)
+  - [ ] Chơi nhiều người: tin nhắn cú đánh thêm `spin`; máy chủ (`server/src/pool.js`) kiểm tra giới hạn và tính lại cú như
+    máy khách; báo `features` mới (vd `"pool_spin"`) — máy khách / máy chủ bản cũ thì bàn chung không cho đánh xoáy, không
+    lệch bàn; cần `npx wrangler deploy` ở máy Desktop
+  - [ ] Đường ngắm: thêm đoạn bi trắng sau khi chạm băng / chạm bi có tính xoáy (ngắn, để gợi ý chứ không lộ hết); thử thách
+    của anh Khang giữ đánh tâm (hoặc chỉ cho xoáy sau khi vào bi lần đầu)
+  - [ ] Chữ giao diện en + vi; dòng hướng dẫn bảng bi-a ghi cách chọn xoáy
+  - [ ] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
+    `spin = 0` khớp bản cũ, xoáy trái / phải làm góc bật băng lệch đúng chiều; smoke bi-a 2 người: cú có xoáy phát lại khớp
+    bàn máy chủ
+- [ ] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: —
+  - Hiện trạng (`game/src/pool/rules.js`, dùng chung với máy chủ): nhóm trơn 1–7 / sọc 9–15 nhận theo bi vào lỗ đầu tiên;
+    lỗi duy nhất là bi trắng rơi lỗ → đối thủ đặt bi trắng ở khu đầu bàn; không phạt chạm sai bi trước / không chạm bi nào;
+    bi 8 không phải gọi lỗ.
+  - [ ] Chốt bộ luật theo luật 8 bi quốc tế (WPA), viết tóm tắt vào `docs/GDD.md` (mục bi-a), gồm các ý dưới
+  - [ ] Cú phá hợp lệ: có bi vào lỗ hoặc ít nhất 4 bi chạm băng — không thì đối thủ chọn xếp lại phá hoặc đánh tiếp; bi trắng
+    rơi lúc phá → đối thủ đặt bi trắng ở khu đầu bàn; bi 8 vào lỗ lúc phá → đặt lại bi 8 (như hiện nay) hoặc xếp lại
+  - [ ] Bàn vẫn "mở" sau cú phá (bi vào lỗ lúc phá không quyết định nhóm); nhóm chọn ở cú vào bi hợp lệ đầu tiên sau đó
+  - [ ] Lỗi (foul) → đổi lượt, đối thủ có **bi trong tay đặt bất kỳ đâu trên bàn** (trừ sau cú phá chỉ ở khu đầu bàn):
+    bi trắng rơi lỗ / văng khỏi bàn; bi trắng chạm bi nhóm khác trước (bàn mở: chạm bi 8 trước); không chạm bi nào; sau khi
+    chạm không có bi nào vào lỗ và không bi nào (kể cả bi trắng) chạm băng
+  - [ ] Bi 8: phải **gọi lỗ** trước cú đánh bi 8 (bấm vào lỗ trên bàn); thua khi đưa bi 8 vào lỗ sớm (nhóm chưa hết), vào lỗ
+    khác lỗ đã gọi, vào lỗ kèm lỗi, hoặc làm bi 8 văng khỏi bàn
+  - [ ] Giao diện: HUD ghi nhóm của mỗi người (trơn / sọc) + số bi còn lại; báo lỗi kèm lý do ("Chạm bi 3 trước — lỗi"); đặt bi
+    trong tay trên cả bàn (không chồng bi khác); chọn lỗ cho bi 8; bấm H xem tóm tắt luật; chữ en + vi
+  - [ ] Bàn chung: thêm giới hạn thời gian mỗi cú (vd 60 s, hết giờ = lỗi) để không ai giữ bàn mãi
+  - [ ] Máy chủ (`server/src/pool.js`) áp đúng bộ luật mới (kiểm tra chỗ đặt bi trong tay, lỗ đã gọi); báo `features` mới (vd
+    `"pool_rules2"`) — máy khách cũ không vào được bàn luật mới, không lệch bàn; `npx wrangler deploy` ở máy Desktop
+  - [ ] Tập một mình và thử thách của anh Khang giữ như cũ (không áp luật thi đấu)
+  - [ ] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
+    trong tay toàn bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi; ván 2 người giả chơi trọn; smoke bi-a 2 người với luật
+    mới
 - [ ] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: —
   - Hiện trạng: chuột chỉ xoay cơ khi con trỏ đang bị khoá (Pointer Lock, `game/src/core/input.js`: không khoá thì bỏ qua di
     chuột và kéo chuột). Khoá không được (vừa bấm Esc, trình duyệt từ chối) thì chuột không làm gì; bấm chuột để khoá lại thì
