@@ -112,6 +112,10 @@ def build_hat_lua(col, rng):
     it.ceiling(b, cx0, ey0, x0, ey1, 2.8, "ceiling_white")
     it.wall(b, (cx0, ey0), (x0, ey0), 0, 2.8)
     it.wall(b, (x0, ey1), (cx0, ey1), 0, 2.8)
+    # cuối hành lang (sau TRIGGER_zone_04_enter, trùng COL_hanh_lang_cuoi): tường + cửa trắng 2 cánh — trước đây để trống,
+    # nhìn ra cuối hành lang thấy trời
+    it.wall(b, (cx0, ey1), (cx0, ey0), 0, 2.8)
+    it.white_double_door(b, cx0 + 0.13, sum(EXIT_Y) / 2, along="y")
     return b.to_object("ENV_hat_lua", col)
 
 
@@ -161,6 +165,10 @@ def build_outside(col, rng):
     pb = MeshBuilder()
     kit.brick_paving(pb, -30, -44, 42, -5.5, PLAZA_Z, cell=3.0)
     kit.brick_paving(pb, 10, -5.5, 42, 30, PLAZA_Z, cell=3.0)
+    # sân trước chiếu nghỉ hai bên bậc + phía tây sảnh: trước đây mặt đất không tới chân sảnh → nhìn qua kính / đứng ở chiếu
+    # nghỉ thấy mảng sân lơ lửng, bên dưới là trời
+    kit.brick_paving(pb, -30, -5.5, 10, -3.0, PLAZA_Z, cell=3.0)
+    kit.brick_paving(pb, -30, -3.0, -10, 30, PLAZA_Z, cell=3.0)
     pb.to_object("ENV_san_gach", col)
     # tượng Cuder (bản sao từ zone_02), mặt quay vào sảnh (-X)
     sb = MeshBuilder()

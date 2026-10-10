@@ -72,7 +72,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   xương + vật liệu riêng; đồ dùng chung đánh dấu `userData.shared`; smoke: zone_04 ↔ zone_05 2 vòng, số geometry / texture
   không tăng — Phụ trách: Claude
 - [ ] P1 **Lỗi: mô hình bối cảnh bị hở nhiều chỗ** (người dùng gửi 5 ảnh, 10/10/2026; sửa trong script Blender → cần máy có
-  Blender) — Phụ trách: —
+  Blender; nhánh `fix/scene-gaps`: zone_04 đã sửa + build lại, 0 chỗ hở; zone_03, zone_05 đã sửa script, chờ build lại trên máy
+  có file gốc Sketchfab) — Phụ trách: Claude
   - Các chỗ trong ảnh (vị trí đoán theo ảnh — đứng đúng chỗ, mở `?debug` ghi lại toạ độ khi sửa):
     1. zone_04 tầng trên (sàn xanh nhạt): khối tường bao (quanh giếng cầu thang / giếng trời) **hở ở cả 4 góc** — các đoạn
        tường không khớp nhau ở góc.
@@ -86,15 +87,27 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     đầu mút, không cộng bề dày → 2 đoạn gặp nhau ở góc thiếu một ô vuông (nửa bề dày × nửa bề dày) ở góc ngoài. Các chỗ
     còn lại: sàn / bậc thang / chiếu nghỉ không áp sát tường, mặt đất ngoài nhà không đủ rộng; nhìn rõ vì trời trong nhà là
     màu xanh sáng (`mood.sky` mặc định `#9cc4e8`).
-  - [ ] Sửa trong script Blender (`scripts/blender/zone_03.py`, `zone_04.py`, `lib/kit.py`, `lib/interior.py`): đoạn tường kéo
+  - [x] Sửa trong script Blender (`scripts/blender/zone_03.py`, `zone_04.py`, `lib/kit.py`, `lib/interior.py`): đoạn tường kéo
     dài thêm nửa bề dày ở mỗi đầu (tham số mới của `seg_box`, mặc định giữ như cũ để không xê dịch zone khác) hoặc thêm cột
     góc; sàn chạy dưới chân tường; bậc thang / chiếu nghỉ áp sát tường (hoặc thêm tấm ốp chân tường); mặt đất ngoài sảnh
     zone_03 kéo ra đủ xa. Build lại zone bản Thấp, `check_glb` 0 lỗi; `COL_` giữ nguyên chỗ cũ
-  - [ ] Rà các zone còn lại tìm chỗ hở tương tự bằng công cụ tự dò (chạy trong game / viewer, không cần Blender): từ các điểm
+    - Đã làm (chi tiết: `docs/PROGRESS.md`): zone_04 — góc lan can / ống giếng trời (`seg_box(ext=…)`), sàn + trần tới chân
+      tường tây hành lang, vách kính nam từ tường tây, sân cỏ + nhà đối diện ngoài kính, bậc / chiếu nghỉ / chiếu trên áp tường
+      sảnh (+ `COL_` cho dải mới, `COL_` cũ giữ nguyên), 2 tường bên chỗ nhìn qua cửa FSA. zone_03 — sân gạch 2 bên bậc + phía
+      tây sảnh, tường + cửa cuối hành lang sang zone_04. zone_05 — đoạn sàn / tường / trần phía sau cửa FSA (nhìn ra thấy trời).
+  - [ ] Build lại zone_03, zone_05 bản Thấp trên máy có file gốc Sketchfab (cây; bàn bi-a + máy tính — máy làm việc hiện tại
+    không có; đã dựng thử bản thiếu các mô hình đó: 0 tia nhìn xuống lọt ra trời ở cả hai zone), rồi thêm 2 zone vào
+    `GAP_FREE` trong `scripts/tests/smoke.mjs`; build zone_05 ghi lại `data/pool.json` (phải giống bản cũ)
+  - [x] Rà các zone còn lại tìm chỗ hở tương tự bằng công cụ tự dò (chạy trong game / viewer, không cần Blender): từ các điểm
     đi được bắn tia ngang và chéo xuống, tia trong nhà mà không chạm lưới nào (lọt ra trời) → ghi toạ độ → danh sách chỗ hở
+    — `__game.gaps()` (`game/src/world/gaps.js`); trước khi sửa: zone_03 399, zone_04 118, zone_05 304 tia nhìn xuống lọt ra
+    trời (ngoài 5 chỗ trong ảnh còn: góc tây nam vách kính hành lang zone_04, nhìn chéo qua cửa FSA ở cả zone_04 lẫn zone_05)
   - [ ] Tạm thời (không cần Blender): zone trong nhà 3–5 đặt màu nền tối trung tính (`data/zones.json` → `mood.sky`) để khe
-    hở không lộ dải xanh — chỉ che bớt, không thay việc sửa mô hình
+    hở không lộ dải xanh — chỉ che bớt, không thay việc sửa mô hình (chưa làm: zone_04 đã sửa thật; zone_03 / zone_05 nhìn ra
+    sân / cửa sổ thấy trời là đúng, trời tối sẽ sai — làm nếu chưa build lại kịp trước buổi chơi thử)
   - [ ] Kiểm thử: công cụ dò → 0 chỗ hở trong nhà; smoke zone 3–5 (cả bước camera không xuyên trần); ảnh trước / sau 5 chỗ
+    — zone_04 xong: smoke bước mới "chỗ hở mô hình" 0 tia (lưới 0,5 m × 48 hướng × 6 góc: 0 / 419.328 tia), smoke zone 3, 4, 5 đạt;
+    zone_03, zone_05 smoke chỉ ghi số tới khi build lại
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —

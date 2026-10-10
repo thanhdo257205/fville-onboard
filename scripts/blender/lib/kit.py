@@ -20,13 +20,15 @@ MIN_PASSAGE = 2.5   # hành lang / cửa tối thiểu cho camera
 
 
 # ---------------- tiện ích ----------------
-def seg_box(b, p0, p1, width, z0, z1, color, mat="palette"):
-    """Hộp chạy dọc đoạn thẳng p0→p1 (2D), rộng `width`, từ z0 đến z1."""
+def seg_box(b, p0, p1, width, z0, z1, color, mat="palette", ext=0.0):
+    """Hộp chạy dọc đoạn thẳng p0→p1 (2D), rộng `width`, từ z0 đến z1. ext: kéo dài thêm ở mỗi đầu — các đoạn nối nhau
+    thành vòng khép kín (lan can quanh lỗ thông tầng) dùng ext = width / 2 + 0.02 để góc ngoài không thiếu một ô vuông (thêm
+    2 cm: mặt đầu đoạn này không trùng mặt bên đoạn kia → không nhấp nháy z-fighting)."""
     p0, p1 = Vector((*p0, 0)), Vector((*p1, 0))
     d = p1 - p0
     yaw = math.degrees(math.atan2(d.y, d.x))
     c = (p0 + p1) / 2
-    b.box((c.x, c.y, (z0 + z1) / 2), (d.length, width, z1 - z0), color, rot=(0, 0, yaw), mat=mat)
+    b.box((c.x, c.y, (z0 + z1) / 2), (d.length + 2 * ext, width, z1 - z0), color, rot=(0, 0, yaw), mat=mat)
 
 
 # ---------------- mặt đất ----------------
