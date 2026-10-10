@@ -33,7 +33,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại), hiệu ứng âm thanh (`sounds.json`: nguồn + giấy phép của từng gói, mỗi tiếng → file, âm lượng) |
 | `data/i18n/en.json`, `vi.json` | Mọi chữ giao diện: tiếng Anh (bản gốc) và tiếng Việt, cùng khoá. Văn phong bản Việt: `docs/vi_style.md` |
-| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `pool/` (bi-a zone 5: `physics.js` vật lý tất định, `rules.js` luật 8 bi rút gọn + mã hoá bàn — dùng chung với máy chủ, `table.js` chế độ chơi: tập một mình / bàn chung 2 người / thử thách, `auto.js` chọn cú cho kiểm thử), `debug.js` |
+| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `pool/` (bi-a zone 5: `physics.js` vật lý tất định, `rules.js` luật 8 bi rút gọn + mã hoá bàn — dùng chung với máy chủ, `table.js` chế độ chơi: tập một mình / bàn chung 2 người / thử thách, `auto.js` chọn cú cho kiểm thử), màn tiêu đề (`ui/title.js`; nền zone đầu + camera trôi: `game/showcase.js`), `debug.js` |
 | `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + Durable Object, mỗi DO một phòng (~30 người, tự chia phòng; `wrangler.toml`, `src/index.js`), bàn bi-a chung của phòng (`src/pool.js`); bật bằng `data/net.json` → `url` (trống = tắt). Đã lên mạng: `https://fville-net.fville-onboard.workers.dev` (`/status`). Xem `docs/multiplayer.md` |
 | `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`; id vai cũng được: `compare=thao,le_tan,prajith` → kèm tint, tên vai) |
 | `references/` | Chỉ có ghi chú `.md` và bảng màu trên repo; video, khung hình gốc chỉ có trên máy làm việc |
@@ -109,14 +109,14 @@ Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug
 tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển — smoke test dùng), `approach`, `resolve`, `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
 `acts` / `cards` (4 Act, thẻ giữa màn hình), `finish()` / `summary` (thành tựu cuối + màn tổng kết),
-`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`; bàn chung: `net` (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ), `join()`, `autoShot()`, `place(x, z)`, `forceShot()`, `setFast()`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết), `map` (tab Bản đồ của app My FPT: khung, vị trí các dấu),
+`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`; bàn chung: `net` (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ), `join()`, `autoShot()`, `place(x, z)`, `forceShot()`, `setFast()`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết), `map` (tab Bản đồ của app My FPT: khung, vị trí các dấu), `preview` (nền màn tiêu đề: zone, kịch bản camera, giây; `window.__title`: màn tiêu đề),
 `audio` / `sounds` (âm thanh: trạng thái AudioContext, tiếng nền của zone, số file đã tải, số lần phát theo tên, bước chân; các
 lần gọi gần nhất), `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
 Tham số URL để thử (khi dev, hoặc bản build mở với `?debug`): `?lang=vi|en` (ngôn ngữ, không lưu — dùng được mọi lúc), `?start=zone_05` (bản lưu mẫu "đã chơi xong các zone trước",
 dựng từ data: `game/src/game/autoplay.js`), `?look=intern_nam_kinh`, `?gender=nu`, `?net=ws://127.0.0.1:8787/ws`;
-`?net=off` (tắt mạng) dùng được mọi lúc.
+`?net=off` (tắt mạng) dùng được mọi lúc; `?title=off` bỏ màn tiêu đề (smoke test, thử nhanh).
 
 ## Bắt đầu từ bản clone mới (Claude Code Web hoặc máy khác)
 
@@ -174,6 +174,12 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   tạo thì cho vào `zone.root` (dọn cùng zone) hoặc tự gọi `disposeTree` (`game/src/world/zone.js`) khi gỡ; nhân vật gỡ bằng
   `Character.dispose()` (dọn cả texture xương); vật liệu / texture dùng chung nhiều zone đánh dấu `userData.shared = true`.
   Smoke kiểm tra: zone_04 ↔ zone_05 2 vòng, `renderer.info.memory` không tăng.
+- **Màn tiêu đề** (`game/src/ui/title.js`) hiện mỗi lần mở game, người mới lẫn người chơi cũ, trên nền zone đầu do game vẽ
+  (`Game.showcase` → `game/src/game/showcase.js`: zone dựng như khi vào zone nhưng chưa có người chơi / NPC / trigger, camera
+  trôi theo `SHOTS[zone]`, zone không có kịch bản thì quay quanh SPAWN_ đầu zone). Start → `_enterZone` dùng lại zone đó,
+  không tải lại GLB; vòng lặp vẽ chạy từ trước màn tiêu đề (`update()` không làm gì khi chưa bắt đầu). Chữ: `title.*` trong
+  i18n; font riêng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, SIL OFL — font mới phải là OFL / Apache, repo công khai), thiết
+  kế phẳng không gradient. Đổi zone mở đầu thì thêm kịch bản camera vào `SHOTS`.
 - **Bản lưu cũ lệch data** tự sửa khi nạp (`GameState.repair`, gọi trong `main.js`): bỏ quest / phần thưởng / vật / giá
   trị / hạt lúa / lời khuyên không còn, zone không còn → zone xa nhất đã mở, giới tính / ngoại hình / vị trí về giá trị
   hợp lệ; in `[bản lưu] đã sửa N chỗ` (cảnh báo console) rồi ghi lại. Thêm / đổi id trong data thì nghĩ tới bản lưu cũ.

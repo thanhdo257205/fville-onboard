@@ -147,12 +147,27 @@ async function runLook(browser, base, look) {
   const wait = async (fn, ms, arg) => { try { await page.waitForFunction(fn, arg, { timeout: ms, polling: 100 }); return true; } catch { return false; } };
   // khoá con trỏ (Pointer Lock) không phải thứ cần thử: headless + đổi chế độ liên tục bằng code → khoá / nhả chồng nhau có
   // thể làm main.js tưởng người chơi bấm Esc (mở menu). Tắt hẳn, Esc đi thẳng vào main.js như khi không khoá
-  const noLock = () => ev(() => { const i = __game._game.input; i.lockSupported = false; if (document.pointerLockElement) { i._releasing = true; document.exitPointerLock(); } });
+  // Khoá đã xin lúc vào game có thể được cấp SAU lệnh này (luồng chính bận vẽ) rồi bị nhả khi đổi khung nhìn → game tưởng Esc →
+  // menu: nhả mọi khoá tới muộn và bỏ onUnlock (mở menu khi mất khoá — không phải thứ cần thử)
+  const noLock = () => ev(() => { const i = __game._game.input; i.lockSupported = false; i.onUnlock = null; if (document.pointerLockElement) { i._releasing = true; document.exitPointerLock(); }
+    document.addEventListener("pointerlockchange", () => { if (document.pointerLockElement) { i._releasing = true; document.exitPointerLock(); } }); });
 
   try {
     // không ?look: chọn ngoại hình qua màn tạo nhân vật
     const q = `?debug&net=off${onlyZone ? `&start=${startZone}` : ""}`;
     await page.goto(`${base}/${q}`);
+    // màn tiêu đề: nút Start hiện ngay, nền zone đầu dựng xong (live, phase "title") trong lúc chờ; ngoại hình chơi tiếng Việt:
+    // đổi ngôn ngữ ở đây (chữ đổi tại chỗ; màn tạo nhân vật bấm lại cũng không đổi gì); Start → màn tạo nhân vật
+    await page.waitForSelector("#title .start", { timeout: 90000 });
+    const ti = { live: await wait(() => window.__title?.live && window.__game?.state.phase === "title", 90000) };
+    if (lang !== "en") { await page.click(`#title [data-lang=${lang}]`); await wait((l) => document.documentElement.lang === l, 10000, lang); }
+    Object.assign(ti, await ev(() => ({ lang: document.documentElement.lang, top: document.querySelector("#title h1 .top").textContent, main: document.querySelector("#title h1 .main").textContent,
+      start: document.querySelector("#title .start").textContent, back: !!document.querySelector("#title .welcome"), preview: __game.preview, title: document.title })));
+    await page.click("#title .start");
+    ti.gone = await wait(() => !document.getElementById("title") && !window.__title?.open, 10000);
+    await check(ti.live && ti.gone && !ti.back && ti.lang === lang && ti.top === I18N[lang].title.top && ti.main === I18N[lang].title.main && ti.start === I18N[lang].title.start
+      && ti.preview?.zone === startZone && ti.title === I18N[lang].app.title,
+      `màn tiêu đề: nền ${startZone} (camera ${ti.preview?.shot ? "theo kịch bản" : "quay quanh SPAWN_"}), "${ti.top} ${ti.main}"${lang !== "en" ? ` (${I18N[lang].lang[lang]})` : ""}, Start`, JSON.stringify(ti));
     await page.waitForSelector("#creator input[name=name]", { timeout: 90000 });
     const cr = { mode: await ev(() => window.__creator?.mode) };
     if (pick !== "cards" && cr.mode === "3d") {
@@ -163,7 +178,8 @@ async function runLook(browser, base, look) {
       } else {
         const i = await ev((id) => __creator.looks.indexOf(id), look.id);
         const p = await ev((k) => __creator.screen(k), i);
-        if (p) await page.mouse.click(p.x, p.y);
+        // bấm rồi chờ chọn xong: luồng chính đang vẽ nền màn tiêu đề (swiftshader) nên sự kiện chuột tới muộn vài trăm ms; chưa chọn → bấm lại 1 lần
+        for (let k = 0; p && k < 2 && await ev(() => __creator.selected) !== look.id; k++) { await page.mouse.click(p.x, p.y); await wait((id) => __creator.selected === id, 3000, look.id); }
       }
     } else if (cr.mode === "cards") await page.click(`#creator .card input[value=${look.id}] + span`);
     cr.selected = await ev(() => __creator.selected);
@@ -228,6 +244,9 @@ async function runLook(browser, base, look) {
       const sw = {};
       const snap = () => ev(() => ({ lang: document.documentElement.lang, objective: __game.objective, menu: document.querySelector("#menu h2")?.textContent,
         quests: __game.progress.quests.length, pos: __game.player.pos, mode: __game._game.mode }));
+      // hội thoại on_enter (tin nhắn HR, 600 ms sau khi vào zone_00) có thể đang mở hoặc sắp mở → chờ rồi giải xong, Esc mới mở menu
+      await page.waitForTimeout(800);
+      await ev(() => __game.resolve());
       sw.before = await snap();
       await page.keyboard.press("Escape");
       sw.menuOpen = await wait(() => !document.getElementById("menu").hidden, 5000);
@@ -408,7 +427,7 @@ async function runLook(browser, base, look) {
               `zone_05: ngồi vào ghế bàn làm việc (${seat.anim}, nâng ${Math.round(seat.rootY * 100)} cm, cách chỗ ghế ${seat.dist} m)`, JSON.stringify(seat));
           } else if (r.paused === "ending:lan") {
             ps.reloaded = true;
-            await page.goto(`${base}/?debug&net=off&look=${look.id}`);   // tải lại, bỏ ?start (không dựng lại bản lưu mẫu)
+            await page.goto(`${base}/?debug&net=off&title=off&look=${look.id}`);   // tải lại, bỏ ?start (không dựng lại bản lưu mẫu)
             const back = await wait(() => window.__game?.state.phase === "playing", 120000);
             if (back) await noLock();
             const sum = back && await wait(() => window.__game?.summary.open, 15000);
@@ -500,7 +519,7 @@ async function runLook(browser, base, look) {
           JSON.stringify({ row, worn, cap, console: con3.slice(0, 5) }));
         // tải lại trang (không ?lang): ngôn ngữ đã chọn ở màn tạo nhân vật nằm trong cài đặt → vẫn tiếng Việt
         if (lang !== "en") {
-          await page.goto(`${base}/?debug&net=off`);
+          await page.goto(`${base}/?debug&net=off&title=off`);
           const back = await wait(() => window.__game?.state.phase === "playing", 120000);
           const r = await ev(() => ({ lang: document.documentElement.lang, title: document.title, objective: window.__game?.objective }));
           await check(back && r.lang === lang && r.title === I18N[lang].app.title && r.objective === I18N[lang].hud.objective_complete && !problems.splice(0).length,
@@ -559,7 +578,7 @@ async function runOldSave(browser, base) {
   const repairs = () => { const i = problems.findIndex((p) => p.includes("[bản lưu] đã sửa")); return i < 0 ? null : problems.splice(i, 1)[0]; };
   try {
     const t1 = Date.now();
-    await page.goto(`${base}/?debug&net=off`);
+    await page.goto(`${base}/?debug&net=off&title=off`);
     const ok1 = await wait(() => window.__game?.state.phase === "playing", 120000);
     const s1 = await ev(zoneState);
     const fixed = repairs();
@@ -664,7 +683,7 @@ async function runNetZone4(browser, base, srv) {
       return { seen, net: await ev(() => { const n = __game.net; return { status: n.status, connected: n.connected, online: n.online, remotes: n.remotes.map((r) => [r.name, r.built, r.visible, r.acc]) }; }) };
     };
     const t1 = Date.now();
-    await page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&start=zone_04`);
+    await page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&title=off&start=zone_04`);
     const ok1 = await wait(() => window.__game?.state.phase === "playing", 120000);
     const s1 = await ev(zoneState), sec1 = Math.round((Date.now() - t1) / 1000);
     const conn = await wait(() => window.__game?.net?.connected, 20000);
@@ -705,7 +724,7 @@ async function runPoolNet(browser, base, srv) {
     const save = { v: 1, created: true, player: { name, position: "developer", gender, look } };
     const p = await openPage(browser, `${label} · ${name}`, { settings: { tier: "low", detail: "auto" }, save });
     pages.push(p);
-    await p.page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&start=zone_05`);
+    await p.page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&title=off&start=zone_05`);
     p.ready = await p.wait(() => window.__game?.state.phase === "playing" && window.__game.net?.connected && !!window.__game.pool?.net?.on, 120000);
     // tắt Pointer Lock như runLook (headless: khoá / nhả chồng nhau → main.js tưởng người chơi bấm Esc → rời bàn)
     await p.ev(() => { const i = __game._game.input; i.lockSupported = false; if (document.pointerLockElement) { i._releasing = true; document.exitPointerLock(); } });

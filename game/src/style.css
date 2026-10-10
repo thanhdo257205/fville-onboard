@@ -543,3 +543,40 @@ body.overlay-open #emotes { display: none; }
 #minigame.mg-pool .mg .body:empty { display: none; }
 #minigame.mg-pool .mg .hint { margin: 4px 0 0; min-height: 0; }
 #minigame.mg-pool .mg .hint:empty { display: none; }
+
+/* Màn tiêu đề (ui/title.js): trên nền zone đầu do game vẽ (Game.showcase). Chữ Be Vietnam Pro (SIL OFL, @fontsource — đủ dấu tiếng
+   Việt), phẳng: trắng đặc, không gradient; điểm nhấn cam duy nhất là vạch nhỏ trước dòng trên. Khối chữ dồn góc dưới trái như
+   menu game hiện đại; nền chưa dựng: màu trời phẳng (.live → mờ đi); chữ hiện dần lần lượt (--i); chuột: chữ dịch nhẹ (--px/--py) */
+#title { position: fixed; inset: 0; z-index: 6; overflow: hidden; --px: 0; --py: 0; font-family: "Be Vietnam Pro", "Nunito", system-ui, sans-serif; transition: opacity .45s ease; }
+#title.leaving { opacity: 0; pointer-events: none; }
+#title .sky { position: absolute; inset: 0; background: #1c2630; transition: opacity 1.2s ease; }
+#title.live .sky { opacity: 0; }
+#title .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 12, 16, .3), transparent 30%, transparent 55%, rgba(10, 12, 16, .72)), linear-gradient(90deg, rgba(10, 12, 16, .45), transparent 60%); }
+#title .lang-switch { position: absolute; top: 22px; right: 26px; display: flex; gap: 18px; }
+#title .lang-switch button { background: none; border: 0; padding: 6px 0; color: rgba(255, 255, 255, .6); font: 600 13px/1 "Be Vietnam Pro", sans-serif; letter-spacing: .04em; cursor: pointer; border-bottom: 2px solid transparent; }
+#title .lang-switch button.on { color: #fff; border-bottom-color: var(--orange); }
+#title .hero { position: absolute; left: clamp(20px, 8vw, 120px); bottom: clamp(48px, 15vh, 150px); right: 20px; max-width: 760px; display: grid; justify-items: start; gap: 12px;
+  transform: translate(calc(var(--px) * -6px), calc(var(--py) * -4px)); transition: transform .4s ease-out; }
+#title .hero > * { animation: title-up .7s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 110ms + 150ms); }
+@keyframes title-up { from { opacity: 0; transform: translateY(14px); } }
+#title .kicker { display: flex; align-items: center; gap: 12px; }
+#title .mark { display: block; width: 28px; height: 3px; background: var(--orange); border-radius: 2px; }
+#title .eyebrow { margin: 0; font: 600 12px/1.6 "Be Vietnam Pro", sans-serif; letter-spacing: .22em; text-transform: uppercase; color: rgba(255, 255, 255, .78); }
+#title .eyebrow span { white-space: nowrap; }
+#title h1 { margin: 0; display: grid; gap: 6px; text-transform: uppercase; color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .12), 0 14px 40px rgba(0, 0, 0, .35); }
+#title h1 .top { font: 700 clamp(14px, 1.6vw, 20px)/1.2 "Be Vietnam Pro", sans-serif; letter-spacing: .3em; color: rgba(255, 255, 255, .88); }
+#title h1 .main { font: 900 clamp(68px, 12vw, 168px)/.9 "Be Vietnam Pro", sans-serif; letter-spacing: -.035em; margin-left: -.04em; }
+#title .tagline { margin: 2px 0 0; max-width: 44ch; font: 600 clamp(14px, 1.5vw, 17px)/1.5 "Be Vietnam Pro", sans-serif; color: rgba(255, 255, 255, .78); }
+#title .welcome { margin: 0; font: 700 14px/1.4 "Be Vietnam Pro", sans-serif; color: #fff; }
+#title .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+#title .actions .primary { padding: 15px 28px; border-radius: 12px; font: 800 15px/1 "Be Vietnam Pro", sans-serif; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 30px rgba(243, 112, 33, .35); transition: transform .15s, box-shadow .15s, background .15s; }
+#title .actions .primary::after { content: " →"; }
+#title .actions .primary:hover, #title .actions .primary:focus-visible { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(243, 112, 33, .5); background: #ff7f33; }
+#title .actions .ghost { padding: 14px 22px; border-radius: 12px; background: transparent; border: 1.5px solid rgba(255, 255, 255, .4); color: #fff; font: 700 14px/1 "Be Vietnam Pro", sans-serif; letter-spacing: .04em; transition: border-color .15s, background .15s; }
+#title .actions .ghost:hover, #title .actions .ghost:focus-visible { border-color: #fff; background: rgba(255, 255, 255, .08); }
+#title .status { margin: 0; font: 600 12px/1.4 "Be Vietnam Pro", sans-serif; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .5); transition: opacity .6s; }
+#title.live .status { opacity: 0; }
+#title .build { position: absolute; right: 26px; bottom: 18px; margin: 0; font: 600 11px ui-monospace, Consolas, monospace; color: rgba(255, 255, 255, .4); }
+@media (max-width: 700px) { #title .hero { left: 20px; bottom: 40px; gap: 10px; } #title .lang-switch { top: 14px; right: 18px; gap: 14px; }
+  #title .eyebrow { font-size: 11px; letter-spacing: .14em; } #title h1 .main { font-size: clamp(56px, 17vw, 80px); } #title .actions .primary { padding: 14px 22px; } }
+@media (prefers-reduced-motion: reduce) { #title .hero > * { animation: none; } #title .hero { transition: none; } }

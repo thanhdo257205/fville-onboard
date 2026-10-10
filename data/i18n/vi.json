@@ -11,6 +11,16 @@
     "zone_back": "Quay lại {zone}",
     "zone_reload": "Tải lại trang"
   },
+  "title": {
+    "eyebrow": "FPT Software · Làng phần mềm F-Ville 1 · Hòa Lạc",
+    "top": "Ngày Đầu Ở",
+    "main": "F-Ville",
+    "tagline": "Bắt chuyến xe 06:30, gặp mentor và nhận Áo Cam FPT.",
+    "start": "Bắt đầu",
+    "continue": "Chơi tiếp",
+    "start_over": "Chơi lại từ đầu",
+    "loading": "Thành phố đang thức giấc…"
+  },
   "zones": {
     "zone_00": {
       "title": "Điểm đón xe nội thành",

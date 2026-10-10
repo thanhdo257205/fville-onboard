@@ -2,6 +2,11 @@
 import "@fontsource/nunito/400.css";
 import "@fontsource/nunito/700.css";
 import "@fontsource/nunito/800.css";
+// màn tiêu đề (ui/title.js): Be Vietnam Pro — SIL OFL 1.1, đủ dấu tiếng Việt
+import "@fontsource/be-vietnam-pro/600.css";
+import "@fontsource/be-vietnam-pro/700.css";
+import "@fontsource/be-vietnam-pro/800.css";
+import "@fontsource/be-vietnam-pro/900.css";
 import "./style.css";
 import * as THREE from "three";
 import { loadJSON, url } from "./core/assets.js";
@@ -22,6 +27,7 @@ import { EmotePanel } from "./ui/emotes.js";
 import { Net } from "./net/net.js";
 import { confirmBox } from "./ui/panels.js";
 import { characterCreator } from "./ui/creator.js";
+import { titleScreen } from "./ui/title.js";
 import { MinigameHost } from "./minigames/host.js";
 import { hud } from "./ui/hud.js";
 import { installDebug } from "./debug.js";
@@ -173,6 +179,7 @@ async function boot() {
     onPlayAgain: playAgain,
   });
 
+  let title = null;   // màn tiêu đề (ui/title.js, mở ở dưới): đang hiện thì Esc không mở menu
   // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn (bảng emote đang mở: 1–9 chọn emote / câu chat) · Tab app
   // · H gợi ý · T emote + câu chat (chỉ khi bật mạng) · Esc đóng / menu
   input.on("KeyE", () => game.interact());
@@ -196,6 +203,7 @@ async function boot() {
   input.on("KeyR", () => { if (game.pool?.active) game.pool.rerack(); });   // bi-a: xếp lại bi / ván mới (bàn chung)
   input.on("KeyJ", () => { if (game.pool?.active) game.pool.join(); });     // bi-a bàn chung: đang xem → ngồi vào ghế trống
   input.on("Escape", () => {
+    if (title?.open) return;
     if (game.cutscene) return game.cutscene.skip();
     if (game.timeSkipping) return;            // màn mờ chuyển giờ (vd "12:00 · lunch"): không mở menu giữa chừng
     if (game.mode === "pool") return game.pool?.leave();
@@ -211,26 +219,7 @@ async function boot() {
   document.getElementById("skip").textContent = t("cutscene.skip");
   addEventListener("resize", () => game.resize(innerWidth, innerHeight));
   installDebug(game, loop);
-
-  // người chơi mới → màn tạo nhân vật: chọn nhân vật (giới tính suy ra từ nhân vật), tên, vị trí intern
-  if (!progress.created) {
-    hud.loading(null);
-    const who = await characterCreator(chars.character_creation, { characters, settings, initial: progress.player.look, onLang: setLanguage });
-    progress.player.name = who.name;
-    progress.player.position = who.position;
-    if (who.gender) { progress.player.gender = who.gender; characters.gender = who.gender; }
-    if (who.look) { progress.player.look = who.look; characters.look = who.look; }
-    progress.created = true;
-    save.store(progress);
-    hud.loading(t("app.loading"));
-  }
-  await game.start(startZone, startSpawn);
-  net.start();                              // sau "Start my first day" (người chơi cũ: khi game bắt đầu)
-  addEventListener("pagehide", () => net.stop());
-  if (saved) hud.toast(t("hud.welcome_back", { name: progress.player.name }));
-  game.resumeSummary();                     // đã xong game mà chưa thấy màn tổng kết (tải lại giữa cảnh kết) → mở lại
-  hud.hint(t(net.enabled ? "hud.controls_net" : "hud.controls"), 10);
-
+  // vòng lặp vẽ chạy từ đây: nền màn tiêu đề (Game.showcase) rồi game — game chưa bắt đầu thì update() không làm gì
   // THREE.Timer (thay THREE.Clock đã bị bỏ): connect(document) → tab ẩn thì dt = 0, quay lại không nhảy cóc
   const timer = new THREE.Timer();
   timer.connect(document);
@@ -250,12 +239,41 @@ async function boot() {
     frames++; acc += dt;
     if (acc >= 0.5) {
       loop.fps = frames / acc; frames = 0; acc = 0;
-      if (debugMode && !problems.length) {
+      if (debugMode && !problems.length && game.player) {
         const i = renderer.info, p = game.player.position;
         hud.debug(`${loop.fps.toFixed(0)} FPS · ${game.state.tier} · ${i.triangles.toLocaleString()} tris · ${i.calls} calls\n${game.state.zone} (${p.x.toFixed(1)}, ${p.y.toFixed(2)}, ${p.z.toFixed(1)})`);
       }
     }
   });
+
+  // Màn tiêu đề (ui/title.js) — người mới lẫn người chơi cũ — trên nền zone đầu dựng trong lúc chữ hiện dần (Game.showcase,
+  // không chờ): Start → màn tạo nhân vật (người mới) / vào game. Bỏ màn này: ?title=off (smoke test, thử nhanh; dev / ?debug)
+  if (!(testParams && params.get("title") === "off")) {
+    hud.loading(null);
+    title = titleScreen({ name: progress.created ? progress.player.name : null, onLang: setLanguage, onStartOver: playAgain,
+      onParallax: (x, y) => game.preview?.parallax(x, y) });
+    game.showcase(startZone).then((ok) => { if (ok) title.live(); }, (e) => console.warn("[màn tiêu đề] không dựng được nền:", e));
+    await title.done;
+  }
+
+  // người chơi mới → màn tạo nhân vật (trên nền màn tiêu đề, nếu có): chọn nhân vật (giới tính suy ra từ nhân vật), tên, vị trí intern
+  if (!progress.created) {
+    hud.loading(null);
+    const who = await characterCreator(chars.character_creation, { characters, settings, initial: progress.player.look, onLang: setLanguage });
+    progress.player.name = who.name;
+    progress.player.position = who.position;
+    if (who.gender) { progress.player.gender = who.gender; characters.gender = who.gender; }
+    if (who.look) { progress.player.look = who.look; characters.look = who.look; }
+    progress.created = true;
+    save.store(progress);
+    if (!title) hud.loading(t("app.loading"));
+  }
+  await game.start(startZone, startSpawn, { fade: !!title });   // có nền tiêu đề: tối dần rồi vào; không: màn chờ đang che sẵn
+  net.start();                              // sau "Start my first day" (người chơi cũ: khi game bắt đầu)
+  addEventListener("pagehide", () => net.stop());
+  if (saved) hud.toast(t("hud.welcome_back", { name: progress.player.name }));
+  game.resumeSummary();                     // đã xong game mà chưa thấy màn tổng kết (tải lại giữa cảnh kết) → mở lại
+  hud.hint(t(net.enabled ? "hud.controls_net" : "hud.controls"), 10);
 }
 
 boot().catch((e) => { console.error(e); hud.error(e.message); });

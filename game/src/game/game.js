@@ -23,6 +23,7 @@ import { Cutscene } from "./cutscene.js";
 import { Ending } from "./ending.js";
 import { Guide } from "./guide.js";
 import { Acts, earnedTitles } from "./acts.js";
+import { Showcase } from "./showcase.js";
 import { setTint } from "../characters/characters.js";
 import { sound } from "../core/sound.js";
 import { PoolTable } from "../pool/table.js";
@@ -63,6 +64,7 @@ export class Game {
     this.acts = new Acts(this, content);         // 4 Act (data/acts.json): thẻ tiêu đề Act, checklist theo Act
     this.footsteps = new Footsteps(this);        // tiếng bước chân người chơi + Tú
     this.zone = null;
+    this.preview = null;     // nền màn tiêu đề (showcase(), showcase.js) — tới khi vào zone (_enterZone dùng lại zone)
     this.npcs = [];          // Npc (đứng/ngồi tại node)
     this.follower = null;    // Tú
     this.player = null;
@@ -89,12 +91,13 @@ export class Game {
   }
 
   // spawn: chỗ xuất hiện khác SPAWN_ đầu zone (vd đã xong game → cửa xe bến zone_01, trạng thái cuối của cảnh kết)
-  async start(zoneId = this.data.zones.order[0], spawn = null) {
+  // fade: đang hiện nền màn tiêu đề → tối dần rồi mới vào (không có nền: màn chờ đang che sẵn)
+  async start(zoneId = this.data.zones.order[0], spawn = null, { fade = false } = {}) {
     this.player = new Player(await this.characters.create("player", this.state.tier));
     this.scene.add(this.player.character.root);
     this.updateOutfit();
     this.updateAccessories();
-    const ok = await this.enterZone(zoneId, spawn ?? this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
+    const ok = await this.enterZone(zoneId, spawn ?? this.data.zones.zones[zoneId].start, { fade, zoneCard: false });
     this.acts.start();          // thẻ "ACT n" của Act hiện tại trước, rồi tới thẻ tên zone
     if (ok) hud.zoneCard(zoneId, this.zoneClock(zoneId));
     this.setMode("play");
@@ -119,6 +122,42 @@ export class Game {
   preload(zoneId) {
     return Promise.allSettled([preloadDecoders(), prefetchZone(this.zoneCfg(zoneId).file, this.state.tier),
       this.characters.preload(this.state.tier)]);
+  }
+
+  // Nền màn tiêu đề (main.js → ui/title.js, trước khi game bắt đầu): dựng zone đầu như khi vào zone nhưng chưa có người chơi /
+  // NPC / trigger, camera trôi theo kịch bản (showcase.js); Start → _enterZone dùng lại zone này (không tải lại GLB). Chỉ khi
+  // chưa bắt đầu (phase "boot"). Bấm Start trước khi nền xong: _enterZone chờ previewLoad rồi lấy zone, không đổi phase.
+  // → true nếu nền đã hiện (phase "title").
+  showcase(zoneId) {
+    const run = async () => {
+      if (this.state.phase !== "boot") return false;
+      const cfg = this.zoneCfg(zoneId);
+      await pendingPrefetch(cfg.file, this.state.tier);
+      const zone = await this._prepareZone(zoneId, cfg.file);
+      this.scene.add(zone.root);
+      this.applyMood(this.zoneVariant(zoneId)?.mood ?? cfg?.mood);
+      this.preview = new Showcase({ zone, camera: this.camera, cam: this.cam, spawnName: cfg.start });
+      if (this.state.phase !== "boot") return false;
+      await this.renderer.warmup(this.scene, this.camera);
+      if (this.state.phase === "boot") this.state.phase = "title";
+      return this.state.phase === "title";
+    };
+    this.previewLoad = run().finally(() => { this.previewLoad = null; });
+    return this.previewLoad;
+  }
+
+  // Tải GLB zone + chỉnh khi chạy (scene_fixes), vá shader cây mờ (seeThrough), lưới BVH cho camera hội thoại — phần chung
+  // của _enterZone và showcase (nền màn tiêu đề)
+  async _prepareZone(zoneId, file) {
+    const zone = await loadZone(zoneId, file, this.state.tier, this.data.collision?.[zoneId]);
+    applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
+    this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
+    // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
+    const plantRe = new RegExp(this.seeThrough.cfg.meshes), blockers = [];
+    const leaves = new Set((this.data.sceneFixes?.[zoneId]?.doors || []).flatMap((d) => Object.keys(d.leaves || {})));   // cánh cửa mở được
+    zone.root.traverse((o) => { if (o.isMesh && o.visible && !o.name.startsWith("COL_") && !plantRe.test(o.name) && !plantRe.test(o.parent?.name || "") && !leaves.has(o.parent?.name)) blockers.push(o); });
+    zone.view = buildCollider(blockers);
+    return zone;
   }
 
   // zone kế tiếp theo thứ tự chơi: tải sẵn GLB khi đang chơi zone này (bản build không còn tải mọi zone lúc mở game)
@@ -175,15 +214,17 @@ export class Game {
     this.talkCam.reset();
     if (fade) await hud.fade(true);
     if (!silent) hud.loading(t("app.loading_zone", { zone: t(`zones.${zoneId}.title`) }));
-    await pendingPrefetch(file ?? this.zoneCfg(zoneId).file, this.state.tier);
-    const zone = await loadZone(zoneId, file ?? this.zoneCfg(zoneId).file, this.state.tier, this.data.collision?.[zoneId]);
-    applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
-    this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
-    // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
-    const plantRe = new RegExp(this.seeThrough.cfg.meshes), blockers = [];
-    const leaves = new Set((this.data.sceneFixes?.[zoneId]?.doors || []).flatMap((d) => Object.keys(d.leaves || {})));   // cánh cửa mở được
-    zone.root.traverse((o) => { if (o.isMesh && o.visible && !o.name.startsWith("COL_") && !plantRe.test(o.name) && !plantRe.test(o.parent?.name || "") && !leaves.has(o.parent?.name)) blockers.push(o); });
-    zone.view = buildCollider(blockers);
+    // nền màn tiêu đề (showcase): đang tải → chờ; cùng zone / GLB / mức đồ hoạ → dùng lại (không tải lại); khác (vd đã xong
+    // game → zone_01) → bỏ. Camera trôi tới lúc này (màn đã tối), trả fov rồi mới đặt camera chơi
+    if (this.previewLoad) await this.previewLoad.catch(() => null);
+    const pre = this.preview;
+    this.preview = null;
+    pre?.dispose();
+    const wantFile = file ?? this.zoneCfg(zoneId).file;
+    let zone = null;
+    if (pre && pre.zone.id === zoneId && pre.zone.file === wantFile && pre.zone.tier === this.state.tier) zone = pre.zone;
+    else if (pre) { this.scene.remove(pre.zone.root); disposeZone(pre.zone); }
+    if (!zone) { await pendingPrefetch(wantFile, this.state.tier); zone = await this._prepareZone(zoneId, wantFile); }
     // dọn zone cũ
     if (this.zone) { this.scene.remove(this.zone.root, this.zone.collider); disposeZone(this.zone); }
     for (const n of this.npcs) n.character.dispose();
@@ -842,7 +883,7 @@ export class Game {
 
   toggleApp() {
     if (this.ui.app.open) { this.ui.app.hide(); this.setMode("play"); sound.play("app_close"); return; }
-    if (this.mode !== "play") return;
+    if (this.mode !== "play" || this.state.phase !== "playing") return;
     if (!this.progress.hasReward("app_my_fpt")) { hud.toast(t("hud.no_app")); return; }
     this.setMode("app");
     this.ui.app.show();
@@ -850,6 +891,7 @@ export class Game {
   }
 
   update(dt) {
+    if (this.preview) { this.preview.update(dt); return; }   // nền màn tiêu đề: chỉ camera trôi
     this.footsteps.update(dt);   // cả lúc cảnh chuyển dắt người chơi / Tú đi
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
