@@ -11,6 +11,16 @@
     "zone_back": "Back to {zone}",
     "zone_reload": "Reload page"
   },
+  "title": {
+    "eyebrow": "FPT Software · F-Ville 1 Campus · Hòa Lạc",
+    "top": "First Day at",
+    "main": "F-Ville",
+    "tagline": "Catch the 06:30 bus, meet your mentor and earn your FPT Orange Shirt.",
+    "start": "Start",
+    "continue": "Continue",
+    "start_over": "Start over",
+    "loading": "The city is waking up…"
+  },
   "zones": {
     "zone_00": {
       "title": "City Pickup Stop",
@@ -123,7 +133,11 @@
     "players": "Show other players",
     "accessories_note": "Unlocked by finishing your first day.",
     "view_summary": "View summary",
-    "language": "Language"
+    "language": "Language",
+    "sound": "Sound",
+    "sfx_volume": "Effects",
+    "amb_volume": "Ambience",
+    "sound_note": "Effects: footsteps, doors, the pool table, app chimes. Ambience: birds, wind, the office hum."
   },
   "lang": {
     "en": "English",
