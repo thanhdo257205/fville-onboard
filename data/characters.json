@@ -9,7 +9,17 @@
         "nam": "intern_nam",
         "nu": "intern_nu"
       },
-      "_model_ghi_chu": "Model theo giới tính người chơi (bản lưu → player.gender: nam | nu; màn tạo nhân vật chưa có mục này → mặc định nam). Thử khi phát triển: ?gender=nu hoặc __game.setGender('nu').",
+      "_model_ghi_chu": "Model theo giới tính người chơi (bản lưu → player.gender: nam | nu, chọn ở màn tạo nhân vật; mặc định nam). Thử khi phát triển: ?gender=nu hoặc __game.setGender('nu').",
+      "looks": {
+        "nam": [
+          "intern_nam",
+          "intern_nam_kinh"
+        ],
+        "nu": [
+          "intern_nu"
+        ]
+      },
+      "_looks_ghi_chu": "Ngoại hình người chơi chọn được theo giới tính (id model; phần tử đầu = mặc định, trùng model_by_gender). Bản lưu → player.look; không hợp lệ với giới tính đang chọn (vd đổi giới tính) thì dùng model_by_gender. Màn tạo nhân vật CHƯA có mục chọn ngoại hình — thử khi phát triển: ?look=intern_nam_kinh (tự đặt giới tính theo model, ghi vào bản lưu) hoặc __game.setLook('intern_nam_kinh').",
       "place": "spawn",
       "outfit": {
         "until_reward": "ao_cam",
@@ -775,14 +785,100 @@
       "portrait": "assets/characters/intern_nu/intern_nu_portrait.png"
     },
     "intern_nam_kinh": {
-      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam đeo kính (hư cấu, Meshy), cao 1,65 m — lựa chọn thứ 3 ở màn tạo nhân vật (giới tính Nam), sau này dùng làm model Tú (khác giới với người chơi). CHƯA có GLB: chờ gắn xương trên Mixamo (assets/characters/intern_nam_kinh/intern_nam_kinh_for_mixamo.fbx) rồi build_character.py; chưa vai nào dùng, chưa có trong màn chọn nhân vật. Áo gốc Meshy là bộ ngày đầu: textures.dau_ngay = áo phông xanh ngọc gốc, không logo; ao_cam = áo phông đổi sang cam theo mặt nạ (cùng màu áo intern_nam, giữ nếp vải) + logo FPT ngực trái 7 cm (build_character.py nhúng bản này vào GLB). mask = mặt nạ vùng 512 px: đỏ áo, xanh dương quần jean, xanh lá giày, vàng da, hồng tóc, xanh lơ kính, đen ngoài UV (outfit_textures.py --original dau_ngay --glasses). Lọn tóc rủ giữa hai mắt kính đã rút ngắn (mesh_fixes.json). Ảnh trong textures/ chỉ có trên máy làm việc (không commit).",
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam đeo kính (hư cấu, Meshy + Mixamo), cao 1,65 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Ngoại hình thứ 2 của giới tính nam (roles.player.looks); sau này dùng làm model Tú (khác giới với người chơi). Bộ đồ: texture trong GLB = ao_cam (áo phông cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo phông xanh ngọc gốc của Meshy, không logo), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần jean, xanh lá giày, vàng da, hồng tóc, xanh lơ kính, đen ngoài UV; outfit_textures.py --original dau_ngay --glasses) — chỉ có trên máy làm việc, không commit. Lọn tóc rủ giữa hai mắt kính đã rút ngắn (mesh_fixes.json).",
       "gender": "male",
       "height_m": 1.65,
-      "textures": {
+      "outfit_textures": {
+        "dau_ngay": "assets/characters/intern_nam_kinh/intern_nam_kinh_dau_ngay.webp"
+      },
+      "texture_sources": {
         "ao_cam": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_basecolor.jpg",
         "dau_ngay": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_basecolor_dau_ngay.jpg",
         "mask": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_mask.png"
-      }
+      },
+      "glb": {
+        "low": "assets/characters/intern_nam_kinh/intern_nam_kinh.glb"
+      },
+      "tris": {
+        "low": 6000
+      },
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.65,
+        "run": 4.07
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.335,
+        "offset_xz_m": [
+          -0.026,
+          -0.38
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.337
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/intern_nam_kinh/intern_nam_kinh_portrait.png"
     }
   }
 }

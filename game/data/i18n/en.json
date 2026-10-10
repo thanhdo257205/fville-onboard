@@ -86,7 +86,9 @@
     "card_intern": "{position} Intern",
     "card_date": "First day · {date}",
     "photos": "Your photos",
-    "no_photo": "No photo yet"
+    "no_photo": "No photo yet",
+    "download_busy": "Preparing your card…",
+    "download_failed": "Couldn't create the card image in this browser. Try again, or take a screenshot instead."
   },
   "menu": {
     "title": "Paused",
@@ -113,7 +115,8 @@
     "play_again_confirm": "Start over? Your progress will be erased.",
     "yes": "Yes, start over",
     "no": "Cancel",
-    "players": "Show other players"
+    "players": "Show other players",
+    "view_summary": "View summary"
   },
   "tiers": {
     "low": "Low",
