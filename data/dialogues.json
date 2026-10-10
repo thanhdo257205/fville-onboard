@@ -433,12 +433,13 @@
       "id": "desk_main", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_desk"] }, "next": "after" }], "next": "t0" },
-        "t0": { "branch": [{ "if": { "quests": ["z5_lan", "z5_minh", "z5_ha"] }, "next": "n1" }], "next": "team_q" },
+        "t0": { "branch": [{ "if": { "quests": ["z5_lan", "z5_minh", "z5_ha"] }, "next": "sit" }], "next": "team_q" },
         "team_q": { "speaker": "narrator", "text": { "en": "Your teammates Lan, Minh and Hà sit just around the corner. Say hello before you settle in?" },
           "choices": [
             { "text": { "en": "I'll say hello first." }, "next": null },
-            { "text": { "en": "Sit down now." }, "next": "n1" }
+            { "text": { "en": "Sit down now." }, "next": "sit" }
           ] },
+        "sit": { "action": "sit:SPAWN_ban_lam_viec", "next": "n1" },
         "n1": { "speaker": "narrator", "text": { "en": "Your desk! A laptop, a blank name plate — and a gift box with an orange ribbon." }, "next": "n2" },
         "n2": { "speaker": "narrator", "draft": true, "text": { "en": "Inside the box: an FPT notebook, a water bottle and a card — \"Welcome to the team, {player}! — Lan, Minh, Hà, Khang & everyone\"." },
           "effects": { "reward": "qua_cua_team" }, "next": "n3" },

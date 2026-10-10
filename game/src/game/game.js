@@ -44,6 +44,7 @@ export class Game {
       speakerInfo: (role) => this.speakerInfo(role),
       effects: (e) => this.applyEffects(e),
       minigame: (id) => this.runMinigame(id),
+      action: (kind, arg) => this.dialogueAction(kind, arg),
       line: (n) => this.onLine(n),
     } });
     this.scene = new THREE.Scene();
@@ -460,7 +461,7 @@ export class Game {
     // màn mờ chuyển giờ (vd "12:00 · The team invites you to lunch") và hoàn thành game (sau bàn làm việc zone 5):
     // chạy khi hội thoại đang mở đã đóng
     if (e?.time_skip) this.afterDialogue(() => this.timeSkip(e.time_skip));
-    if (e?.finish) this.afterDialogue(() => this.finishGame());
+    if (e?.finish) { this.finishPending = true; this.afterDialogue(() => this.finishGame()); }
     this.persist();
     return events;
   }
@@ -504,6 +505,7 @@ export class Game {
     const a = this.content.achievements?.final;
     if (!a || this.finishing) return;
     this.finishing = true;
+    this.finishPending = false;
     try {
       const flag = `achievement_${a.id}`;
       if (!this.progress.flags.has(flag)) this.applyEffects({ flags: [flag, "game_complete"] });
@@ -715,8 +717,25 @@ export class Game {
       if (npc) npc.release();
       if (tu) tu.endTalk();
       this.setMode("play");
+      // đang ngồi (vd bàn làm việc) → đứng dậy; sắp vào cảnh kết thì ngồi nguyên (cảnh kết đặt lại người chơi)
+      if (this.player.seated && !this.finishPending) this.player.standUp();
       this.flushAfterDialogue();
     }
+  }
+
+  // hành động trong hội thoại (node "action": "sit:<SPAWN_>" | "stand"; mini-game xử lý riêng)
+  async dialogueAction(kind, arg) {
+    if (kind === "sit") return this.sitAt(arg);
+    if (kind === "stand") return this.player.standUp();
+    console.warn(`[hội thoại] hành động lạ: ${kind}:${arg}`);
+  }
+  // người chơi ngồi vào ghế đánh dấu bằng SPAWN_ (vd SPAWN_ban_lam_viec: chỗ ghế, yaw_deg = hướng nhìn vào bàn), mặt ghế cao
+  // characters.json → roles.player.chair_height_m (trừ phần ghế đã hạ: scene_fixes → chairs)
+  async sitAt(node) {
+    const o = this.zone?.spawns.get(node);
+    if (!o) { console.warn(`[ngồi] không có ${node} trong ${this.state.zone}`); return; }
+    const h = this.characters.role("player")?.chair_height_m;
+    await this.player.sit(worldPos(o), THREE.MathUtils.degToRad(o.userData.yaw_deg ?? 0) + Math.PI, h != null ? h - (this.zone.chairDrop || 0) : null);
   }
 
   // câu của người đối thoại / người chơi → camera qua vai (tới hết hội thoại); lời dẫn (narrator) và tin nhắn điện thoại

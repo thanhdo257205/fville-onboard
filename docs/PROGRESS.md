@@ -703,6 +703,26 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Viewer: áp tint của vai (dùng chung `game/src/characters/tint.js` qua `viewer/tint.js`); `?compare=` nhận cả id vai
     (vd `?compare=thao,le_tan,prajith`: model + tint + tên hiển thị của vai).
 
+### Người chơi ngồi vào ghế ở bàn làm việc zone 5 + sửa lỗi cảnh kết (10/10/2026, nhánh `feat/zone5-seat-cap`)
+- **Ngồi ghế** (không sửa GLB): hội thoại `desk_main` có node mới `"sit": { "action": "sit:SPAWN_ban_lam_viec" }` — chọn "Sit
+  down now." (hoặc đã chào đủ Lan, Minh, Hà) thì người chơi ngồi vào ghế bàn intern rồi mới mở quà, đăng nhập, checklist.
+  `Player.sit / standUp / leaveSeat` (`game/src/player/player.js`) theo đúng cách NPC ngồi: điểm đứng = chỗ ghế
+  (`SPAWN_ban_lam_viec`, yaw nhìn vào bàn) − `models.<id>.seat.offset_xz_m`, sit_down → sit_type, nâng dần lên mặt ghế
+  (`roles.player.chair_height_m` 0,51 − ghế đã hạ 0,067 − `seat.height_m`: nữ +7,5 cm, nam kính +10,8 cm); đang ngồi không
+  đi lại, không trọng lực. Hội thoại kết thúc giữa chừng (vd bỏ mini-game Đăng nhập) → đứng dậy (stand_up); xong bàn làm
+  việc → ngồi nguyên tới cảnh kết (cảnh kết đặt người chơi đứng cạnh bàn trong màn tối). Animation không chạy (khung ẩn) →
+  chờ tối đa 4 s, hội thoại không treo. Chơi nhiều người: đang ngồi gửi anim "sit" + vị trí đã nâng.
+  Hành động hội thoại mới (`game/src/ui/dialogue.js` → `hooks.action`): `sit:<SPAWN_>`, `stand`; `test:data` báo hành động
+  lạ, `sit` không trỏ SPAWN_, và kiểm tra SPAWN_ có trong GLB của zone mở hội thoại đó.
+- **Sửa lỗi có từ bi-a bước 2 (trang thật đang dính):** cây cơ đang chơi (`cueModel`) nhân bản `cue_2` bằng `clone()` →
+  three.js chép `userData` qua JSON → `userData.srcMaterial` thành object thường → `disposeZone` ném lỗi khi rời zone_05 →
+  cảnh kết báo "Couldn't open F-Ville Bus Stop" (ai chơi xong zone 5 mà không tải lại trang). Bản sao bỏ userData chép;
+  `disposeZone` chỉ dọn vật liệu / texture thật. CI trước chỉ chạy 1 ngoại hình — ngoại hình đó thử "tải lại giữa cảnh kết"
+  nên không đi qua đường này; nay CI chạy 2 ngoại hình (ngoại hình thứ 2 chạy trọn cảnh kết).
+- Kiểm thử: smoke zone 5 thêm bước "ngồi vào ghế bàn làm việc" (lúc mini-game Đăng nhập: đang sit_type, nâng lên mặt ghế,
+  cách chỗ ghế đúng offset của model); `--zone 5` 2 ngoại hình 19 bước đạt (trước khi sửa: ngoại hình thứ 2 hỏng ở cảnh kết).
+  Ảnh: `renders/game/seat_intern_nu.png`, `seat_intern_nam_kinh.png`.
+
 ### Dựng lại zone_04 (10/10/2026, nhánh `zone04/rebuild`; máy có Blender 5.2, không cần file gốc)
 - Trước khi sửa: build lại `zone_04.py` nguyên trạng → GLB **giống hệt bản đang commit từng byte** (48 node, 9.064 tam giác
   hiện, 336 tam giác COL) → script tái tạo được, làm tiếp.
@@ -796,7 +816,7 @@ Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLI
    nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
    Gửi `docs/hr_content_request.md` cho HR.
 4. Giai đoạn 2 còn lại: tab Bản đồ trong My FPT; model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng
-   intern_nam / intern_nu); người chơi ngồi vào ghế ở bàn làm việc (hiện đứng trước bàn); chơi thử zone 5 + cảnh kết với
+   intern_nam / intern_nu); ~~người chơi ngồi vào ghế ở bàn làm việc~~ (xong 10/10/2026); chơi thử zone 5 + cảnh kết với
    người thật (độ dài ~8 phút, mini-game bi-a có quá khó không).
 
 ## Việc nhỏ để sau

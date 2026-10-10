@@ -34,7 +34,8 @@ export function installDebug(game, loop) {
   const api = {
     get player() {
       const p = game.player;
-      return p && { pos: v3(p.position), speed: +p.speed.toFixed(2), onGround: p.body.onGround, yaw: +THREE.MathUtils.radToDeg(p.character.root.rotation.y).toFixed(1), fellOut: p.fellOut || 0 };
+      return p && { pos: v3(p.position), speed: +p.speed.toFixed(2), onGround: p.body.onGround, yaw: +THREE.MathUtils.radToDeg(p.character.root.rotation.y).toFixed(1), fellOut: p.fellOut || 0,
+        seated: p.seated?.state ?? null, sits: p.sits || 0, rootY: +p.character.root.position.y.toFixed(3) };   // ngồi ghế: sitting_down | seated | standing_up
     },
     get zone() { return game.state.zone; },
     get state() {

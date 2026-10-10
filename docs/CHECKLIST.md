@@ -67,7 +67,8 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 ## 4. Nhân vật và 3D (cần máy có Blender + file gốc)
 
 - [ ] P2 Model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng intern đổi màu áo): ảnh → Meshy → Mixamo → dựng — Phụ trách: —
-- [ ] P2 Người chơi ngồi vào ghế ở bàn làm việc zone 5 (hiện đứng trước bàn) — Phụ trách: —
+- [x] P2 Người chơi ngồi vào ghế ở bàn làm việc zone 5 (code + data, không cần build lại zone) — Phụ trách: Claude — nhánh
+  `feat/zone5-seat-cap`
 - [x] P3 Máy tính bàn ở bàn intern zone 5: mô hình Sketchfab "Desktop Computer" (CC BY 4.0) thay laptop hộp; màn hình
   `monitor_screen` hiện màn đăng nhập "My FPT", game đổi texture được (`scripts/blender/lib/desktop_computer.py`) — Phụ trách:
   Thanh Do — 94b7938

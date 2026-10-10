@@ -16,6 +16,8 @@
       },
       "_looks_ghi_chu": "Ngoại hình người chơi chọn được theo giới tính (id model; phần tử đầu = mặc định, trùng model_by_gender). Bản lưu → player.look; không hợp lệ với giới tính đang chọn (vd đổi giới tính) thì dùng model_by_gender. Màn tạo nhân vật CHƯA có mục chọn ngoại hình — thử khi phát triển: ?look=intern_nam_kinh (tự đặt giới tính theo model, ghi vào bản lưu) hoặc __game.setLook('intern_nam_kinh').",
       "place": "spawn",
+      "chair_height_m": 0.51,
+      "_chair_ghi_chu": "Người chơi ngồi vào ghế (hành động hội thoại sit:<SPAWN_>, vd desk_main → SPAWN_ban_lam_viec = chỗ ghế bàn intern zone 5): mặt ghế trong GLB 0,51 m như ghế của đồng nghiệp (dong_nghiep_*.chair_height_m), trừ phần ghế đã hạ (scene_fixes → chairs.drop_m) → nâng nhân vật thêm (chair_height_m − drop − models.<id>.seat.height_m). Điểm đứng = chỗ ghế − models.<id>.seat.offset_xz_m (game/src/player/player.js → sit).",
       "outfit": {
         "until_reward": "ao_cam",
         "texture": "dau_ngay",

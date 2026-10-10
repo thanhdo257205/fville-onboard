@@ -251,6 +251,14 @@ async function runLook(browser, base, look) {
                 ac: i?.getAttribute("autocomplete"), type: i?.type, masked: i?.classList.contains("masked") ?? false }; });
             await check(!d.form && !d.user && !d.newpw && d.ac === "off" && (d.type === "text" ? d.masked : d.type === "password"),
               "zone_05: Đăng nhập — không form, không ô username, không gợi ý / lưu mật khẩu", JSON.stringify(d));
+            // bàn làm việc: người chơi ngồi vào ghế (sit_type, nâng lên mặt ghế), cách chỗ ghế (SPAWN_ban_lam_viec) ~ offset của model
+            const seat = await ev(() => {
+              const g = __game._game, s = g.zone.spawns.get("SPAWN_ban_lam_viec").getWorldPosition(new g.player.position.constructor());
+              const p = __game.player;
+              return { ...p, anim: g.player.character.current?.getClip().name, dist: +Math.hypot(p.pos[0] - s.x, p.pos[2] - s.z).toFixed(2), offset: g.player.character.model.seat?.offset_xz_m };
+            });
+            await check(seat.seated === "seated" && seat.sits === 1 && seat.rootY > 0.02 && /sit/.test(seat.anim || "") && Math.abs(seat.dist - Math.hypot(...(seat.offset || [0, 0]))) < 0.05,
+              `zone_05: ngồi vào ghế bàn làm việc (${seat.anim}, nâng ${Math.round(seat.rootY * 100)} cm, cách chỗ ghế ${seat.dist} m)`, JSON.stringify(seat));
           } else if (r.paused === "ending:lan") {
             ps.reloaded = true;
             await page.goto(`${base}/?debug&net=off&look=${look.id}`);   // tải lại, bỏ ?start (không dựng lại bản lưu mẫu)

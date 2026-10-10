@@ -76,8 +76,9 @@ export class Net {
   localState() {
     const g = this.g, pl = g.player;
     if (!pl || g.state.phase !== "playing" || !g.state.zone) return null;
-    const p = pl.position, sp = pl.speed, { walk, run } = pl.character.model.speed_mps;
-    const anim = sp < 0.25 ? "idle" : sp < (walk + run) / 2 ? "walk" : "run";
+    // đang ngồi ghế (bàn làm việc zone 5): gửi "sit" + vị trí gốc nhân vật (đã nâng lên mặt ghế)
+    const p = pl.seated ? pl.character.root.position : pl.position, sp = pl.speed, { walk, run } = pl.character.model.speed_mps;
+    const anim = pl.seated ? "sit" : sp < 0.25 ? "idle" : sp < (walk + run) / 2 ? "walk" : "run";
     // đang ngồi trên xe bus (cảnh chuyển zone 0 → 1, cảnh kết): nhân vật khuất → báo "đang di chuyển" (transit_zone) để
     // người cùng zone thấy mình rời đi, không còn đứng ở cửa xe; máy chủ không cần đổi (zone_NN hợp lệ)
     const riding = !!g.cutscene && !pl.character.root.visible;

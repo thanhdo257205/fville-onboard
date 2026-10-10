@@ -70,7 +70,8 @@ export class DialogueRunner {
         if (n.action) {
           this.ui.hide();
           const [kind, arg] = n.action.split(":");
-          if (kind === "minigame" && !(await this.hooks.minigame(arg))) break;   // bỏ ngang → kết thúc hội thoại
+          if (kind === "minigame") { if (!(await this.hooks.minigame(arg))) break; }   // bỏ ngang → kết thúc hội thoại
+          else await this.hooks.action?.(kind, arg);    // vd sit:<SPAWN_> (người chơi ngồi vào ghế), stand
           if (this.active?.aborted) break;
           key = n.next;
           continue;
