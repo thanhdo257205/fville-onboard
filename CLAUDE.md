@@ -5,7 +5,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 
 - Repo công khai `thanhdo257205/fville-onboard`: nhánh **main** = mã nguồn, nhánh **gh-pages** = bản build cho GitHub Pages.
 - Bản chơi: https://thanhdo257205.github.io/fville-onboard/game/ · xem bối cảnh: `/viewer/`
-- Thiết kế: `docs/GDD.md` · tiến độ: `docs/PROGRESS.md` · lời thoại: `docs/dialogue_huyen.md` (Ms. Huyền),
+- Thiết kế: `docs/GDD.md` · tiến độ: `docs/PROGRESS.md` · việc của nhóm: `docs/CHECKLIST.md` · lời thoại: `docs/dialogue_huyen.md` (Ms. Huyền),
   `docs/dialogue_nga.md` (Ms. Nga)
 
 ## Cấu trúc thư mục
