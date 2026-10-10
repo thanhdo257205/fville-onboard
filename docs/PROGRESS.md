@@ -317,6 +317,14 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   người khác thấy họ rời đi lúc bước lên xe, không còn đứng ở cửa xe; máy chủ không cần sửa.
 - Code khác: hiệu ứng `unflags`, `advice`, `compass`, `time_skip`; `finish` / `time_skip` chạy sau khi hội thoại đóng
   (`Game.afterDialogue`); ô chữ (mật khẩu) không điều khiển nhân vật (`input.js`); __game: `ending`, `summaryCard()`.
+- **Kiểm tra** (bản build `vite preview`, máy chủ mạng local `wrangler dev` 127.0.0.1:8787, không dùng máy chủ thật):
+  - Chơi trọn zone 0 → 5 không teleport, tới màn tổng kết, nam ("Minh Anh", intern_nam) và nữ ("Thu Hà", intern_nu):
+    đủ 4 Act (4/4, 3/3, 3/3, 2/2), cảnh kết đủ nhịp (alarm → lan → card → tu_run → tu_line → board → door_close → done),
+    thẻ thành tựu, màn tổng kết, tải ảnh thẻ PNG 720 × 1080 (~310 KB). Console chỉ còn dòng kiểm tra dữ liệu OK.
+  - Mạng: người A lên xe bus zone 0 → 1, người B đứng ở bến: A gửi zone_00 → zone_99 → zone_01; sau khi A khuất vào xe B
+    không còn thấy A (0/72 mẫu). Zone 5: 3 bot (`net_bots.js --zone zone_05`) hiện đủ quanh người chơi, "4 online · 4 in
+    this zone".
+  - Main: 08872eb.
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
@@ -353,7 +361,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     file Mixamo "With Skin" không kèm animation → idle lấy từ Standing Idle của prajith), chân dung (bộ ao_cam).
     Tay lún thân 4–6 cm ở vài animation nói / nghĩ / ngồi của intern_nu (như huyen, nga); intern_nam ≤ 5,8 cm (sit_down).
   - Vai `player`: `model_by_gender` (nam → intern_nam, nu → intern_nu), giới tính trong bản lưu `player.gender`, mặc
-    định nam (màn tạo nhân vật chưa có mục này). Thử khi dev: `?gender=nu` / `?gender=nam` (ghi vào bản lưu) hoặc
+    định nam (màn tạo nhân vật có mục giới tính từ 10/10/2026). Thử khi dev: `?gender=nu` / `?gender=nam` (ghi vào bản lưu) hoặc
     `__game.setGender("nu")`; `__game.model` cho biết model + bộ đồ đang mặc.
   - Bộ đồ đổi bằng texture (thay cách tint áo cũ của người chơi; NPC vẫn tint): đầu game `dau_ngay`
     (`models.<id>.outfit_textures.dau_ngay` = `<id>_dau_ngay.webp`, WebP 1024, ~66 KB, cùng UV), nhận Áo Cam ở cổng (từ
