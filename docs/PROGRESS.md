@@ -714,8 +714,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   Blender không ghi metadata nữa; `privacy_scan.py` kiểm tra cả metadata ảnh.
 
 ## Việc tiếp theo
-0. Đưa máy chủ chơi nhiều người lên Cloudflare (máy Desktop, `docs/multiplayer.md` mục Đưa lên mạng) rồi chơi thử 2–3
-   người trên bản deploy; đo FPS trên laptop thật với `net_bots.js` (bật / tắt Show other players).
+Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLIST.md`.
+
+0. ~~Đưa máy chủ chơi nhiều người lên Cloudflare~~ — **xong 10/10/2026** (`https://fville-net.fville-onboard.workers.dev`,
+   xem "Chơi nhiều người đã lên mạng" ở trên). Còn: chơi thử 2–3 người trên bản deploy; đo FPS trên laptop thật với
+   `net_bots.js` (bật / tắt Show other players).
 1. Chơi thử hệ thống hướng dẫn với người mới thật: có ai đứng yên quá 10 s không, câu nhắc có đúng lúc không (thời gian
    chỉnh trong `data/guidance.json` → `settings`; câu chữ trong `goals`), dấu "!" có quá lộ không (tắt trong menu Esc).
 2. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
