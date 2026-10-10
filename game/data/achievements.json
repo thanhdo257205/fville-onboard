@@ -8,7 +8,7 @@
   },
   "titles": [
     { "id": "shining_example", "vi": "Gương Sáng Làng F", "title": { "en": "Shining Example of F-Ville" }, "desc": { "en": "All six value slots lit up." }, "if": { "values_all": true } },
-    { "id": "teammate_no1", "vi": "Đồng Đội Số 1", "title": { "en": "Teammate No. 1" }, "desc": { "en": "Helped Tú twice: his backpack and his card." }, "if": { "flags": ["backpack_returned", "tu_card_fixed"] } },
+    { "id": "teammate_no1", "vi": "Đồng Đội Số 1", "title": { "en": "Teammate No. 1" }, "desc": { "en": "Helped Tú twice: {tu_his} backpack and {tu_his} card." }, "if": { "flags": ["backpack_returned", "tu_card_fixed"] } },
     { "id": "connector", "vi": "Người Kết Nối", "title": { "en": "The Connector" }, "desc": { "en": "Connection 80 or more." }, "if": { "stat": { "ket_noi": 80 } } },
     { "id": "bookworm", "vi": "Mọt Sách Làng F", "title": { "en": "F-Ville Bookworm" }, "desc": { "en": "Knowledge 80 or more." }, "if": { "stat": { "hieu_biet": 80 } } },
     { "id": "explorer", "vi": "Nhà Thám Hiểm", "title": { "en": "The Explorer" }, "desc": { "en": "Found all the golden grains." }, "if": { "grains_all": true } },

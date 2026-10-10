@@ -104,7 +104,7 @@
         "check": { "branch": [{ "if": { "flags": ["tu_met"] }, "next": "n1" }], "next": "intro" },
         "intro": { "speaker": "tu", "text": { "en": "Hi! I'm Tú — first day too. Mind if I sit here?" }, "effects": { "flags": ["tu_met"] }, "next": "n2" },
         "n1": { "speaker": "tu", "text": { "en": "Window seat, yes! Hòa Lạc, here we come." }, "next": "n2" },
-        "n2": { "speaker": "narrator", "text": { "en": "Tú drops his backpack on the seat beside him and stares out the window." }, "effects": { "flags": ["tu_balo_tren_xe"] }, "next": null }
+        "n2": { "speaker": "narrator", "text": { "en": "Tú drops {tu_his} backpack on the seat beside {tu_him} and stares out the window." }, "effects": { "flags": ["tu_balo_tren_xe"] }, "next": null }
       }
     },
     {
@@ -205,7 +205,7 @@
         "s_back2": { "speaker": "narrator", "text": { "en": "He heads back down the corridor towards the lobby." },
           "effects": { "walk": { "who": "nguoi_la", "to": [11.6, 0, 0.3], "hide": true } }, "next": "tu0" },
         "tu0": { "branch": [{ "if": { "flags": ["tu_card_done"] }, "next": null }], "next": "tu1" },
-        "tu1": { "speaker": "narrator", "text": { "en": "Tú taps his card. Beep — the light flashes red." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
+        "tu1": { "speaker": "narrator", "text": { "en": "Tú taps {tu_his} card. Beep — the light flashes red." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
         "tu2": { "speaker": "tu", "anim": "think", "text": { "en": "Huh? My card's red... Could you just let me follow you through?" },
           "choices": [
             { "text": { "en": "Sure, come with me." }, "effects": { "flags": ["tu_tailgated", "tu_card_done"] }, "next": "tu_follow" },

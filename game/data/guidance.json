@@ -70,7 +70,7 @@
       "help": { "en": "The big route map on the wall shows when the shuttle buses run. Stand in front of it and press E." }
     },
     "z1_backpack": {
-      "help": { "en": "Tú left his backpack on the bus! Go to the bus door and press E to look for it, then bring it back to Tú." }
+      "help": { "en": "Tú left {tu_his} backpack on the bus! Go to the bus door and press E to look for it, then bring it back to Tú." }
     },
     "z2_checkin": {
       "help": { "en": "Find the big FPT SOFTWARE sign, stand in front of it and press E for your check-in photo." },

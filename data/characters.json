@@ -28,11 +28,20 @@
       }
     },
     "tu": {
-      "model": "prajith",
+      "model": "intern_nu",
+      "model_by_gender": {
+        "nam": "intern_nu",
+        "nu": "intern_nam_kinh"
+      },
+      "_model_ghi_chu": "Tú KHÁC GIỚI với người chơi: khoá = giới tính NGƯỜI CHƠI (bản lưu player.gender) → người chơi nam (intern_nam / intern_nam_kinh) thì Tú = intern_nu, người chơi nữ thì Tú = intern_nam_kinh. Tên vẫn là Tú (dùng được cho cả nam và nữ); đại từ của Tú trong lời dẫn và mọi chữ là biến {tu_he} {tu_his} {tu_him} {tu_himself} ({Tu_he}… viết hoa đầu câu) theo models.<id>.gender của Tú (game/src/i18n.js → tuPronouns).",
       "place": "follow_player",
-      "tint": {
-        "shirt": "#2fa58f",
-        "pants": "#3f5f8f"
+      "outfit": {
+        "until_reward": "ao_cam",
+        "texture_by_model": {
+          "intern_nu": "tu_dau_ngay",
+          "intern_nam_kinh": "dau_ngay"
+        },
+        "_ghi_chu": "Bộ đồ ngày đầu của Tú, không trùng người chơi: Tú = intern_nu → tu_dau_ngay (polo vàng nhạt #f3df8a, giữ nếp vải, không logo); Tú = intern_nam_kinh → dau_ngay (áo phông xanh ngọc — người chơi lúc đó là nữ). Nhận Áo Cam ở cổng zone 2 như người chơi (cả hai mặc từ lúc chụp check-in) → texture trong GLB. Chân dung theo bộ đang mặc: models.<id>.outfit_portraits."
       },
       "wait": {
         "zone_00": {
@@ -263,28 +272,44 @@
   "character_creation": {
     "fields": [
       "name",
-      "gender",
+      "look",
       "intern_position"
     ],
     "hidden": [
       "hair",
       "skin"
     ],
-    "_ghi_chu": "Màn tạo nhân vật: nhập tên, chọn giới tính (model intern_nam / intern_nu — roles.player.model_by_gender) và vị trí intern; ẩn chọn tóc, da (chưa có).",
-    "genders": [
+    "_ghi_chu": "Màn tạo nhân vật: chọn nhân vật (looks — giới tính suy ra từ nhân vật), nhập tên, chọn vị trí intern; ẩn chọn tóc, da (chưa có).",
+    "looks": [
       {
-        "id": "nam",
+        "id": "intern_nam",
         "name": {
-          "en": "Male"
+          "en": "Easygoing"
+        },
+        "desc": {
+          "en": "Crisp shirt, easy smile — the one who says hi to everyone on the bus."
         }
       },
       {
-        "id": "nu",
+        "id": "intern_nam_kinh",
         "name": {
-          "en": "Female"
+          "en": "Bookworm"
+        },
+        "desc": {
+          "en": "Round glasses and a teal tee — reads every sign twice, just to be sure."
+        }
+      },
+      {
+        "id": "intern_nu",
+        "name": {
+          "en": "Go-getter"
+        },
+        "desc": {
+          "en": "Neat bob and a light shirt — first to raise a hand when there's something new to try."
         }
       }
     ],
+    "_looks_ghi_chu": "Màn chọn nhân vật (game/src/ui/creator.js): 3 nhân vật đứng trên bục theo thứ tự này, mặc bộ dau_ngay; name = tên gọi ngắn, desc = 1 dòng mô tả (trung tính, không nói về giới tính) trên thẻ thông tin. Giới tính suy ra từ roles.player.looks; bản lưu player.look + player.gender. Màn hẹp (< 700 px) hoặc Detail = Faster: 3 thẻ chân dung (models.<id>.outfit_portraits.dau_ngay) thay cảnh 3D.",
     "positions": [
       {
         "id": "developer",
@@ -593,7 +618,7 @@
       "portrait": "assets/characters/nga/nga_portrait.png"
     },
     "intern_nam": {
-      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam (hư cấu, Meshy + Mixamo), cao 1,70 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nam. Bộ đồ: texture trong GLB = ao_cam (áo polo cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo xanh nhạt #cfe0ee, không logo; quần, giày, da, tóc giữ nguyên), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần, xanh lá giày, vàng da, hồng tóc, đen ngoài UV; scripts/blender/characters/outfit_textures.py) — chỉ có trên máy làm việc, không commit.",
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam (hư cấu, Meshy + Mixamo), cao 1,70 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nam. Bộ đồ: texture trong GLB = ao_cam (áo polo cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo xanh nhạt #cfe0ee, không logo; quần, giày, da, tóc giữ nguyên), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần, xanh lá giày, vàng da, hồng tóc, đen ngoài UV; scripts/blender/characters/outfit_textures.py) — chỉ có trên máy làm việc, không commit. outfit_portraits: chân dung theo bộ đang mặc (render_portrait.py --outfit).",
       "gender": "male",
       "height_m": 1.7,
       "outfit_textures": {
@@ -686,19 +711,24 @@
         "walk": 1.4,
         "run": 4.39
       },
-      "portrait": "assets/characters/intern_nam/intern_nam_portrait.png"
+      "portrait": "assets/characters/intern_nam/intern_nam_portrait.png",
+      "outfit_portraits": {
+        "dau_ngay": "assets/characters/intern_nam/intern_nam_portrait_dau_ngay.png"
+      }
     },
     "intern_nu": {
-      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ (hư cấu, Meshy + Mixamo), cao 1,60 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nữ. Bộ đồ, texture_sources: như intern_nam.",
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ (hư cấu, Meshy + Mixamo), cao 1,60 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nữ. Bộ đồ, texture_sources: như intern_nam. outfit_textures.tu_dau_ngay: bộ ngày đầu khi intern_nu làm Tú (polo vàng nhạt #f3df8a, giữ nếp vải; outfit_textures.py --outfit tu_dau_ngay --shirt f3df8a). outfit_portraits: chân dung theo bộ đang mặc (render_portrait.py --outfit).",
       "gender": "female",
       "height_m": 1.6,
       "outfit_textures": {
-        "dau_ngay": "assets/characters/intern_nu/intern_nu_dau_ngay.webp"
+        "dau_ngay": "assets/characters/intern_nu/intern_nu_dau_ngay.webp",
+        "tu_dau_ngay": "assets/characters/intern_nu/intern_nu_tu_dau_ngay.webp"
       },
       "texture_sources": {
         "ao_cam": "assets/characters/intern_nu/textures/intern_nu_basecolor.jpg",
         "dau_ngay": "assets/characters/intern_nu/textures/intern_nu_basecolor_dau_ngay.jpg",
-        "mask": "assets/characters/intern_nu/textures/intern_nu_mask.png"
+        "mask": "assets/characters/intern_nu/textures/intern_nu_mask.png",
+        "tu_dau_ngay": "assets/characters/intern_nu/textures/intern_nu_basecolor_tu_dau_ngay.jpg"
       },
       "glb": {
         "low": "assets/characters/intern_nu/intern_nu.glb"
@@ -782,10 +812,14 @@
         "walk": 1.4,
         "run": 4.39
       },
-      "portrait": "assets/characters/intern_nu/intern_nu_portrait.png"
+      "portrait": "assets/characters/intern_nu/intern_nu_portrait.png",
+      "outfit_portraits": {
+        "tu_dau_ngay": "assets/characters/intern_nu/intern_nu_portrait_tu_dau_ngay.png",
+        "dau_ngay": "assets/characters/intern_nu/intern_nu_portrait_dau_ngay.png"
+      }
     },
     "intern_nam_kinh": {
-      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam đeo kính (hư cấu, Meshy + Mixamo), cao 1,65 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Ngoại hình thứ 2 của giới tính nam (roles.player.looks); sau này dùng làm model Tú (khác giới với người chơi). Bộ đồ: texture trong GLB = ao_cam (áo phông cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo phông xanh ngọc gốc của Meshy, không logo), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần jean, xanh lá giày, vàng da, hồng tóc, xanh lơ kính, đen ngoài UV; outfit_textures.py --original dau_ngay --glasses) — chỉ có trên máy làm việc, không commit. Lọn tóc rủ giữa hai mắt kính đã rút ngắn (mesh_fixes.json).",
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam đeo kính (hư cấu, Meshy + Mixamo), cao 1,65 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Ngoại hình thứ 2 của giới tính nam (roles.player.looks); sau này dùng làm model Tú (khác giới với người chơi). Bộ đồ: texture trong GLB = ao_cam (áo phông cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo phông xanh ngọc gốc của Meshy, không logo), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần jean, xanh lá giày, vàng da, hồng tóc, xanh lơ kính, đen ngoài UV; outfit_textures.py --original dau_ngay --glasses) — chỉ có trên máy làm việc, không commit. Lọn tóc rủ giữa hai mắt kính đã rút ngắn (mesh_fixes.json). outfit_portraits: chân dung theo bộ đang mặc (render_portrait.py --outfit).",
       "gender": "male",
       "height_m": 1.65,
       "outfit_textures": {
@@ -878,7 +912,10 @@
         "walk": 1.4,
         "run": 4.39
       },
-      "portrait": "assets/characters/intern_nam_kinh/intern_nam_kinh_portrait.png"
+      "portrait": "assets/characters/intern_nam_kinh/intern_nam_kinh_portrait.png",
+      "outfit_portraits": {
+        "dau_ngay": "assets/characters/intern_nam_kinh/intern_nam_kinh_portrait_dau_ngay.png"
+      }
     }
   }
 }
