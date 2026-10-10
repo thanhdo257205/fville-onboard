@@ -49,16 +49,18 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 - [x] P1 **Lỗi: mất dấu Objective markers ở tất cả các zone** (dấu "!" + mũi tên ở mép màn hình) — người dùng kiểm tra lại
   10/10/2026: đã hết lỗi (bản `gh-pages` 6416ec3 trên trình duyệt sạch cũng hiện đủ ở 6 zone; nếu gặp lại, xem trước menu
   Esc → "Objective markers" có đang Off không) — Phụ trách: —
-- [ ] P1 **Lỗi: đánh bi-a xong camera nâng lên, bị đèn treo của bàn che** — Phụ trách: —
+- [x] P1 **Lỗi: đánh bi-a xong camera nâng lên, bị đèn treo của bàn che** (đã sửa — nhánh `fix/pool-camera`: camera lúc bi lăn
+  và lúc ngắm không cao quá mép dưới chao đèn − 15 cm, đo tự động từ lưới bối cảnh; lùi xa hơn để vẫn thấy cả bàn) — Phụ trách: Claude
   - Nguyên nhân (đọc code): lúc bi lăn (`phase === "roll"`, camera trong `game/src/pool/table.js`) camera đặt cao hơn mặt bi
     1,55 m (~2,4 m trên sàn), lùi 1,15 m. 3 chao đèn thả (`pool_lamps`, `scripts/blender/lib/interior.py`: chao ở 1,62–1,87 m,
     bán kính 0,24 m, cách nhau 0,8 m) nằm ngay giữa camera và mặt bàn. `clampCamera` xét cả lưới hiển thị nên tia từ bi tới
     camera chạm chao đèn → camera bị kéo vào sát chao. Lúc ngắm, lăn chuột kéo camera ra xa hết cỡ (`camDist` 2,4 → cao ~2 m)
     cũng chạm đèn.
-  - [ ] Sửa (đề xuất): camera lúc bi lăn hạ xuống dưới mép chao (≤ ~1,5 m) và lùi xa hơn, nhìn chéo xuống bàn; đèn nào che
+  - [x] Sửa (đề xuất): camera lúc bi lăn hạ xuống dưới mép chao (≤ ~1,5 m) và lùi xa hơn, nhìn chéo xuống bàn; đèn nào che
     tầm nhìn thì làm mờ bằng `seeThrough` sẵn có (không sửa GLB) và không tính đèn trong `clampCamera`; giới hạn chiều cao
     camera lúc ngắm thấp hơn mép chao
-  - [ ] Kiểm thử: smoke bi-a — trong lúc bi lăn, tia từ camera tới tâm bàn không cắt lưới nào (trừ bi); chụp 1 ảnh để xem
+  - [x] Kiểm thử: smoke bi-a — trong lúc bi lăn, tia từ camera tới tâm bàn không cắt lưới nào (trừ bi); chụp 1 ảnh để xem
+    (không cần làm mờ đèn: camera dưới mép chao thì đèn không nằm giữa camera và mặt bàn; `clampCamera` vẫn xét đèn)
 - [x] P1 **Lỗi: nhân vật bay lơ lửng khi chỉnh góc cơ ở bàn bi-a** (người dùng báo 10/10/2026; đã sửa — nhánh
   `fix/pool-float-card`, PR #6; đã deploy `gh-pages` a9a3dcc). Giữ A/D hoặc kéo chuột 2 s → người chơi lên cao 1,94 m. Nguyên nhân: mỗi khung xoay cơ
   `placePlayer()` (`game/src/pool/table.js`) đặt người chơi ở độ cao hiện tại + 2 cm, trọng lực chỉ kéo xuống ~3 mm / khung →

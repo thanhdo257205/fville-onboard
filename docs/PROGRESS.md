@@ -1044,6 +1044,20 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   bước; thử tay trong trình duyệt: bi-a (cơ 1, bi chạm bi 7, băng 8, lỗ 1), cửa quẹt thẻ, cảnh lên / xuống xe (tiếng máy 0 →
   12 m/s rồi 7,4 → 0 khi vào bến).
 
+### Camera bàn bi-a không bị đèn treo che (11/10/2026, nhánh `fix/pool-camera`)
+
+- Lỗi: đánh xong, lúc bi lăn camera đặt cao 1,55 m trên mặt bi (~2,35 m trên sàn) — trên 3 chao đèn thả (mép dưới 1,75 m);
+  tia từ bi trắng tới camera chạm chao → `clampCamera` kéo camera vào sát đèn, chao che gần hết bàn. Lăn chuột ra xa hết cỡ
+  lúc ngắm (camera ~2 m) cũng chạm đèn.
+- Sửa (`game/src/pool/table.js`, không sửa GLB): `headroom()` đo 1 lần mỗi zone vật thấp nhất phía trên mặt chơi (tia thẳng
+  đứng từ lưới 17 × 29 điểm phủ mặt bàn, lưới hiển thị `zone.view`) trừ 15 cm → zone_05: 1,60 m. Camera lúc bi lăn / xem
+  (`roll`, `watch`, `wait`) không cao hơn mức đó và lùi xa hơn bù lại (1,15 → 1,9 m từ tâm bàn) để vẫn thấy cả bàn; lúc ngắm
+  chiều cao camera cũng chặn ở mức đó. Camera thấp hơn mép chao thì mọi tia nhìn xuống bàn đi dưới đèn — đèn không che, không
+  kéo camera vào. Bàn không có đèn thì mức trần là trần nhà (không đổi gì).
+- Kiểm thử: `__game._game.pool.cameraView()` (cao bao nhiêu so với bàn, giới hạn, tia camera → tâm bàn có vướng lưới nào); smoke
+  bước bi-a zone 5 kiểm tra mọi khung lúc bi lăn: camera ≤ giới hạn, 0 khung bị che (bản cũ: camera 1,69 m, bị kéo sát chao).
+  Thử tay 4 hướng đánh: camera 1,41–1,60 m, 0 khung bị che.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

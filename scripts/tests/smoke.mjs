@@ -332,7 +332,13 @@ async function runLook(browser, base, look) {
           turn.turned = +turn.turned.toFixed(2); turn.moved = +turn.moved.toFixed(2);
           const before = __game.pool.cue;
           const shot = __game.pool.shoot(Math.PI / 2 + 0.01, 0.9);
-          for (let i = 0; i < 2000 && g.pool.playback; i++) { g.update(1 / 20); if (i % 20 === 0) await new Promise((r) => setTimeout(r, 0)); }
+          // camera lúc bi lăn: dưới chao đèn treo, tia camera → tâm bàn không vướng đèn / trần (trước đây camera bị kéo sát chao)
+          const cam = { frames: 0, maxY: 0, headroom: null, blocked: 0 };
+          for (let i = 0; i < 2000 && g.pool.playback; i++) {
+            g.update(1 / 20);
+            if (g.pool.phase === "roll" && i >= 10) { const v = g.pool.cameraView(); cam.frames++; cam.maxY = Math.max(cam.maxY, v.y); cam.headroom = v.headroom; if (v.blocked != null) cam.blocked++; }
+            if (i % 20 === 0) await new Promise((r) => setTimeout(r, 0));
+          }
           const res = await shot;
           const after = __game.pool;
           // vị trí bi đang vẽ khớp trạng thái cuối, mọi bi trên bàn nằm trong mép băng
@@ -345,15 +351,16 @@ async function runLook(browser, base, look) {
           const k = await __game.approach("NPC_ban_bi_a");
           __game.interact();
           const r = await __game.resolve({ maxMs: 60000 });
-          return { scene, ok: a.ok && k.ok, prompt, inPool: { mode: inPool.mode, active: inPool.active, hidden: inPool.cuesHidden }, turn, before, res, after: { phase: after.phase, shots: after.shots, cue: after.cue }, drawn, inside, out,
+          return { scene, ok: a.ok && k.ok, prompt, inPool: { mode: inPool.mode, active: inPool.active, hidden: inPool.cuesHidden }, turn, cam, before, res, after: { phase: after.phase, shots: after.shots, cue: after.cue }, drawn, inside, out,
             khang: { minigames: r.minigames, dialogues: r.dialogues, played: g.progress.flags.has("billiards_played"), potted: g.progress.flags.has("billiards_potted"),
               hit: g.progress.flags.has("billiards_last_hit"), pool: g.pool.active, mode: g.mode } };
         });
         await check(bi.scene.table && bi.scene.balls === 16 && bi.scene.cue && bi.scene.col && bi.ok && bi.prompt === "Play pool" && bi.inPool.mode === "pool" && bi.inPool.active && bi.inPool.hidden
           && bi.turn.turned > 0.5 && bi.turn.moved > 0.3 && bi.turn.rise < 0.01
+          && bi.cam.frames > 5 && bi.cam.headroom < 1.7 && bi.cam.maxY <= bi.cam.headroom + 0.01 && bi.cam.blocked === 0
           && bi.res && bi.res.frames > 10 && bi.res.time > 0.3 && bi.after.phase === "aim" && bi.after.shots === 1 && (bi.after.cue.z !== bi.before.z || !bi.after.cue.on) && bi.drawn && bi.inside
           && bi.out.mode === "play" && bi.out.cuesBack,
-          `zone_05: bàn bi-a — "Play pool", xoay cơ (đi vòng ${bi.turn.moved} m, chân cách sàn tối đa ${Math.round(bi.turn.rise * 1000)} mm), phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
+          `zone_05: bàn bi-a — "Play pool", xoay cơ (đi vòng ${bi.turn.moved} m, chân cách sàn tối đa ${Math.round(bi.turn.rise * 1000)} mm), phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s; camera cao ${bi.cam.maxY} m ≤ ${bi.cam.headroom} m dưới chao đèn, ${bi.cam.blocked}/${bi.cam.frames} khung bị che), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
         await check(bi.khang.minigames.includes("billiards") && bi.khang.played && bi.khang.potted && bi.khang.hit && !bi.khang.pool && bi.khang.mode === "play",
           "zone_05: anh Khang → Một cú bi-a trên bàn thật: bi vào lỗ, billiards_potted + billiards_played (gộp)", JSON.stringify(bi.khang));
         // đi ngược khỏi zone 5 (bàn bi-a đã dựng cây cơ) → zone 4 → zone 5: trước đây rời zone 5 báo "Couldn't open …"
