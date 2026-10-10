@@ -1,8 +1,9 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 4b0aed0, build từ `main` 9f2c335 — gồm PR #1
+Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` a9a3dcc, build từ `main` 1a79739 — gồm PR #1
 bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5; PR #2 camera / rơi xuyên sàn; PR #3 tiếng Việt; sửa CI + ảnh
-thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình).
+thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); PR #6 sửa bay lơ lửng ở bàn bi-a, rò rỉ bộ nhớ GPU; PR #7 tab
+Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình).
 
 ## Cách dùng
 
@@ -59,7 +60,7 @@ thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy ch
     camera lúc ngắm thấp hơn mép chao
   - [ ] Kiểm thử: smoke bi-a — trong lúc bi lăn, tia từ camera tới tâm bàn không cắt lưới nào (trừ bi); chụp 1 ảnh để xem
 - [x] P1 **Lỗi: nhân vật bay lơ lửng khi chỉnh góc cơ ở bàn bi-a** (người dùng báo 10/10/2026; đã sửa — nhánh
-  `fix/pool-float-card`; còn: deploy). Giữ A/D hoặc kéo chuột 2 s → người chơi lên cao 1,94 m. Nguyên nhân: mỗi khung xoay cơ
+  `fix/pool-float-card`, PR #6; đã deploy `gh-pages` a9a3dcc). Giữ A/D hoặc kéo chuột 2 s → người chơi lên cao 1,94 m. Nguyên nhân: mỗi khung xoay cơ
   `placePlayer()` (`game/src/pool/table.js`) đặt người chơi ở độ cao hiện tại + 2 cm, trọng lực chỉ kéo xuống ~3 mm / khung →
   bay lên ~1 m/s. Sửa: đặt theo độ cao sàn lúc vào bàn (`standY`, chỗ đứng vững gần nhất), không cộng thêm; smoke giữ D rồi A
   ở bàn: chân cách sàn 0 mm (bỏ bản sửa thì 1940 mm) — Phụ trách: Claude
@@ -181,7 +182,7 @@ thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy ch
     chuột (`data/i18n/en.json` + `vi.json`); trên điện thoại: kéo ngón tay để ngắm (xem mục "Chơi trên trình duyệt điện thoại")
   - [ ] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
-- [x] P3 Tab Bản đồ trong app My FPT — Phụ trách: Claude — nhánh `feat/map-tab` (còn: deploy). Ảnh zone chụp từ trên xuống
+- [x] P3 Tab Bản đồ trong app My FPT — Phụ trách: Claude — nhánh `feat/map-tab` (PR #7, `main` 1a79739; đã deploy `gh-pages` a9a3dcc). Ảnh zone chụp từ trên xuống
   (cắt bỏ trần / mái ở sàn + 2,4 m, nét tường tối), mũi tên "Bạn" theo hướng mặt, chấm Tú, dấu "!" + dòng mục tiêu (khác tầng:
   "(tầng trên / dưới)"); zone_04 mỗi tầng một ảnh; smoke mở tab ở zone 2–5
 - [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —

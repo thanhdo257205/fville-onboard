@@ -965,6 +965,10 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   `map_down`, `map_loading`, `map_empty` (en + vi). `__game.map`: khung, kích thước, ms chụp, vị trí các dấu.
 - Smoke (ngoại hình đầu, zone 2–5 — zone 0–1 chưa có app): mở app → bấm tab Bản đồ → ảnh tải được, dấu bạn + mục tiêu trong
   ảnh, có dòng mục tiêu, Tab đóng app → chơi tiếp.
+- Gộp vào `main` qua PR #7 (1a79739, kèm các commit của PR #6 `fix/pool-float-card`; CI xanh) → deploy `gh-pages` a9a3dcc
+  (106 file, 17,4 MB, quét riêng tư 0 phát hiện). CI lần đầu của PR #7 đỏ ở bước zone_01 → zone_02 (tải zone_02 quá 20 s
+  trên máy CI), chạy lại thì xanh — zone_02 nặng hơn từ PR #5 (tải lần đầu ~9,5 s trên máy cloud, SwiftShader); lặp lại thì
+  xem phần tải zone_02.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
