@@ -371,7 +371,8 @@ def decimate_skinned(mesh, target, protect=("mixamorig:Head", "mixamorig:Neck"),
       face_keep_tris: lượt 0 — mặt trước quá dày (vd nga: prepare_for_mixamo --protect-face giữ ~10k tam giác mặt) →
                       chỉ giảm phần phẳng của mặt (da, má, trán) còn khoảng số tam giác này; đỉnh có độ tương phản
                       texture cao nhất (face_detail_pct, mặc định 15% — hoặc ngưỡng face_detail_threshold; mắt, lông
-                      mày, gọng kính, môi — _texture_detail) được giữ."""
+                      mày, gọng kính, môi — _texture_detail) được giữ; vùng regions nằm trên mặt cũng được giữ (vd
+                      mẩu lọn tóc đã rút ngắn của intern_nam_kinh: giảm tự do thì thành vệt tam giác đen trên trán)."""
     opts = opts or {}
     before, head_before = tri_count(mesh), head_tris(mesh)
     regions = list(opts.get("regions", []))
@@ -391,7 +392,7 @@ def decimate_skinned(mesh, target, protect=("mixamorig:Head", "mixamorig:Neck"),
             thr = opts["face_detail_threshold"]
         else:                           # giữ đúng tỉ lệ đỉnh có nét cao nhất (mặc định 15%)
             thr = round(float(np.quantile(det[face], 1 - opts.get("face_detail_pct", 0.15))), 3)
-        plain = face & (det < thr)
+        plain = face & (det < thr) & ~reg     # vùng giữ thêm (regions) nằm trên mặt cũng được giữ ở lượt này
         cut = max(0, zb["head_front"] - opts["face_keep_tris"])
         zb["face_detail_verts_pct"] = round(float((face & ~plain).sum() / max(face.sum(), 1)), 3)
         zb["face_plain_tris"] = tris_of(plain)

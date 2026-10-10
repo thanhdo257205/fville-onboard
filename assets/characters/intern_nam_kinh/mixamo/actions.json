@@ -1,0 +1,32 @@
+{
+  "_ghi_chu": "intern_nam_kinh: file gốc intern_nam_kinh_rigged.fbx tải từ Mixamo (With Skin, No Fingers, 25 xương; chép từ Downloads/intern_nam_kinh_for_mixamo.fbx — KHÔNG phải intern_nam_kinh_for_mixamo.fbx chưa gắn xương ở thư mục nhân vật) KHÔNG kèm animation (tư thế chữ A tĩnh) → idle và 13 animation lấy từ file của prajith (retarget, hông nhân theo tỉ lệ độ cao hông), như intern_nam. speed_mps: tốc độ chơi như các nhân vật khác. Texture: textures/<id>_basecolor.jpg = bộ ao_cam (áo phông cam + logo), không lấy ảnh nhúng trong FBX (áo xanh ngọc).",
+  "base": [
+    "intern_nam_kinh_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "back_of_head_keep": 0.14,
+    "chest_logo": true,
+    "chest_logo_radius_m": 0.06,
+    "regions": [
+      {
+        "name": "dau_lon_toc",
+        "center": [
+          0.003,
+          -0.095,
+          1.509
+        ],
+        "radius": 0.015
+      }
+    ],
+    "face_keep_tris": 2600,
+    "face_detail_pct": 0.12
+  },
+  "_decimate_ghi_chu": "Bản 6k, cách giảm như intern_nam / nga: lượt 0 chỉ giảm phần phẳng của mặt trước (giữ 12% đỉnh có độ tương phản texture cao: mắt, lông mày, gọng kính, môi), lượt 1 tóc sau gáy còn 14%, lượt 2 giữ đầu + vùng logo, giảm thân. Gọng kính (ống ~3 mm) vẫn liền ở 6k, vòng gọng thành đa giác. regions.dau_lon_toc: mẩu lọn tóc giữa trán đã rút ngắn (mesh_fixes.json) — để lượt 0 giảm tự do thì gộp thành vệt tam giác đen trên trán."
+}

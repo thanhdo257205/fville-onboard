@@ -138,7 +138,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - Vai nhân vật: id vai trong dữ liệu giữ nguyên (vd vai `thao` hiển thị là **Ms. Huyền**, model `huyen`; vai `le_tan`
   là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại). Vai `player` chọn model theo giới tính
   (`roles.player.model_by_gender`: nam → `intern_nam`, nu → `intern_nu`; bản lưu `player.gender`, mặc định nam; thử khi dev:
-  `?gender=nu` hoặc `__game.setGender("nu")`); bộ đồ đổi bằng texture (`dau_ngay` → texture trong GLB khi nhận Áo Cam). Lời thoại
+  `?gender=nu` hoặc `__game.setGender("nu")`; ngoại hình khác cùng giới tính: `roles.player.looks`, bản lưu `player.look`, dev
+  `?look=intern_nam_kinh` hoặc `__game.setLook(...)`); bộ đồ đổi bằng texture (`dau_ngay` → texture trong GLB khi nhận Áo Cam). Lời thoại
   nhân vật dựa trên người thật (Ms. Huyền, Ms. Nga, Prajith): tự viết chi tiết cá nhân, giữ nhẹ nhàng, thân thiện, không nói chuyện
   sức khỏe, gia đình, tiền bạc hay điều làm họ trông thiếu chuyên nghiệp.
 - Làm theo đợt và **dừng lại báo cáo** sau mỗi đợt; báo cáo bằng tiếng Việt.

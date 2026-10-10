@@ -9,15 +9,24 @@ import { applyTint, setTint } from "./tint.js";
 import { lang } from "../i18n.js";
 
 export class Characters {
-  constructor(cfg) { this.cfg = cfg; this.swap = {}; this.gender = "nam"; }
+  constructor(cfg) { this.cfg = cfg; this.swap = {}; this.gender = "nam"; this.look = null; }
   role(name) { return this.cfg.roles[name]; }
   roles() { return Object.entries(this.cfg.roles).filter(([k]) => !k.startsWith("_")); }
   roleOfNode(nodeName) { return this.roles().find(([, r]) => (r.place === "node" || r.place === "near_node") && [].concat(r.node).includes(nodeName))?.[0] ?? null; }
   displayName(role) { return this.cfg.names?.[lang]?.[role] ?? this.cfg.names?.en?.[role] ?? role; }
   model(id) { return this.cfg.models[this.swap[id] ?? id]; }
-  // id model của vai: model_by_gender (vd player: nam → intern_nam, nu → intern_nu) theo giới tính người chơi
-  // (this.gender, main.js đặt từ bản lưu), không có thì model
-  modelId(role) { const r = this.role(role); return r?.model_by_gender?.[this.gender] ?? r?.model; }
+  // id model của vai: ngoại hình đã chọn (this.look, bản lưu player.look) nếu có trong looks.<giới tính> của vai, không thì
+  // model_by_gender (vd player: nam → intern_nam, nu → intern_nu) theo giới tính người chơi (this.gender, main.js đặt từ
+  // bản lưu), không có thì model
+  modelId(role) {
+    const r = this.role(role);
+    if (this.look && r?.looks?.[this.gender]?.includes(this.look)) return this.look;
+    return r?.model_by_gender?.[this.gender] ?? r?.model;
+  }
+  // giới tính có ngoại hình id trong roles.<vai>.looks (vd intern_nam_kinh → "nam"), không có → null
+  lookGender(id, role = "player") {
+    return Object.entries(this.role(role)?.looks || {}).find(([, ids]) => ids.includes(id))?.[0] ?? null;
+  }
   tagConfig() { return this.cfg.name_tags || {}; }
   // người nói không có vai trong cảnh (vd "hr": tin nhắn điện thoại) → chân dung của vai speaker_as.<người nói>.
   // Model đang dùng fallback → không chân dung (không hiện mặt người khác dưới tên người này)

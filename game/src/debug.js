@@ -90,7 +90,15 @@ export function installDebug(game, loop) {
     },
     get model() {
       const c = game.player.character, id = game.characters.modelId("player");
-      return { id, gender: game.characters.gender, tier: c.tier, glb: game.characters.model(id).glb[c.tier], outfit: c.outfit ?? null };
+      return { id, gender: game.characters.gender, look: game.characters.look, tier: c.tier, glb: game.characters.model(id).glb[c.tier], outfit: c.outfit ?? null };
+    },
+    // đổi ngoại hình (roles.player.looks, vd "intern_nam_kinh"; null = mặc định theo giới tính): đặt luôn giới tính theo model
+    async setLook(id) {
+      const g = id ? game.characters.lookGender(id) : game.characters.gender;
+      if (!g) throw new Error(`setLook: "${id}" không có trong roles.player.looks`);
+      game.progress.player.look = id || null;
+      game.characters.look = id || null;
+      return api.setGender(g);
     },
     // đổi giới tính người chơi lúc chơi (lưu vào bản lưu): "nam" | "nu" → đổi model, giữ đúng bộ đồ
     async setGender(g) {

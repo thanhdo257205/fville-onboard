@@ -14,7 +14,7 @@ Mô hình nhân vật tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0. G�
 - `assets/characters/intern_nam/`, `assets/characters/intern_nu/` — nhân vật người chơi nam / nữ (hư cấu). Mô hình tạo
   bằng Meshy (meshy.ai), giấy phép CC BY 4.0; gắn xương Adobe Mixamo; animation dùng lại bộ Mixamo của Prajith.
 - `assets/characters/intern_nam_kinh/` — nhân vật người chơi nam đeo kính (hư cấu; sau này cũng là model Tú). Mô hình
-  tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0 (đang chờ gắn xương Mixamo).
+  tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0; gắn xương Adobe Mixamo; animation dùng lại bộ Mixamo của Prajith.
 
 Logo FPT trên ngực áo (Prajith, Huyền) là bản tạm: mảng logo tách từ texture của Prajith
 (chỉ có trên máy làm việc), sẽ thay bằng file logo chính thức của FPT

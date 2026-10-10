@@ -68,7 +68,15 @@ async function boot() {
   // Thử khi phát triển: ?gender=nu (hoặc nam) — ghi vào bản lưu; hoặc __game.setGender("nu") lúc đang chơi.
   const gq = new URLSearchParams(location.search).get("gender");
   if (import.meta.env.DEV && (gq === "nam" || gq === "nu")) { progress.player.gender = gq; if (saved) save.store(progress); }
+  // ngoại hình (roles.player.looks, bản lưu player.look; màn tạo nhân vật chưa có mục này): ?look=intern_nam_kinh khi phát
+  // triển — đặt luôn giới tính theo model, ghi vào bản lưu; hoặc __game.setLook("intern_nam_kinh") lúc đang chơi
+  const lq = import.meta.env.DEV && new URLSearchParams(location.search).get("look");
+  if (lq && characters.lookGender(lq)) {
+    Object.assign(progress.player, { look: lq, gender: characters.lookGender(lq) });
+    if (saved) save.store(progress);
+  }
   characters.gender = progress.player.gender || "nam";
+  characters.look = progress.player.look || null;
   const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters,
     input, settings, nametags, content, progress, ui });
   game.validation = { problems, nodes: nodeCheck };

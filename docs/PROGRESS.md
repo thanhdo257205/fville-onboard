@@ -398,8 +398,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     cho bước gắn lên đầu intern trong `cap.json` (vòng đội đầu 18,1 × 18,5 cm, vòm cao 11,3 cm). Chưa gắn vào game.
   - Ảnh: `renders/accessories/cap_so_sanh.png` (Meshy | bản thấp: chính diện, 3/4, ngang, từ dưới), `cap_chi_tiet.png`.
   - Còn: ở 2 đầu vành, mép vòm bước từ chân vành xuống mép tự nhiên thành một bậc nhỏ (thấy khi nhìn ngang sát).
-- **intern_nam_kinh — người chơi nam đeo kính (hư cấu, Meshy; 10/10/2026), chuẩn bị cho Mixamo:** lựa chọn thứ 3 ở màn
-  tạo nhân vật (Nam), sau này làm model Tú; chưa có GLB, chưa vai nào dùng, chưa vào màn chọn nhân vật.
+- **intern_nam_kinh — người chơi nam đeo kính (hư cấu, Meshy + Mixamo; 10/10/2026), đã vào game:** ngoại hình thứ 2 của
+  giới tính nam (lựa chọn thứ 3 của người chơi), sau này làm model Tú; màn tạo nhân vật chưa có mục chọn ngoại hình.
   - Gốc 65.584 tam giác → 25.000, cao 1,65 m, chữ A, giữ nguyên mặt (gọng kính, mắt sau kính, lông mày, môi) + vùng logo.
     FBX cho Mixamo: `assets/characters/intern_nam_kinh/intern_nam_kinh_for_mixamo.fbx` (0,98 MB, không commit).
   - Lọn tóc rủ giữa hai mắt kính (đầu lọn chạm sống kính → vết đen) rút ngắn 2,8 → 1,0 cm, tới ngang lông mày
@@ -414,6 +414,24 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Ảnh: `renders/characters/intern_nam_kinh_ket_qua.png` (chính diện dau_ngay | ao_cam, cận logo, cận mặt),
     `intern_nam_kinh_trang_phuc.png` (kèm mặt nạ trước/sau, cận mặt mặt nạ), `intern_nam_kinh_logo_nguc_so_sanh.png`
     (so với logo áo intern_nam).
+  - Mixamo (25 xương, No Fingers, With Skin; `mixamo/intern_nam_kinh_rigged.fbx`, không commit) → bản 6k duy nhất
+    (`build_character.py --single`, 0,59 MB, validate 0 lỗi), 15 animation retarget từ bộ prajith như intern_nam; walk
+    phát ×0,85, run ×1,08 cho khớp chân (anim 1,65 / 4,07 m/s; tốc độ chơi 1,4 / 4,39 m/s). Tay lún thân tối đa 5,6 cm
+    (think), 5,3 cm (sit_down) — như intern_nam. Kính (ống ~3 mm) vẫn liền ở 6k (vòng gọng thành đa giác). Mẩu lọn tóc đã
+    rút ngắn bị gộp thành vệt tam giác đen trên trán → `decimate_protect.regions.dau_lon_toc` (lượt 0 giảm mặt nay chừa
+    các vùng regions; nga không bị ảnh hưởng — vùng của nga ở ngực). Chân dung bộ ao_cam; `intern_nam_kinh_dau_ngay.webp`
+    (PIL quality 85, method 6 — cùng cách tạo WebP của intern_nam / intern_nu: ra đúng 68.882 byte với ảnh của intern_nam).
+  - Chọn ngoại hình (sửa code tối thiểu): `roles.player.looks` = {nam: [intern_nam, intern_nam_kinh], nu: [intern_nu]},
+    bản lưu `player.look`; `Characters.modelId` dùng `look` nếu có trong `looks.<giới tính>`, không thì `model_by_gender`
+    như cũ (đổi giới tính → ngoại hình không hợp lệ → model mặc định). Dev: `?look=intern_nam_kinh` (đặt luôn giới tính,
+    ghi vào bản lưu) hoặc `__game.setLook("intern_nam_kinh")` / `setLook(null)`; `__game.model.look`.
+  - Đã chạy zone 0 → 3 (bản dev, mạng local `wrangler dev`): mạch chính đủ, áo xanh ngọc tới cổng zone 2 → Áo Cam (texture
+    trong GLB) từ ảnh check-in, tải lại vẫn đúng model + áo; đi 1,4 / chạy 4,39 m/s; sit_down / sit_type / stand_up phát
+    đúng (zone 0–3 và cảnh kết không có chỗ ngồi cho người chơi — thử trực tiếp trên nhân vật); kính không xuyên mặt khi
+    chạy, ngồi cúi đầu; camera hội thoại; chân dung trong hộp thoại (lời người chơi trả ví cho Ms. Nga) và ảnh thẻ trên màn
+    tổng kết / thẻ tải về (`__game.finish()`). Chơi nhiều người: 2 bot local (intern_nam_kinh áo xanh, intern_nam áo cam)
+    hiện đúng model + áo; bot thấy người chơi `intern_nam_kinh` + `ao_cam`. Console sạch. `npm run build`: dist có GLB,
+    WebP, chân dung của model mới. Ảnh: `renders/game/intern_nam_kinh_trong_game_{1,2,3}.jpg`.
 - Công cụ:
   - `prepare_for_mixamo.py`: Meshy → FBX cho Mixamo; `--protect-face`, `--protect-logo` giữ nguyên mặt / vùng logo khi
     giảm tam giác. `texture_fixes.json` thêm `collar` (tô lại mặt trong cổ áo theo pháp tuyến mượt quay vào trục cổ) và
@@ -451,8 +469,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- intern_nam_kinh: chờ người dùng gắn xương trên Mixamo (FBX ở trên) → `build_character.py` 6k, chân dung, WebP
-  `dau_ngay`, thêm vào màn chọn nhân vật; sau đó dùng làm model Tú (khác giới với người chơi).
+- intern_nam_kinh: thêm mục chọn ngoại hình vào màn tạo nhân vật (dữ liệu `roles.player.looks` đã có); dùng làm model Tú
+  (khác giới với người chơi).
 - Mũ lưỡi trai phần 2 (gắn xương Head của từng intern): chưa làm; phần 1 (`cap.glb`) đã xong.
 - Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
   hưởng khi sau này đổi màu tóc.
