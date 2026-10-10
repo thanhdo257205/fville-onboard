@@ -99,6 +99,8 @@ def build_stair_hall(col, rng):
     it.bar_railing(b, (F1[1] + 0.05, F1_Y0), (F1[1] + 0.05, LAND_Y), 0.0, z_mid)
     it.bar_railing(b, (F2[0] - 0.05, LAND_Y), (F2[0] - 0.05, F1_Y0), z_mid, UP)
     it.bar_railing(b, (F1[1] + 0.05, LAND_Y), (F2[0] - 0.05, LAND_Y), z_mid, z_mid)
+    # mép tây chiếu trên (đầu vế 2, sàn cao UP): nối tiếp lan can vế 2 tới tường bắc hành lang (y = hy0)
+    it.bar_railing(b, (F2[0] - 0.05, F1_Y0), (F2[0] - 0.05, hy0 + 0.1), UP, UP)
     # cửa phòng dán tranh hoạt hình (placeholder: mảng màu) + biển tròn gỗ
     b.box((hx0 + 0.04, 8.8, 1.15), (0.04, 1.0, 2.3), "curb_yellow")
     for k, c in enumerate(("shelf_red", "fpt_blue", "fpt_green", "fpt_orange")):
@@ -207,7 +209,9 @@ def build_doors(cols, rng):
 
 def build_markers(g):
     mk.spawn("zone_04_start", (11.0, 0.0, 0.0), yaw_deg=90, collection=g)
-    mk.spawn("zone_04_from_zone_03", (11.0, 0.0, 0.0), yaw_deg=90, collection=g)   # tên theo GDD (vào từ Hạt Lúa)
+    # tên theo GDD (vào từ Hạt Lúa); lùi vào trong 2 m so với start (x 11 chỉ cách tường cuối 1,15 m → camera không
+    # lùi ra sau lưng được): camera đứng sau lưng, thấy dọc hành lang tới cửa quẹt thẻ
+    mk.spawn("zone_04_from_zone_03", (9.0, 0.0, 0.0), yaw_deg=90, collection=g)
     mk.spawn("zone_04_from_zone_05", (UPPER[0] + 1.5, sum(FSA_Y) / 2, UP), yaw_deg=-90, collection=g)
     mk.trigger("zone_03_enter", (11.8, 0.0, 1.4), (0.6, 3.0, 2.8), g)
     mk.trigger("cua_quet_the", (sum(CARD_DOOR) / 2, 0.2, 1.2), (3.2, 2.2, 2.4), g)
@@ -227,6 +231,8 @@ def build_colliders(col):
     # đầu phía đông (sau TRIGGER_zone_03_enter x 11.5..12.1): chặn rơi khỏi bản đồ khi trigger không chạy
     C("dau_hanh_lang_dong", (x1 + 0.15, 0, 1.8), (0.3, 3, 3.6), col)
     C("cua_quet_the", (sum(CARD_DOOR) / 2, y1, 1.3), (CARD_DOOR[1] - CARD_DOOR[0], 0.12, 2.6), col)
+    # vách trên cửa quẹt thẻ (từ đỉnh cánh 2,55 m tới sàn tầng trên): không có thì camera lọt khe ra hành lang khi đi vế 1
+    C("tuong_bac_tren_cua", (sum(CARD_DOOR) / 2, y1, (2.55 + UP) / 2), (CARD_DOOR[1] - CARD_DOOR[0], 0.3, UP - 2.55), col)
     # sảnh cầu thang
     hx0, hx1, hy0, hy1 = HALL
     C("san_sanh_thang", ((hx0 + hx1) / 2, (hy0 + hy1) / 2, -0.25), (hx1 - hx0, hy1 - hy0, 0.5), col)
@@ -239,6 +245,9 @@ def build_colliders(col):
     mk.collider_ramp("ve_2", (sum(F2) / 2, LAND_Y, z_mid), (sum(F2) / 2, F1_Y0, UP), F2[1] - F2[0], col)
     C("chieu_tren", (sum(F2) / 2, (hy0 + F1_Y0) / 2, UP / 2), (F2[1] - F2[0], F1_Y0 - hy0, UP), col)
     C("lan_can_giua", ((F1[1] + F2[0]) / 2, (F1_Y0 + LAND_Y) / 2, 3), (F2[0] - F1[1], LAND_Y - F1_Y0, 6), col)
+    # lan can mép tây chiếu trên: nối tiếp lan can giữa tới tường bắc hành lang (mặt tường y hy0 + 0.15), cao 2,6–6 m
+    # → người đi tầng trệt (cao 1,75 m) vẫn qua cửa quẹt thẻ / chân vế 1 bên dưới
+    C("lan_can_chieu_tren", ((F1[1] + F2[0]) / 2, (hy0 + 0.15 + F1_Y0) / 2, 4.3), (F2[0] - F1[1], F1_Y0 - hy0 - 0.15, 3.4), col)
     # tầng trên
     ux0, ux1, uy0, uy1 = UPPER
     vx0, vx1, vy0, vy1 = VOID

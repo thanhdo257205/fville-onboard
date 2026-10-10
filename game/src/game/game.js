@@ -208,8 +208,8 @@ export class Game {
       console.warn(`[zone] ${zoneId}: thiếu ${spawnName} — xuất hiện ở ${spawn.name}`);
     }
     const yaw = keepPose ? 0 : spawn.userData.yaw_deg ?? 0;
-    // zones.json → spawn_offset.<SPAWN_>: dời chỗ xuất hiện (toạ độ glTF, m) — vd zone_04: SPAWN_ sát tường cuối hành lang,
-    // camera không lùi được ra sau lưng → xuất hiện lùi vào trong 2 m
+    // zones.json → spawn_offset.<SPAWN_>: dời chỗ xuất hiện (toạ độ glTF, m) mà không sửa GLB — vd SPAWN_ sát tường, camera
+    // không lùi được ra sau lưng (hiện không zone nào dùng: SPAWN_zone_04_from_zone_03 đã dời trong scripts/blender/zone_04.py)
     const spawnOff = !keepPose && this.zoneCfg(zoneId)?.spawn_offset?.[spawn.name];
     this.player.spawn(keepPose ? keepPose.pos : worldPos(spawn).add(new THREE.Vector3(...(spawnOff || [0, 0, 0]))), yaw);
     if (keepPose) this.player.character.root.rotation.y = keepPose.rot;
