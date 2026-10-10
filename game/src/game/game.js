@@ -223,7 +223,7 @@ export class Game {
       const plants = new Set(this.seeThrough.meshes || []);
       this.cam.pickStartYaw(this.player.position, zone, (o) => plants.has(o.name) || plants.has(o.parent?.name));
     } else this.cam.occluders = null;
-    this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true);
+    this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true, zone.view);
     await this.spawnActors();
     this.setupDoors();
     this.interaction.setup(zone, this.scene);
@@ -235,7 +235,7 @@ export class Game {
     this.persist();
     // trigger đang chứa người chơi lúc xuất hiện: chỉ kích hoạt sau khi đã bước ra
     for (const tr of zone.triggers) tr.inside = inTrigger(tr, this.player.position.clone().setY(this.player.position.y + 0.9));
-    this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true);
+    this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true, zone.view);
     // biên dịch shader + đưa texture lên GPU khi màn chờ / màn tối còn che (không giật ở khung đầu tiên)
     const tw = performance.now();
     await this.renderer.warmup(this.scene, this.camera);
@@ -847,7 +847,7 @@ export class Game {
     this.follower?.update(dt, this.player, this.zone.collider, { view: this.camera.position, obstacles: [...npcCaps, this.player.capsule()] });
     if (this.cameraOverride) { this.cameraOverride(dt); this.talkCam.overridden(); }
     else {
-      this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider);
+      this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider, false, this.zone.view);
       this.talkCam.apply(dt, this.cam.target, { player: this.player, env: this.talkEnv() });
     }
     // cây che: lúc nói chuyện thì xét đường nhìn tới người đối thoại

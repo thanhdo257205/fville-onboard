@@ -8,6 +8,7 @@
 //   __game.walkTo(name, {run, maxSec}) → đi thẳng tới node, trả kết quả (tới nơi / bị chặn)
 //   __game.benchmark(frames)  → đo thời gian khung hình thật (ms, FPS tương đương), không phụ thuộc vsync
 //   __game.collisionScan()    → quét lỗi va chạm quanh mọi SPAWN_ của zone hiện tại
+//   __game.cameraCeiling()    → camera chơi ngẩng / lùi hết cỡ ở chỗ người chơi + mọi SPAWN_: có lên xuyên trần không
 //   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
 //   __game.talkCam            → camera hội thoại (đang bật, vai trái/phải, điểm chọn vai, người đối thoại)
 //   __game.guide              → hướng dẫn: mục tiêu, vị trí dấu "!", mũi tên, giờ đứng yên, các lần nhắc; help() = phím H
@@ -399,12 +400,35 @@ export function installDebug(game, loop) {
       const t0 = performance.now();
       for (let i = 0; i < frames; i++) {
         game.cam.yaw += (Math.PI * 2) / frames;                // quay 1 vòng quanh người chơi
-        game.cam.update(0, game.player.position, { dx: 0, dy: 0, wheel: 0 }, game.zone.collider, true);
+        game.cam.update(0, game.player.position, { dx: 0, dy: 0, wheel: 0 }, game.zone.collider, true, game.zone.view);
         game.render(step);
         r.finish();
       }
       const ms = (performance.now() - t0) / frames;
       return { tier: game.state.tier, zone: game.state.zone, ms: +ms.toFixed(2), fps: +(1000 / ms).toFixed(0), ...api.info };
+    },
+    // camera chơi ngẩng hết cỡ + lùi xa nhất (như kéo / lăn chuột hết cỡ) ở chỗ người chơi và mọi SPAWN_ của zone, quay
+    // yaws hướng: tia điểm nhìn → camera có đi lên xuyên mặt nằm ngang nào của lưới hiển thị (trần) không. Chỉ tính khi
+    // camera lùi được quá 0,5 m (sát hơn là vật ngay trên đầu — như clampCamera, camera không vào gần hơn).
+    // withView=false: camera chỉ tránh COL_ như trước khi sửa lỗi xuyên trần (đối chứng)
+    cameraCeiling({ yaws = 12, withView = true } = {}) {
+      const z = game.zone, cam = game.cam, saved = { yaw: cam.yaw, pitch: cam.pitch, distance: cam.distance, current: cam.current };
+      const pts = [game.player.position.clone(), ...[...z.spawns.values()].map((s) => worldPos(s))];
+      const ray = new THREE.Ray(), bvh = z.view.geometry.boundsTree;
+      let n = 0, through = 0, close = 0, maxUp = 0;
+      for (const p of pts) for (let i = 0; i < yaws; i++) {
+        cam.yaw = (i * Math.PI * 2) / yaws;
+        cam.update(0, p, { dx: 0, dy: 1e4, wheel: 1e3 }, z.collider, true, withView ? z.view : null);
+        const d = game.camera.position.clone().sub(cam.target), L = d.length();
+        ray.set(cam.target, d.divideScalar(L));
+        n++;
+        if (bvh.raycast(ray, THREE.DoubleSide, 0, L).some((h) => Math.abs(h.face.normal.y) > 0.7)) { if (cam.current > 0.501) through++; else close++; }
+        maxUp = Math.max(maxUp, game.camera.position.y - p.y);
+      }
+      const max = { pitch: +cam.pitch.toFixed(2), distance: cam.distance };
+      Object.assign(cam, saved);
+      cam.update(0, game.player.position, { dx: 0, dy: 0, wheel: 0 }, z.collider, true, z.view);
+      return { points: pts.length, n, through, close, maxUp: +maxUp.toFixed(2), ...max };
     },
     // quét va chạm: mỗi SPAWN_ → đi 16 hướng × 3 s (chạy), ghi lỗi: rơi khỏi bản đồ, lún vào vật, không đứng được trên đất
     collisionScan(opts = {}) {

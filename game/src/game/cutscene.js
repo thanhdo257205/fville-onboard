@@ -325,7 +325,7 @@ export class Cutscene {
     this.mark("blend");
     const cam = g.camera;
     const fromPos = cam.position.clone(), fromQuat = cam.quaternion.clone(), fromFov = cam.fov;
-    g.cam.update(0, p.position, { dx: 0, dy: 0, wheel: 0 }, z.collider, true);
+    g.cam.update(0, p.position, { dx: 0, dy: 0, wheel: 0 }, z.collider, true, z.view);
     this.blend = { fromPos, fromQuat, fromFov, toPos: cam.position.clone(), toQuat: cam.quaternion.clone(), k: 0, dur: T.blend || 0.8 };
     cam.position.copy(fromPos); cam.quaternion.copy(fromQuat);
     await this.wait(T.blend);
@@ -366,7 +366,7 @@ export class Cutscene {
     this.cam = null;
     g.camera.fov = FOV;
     g.camera.updateProjectionMatrix();
-    g.cam.update(0, p.position, { dx: 0, dy: 0, wheel: 0 }, g.zone.collider, true);
+    g.cam.update(0, p.position, { dx: 0, dy: 0, wheel: 0 }, g.zone.collider, true, g.zone.view);
     hud.skip(false);
     hud.cinematic(false);
     hud.dim(0, 0);

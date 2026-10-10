@@ -176,6 +176,20 @@ async function runLook(browser, base, look) {
     await check(crOk, `màn chọn nhân vật (${wantMode === "3d" ? `3D, ${pick === "keys" ? "phím ←/→" : "bấm chuột"}` : "thẻ ảnh, màn hẹp"}): chọn ${look.id}, xem trước áo FPT, giải phóng cảnh 3D`, JSON.stringify(cr));
     const m = booted ? await ev(() => __game.model) : null;
     if (!await check(booted && m.id === look.id && m.look === look.id && m.gender === look.gender, `${startZone}: vào game "${name}", model ${look.id}${onlyZone ? `, bản lưu mẫu ?start=${startZone}` : ""}`, JSON.stringify(m))) return;
+    // đứng vững trên sàn ngay khi vào zone (khung đầu tiên sau lúc tải zone từng có dt âm → rơi xuyên sàn zone 5 khi vào
+    // thẳng ?start=zone_05); rơi khỏi bản đồ → về chỗ đứng vững gần nhất (trước đây rơi mãi quanh y −9 … −10)
+    const fall = await ev(() => {
+      const g = __game._game;
+      __game.simulate(0.3, undefined, { render: false });
+      const p0 = __game.player;
+      g.player.body.teleport(g.player.position.clone().setY(-9.95));
+      __game.simulate(0.5, undefined, { render: false });
+      const p1 = __game.player;
+      g.player.fellOut = 0;
+      return { p0, p1 };
+    });
+    await check(fall.p0.onGround && !fall.p0.fellOut && fall.p1.onGround && fall.p1.fellOut === 1 && Math.abs(fall.p1.pos[1] - fall.p0.pos[1]) < 0.1,
+      `${startZone}: đứng vững trên sàn khi vào zone (y ${fall.p0.pos[1]}); rơi xuyên sàn → về chỗ đứng gần nhất`, JSON.stringify(fall));
     // Tú (zone có Tú): đúng model khác giới, áo ngày đầu, chân dung theo bộ đồ, câu dẫn he / she
     const tu = tuOf(look);
     const tuCheck = async (when, cam) => {
@@ -239,6 +253,14 @@ async function runLook(browser, base, look) {
         const conB = problems.splice(0);
         await check(back.z1.ok && back.z1.zone === "zone_04" && !back.z1.err && back.z2.ok && back.z2.zone === "zone_05" && !back.z2.err && back.z2.pool && !conB.length,
           "zone_05 → zone_04 → zone_05 (sau khi chơi bi-a): rời và vào lại zone 5 được, bàn bi-a dựng lại, console sạch", JSON.stringify({ ...back, console: conB.slice(0, 5) }));
+      }
+      // zone trong nhà: kéo chuột ngẩng hết cỡ + lăn chuột lùi xa nhất → camera vẫn dưới trần (trần không có COL_; trước
+      // đây camera bay lên tận nóc nhà). Đối chứng: cùng các góc khi camera chỉ tránh COL_ (số lần xuyên trần trước khi sửa)
+      if (/^zone_0[345]$/.test(zone) && look === looks[0]) {
+        const cc = await ev(() => ({ fixed: __game.cameraCeiling(), old: __game.cameraCeiling({ withView: false }) }));
+        await check(cc.fixed.through === 0 && cc.fixed.pitch >= 1.1 && cc.fixed.distance >= 7 && cc.fixed.maxUp < cc.old.maxUp,
+          `${zone}: camera ngẩng / lùi hết cỡ không xuyên trần (${cc.fixed.n} góc ở ${cc.fixed.points} điểm, cao nhất ${cc.fixed.maxUp} m trên chân; chỉ tránh COL_: xuyên ${cc.old.through} lần, cao ${cc.old.maxUp} m)`,
+          JSON.stringify(cc));
       }
       let steps = 0, stepFail = null;
       while (steps++ < 40) {
