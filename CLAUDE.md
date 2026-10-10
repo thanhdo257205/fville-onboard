@@ -17,6 +17,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục; `--glasses`: vùng kính), `render_portrait.py`, `texture_fix.py`, `char_render.py`, `char_data.py` (ghi `models.<id>` vào `data/characters.json` mà không định dạng lại cả file) |
 | `scripts/blender/lib/cuder.py`, `scripts/blender/props/cuder_preview.py` | Tượng Cuder zone 2 từ mô hình Meshy (zone_02.py gọi khi build); xem trước riêng tượng |
 | `scripts/blender/lib/pool_table.py` | Bàn bi-a zone 5 từ mô hình Sketchfab (zone_05.py gọi khi build): bỏ đèn treo, gộp texture, giảm lưới, đo mặt chơi / lỗ / bi → `data/pool.json` |
+| `scripts/blender/lib/desktop_computer.py` | Máy tính bàn ở bàn intern zone 5 từ mô hình Sketchfab (zone_05.py gọi khi build): thu về tỉ lệ thật, texture 512, mặt màn hình tách thành `monitor_screen` (texture riêng: màn đăng nhập "My FPT" vẽ bằng code — game đổi được) |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
@@ -25,7 +26,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/characters/<id>/` | GLB nhân vật, chân dung (`<id>_portrait.png`, theo bộ đồ `<id>_portrait_<bộ>.png`), texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`, `intern_nu_tu_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
 | `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc |
-| `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
+| `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`, `desktop_computer/source/desktop_computer.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại) |
 | `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
@@ -216,7 +217,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 
 - Dựng/sửa bối cảnh: `scripts/build.py` (Blender 5.2 qua `tools/bin/blender.cmd`, `gltf-transform` CLI, Pillow, numpy);
   zone_02 cần thêm mô hình tượng Cuder gốc `assets/props/cuder/source/cuder_meshy.glb`, zone_05 cần bàn bi-a gốc
-  `assets/props/pool_table/source/pool_table_traditional.glb` (Sketchfab, fizyman, CC BY 4.0; thiếu thì build báo lỗi).
+  `assets/props/pool_table/source/pool_table_traditional.glb` (Sketchfab, fizyman, CC BY 4.0) và máy tính bàn gốc
+  `assets/props/desktop_computer/source/desktop_computer.glb` (Sketchfab, Tyler P Halterman, CC BY 4.0); thiếu thì build báo lỗi.
 - Lightmap bản Cao, ảnh so sánh với tham chiếu (cần `references/` gốc).
 - Toàn bộ pipeline nhân vật: cần `assets/characters/<id>/source/`, `mixamo/*.fbx`, `textures/`, các file `.blend`
   (không có trên repo).

@@ -513,6 +513,34 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - Sửa nhỏ: chọn chỗ đứng cạnh bàn — bản đầu đứng ngay sau bi trắng nên camera lọt vào người chơi (thấy qua ảnh kiểm tra).
 - `main` d86c6d4; đã deploy `gh-pages` 04a74b2 (từ `main` d86c6d4).
 
+### Máy tính bàn ở bàn intern zone 5 từ mô hình Sketchfab (10/10/2026)
+- "Desktop Computer" (Tyler P Halterman, Sketchfab, CC BY 4.0) thay laptop hộp (`concrete_grey`) ở bàn intern; bàn intern
+  trước đây còn có cả màn hình / bàn phím / chuột hộp của `desk_unit` → bỏ luôn (`desk_unit(gear=False)`, cùng cốc + xấp giấy:
+  cốc lọt trong hộp quà, giấy sẽ nằm dưới chuột). Hộp quà, bảng tên giữ nguyên chỗ. File gốc chép vào
+  `assets/props/desktop_computer/source/desktop_computer.glb` (không commit); `scripts/blender/lib/desktop_computer.py` dựng
+  lại mỗi lần build zone_05 (cùng cách bàn bi-a), thiếu file → build báo lỗi kèm link nguồn.
+- Tỉ lệ: màn hình gốc rộng 0,756 m → × 0,728 = **0,55 m** (mặt màn hình 0,507 × 0,304 m); cả bộ 0,73 × 0,48 × 0,48 m. Bàn
+  phím, chuột hạ xuống mặt bàn (mô hình gốc lơ lửng 7–12 mm). Gốc `desktop_computer` = tâm đáy đế màn hình, đặt ở toạ độ cục
+  bộ bàn (0,05; −0,16; 0,75) (`PC_LOCAL` trong `zone_05.py`): thẳng ghế, lùi sát vách ngăn, mặt trước nhìn về chỗ ngồi
+  `SPAWN_ban_lam_viec`; bàn phím + chuột trước màn hình. Con của `INT_ban_lam_viec`.
+- Texture: 4 ảnh 1024² (~1,9 MB: màu, metallic-roughness, phát sáng, normal) → 1 ảnh màu 512² (`M_desktop_tex`, WebP
+  **12,5 KB**) × vertex color (AO) → toon + viền nét như mọi vật; vùng ảnh không mặt nào dùng (43 %, gồm hình nền Windows 7)
+  tô màu trung bình.
+- Màn hình: 2 tam giác hình nền Windows 7 tách thành object `monitor_screen` (con của `desktop_computer`), chất liệu riêng
+  `M_monitor_screen`, ảnh 512 × 320 (WebP **3,5 KB**) vẽ bằng code: thanh trên "My FPT" ("FPT" màu cam như đầu app trong game),
+  thẻ "Sign in", ô Intern ID / Password, nút cam "Sign in". Chữ: font Segoe UI → lưới phẳng (`props.text_mesh`) → tô tam giác
+  bằng numpy (`blf` vẽ vào ảnh làm Blender 5.2 chạy nền bị crash). `dynamic`: không nướng AO (4 đỉnh — AO ở góc loang cả màn).
+  Game đổi màn hình sau này: `zone.root.getObjectByName("monitor_screen").material.map`.
+- Bàn của Lan, Minh, Hà không có laptop giả (chỉ màn hình hộp của `desk_unit`, mesh dùng chung cho mọi bàn) → giữ nguyên.
+- `COL_`, `SPAWN_ban_lam_viec`, `INT_ban_lam_viec`, `TRIGGER_ban_lam_viec` không đổi; màn hình cao tới 1,23 m (màn hình hộp
+  cũ 1,26 m) → không chắn camera.
+- zone_05: 43.700 → 44.366 tam giác (+794 máy, −128 đồ hộp bỏ đi), GLB **319.768 → 345.872 byte (+25,5 KB)**. check_glb 0 lỗi.
+- Kiểm tra: test:data đạt; test:smoke `--zone 5` (3 ngoại hình) **23/25 bước đạt**. 2 bước hỏng (intern_nam_kinh, intern_nu:
+  cảnh kết không sang được zone_01, "m.map?.dispose is not a function") là lỗi P1 có sẵn trong `docs/CHECKLIST.md` (bản sao
+  cây cơ bi-a), không do máy tính: GLB zone_05 cũ cũng hỏng y hệt ở ngoại hình thứ 2 (ngoại hình đầu không lộ lỗi vì có bước
+  tải lại trang giữa cảnh kết). Ảnh: `renders/zone_05_office_ban_lam_viec_can.png` (camera mới, cận bàn intern); xem trong
+  game bản dev: toon + viền nét, màn hình "My FPT" đọc được, console sạch.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.

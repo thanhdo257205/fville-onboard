@@ -202,8 +202,9 @@ def make_atlas(parts):
     return bpy.data.images.load(ATLAS, check_existing=False)
 
 
-def make_material(img):
-    mat = bpy.data.materials.new("M_pool_tex")
+def make_material(img, name="M_pool_tex"):
+    """ảnh × vertex color "Color" (AO zone nướng vào) — cũng dùng cho máy tính bàn (lib/desktop_computer.py)."""
+    mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nt = mat.node_tree
     bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
@@ -225,9 +226,9 @@ def make_material(img):
     return mat
 
 
-def retexture(obj, rect, mat):
+def retexture(obj, rect, mat, atlas_size=ATLAS_SIZE):
     """UV → ô `rect` của atlas; 1 chất liệu; vertex color trắng (AO nướng sau); bóng mượt theo góc."""
-    W, H = ATLAS_SIZE
+    W, H = atlas_size
     x, y, w, h = rect
     me = obj.data
     uv = np.empty(len(me.loops) * 2)

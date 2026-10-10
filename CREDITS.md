@@ -35,6 +35,12 @@ do người dùng cung cấp, chỉ nằm trong texture.
   https://sketchfab.com/3d-models/pool-table-traditional-e0b938c0c2e74eb794a49ebde2543977
   (link nguồn ghi trong file gốc, glTF `asset.extras.source`). File gốc không có trên repo;
   `scripts/blender/lib/pool_table.py` bỏ đèn treo, gộp texture, giảm lưới bàn, chuyển chất liệu khi build zone.
+- Máy tính bàn ở bàn intern zone 5 (`zone_05_office.glb`, node `desktop_computer` + màn hình `monitor_screen`):
+  "Desktop Computer" by Tyler P Halterman (Sketchfab), giấy phép CC BY 4.0 —
+  https://sketchfab.com/3d-models/desktop-computer-561abc2fc95941609fc7bc6f232895c2
+  (link nguồn ghi trong file gốc, glTF `asset.extras.source`). File gốc không có trên repo;
+  `scripts/blender/lib/desktop_computer.py` thu nhỏ, gộp và nén texture, thay hình nền màn hình bằng màn đăng nhập
+  "My FPT" tự vẽ khi build zone.
 
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.

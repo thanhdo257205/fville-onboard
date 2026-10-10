@@ -25,7 +25,7 @@ for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
 import bpy  # noqa: E402
 
 from lib import interior as it  # noqa: E402
-from lib import kit, pool_table, zone  # noqa: E402
+from lib import desktop_computer, kit, pool_table, zone  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
 
@@ -49,6 +49,11 @@ POOL_YAW = 90               # mô hình dài theo Y → xoay cho trục dài the
 POOL_INFO = {}
 POOL_JSON = os.path.join(HERE, "..", "..", "data", "pool.json")
 INTERN = (CLUSTERS_X[0] + 1.5 * DESK_W, CLUSTERS_Y[0])  # bàn đầu dãy gần lối vào, hàng phía bắc (yaw 180)
+# Máy tính bàn ở bàn intern: mô hình Sketchfab "Desktop Computer" (Tyler P Halterman, CC BY 4.0) — lib/desktop_computer.py
+# đọc assets/props/desktop_computer/source/desktop_computer.glb (chỉ có trên máy làm việc; thiếu thì build báo lỗi).
+# Toạ độ cục bộ của bàn (desk_unit: vách ngăn y = 0, người ngồi phía -Y): tâm đế màn hình thẳng ghế (x 0.05), lùi sát
+# vách ngăn; mặt bàn z 0.75. Màn hình riêng monitor_screen (màn đăng nhập "My FPT", game đổi texture được).
+PC_LOCAL = (0.05, -0.16, 0.75)
 
 
 def office_floor_color(i, j):
@@ -220,12 +225,10 @@ def build_desks(cols, rng):
         o.location = (x, y, 0)
         o.rotation_euler = (0, 0, math.radians(yaw))
         n += 1
-    # bàn intern
+    # bàn intern: máy tính bàn (mô hình Sketchfab) thay màn hình / bàn phím hộp của desk_unit và laptop hộp trước đây
     x, y, yaw = intern_pos
     b = MeshBuilder()
-    it.desk_unit(b, plant=True)
-    b.box((0.35, -0.4, 0.78), (0.34, 0.24, 0.02), "concrete_grey")                  # laptop
-    b.box((0.35, -0.29, 0.9), (0.34, 0.02, 0.22), "concrete_grey", rot=(-15, 0, 0))
+    it.desk_unit(b, plant=True, gear=False)
     b.box((-0.5, -0.45, 0.85), (0.3, 0.22, 0.18), "fpt_orange")                     # hộp quà chào mừng
     b.box((-0.5, -0.45, 0.85), (0.31, 0.04, 0.19), "fpt_green")
     b.box((0.0, -0.66, 0.8), (0.3, 0.04, 0.1), "sign_white", rot=(-30, 0, 0))     # bảng tên (để trống)
@@ -233,6 +236,12 @@ def build_desks(cols, rng):
     desk.rotation_euler = (0, 0, math.radians(yaw))
     root = mk.interactive("ban_lam_viec", "Bàn làm việc của bạn", (x, y, 0), cols["INT"])
     mk.parent(desk, root)
+    r = math.radians(yaw)
+    lx, ly, lz = PC_LOCAL
+    pc, _, _ = desktop_computer.build(cols["INT"], "desktop_computer",
+                                      (x + math.cos(r) * lx - math.sin(r) * ly, y + math.sin(r) * lx + math.cos(r) * ly, lz),
+                                      yaw_deg=yaw)
+    mk.parent(pc, root)
     return intern_pos
 
 
@@ -312,6 +321,8 @@ def compare_cameras():
         ("khu_team", "VanPhongLamViec/t_0044.0.jpg", (-9.5, -8.0, 1.6), (-16.0, -4.0, 0.9), 22),
         ("ban_lam_viec", "VanPhongLamViec/t_0036.0.jpg", (INTERN[0] + 1.3, INTERN[1] + 2.2, 1.5),
          (INTERN[0], INTERN[1], 0.8), 24),
+        ("ban_lam_viec_can", None, (INTERN[0] - 0.35, INTERN[1] + 1.35, 1.32),   # cận bàn intern, từ sau ghế
+         (INTERN[0] - 0.05, INTERN[1] + 0.25, 0.92), 30),
         ("bi_a", "VanPhongLamViec/t_0018.0.jpg", (-6.2, 0.2, 1.6), (-3.2, 4.0, 0.8), 22),
         ("ban_bi_a_can", None, (POOL[0] + 1.9, POOL[1] - 1.9, 1.75), (POOL[0] + 0.2, POOL[1], 0.72), 30),
         ("khu_nghi", None, (-0.6, -5.4, 2.5), (-4.6, 1.8, 0.6), 16),      # toàn cảnh khu nghỉ (không có ảnh thật)

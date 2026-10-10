@@ -193,9 +193,10 @@ def office_chair(b, x, y, yaw=0.0):
     b.box((bx, by, 1.13), (0.48, 0.07, 0.04), "sign_white", rot=(0, 0, yaw))
 
 
-def desk_unit(b, plant=True, rng=None):
+def desk_unit(b, plant=True, rng=None, gear=True):
     """Bàn làm việc 1 chỗ: mép sau (vách ngăn) ở y = 0, người ngồi phía -Y.
-    Mặt đen, hông thép đen đục lỗ lá, vách ngăn gỗ cam, màn hình, ghế."""
+    Mặt đen, hông thép đen đục lỗ lá, vách ngăn gỗ cam, màn hình, ghế.
+    gear=False: bỏ màn hình, bàn phím, chuột, cốc, xấp giấy (bàn intern zone_05 đặt máy tính bàn riêng)."""
     W, D, H = 1.4, 0.7, 0.75
     b.box((0, -D / 2, H - 0.02), (W, D, 0.04), "desk_black")
     for s in (-1, 1):  # tấm hông đục lỗ lá
@@ -210,15 +211,15 @@ def desk_unit(b, plant=True, rng=None):
     for k in range(4):
         b.sphere((-0.45 + k * 0.3, -0.035, H + 0.18 + (0.06 if k % 2 else -0.04)), 0.045, "trunk",
                  segments=6, rings=2, scale=(1.0, 0.15, 0.45), rot=(0, 35 * (1 if k % 2 else -1), 0))
-    # màn hình + bàn phím
-    b.box((-0.1, -0.15, H + 0.03), (0.22, 0.16, 0.02), "black")
-    b.box((-0.1, -0.12, H + 0.13), (0.04, 0.03, 0.2), "black")
-    b.box((-0.1, -0.13, H + 0.33), (0.6, 0.03, 0.36), "black")
-    b.box((-0.1, -0.148, H + 0.33), (0.56, 0.01, 0.32), "screen_on" if plant else "screen", mat="gloss")
-    b.box((-0.1, -0.45, H + 0.01), (0.42, 0.14, 0.02), "concrete_grey")
-    b.box((0.18, -0.47, H + 0.01), (0.06, 0.1, 0.02), "black")                       # chuột
-    b.cylinder((-0.52, -0.42, H), 0.045, 0.1, "mug", segments=6)                       # cốc
-    b.box((0.42, -0.4, H + 0.02), (0.22, 0.3, 0.04), "paper", rot=(0, 0, 8))         # xấp giấy
+    if gear:  # màn hình + bàn phím
+        b.box((-0.1, -0.15, H + 0.03), (0.22, 0.16, 0.02), "black")
+        b.box((-0.1, -0.12, H + 0.13), (0.04, 0.03, 0.2), "black")
+        b.box((-0.1, -0.13, H + 0.33), (0.6, 0.03, 0.36), "black")
+        b.box((-0.1, -0.148, H + 0.33), (0.56, 0.01, 0.32), "screen_on" if plant else "screen", mat="gloss")
+        b.box((-0.1, -0.45, H + 0.01), (0.42, 0.14, 0.02), "concrete_grey")
+        b.box((0.18, -0.47, H + 0.01), (0.06, 0.1, 0.02), "black")                       # chuột
+        b.cylinder((-0.52, -0.42, H), 0.045, 0.1, "mug", segments=6)                       # cốc
+        b.box((0.42, -0.4, H + 0.02), (0.22, 0.3, 0.04), "paper", rot=(0, 0, 8))         # xấp giấy
     for k, c in enumerate(("sticky", "flower_pink", "sticky")):                        # giấy nhớ trên vách
         b.box((-0.55 + k * 0.08, -0.034, H + 0.27 - (k % 2) * 0.05), (0.06, 0.004, 0.06), c)
     if plant:  # chậu cây đặt trên vách ngăn
