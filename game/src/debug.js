@@ -1,6 +1,7 @@
 // window.__game — hook debug để tự kiểm tra bằng số liệu (không cần ảnh chụp).
 //   __game.player            → { pos, speed, onGround, yaw }
 //   __game.zone / .state      → zone hiện tại, trạng thái (phase, tier, việc đã xong, cờ)
+//   __game.preview            → nền màn tiêu đề (Game.showcase): zone, có kịch bản camera không, giây, vị trí camera; window.__title: màn
 //   __game.teleport(name, {offset, zone})   → dịch chuyển tới node theo tên (vd "INT_gieng_lang")
 //   __game.goto(zone, spawn)  → vào zone tại SPAWN_
 //   __game.complete(id)       → hoàn thành nhanh một việc (đánh dấu done)
@@ -41,6 +42,7 @@ export function installDebug(game, loop) {
         seated: p.seated?.state ?? null, sits: p.sits || 0, rootY: +p.character.root.position.y.toFixed(3) };   // ngồi ghế: sitting_down | seated | standing_up
     },
     get zone() { return game.state.zone; },
+    get preview() { return game.preview?.info ?? null; },   // nền màn tiêu đề (Game.showcase): zone, kịch bản, giây, camera
     get state() {
       const s = game.state;
       return { ...s, mode: game.mode, gpu: game.gpu, detected: game.detected, setting: game.settings.tier, fps: +loop.fps.toFixed(1) };

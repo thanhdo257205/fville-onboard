@@ -152,6 +152,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 
 ## 5. Tính năng
 
+- [x] P2 Màn tiêu đề: nền 3D zone 0 lúc 06:30 (camera trôi, nghiêng theo chuột), chữ hiện dần, Start / Continue / Start over,
+  nút ngôn ngữ; Start dùng lại zone đã dựng — Phụ trách: Claude — nhánh `feat/title` (10/10/2026)
 - [ ] P2 Bi-a bước 3 — chơi 2 người theo lượt qua máy chủ, người khác đứng xem — Phụ trách: Claude — nhánh `feat/pool-step3`
   - [x] Máy chủ (`server/src/pool.js`): mỗi bàn giữ 2 ghế, lượt chơi, vị trí bi, bi đã vào lỗ, số thứ tự cú, nhóm trơn/sọc; tin
     nhắn `pool_join`, `pool_leave`, `pool_shot`, `pool_rerack`, `pool_poke` / `pool` (bàn), `pool_shot` (cú + bàn); chỉ người
@@ -295,6 +297,7 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 - [x] 4 Act theo góp ý mentor, thành tựu "Welcome to the F-Ville Family", tải ảnh thẻ PNG
 - [x] Nhân vật người thật: Prajith, Ms. Huyền, Ms. Nga (đã đồng ý dùng hình)
 - [x] Màn chọn nhân vật 3D: 3 intern; Tú khác giới với người chơi, đại từ tự đổi
+- [x] Màn tiêu đề trên nền 3D zone 0 (camera trôi), Continue / Start over cho người chơi cũ
 - [x] Áo ngày đầu → Áo Cam FPT có logo ở cổng zone 2
 - [x] Tượng Cuder (Meshy) + câu chuyện, quiz từ mentor
 - [x] Hướng dẫn người mới: dấu "!", mũi tên, gợi ý tăng dần, nhắc khi đứng yên, phím H

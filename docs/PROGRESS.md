@@ -287,6 +287,19 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   login, wrangler deploy, điền URL vào `data/net.json`, build, deploy gh-pages, kiểm tra).
 
 ### Giai đoạn 2: zone 5, cảnh kết, màn tổng kết (10/10/2026)
+- **Màn tiêu đề** (10/10/2026, nhánh `feat/title`, `game/src/ui/title.js`): mở game là thấy tiêu đề trên nền 3D thật của
+  zone 0 lúc 06:30 — `Game.showcase` (`game/src/game/showcase.js`) dựng zone đầu như khi vào zone nhưng chưa có người chơi /
+  NPC / trigger, camera trôi theo kịch bản `SHOTS.zone_00` (góc cao bên đường → thấp dọc hàng xe, qua lại), nghiêng nhẹ theo
+  chuột; zone không có kịch bản (đã xong game → bến xe zone 1 hoàng hôn, `?start=zone_0X`) thì camera chơi quay quanh
+  SPAWN_. Chữ hiện dần (dòng FPT Software · F-Ville 1 Campus · Hòa Lạc, FIRST DAY AT / F-VILLE chữ cam chuyển sắc, câu
+  dẫn, mặt trời nhô lên), hai dải đen, nút ngôn ngữ; người mới: Start → màn tạo nhân vật trên nền đó; người cũ: Welcome
+  back + Continue + Start over. Trời bình minh CSS tới khi nền dựng xong. Start → `_enterZone` dùng lại zone đã dựng (không
+  tải lại GLB); vòng lặp vẽ chạy từ trước màn tiêu đề. `?title=off` (dev / `?debug`) bỏ màn này — smoke test dùng cho mọi
+  đường chạy trừ đường chính (bước mới: nền zone đầu dựng xong, chữ đúng ngôn ngữ, Start → màn tạo nhân vật). Smoke zone 0
+  ngoại hình tiếng Việt: giải hội thoại on_enter (tin nhắn HR, 600 ms sau khi vào zone) trước khi bấm Esc đổi ngôn ngữ —
+  trước đây đạt nhờ Esc tới trước 600 ms. Hai chỗ khác của smoke lộ ra khi luồng chính bận vẽ nền (swiftshader): bấm chuột
+  chọn nhân vật ở màn tạo nhân vật → chờ `__creator.selected` đổi (bấm lại 1 lần nếu chưa); `noLock()` bỏ cả khoá con trỏ
+  được cấp muộn + `onUnlock` (khoá cấp sau lệnh nhả rồi mất khi đổi khung nhìn → game tưởng Esc → mở menu giữa bước).
 - **Màn tạo nhân vật** có mục giới tính (Male / Female → `intern_nam` / `intern_nu`; `character_creation.genders`).
 - **Nhân vật zone 5** (`data/characters.json`): Prajith = model `prajith` thật (bỏ đổi màu áo). Manager (`intern_nu`, áo xanh
   than), Lan (`intern_nu`, hồng), Minh (`intern_nam`, vàng), Hà (`intern_nu`, xanh lá), anh Khang (`intern_nam`, tím) — **tạm**
