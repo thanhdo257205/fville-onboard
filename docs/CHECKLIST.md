@@ -64,7 +64,7 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [ ] P2 Người chơi ngồi vào ghế ở bàn làm việc zone 5 (hiện đứng trước bàn) — Phụ trách: —
 - [x] P3 Máy tính bàn ở bàn intern zone 5: mô hình Sketchfab "Desktop Computer" (CC BY 4.0) thay laptop hộp; màn hình
   `monitor_screen` hiện màn đăng nhập "My FPT", game đổi texture được (`scripts/blender/lib/desktop_computer.py`) — Phụ trách:
-  Thanh Do — 6be925d
+  Thanh Do — 94b7938
 - [ ] P3 Tượng Cuder: quyết giữ / bỏ búi tóc sau gáy (`CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`); đổi bản sao tượng cũ
   nhìn qua vách kính zone 3 (`ENV_tuong_cuder_xa`) — Phụ trách: —
 - [ ] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (làm cùng tủ đồ) — Phụ trách: —
