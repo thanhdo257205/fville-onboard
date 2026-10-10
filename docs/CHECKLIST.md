@@ -45,16 +45,24 @@ thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a t
   zone 5); cứu "rơi khỏi bản đồ" lại đưa về vị trí khung trước + 1 m (đã ở dưới sàn) → rơi mãi quanh y −9 … −10. Sửa: chặn dt
   âm (`game/src/main.js`), rơi thì về chỗ đứng vững gần nhất (`game/src/player/player.js`); smoke kiểm tra lúc vào zone —
   Phụ trách: Claude
-- [ ] P1 **Lỗi: mất dấu Objective markers** (dấu "!" trên mục tiêu + mũi tên ở mép màn hình; người dùng báo 10/10/2026, chưa
-  rõ lúc nào) — Phụ trách: —
-  - [ ] Tái hiện và ghi lại: zone, mục tiêu đang làm, ngôn ngữ, vừa làm gì trước đó (bàn bi-a, app, menu Esc, hội thoại, chuyển
-    zone, tải lại trang); mở `?debug`, gõ `__game.guide` xem `goal`, `target`, `marker`, `arrow`
-  - [ ] Nghi vấn (theo `game/src/game/guide.js` → `update`: dấu chỉ hiện khi `mode === "play"`, cài đặt bật và tìm được vị trí
-    mục tiêu): (a) không tìm thấy node mục tiêu trong zone (đổi tên khi build lại zone, mục tiêu mới) → không có vị trí;
-    (b) `mode` kẹt khác `"play"` sau bàn bi-a / app / màn tổng kết; (c) cài đặt "Objective markers" bị tắt và đã lưu trong
-    `fville.settings`; (d) dấu "!" là phần tử HTML (CSS2D) nên bị bảng khác che hoặc đang ở sau camera
-  - [ ] Sửa, rồi thêm vào `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 phải có dấu "!" hoặc mũi tên (`marker` / `arrow`
-    khác null), cả sau khi rời bàn bi-a, đóng app, đổi ngôn ngữ
+- [ ] P1 **Lỗi: mất dấu Objective markers ở tất cả các zone** (dấu "!" trên mục tiêu + mũi tên ở mép màn hình; người dùng báo
+  10/10/2026) — Phụ trách: —
+  - Đã thử (Claude, 10/10/2026): bản đang chạy `gh-pages` 6416ec3 trên trình duyệt sạch (Chromium, chưa có cài đặt cũ) —
+    dấu vẫn hiện ở cả 6 zone (zone 0 biển xe số 2, zone 1 chị Huyền, zone 2 cổng, zone 3 chị Nga + mũi tên, zone 4 cửa quẹt
+    thẻ, zone 5 Prajith + mũi tên), cả tiếng Anh lẫn tiếng Việt → code dấu "!" không hỏng; lỗi nằm ở điều kiện trên máy người
+    chơi. Dấu chỉ hiện khi đang đi lại (`mode === "play"`), cài đặt bật và tìm được vị trí mục tiêu
+    (`game/src/game/guide.js` → `update`).
+  - [ ] Kiểm tra trên máy bị lỗi, theo thứ tự:
+    1. Menu Esc → "Objective markers" đang **Off**? (cài đặt lưu trong trình duyệt nên tắt một lần là mất ở mọi zone, cả sau khi
+       tải lại trang) → bật On rồi xem lại. Hoặc mở Console (F12), gõ `localStorage["fville.settings"]` xem có `"guide":false`.
+    2. Nếu đang On mà vẫn mất: mở trang với `?debug`, gõ `__game.guide` (ghi lại `goal`, `target`, `marker`, `arrow`,
+       `enabled`) và `__game._game.mode`; chụp màn hình; ghi trình duyệt + hệ điều hành; thử cửa sổ ẩn danh (không có cài đặt
+       cũ). Nghi vấn còn lại: `mode` kẹt khác `"play"`; dấu "!" là phần tử HTML (CSS2D, chung lớp với bảng tên) bị trình duyệt /
+       tiện ích chặn quảng cáo / phần tử khác che.
+  - [ ] Nếu đúng do cài đặt Off: đề xuất cho người chơi dễ thấy — lúc tắt hiện dòng nhỏ "Objective markers: Off (Esc → bật
+    lại)" vài giây khi vào zone, hoặc bấm H (Help) thì hiện dấu một lúc dù đang tắt
+  - [ ] Thêm vào `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 phải có dấu "!" hoặc mũi tên (`marker` / `arrow` khác
+    null), cả sau khi rời bàn bi-a, đóng app, đổi ngôn ngữ; tắt / bật lại ở menu Esc thì dấu mất / hiện lại
 - [ ] P1 **Lỗi: đánh bi-a xong camera nâng lên, bị đèn treo của bàn che** — Phụ trách: —
   - Nguyên nhân (đọc code): lúc bi lăn (`phase === "roll"`, camera trong `game/src/pool/table.js`) camera đặt cao hơn mặt bi
     1,55 m (~2,4 m trên sàn), lùi 1,15 m. 3 chao đèn thả (`pool_lamps`, `scripts/blender/lib/interior.py`: chao ở 1,62–1,87 m,
