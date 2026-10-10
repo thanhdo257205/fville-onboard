@@ -121,6 +121,20 @@ export function clampCamera(collider, from, to, pad = 0.25) {
   return hit ? Math.max(0.5, hit.distance - pad) : dist;
 }
 
+// Camera không xuyên trần: trần trong nhà không có COL_ (chỉ là mặt lưới hiển thị) → tia từ điểm nhìn tới camera đang đi
+// lên mà chạm mặt nằm ngang của lưới hiển thị (zone.view: trần, gầm chiếu nghỉ, mái hiên) thì camera dừng dưới mặt đó,
+// cách ít nhất gap theo phương đứng (mặt phẳng gần 0,1 m của camera không cắt trần). Mặt đứng (tường, bàn ghế) bỏ qua:
+// camera không bị kéo vào mỗi lần lướt qua sau đồ vật. Xét |pháp tuyến.y| (không xét chiều) — lưới lật gương đảo chiều mặt.
+export function clampCeiling(view, from, to, gap = 0.15) {
+  const dir = _p1.subVectors(to, from);
+  const dist = dir.length();
+  if (dist < 1e-4 || dir.y < 1e-3 * dist) return dist;
+  _ray.set(from, dir.divideScalar(dist));
+  let y = Infinity;
+  for (const h of view.geometry.boundsTree.raycast(_ray, THREE.DoubleSide, 0, dist + gap / dir.y)) if (Math.abs(h.face.normal.y) > 0.7) y = Math.min(y, h.point.y);
+  return y === Infinity ? dist : Math.max(0.5, Math.min(dist, (y - gap - from.y) / dir.y));
+}
+
 // Có vật cản giữa 2 điểm (dùng để ẩn bảng tên bị tường che)
 export function blocked(collider, from, to) {
   const dir = _p2.subVectors(to, from);

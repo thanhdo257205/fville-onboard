@@ -778,6 +778,33 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   việc tuần đầu, checklist ngày đầu).
 - Kiểm tra: test:data đạt; privacy_scan 0 phát hiện.
 
+### Camera không xuyên trần + sửa lỗi rơi xuyên sàn khi vào zone (10/10/2026, nhánh `fix/camera-ceiling`)
+- **Camera xuyên trần (CHECKLIST mục 1, P1):** trần trong nhà chỉ là mặt lưới hiển thị (`interior.ceiling`, không có `COL_`)
+  nên camera chơi (chỉ tránh `COL_`) ngẩng 1,15 rad × lùi 7 m lên tới 7,9 m trên chân người chơi, thấy mái nhà từ trên. Đo
+  trước khi sửa (mọi chỗ đứng được dưới trần, 12 hướng): ngẩng hết cỡ xuyên trần ~85 % số lần ở zone 3–5, cả ở góc mặc định
+  (0,32 rad, 4,2 m) cũng xuyên vài chục lần ở chỗ trần thấp. Sửa: `clampCeiling` (`game/src/world/collision.js`) — tia điểm
+  nhìn → camera đang đi lên mà chạm mặt nằm ngang (|pháp tuyến.y| > 0,7) của `zone.view` (lưới hiển thị có BVH, đã có cho
+  camera hội thoại) thì camera dừng dưới mặt đó ≥ 0,15 m theo phương đứng (mặt phẳng gần 0,1 m không cắt trần). Mặt đứng
+  (tường, bàn ghế) bỏ qua → camera không bị kéo vào mỗi lần lướt qua sau đồ vật (tránh cả lưới hiển thị thì góc mặc định bị
+  kéo vào gấp ~8 lần, góc thấp −0,25 rad 120–166 lần mỗi zone). Không cần hộp trần trong `data/collision.json` (zone 4 có
+  giếng trời 7,35 m, nhiều tầng) hay giới hạn độ cao theo zone.
+- Đo lại sau khi sửa (cả 6 zone, chỗ đứng được, 4 góc ngẩng × 12 hướng): 0 lần xuyên trần; còn 43–69 / 2.244 mẫu ở zone 3
+  khi có vật nằm ngang ngay trên đầu < 0,5 m (tủ, kệ hạt lúa) — camera không vào gần hơn 0,5 m (như với tường). Ngoài trời góc
+  mặc định bị kéo vào < 1 % mẫu (đi dưới mái hiên, biển hiệu — đúng ý). Ngẩng hết cỡ: zone 5 (trần 2,95 m) camera cao nhất
+  2,85 m, lùi ~1,4 m; sảnh zone 3 4,05 m; zone 4 3,45 m.
+- **Rơi xuyên sàn khi vào zone (thấy khi chụp ảnh camera):** `THREE.Timer` trả dt âm ở khung đầu tiên sau việc dài (tải zone,
+  biên dịch shader: mốc thời gian rAF sớm hơn lúc tạo Timer) — −0,883 s trên SwiftShader khi vào thẳng zone 5. `Math.min(dt,
+  0,1)` không chặn số âm → trọng lực đảo chiều, capsule bị kéo 4 m xuống dưới sàn. Cứu "rơi khỏi bản đồ" (y < −10) đưa về
+  "vị trí khung trước + 1 m" — đã ở dưới sàn → rơi mãi quanh y −9 … −10 (`fellOut` tăng hoài). Có từ trước (cả `b9686c4`);
+  smoke không thấy vì `step()` dịch chuyển người chơi. Sửa: `main.js` chặn dt trong [0; 0,1]; `Player.safe` = chỗ đứng vững
+  gần nhất (lúc `spawn` + mỗi khung `onGround`), rơi thì về đó.
+- Dev: `__game.cameraCeiling({ withView })` — camera ngẩng / lùi hết cỡ ở chỗ người chơi + mọi SPAWN_ của zone, 12 hướng: số
+  lần xuyên trần, độ cao camera; `withView: false` = như trước khi sửa (đối chứng).
+- Kiểm thử: smoke zone 3, 4, 5 (ngoại hình đầu) "camera ngẩng / lùi hết cỡ không xuyên trần" (0 lần; chỉ tránh `COL_`: 36 / 30
+  / 72 lần); mọi lượt "đứng vững trên sàn khi vào zone; rơi xuyên sàn → về chỗ đứng gần nhất" (bỏ 2 bản sửa thì hỏng: rơi
+  tới y −9,2). test:data đạt; build + smoke như CI (`--build --look intern_nam,intern_nu`) 58/58 bước (2 phút 45 giây).
+  Ảnh: `renders/game/ceil_zone_05_{truoc,sau}.png`, `ceil_zone_04_sau.png`.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

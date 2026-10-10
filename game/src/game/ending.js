@@ -175,7 +175,7 @@ export class Ending extends Cutscene {
     g.camera.fov = 60;
     g.camera.updateProjectionMatrix();
     g.cam.behind(spawn?.userData.yaw_deg ?? 0);
-    g.cam.update(0, p.position, { dx: 0, dy: 0, wheel: 0 }, z.collider, true);
+    g.cam.update(0, p.position, { dx: 0, dy: 0, wheel: 0 }, z.collider, true, z.view);
     hud.skip(false);
     hud.cinematic(false);
     hud.dim(0, 0);

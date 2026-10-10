@@ -33,6 +33,7 @@ export class Player {
   spawn(pos, yawDeg) {
     this.leaveSeat();
     this.body.teleport(pos.clone().add(new THREE.Vector3(0, 0.05, 0)));
+    this.safe = pos.clone();          // chỗ đứng vững gần nhất (rơi khỏi bản đồ → về đây)
     this.velocity.set(0, 0, 0);
     this.speed = 0;
     this.character.setSpeed(0);
@@ -113,8 +114,14 @@ export class Player {
     if (want.lengthSq() > 1e-4) this.character.faceDir(want, dt);
     this.character.setSpeed(this.speed);
     this.character.update(dt);
-    // rơi khỏi bản đồ (lỗi va chạm) → về chỗ cũ
-    if (this.body.position.y < -10) { this.body.teleport(before.setY(before.y + 1)); this.fellOut = (this.fellOut || 0) + 1; }
+    // rơi khỏi bản đồ (lỗi va chạm) → về chỗ đứng vững gần nhất. Trước đây về "vị trí khung trước + 1 m" — đã ở dưới sàn
+    // từ lâu (y ≈ −9) nên rơi mãi quanh y −9 … −10, không lên lại được
+    if (this.body.onGround) (this.safe ??= new THREE.Vector3()).copy(this.body.position);
+    else if (this.body.position.y < -10) {
+      this.body.teleport(this.safe ? this.safe.clone().add(new THREE.Vector3(0, 0.05, 0)) : before.setY(before.y + 1));
+      this.velocity.set(0, 0, 0);
+      this.fellOut = (this.fellOut || 0) + 1;
+    }
     this.sync();
   }
 

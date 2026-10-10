@@ -208,7 +208,9 @@ async function boot() {
   let frames = 0, acc = 0, netErr = null;
   renderer.three.setAnimationLoop((time) => {
     timer.update(time);
-    const dt = Math.min(timer.getDelta(), 0.1);
+    // dt âm có thật: khung đầu tiên sau một việc dài (tải zone, biên dịch shader) mang mốc thời gian rAF sớm hơn lúc tạo
+    // Timer → dt = −0,9 s (máy yếu / SwiftShader) → trọng lực đảo chiều, người chơi bị kéo xuống dưới sàn zone 5
+    const dt = Math.min(Math.max(timer.getDelta(), 0), 0.1);
     if (!menu.open) game.update(dt);
     // người chơi khác vẫn đi lại khi mở menu. Lỗi phần mạng không được dừng vòng lặp game (ghi console, mỗi lỗi 1 lần)
     try { net.update(dt); } catch (e) { if (netErr !== e.message) { netErr = e.message; console.error("[mạng]", e); } }

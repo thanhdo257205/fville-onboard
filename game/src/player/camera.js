@@ -1,6 +1,7 @@
-// Camera góc nhìn thứ ba: di chuột (con trỏ bị khoá) hoặc kéo chuột xoay quanh người chơi, lăn chuột đổi khoảng cách, không xuyên tường (COL_).
+// Camera góc nhìn thứ ba: di chuột (con trỏ bị khoá) hoặc kéo chuột xoay quanh người chơi, lăn chuột đổi khoảng cách, không xuyên tường (COL_)
+// và trần (mặt nằm ngang của lưới hiển thị).
 import * as THREE from "three";
-import { clampCamera } from "../world/collision.js";
+import { clampCamera, clampCeiling } from "../world/collision.js";
 
 export class ThirdPersonCamera {
   constructor(camera) {
@@ -67,14 +68,16 @@ export class ThirdPersonCamera {
     return best.d;
   }
 
-  update(dt, playerPos, drag, collider, snap = false) {
+  // view: lưới hiển thị có BVH của zone (zone.view) — camera không lên xuyên trần (trần không có COL_)
+  update(dt, playerPos, drag, collider, snap = false, view = null) {
     this.yaw -= drag.dx * 0.005;
     this.pitch = THREE.MathUtils.clamp(this.pitch + drag.dy * 0.004, -0.25, 1.15);
     this.distance = THREE.MathUtils.clamp(this.distance + drag.wheel * 0.4, 2.2, 7);
     this.target.set(playerPos.x, playerPos.y + this.height, playerPos.z);
     const dir = this.dirOf(this.yaw);
     const want = this.target.clone().addScaledVector(dir, this.distance);
-    const free = clampCamera(collider, this.target, want);
+    let free = clampCamera(collider, this.target, want);
+    if (view) free = Math.min(free, clampCeiling(view, this.target, want));
     // vào gần ngay khi bị che, lùi ra từ từ
     this.current = snap || free < this.current ? free : THREE.MathUtils.lerp(this.current, free, Math.min(1, dt * 4));
     this.camera.position.copy(this.target).addScaledVector(dir, this.current);

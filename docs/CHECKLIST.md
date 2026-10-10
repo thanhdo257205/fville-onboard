@@ -1,6 +1,7 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 5b32098, build từ `main` 8347ca1).
+Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` 5b32098, build từ `main` 8347ca1; `main` hiện
+tại 56537a3 đã gộp PR #1 — bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5 — **chưa deploy**).
 
 ## Cách dùng
 
@@ -21,20 +22,28 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 
 ## 1. Trước buổi chơi thử (P1)
 
-- [x] P1 **Lỗi: không ra được khỏi zone 5** (từ `gh-pages` 04a74b2; đã sửa — nhánh `feat/zone5-seat-cap`, commit "Sửa lỗi cảnh kết
-  không sang được bến xe…"; smoke thêm bước zone 5 → zone 4 → zone 5; còn: deploy lại). Đi ra cửa sang zone 4 → "Couldn't open Card Gate · FSA
+- [x] P1 **Lỗi: không ra được khỏi zone 5** (từ `gh-pages` 04a74b2; đã sửa — c255b5c, gộp `main` qua PR #1; smoke thêm bước
+  zone 5 → zone 4 → zone 5; còn: deploy lại). Đi ra cửa sang zone 4 → "Couldn't open Card Gate · FSA
   Room. t.map?.dispose is not a function"; bấm Back / vào lại → "Couldn't open Office." Cảnh kết (zone 5 → bến xe zone 1)
   cũng hỏng theo. Nguyên nhân: cây cơ của bàn bi-a là bản sao `cue_2` (`cueModel` trong `game/src/pool/table.js`) —
   `clone()` chép `userData` qua JSON nên `userData.srcMaterial` thành object thường, `map` là chuỗi id → `disposeZone`
   (`game/src/world/zone.js`) gọi `.dispose()` trên chuỗi khi rời zone. Sửa: xoá `srcMaterial` khỏi bản sao + `disposeZone`
   chỉ dispose texture thật; thêm vào `test:smoke` bước zone 5 → zone 4 → zone 5 (smoke hiện không đi ngược khỏi zone 5 nên
   không bắt được); build, deploy lại — Phụ trách: —
-- [ ] P1 **Lỗi: camera xuyên trần nhà khi ở trong nhà** (zone 3, 4, 5 — kéo chuột lên thì camera bay lên tận nóc, thấy cả mái
-  nhà từ trên xuống). Nguyên nhân: camera chỉ tránh hộp `COL_` mà các zone trong nhà không có `COL_` cho trần; góc ngẩng tối
+- [x] P1 **Lỗi: camera xuyên trần nhà khi ở trong nhà** (zone 3, 4, 5 — kéo chuột lên thì camera bay lên tận nóc, thấy cả mái
+  nhà từ trên xuống; đã sửa — nhánh `fix/camera-ceiling`: camera tránh mặt nằm ngang của lưới hiển thị `zone.view` (trần, gầm
+  chiếu nghỉ, mái hiên), không cần hộp trần trong data hay giới hạn độ cao theo zone; smoke zone 3–5 ngẩng / lùi hết cỡ: 0 lần
+  xuyên, chỉ tránh `COL_` thì 30–72 lần; còn: deploy). Nguyên nhân: camera chỉ tránh hộp `COL_` mà các zone trong nhà không có `COL_` cho trần; góc ngẩng tối
   đa 1,15 rad × khoảng cách 4,2 m → camera cao ~5 m trên đầu người chơi (trần ~3 m). Sửa: thêm hộp trần cho zone 3–5 bằng
   `data/collision.json` (không cần Blender) hoặc cho camera tránh cả lưới hiển thị (`zone.view`, như camera hội thoại / bàn
   bi-a), kèm giới hạn độ cao camera theo zone; thêm kiểm tra vào `test:smoke` (ngẩng hết cỡ, camera vẫn dưới trần) —
-  Phụ trách: —
+  Phụ trách: Claude
+- [x] P1 **Lỗi: rơi xuyên sàn khi vào zone, không lên lại được** (thấy khi sửa lỗi camera; đã sửa — nhánh `fix/camera-ceiling`;
+  còn: deploy). Khung đầu tiên sau lúc tải zone / biên dịch shader có dt âm (−0,9 s trên SwiftShader; máy yếu như laptop Intel
+  của buổi chơi thử cũng có thể gặp) → trọng lực đảo chiều, người chơi bị kéo xuống dưới sàn (thấy rõ khi tải lại trang ở
+  zone 5); cứu "rơi khỏi bản đồ" lại đưa về vị trí khung trước + 1 m (đã ở dưới sàn) → rơi mãi quanh y −9 … −10. Sửa: chặn dt
+  âm (`game/src/main.js`), rơi thì về chỗ đứng vững gần nhất (`game/src/player/player.js`); smoke kiểm tra lúc vào zone —
+  Phụ trách: Claude
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
@@ -94,7 +103,7 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
   - [x] Kiểm thử: `test:pool` (luật, bàn máy chủ, một ván trọn giữa 2 người chơi giả) + `test:smoke` (2 trình duyệt headless
     + máy chủ local chơi trọn một ván; vị trí bi khớp sau mỗi cú; chặn cú sai lượt; bi trong tay; ghế giải phóng khi rớt mạng;
     người xem vào giữa ván thấy đúng bàn; máy chủ cũ)
-  - [ ] Build, push `main`, deploy `gh-pages` (build đã thử được; chờ PR được gộp); [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
+  - [x] Build, push `main` (PR #1, `main` 56537a3); [ ] deploy `gh-pages`; [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
 - [ ] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
   `/status` (sau khi bản Web xong việc trên) — Phụ trách: —
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
