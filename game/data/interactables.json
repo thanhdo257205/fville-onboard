@@ -288,6 +288,133 @@
         ]
       },
       "_ly_do": "GDD zone 4: đọc sứ mệnh FSA [DRAFT], Tú nói luật, mini-game Lộ trình học (minigames.learning_path), rồi Tú chia tay."
+    },
+    {
+      "zone": "zone_05",
+      "node": "NPC_mentor",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to Prajith"
+      },
+      "action": "dialogue:mentor_main",
+      "_ly_do": "GDD zone 5: Gặp Prajith — 4 câu định hướng nghề nghiệp (minigames.career_compass) → La bàn nghề nghiệp; Kết nối +5."
+    },
+    {
+      "zone": "zone_05",
+      "node": "NPC_manager",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to the manager"
+      },
+      "action": "dialogue:manager_main",
+      "requires": {
+        "quests": [
+          "z5_prajith"
+        ]
+      },
+      "_ly_do": "GDD zone 5: gặp Prajith rồi mới tới Manager — mục tiêu team [DRAFT] + mini-game Sắp xếp ưu tiên (minigames.priorities), nhiệm vụ đầu tiên, rồi màn mờ ăn trưa (hiệu ứng time_skip)."
+    },
+    {
+      "zone": "zone_05",
+      "node": "NPC_manager",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to the manager"
+      },
+      "action": "dialogue:manager_wait",
+      "hide_if": {
+        "quests": [
+          "z5_prajith"
+        ]
+      },
+      "_ly_do": "Chưa gặp Prajith: Manager nhắc gặp Prajith trước."
+    },
+    {
+      "zone": "zone_05",
+      "node": "NPC_dong_nghiep_1",
+      "radius": 2.4,
+      "prompt": {
+        "en": "Say hello to Lan"
+      },
+      "action": "dialogue:lan_hello",
+      "_ly_do": "Ngồi ở phía bắc cụm bàn: người chơi nói chuyện được qua mặt bàn (cách ~2,1 m) hoặc đi vòng ra sau."
+    },
+    {
+      "zone": "zone_05",
+      "node": "NPC_dong_nghiep_2",
+      "radius": 2.0,
+      "prompt": {
+        "en": "Say hello to Minh"
+      },
+      "action": "dialogue:minh_hello"
+    },
+    {
+      "zone": "zone_05",
+      "node": "NPC_dong_nghiep_3",
+      "radius": 2.4,
+      "prompt": {
+        "en": "Say hello to Hà"
+      },
+      "action": "dialogue:ha_hello",
+      "_ly_do": "Ngồi ở phía bắc cụm bàn: người chơi nói chuyện được qua mặt bàn (cách ~2,1 m) hoặc đi vòng ra sau."
+    },
+    {
+      "zone": "zone_05",
+      "node": "NPC_ban_bi_a",
+      "radius": 2.2,
+      "prompt": {
+        "en": "Talk to Khang"
+      },
+      "action": "dialogue:khang_main",
+      "_ly_do": "GDD zone 5: anh Khang — trò chuyện + mini-game tùy chọn Một cú bi-a (minigames.billiards), thêm 1 lời khuyên; Kết nối +5. Không bắt buộc."
+    },
+    {
+      "zone": "zone_05",
+      "node": "INT_ban_lam_viec",
+      "area": "TRIGGER_ban_lam_viec",
+      "prompt": {
+        "en": "Sit at your desk"
+      },
+      "action": "dialogue:desk_main",
+      "requires": {
+        "quests": [
+          "z5_manager"
+        ]
+      },
+      "_ly_do": "GDD zone 5: chỉ mở sau khi gặp Manager — hộp quà của team, mini-game Đăng nhập (minigames.login, [DRAFT]), bảng tên hiện tên người chơi, checklist ngày đầu (minigames.day_checklist); xong → hiệu ứng finish (cảnh kết + màn tổng kết)."
+    },
+    {
+      "zone": "zone_05",
+      "node": "INT_ban_lam_viec",
+      "area": "TRIGGER_ban_lam_viec",
+      "prompt": {
+        "en": "Look at the desk"
+      },
+      "action": "dialogue:desk_wait",
+      "hide_if": {
+        "quests": [
+          "z5_manager"
+        ]
+      }
+    },
+    {
+      "zone": "zone_05",
+      "object": "bang_ten",
+      "pos": [-11.9, 0.8, 4.34],
+      "snap": false,
+      "model": "nameplate",
+      "radius": 0,
+      "prompt": {
+        "en": ""
+      },
+      "action": "none",
+      "_ly_do": "Bảng tên trên bàn intern (trong GLB là tấm trắng để trống, gộp vào ban_lam_viec_mesh): code đặt tấm chữ sát mặt tấm trắng (face = pháp tuyến mặt tấm, toạ độ glTF), hiện tên người chơi + vị trí khi có cờ nameplate_on (sau mini-game Đăng nhập). Toạ độ suy từ scripts/blender/zone_05.py (bàn yaw 180, tấm ở (0; −0,66; 0,8) nghiêng −30°). action none: chỉ để nhìn, không bấm E.",
+      "face": [0, 0.5, -0.866],
+      "show_if": {
+        "flags": [
+          "nameplate_on"
+        ]
+      }
     }
   ],
   "minigames": {
@@ -868,6 +995,449 @@
         "hieu_biet": 10
       },
       "_ly_do": "GDD zone 4: kéo 3 khóa gợi ý (theo vị trí intern) vào lịch tuần đầu, rồi hỏi có muốn tự đặt thêm mục tiêu riêng không (chọn 1 mục tiêu → ô Innovation). Khóa học là nội dung tạm (HR/FSA cung cấp khóa thật theo vị trí) → draft. Mỗi khóa học dựa trên khóa trước: đặt sai thứ tự = sai, có gợi ý."
+    },
+    "career_compass": {
+      "kind": "compass",
+      "title": {
+        "en": "Career Compass"
+      },
+      "line": {
+        "en": "Four quick questions from Prajith — there are no right or wrong answers. Click an answer or press 1–2."
+      },
+      "questions": [
+        {
+          "q": {
+            "en": "Which sounds more fun?"
+          },
+          "options": [
+            {
+              "text": {
+                "en": "Tracking down a tricky bug"
+              },
+              "trait": "solver"
+            },
+            {
+              "text": {
+                "en": "Building a brand-new feature"
+              },
+              "trait": "builder"
+            }
+          ]
+        },
+        {
+          "q": {
+            "en": "You're stuck on a problem. You…"
+          },
+          "options": [
+            {
+              "text": {
+                "en": "Talk it through with a teammate"
+              },
+              "trait": "people"
+            },
+            {
+              "text": {
+                "en": "Try a few experiments on your own first"
+              },
+              "trait": "explorer"
+            }
+          ]
+        },
+        {
+          "q": {
+            "en": "Which day sounds better?"
+          },
+          "options": [
+            {
+              "text": {
+                "en": "A workshop with customers and the team"
+              },
+              "trait": "people"
+            },
+            {
+              "text": {
+                "en": "A quiet day finishing something you planned"
+              },
+              "trait": "builder"
+            }
+          ]
+        },
+        {
+          "q": {
+            "en": "When you learn a new tool, you…"
+          },
+          "options": [
+            {
+              "text": {
+                "en": "Read how it works under the hood"
+              },
+              "trait": "solver"
+            },
+            {
+              "text": {
+                "en": "Play with it and see what it can do"
+              },
+              "trait": "explorer"
+            }
+          ]
+        }
+      ],
+      "traits": {
+        "builder": {
+          "name": {
+            "en": "The Builder"
+          },
+          "desc": {
+            "en": "You love seeing something new take shape."
+          }
+        },
+        "solver": {
+          "name": {
+            "en": "The Problem Solver"
+          },
+          "desc": {
+            "en": "You enjoy getting to the bottom of things."
+          }
+        },
+        "people": {
+          "name": {
+            "en": "The Team Player"
+          },
+          "desc": {
+            "en": "You think best together with others."
+          }
+        },
+        "explorer": {
+          "name": {
+            "en": "The Explorer"
+          },
+          "desc": {
+            "en": "You learn fastest by trying things out."
+          }
+        }
+      },
+      "directions": {
+        "developer": {
+          "builder": {
+            "en": "Ship small features end to end, then grow into system design."
+          },
+          "solver": {
+            "en": "Dig into debugging and performance, and learn to write great tests."
+          },
+          "people": {
+            "en": "Pair-program often and learn code review — a path towards tech lead."
+          },
+          "explorer": {
+            "en": "Try new frameworks in small side projects and share what you learn."
+          }
+        },
+        "tester": {
+          "builder": {
+            "en": "Build automated test suites and grow into test architecture."
+          },
+          "solver": {
+            "en": "Become the go-to person for tricky bugs and root-cause analysis."
+          },
+          "people": {
+            "en": "Work closely with developers and users — a path towards QA lead."
+          },
+          "explorer": {
+            "en": "Try exploratory testing and new test tools, then share your findings."
+          }
+        },
+        "ba": {
+          "builder": {
+            "en": "Turn ideas into clear user stories and prototypes."
+          },
+          "solver": {
+            "en": "Get great at process analysis and finding what's really going wrong."
+          },
+          "people": {
+            "en": "Run workshops with customers — a path towards product owner."
+          },
+          "explorer": {
+            "en": "Explore data and new domains, and bring back fresh questions."
+          }
+        },
+        "designer": {
+          "builder": {
+            "en": "Take features from sketch to polished UI and build a design system."
+          },
+          "solver": {
+            "en": "Dig into usability problems with research and testing."
+          },
+          "people": {
+            "en": "Run design reviews and user interviews with the team."
+          },
+          "explorer": {
+            "en": "Prototype bold ideas and try new tools and styles."
+          }
+        }
+      },
+      "card_title": {
+        "en": "Your Career Compass"
+      },
+      "card_note": {
+        "en": "Saved in My FPT → Bag. Prajith will go through it with you again in a month."
+      },
+      "done": {
+        "en": "Career Compass saved!"
+      },
+      "idle": {
+        "en": "Pick the answer that sounds more like you — either is fine. Click it or press 1 or 2."
+      },
+      "messages": {
+        "builder": {
+          "en": "{player}, you light up when you're building something. Pick one small thing next week and take it all the way to done — I'll be right behind you. — Prajith"
+        },
+        "solver": {
+          "en": "{player}, you like getting to the bottom of things — that's a superpower here. Bring me your trickiest question next week! — Prajith"
+        },
+        "people": {
+          "en": "{player}, you think best with others around you. Don't be shy in meetings — your questions will help the whole team. — Prajith"
+        },
+        "explorer": {
+          "en": "{player}, you learn by trying. Keep experimenting, and share what you find with the team — we'll all learn from it. — Prajith"
+        }
+      },
+      "result": {
+        "reward": "la_ban_nghe_nghiep"
+      },
+      "_ly_do": "GDD zone 5: 4 câu không đúng / sai; mỗi phương án nghiêng về 1 xu hướng (builder, solver, people, explorer). Xu hướng chính = nhiều nhất (bằng nhau → câu trả lời sớm hơn). Thẻ = vị trí intern × xu hướng (directions); lời nhắn của Prajith ở màn tổng kết theo xu hướng (messages)."
+    },
+    "priorities": {
+      "kind": "priorities",
+      "title": {
+        "en": "Plan Your First Week"
+      },
+      "line": {
+        "en": "Put the five tasks in order, most urgent at the top: drag the cards (or ↑/↓ to pick, Shift+↑/↓ to move), then Check."
+      },
+      "items": [
+        {
+          "id": "infosec",
+          "text": {
+            "en": "Complete the mandatory Information Security course"
+          },
+          "tag": {
+            "en": "Due today"
+          },
+          "rank": "first"
+        },
+        {
+          "id": "setup",
+          "text": {
+            "en": "Set up your laptop and work tools"
+          },
+          "tag": {
+            "en": "This week"
+          }
+        },
+        {
+          "id": "docs",
+          "text": {
+            "en": "Read the project documents"
+          },
+          "tag": {
+            "en": "This week"
+          }
+        },
+        {
+          "id": "code",
+          "text": {
+            "en": "Look through the project source code"
+          },
+          "tag": {
+            "en": "This week"
+          }
+        },
+        {
+          "id": "club",
+          "text": {
+            "en": "Sign up for a sports club"
+          },
+          "tag": {
+            "en": "Anytime"
+          },
+          "rank": "last"
+        }
+      ],
+      "top": {
+        "en": "Most urgent"
+      },
+      "bottom": {
+        "en": "Can wait"
+      },
+      "feedback_first": {
+        "en": "Manager: \"Check the tags — one of these is due today. That one should come first.\""
+      },
+      "feedback_last": {
+        "en": "Manager: \"The sports club is fun, but it can wait until you've settled in — put it at the bottom.\""
+      },
+      "retry": {
+        "en": "You can reorder once more, then press Check."
+      },
+      "done_good": {
+        "en": "A sensible plan: deadlines first, nice-to-haves last!"
+      },
+      "done_ok": {
+        "en": "Plan saved. Next time, put what's due today first."
+      },
+      "idle": {
+        "en": "Read the tags on the cards: what's due today? What can wait?"
+      },
+      "mission": {
+        "en": "Complete the mandatory Information Security course — due today"
+      },
+      "result": {
+        "reward": "nhiem_vu_dau_tien"
+      },
+      "_ly_do": "GDD zone 5: 5 thẻ; việc có hạn hôm nay lên đầu, câu lạc bộ xuống cuối, 3 việc giữa đổi chỗ vẫn đúng. Xếp chưa hợp lý → Manager góp ý 1 câu (thẻ đặt sai được làm sáng) và cho xếp lại 1 lần; lần 2 vẫn chưa hợp lý thì vẫn xong (không có ô Wisdom). Xếp hợp lý → value wisdom + cờ priorities_sensible."
+    },
+    "billiards": {
+      "kind": "billiards",
+      "title": {
+        "en": "One Shot"
+      },
+      "line": {
+        "en": "Aim with the mouse or ←/→, then click or press Space when the power bar looks right. Sink the orange ball!"
+      },
+      "idle": {
+        "en": "Line up the white ball with the orange one so the orange ball rolls towards a pocket, then shoot (click or Space)."
+      },
+      "miss": {
+        "en": "Missed — line it up and have another go!"
+      },
+      "scratch": {
+        "en": "Oops, the white ball went in. Try again!"
+      },
+      "potted": {
+        "en": "In the pocket! Nice shot!"
+      },
+      "assist": {
+        "en": "Follow the dotted line — it shows a shot that works."
+      },
+      "result": {
+        "flags": [
+          "billiards_played"
+        ]
+      },
+      "_ly_do": "GDD zone 5: mini-game tùy chọn của anh Khang — chỉnh hướng và lực (thanh lực chạy qua lại, bấm để đánh), đưa bi cam vào lỗ. Trượt → thử lại; sai 2 lần → hiện đường ngắm gợi ý; sai 3 lần → Skip. Vào lỗ → cờ billiards_potted, billiards_last_hit."
+    },
+    "login": {
+      "kind": "login",
+      "draft": true,
+      "title": {
+        "en": "First Login"
+      },
+      "line": {
+        "en": "Create a password that ticks every rule, then turn on two-factor authentication."
+      },
+      "rules": [
+        {
+          "id": "len",
+          "text": {
+            "en": "At least 12 characters"
+          }
+        },
+        {
+          "id": "case",
+          "text": {
+            "en": "Upper- and lowercase letters"
+          }
+        },
+        {
+          "id": "digit",
+          "text": {
+            "en": "At least one number"
+          }
+        },
+        {
+          "id": "symbol",
+          "text": {
+            "en": "At least one symbol (! @ # - …)"
+          }
+        },
+        {
+          "id": "name",
+          "text": {
+            "en": "Doesn't contain your name"
+          }
+        }
+      ],
+      "placeholder": {
+        "en": "New password"
+      },
+      "strength": [
+        {
+          "en": "Too weak"
+        },
+        {
+          "en": "Weak"
+        },
+        {
+          "en": "Fair"
+        },
+        {
+          "en": "Good"
+        },
+        {
+          "en": "Strong"
+        }
+      ],
+      "login_btn": {
+        "en": "Set password"
+      },
+      "not_yet": {
+        "en": "Not quite — every rule needs a tick."
+      },
+      "suggest": {
+        "en": "Tip: join a few words with symbols and a number, e.g. Orange-Rice-Field-26!"
+      },
+      "twofa_title": {
+        "en": "Two-factor authentication"
+      },
+      "twofa_desc": {
+        "en": "Each login will also need a code from the authenticator app on your phone."
+      },
+      "twofa_on": {
+        "en": "Turn on 2FA"
+      },
+      "done": {
+        "en": "All set — your account is protected with 2FA."
+      },
+      "idle": {
+        "pw": {
+          "en": "Type a password that ticks every rule — a few words joined with symbols and a number works well."
+        },
+        "twofa": {
+          "en": "Now turn on two-factor authentication (click the switch or press Space)."
+        }
+      },
+      "result": {
+        "hieu_biet": 5,
+        "flags": [
+          "logged_in"
+        ]
+      },
+      "_ly_do": "GDD zone 5: tạo mật khẩu đạt yêu cầu (thanh độ mạnh) + bật 2FA. Quy định mật khẩu thật chờ HR/IT → draft. Mật khẩu chỉ kiểm tra trong trình duyệt, không lưu, không gửi đi."
+    },
+    "day_checklist": {
+      "kind": "day_checklist",
+      "title": {
+        "en": "Your First Day"
+      },
+      "line": {
+        "en": "Your first-day checklist ticks itself off. Press Enter (or Done) when you're ready."
+      },
+      "done_btn": {
+        "en": "Done"
+      },
+      "idle": {
+        "en": "Press Enter or click Done to finish your first day."
+      },
+      "result": {},
+      "_ly_do": "GDD zone 5: xem checklist ngày đầu tự tick (theo 4 Act). Mục bàn làm việc tick cuối cùng."
     }
   },
   "grains_total": 10,

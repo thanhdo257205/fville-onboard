@@ -30,7 +30,14 @@
     { "id": "z3_rice_room", "zone": "zone_03", "checklist": "rice_room", "required": true, "target": "INT_hat_lua", "title": { "en": "Explore the Rice Grain Room" } },
     { "id": "z3_wallet", "zone": "zone_03", "required": false, "target": "vi_danh_roi", "title": { "en": "Return the lost wallet" }, "visible_if": { "flags": ["wallet_taken"] } },
     { "id": "z4_card_gate", "zone": "zone_04", "checklist": "card_gate", "required": true, "target": "INT_cua_quet_the", "title": { "en": "Tap your card at the card gate" } },
-    { "id": "z4_fsa", "zone": "zone_04", "checklist": "fsa", "required": true, "target": "INT_cua_phong_fsa", "title": { "en": "Plan your first week at the FSA Room upstairs" } }
+    { "id": "z4_fsa", "zone": "zone_04", "checklist": "fsa", "required": true, "target": "INT_cua_phong_fsa", "title": { "en": "Plan your first week at the FSA Room upstairs" } },
+    { "id": "z5_prajith", "zone": "zone_05", "checklist": "meet_prajith", "required": true, "target": "NPC_mentor", "title": { "en": "09:15 · Meet Prajith in the meeting room on the left" } },
+    { "id": "z5_manager", "zone": "zone_05", "checklist": "meet_manager", "required": true, "target": "NPC_manager", "title": { "en": "Meet the manager in the room next door" } },
+    { "id": "z5_lan", "zone": "zone_05", "checklist": "hello_team", "required": true, "target": "NPC_dong_nghiep_1", "title": { "en": "Say hello to Lan" } },
+    { "id": "z5_minh", "zone": "zone_05", "checklist": "hello_team", "required": true, "target": "NPC_dong_nghiep_2", "title": { "en": "Say hello to Minh" } },
+    { "id": "z5_ha", "zone": "zone_05", "checklist": "hello_team", "required": true, "target": "NPC_dong_nghiep_3", "title": { "en": "Say hello to Hà" } },
+    { "id": "z5_desk", "zone": "zone_05", "checklist": "desk", "required": true, "target": "INT_ban_lam_viec", "title": { "en": "Sit at your desk" } },
+    { "id": "z5_khang", "zone": "zone_05", "required": false, "target": "NPC_ban_bi_a", "title": { "en": "Take a break with Khang at the billiard table" } }
   ],
   "triggers": [
     { "zone": "zone_00", "node": "TRIGGER_len_xe", "cutscene": "len_xe", "requires": ["z0_meet_thao"], "blocked_dialogue": "board_remind" },

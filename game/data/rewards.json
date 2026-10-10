@@ -11,10 +11,18 @@
     { "id": "so_tay_hoc_tap", "type": "item", "icon": "📓", "zone": "zone_04", "name": { "en": "Learning Notebook" }, "desc": { "en": "Your first-week learning plan." } },
     { "id": "la_ban_nghe_nghiep", "type": "card", "icon": "🧭", "zone": "zone_05", "name": { "en": "Career Compass" }, "desc": { "en": "Prajith's tips for where you could grow." } },
     { "id": "nhiem_vu_dau_tien", "type": "app_entry", "icon": "📌", "zone": "zone_05", "name": { "en": "First Mission" }, "desc": { "en": "Your first task from the manager." } },
-    { "id": "so_loi_khuyen", "type": "app_tab", "icon": "📒", "zone": "zone_05", "name": { "en": "Advice Book" }, "desc": { "en": "First-day tips from your teammates." } }
+    { "id": "so_loi_khuyen", "type": "app_tab", "icon": "📒", "zone": "zone_05", "name": { "en": "Advice Book" }, "desc": { "en": "First-day tips from your teammates." } },
+    { "id": "qua_cua_team", "type": "item", "icon": "🎁", "zone": "zone_05", "name": { "en": "Team Welcome Gift" }, "desc": { "en": "An FPT notebook, a water bottle and a card signed by the whole team." }, "draft": true }
   ],
   "carry": [
     { "id": "balo_tu", "icon": "🎒", "name": { "en": "Tú's Backpack" }, "desc": { "en": "Tú left it on the bus." } },
     { "id": "vi_danh_roi", "icon": "👛", "name": { "en": "Lost Wallet" }, "desc": { "en": "Found on a seat in the lobby." } }
+  ],
+  "_advice_ghi_chu": "Sổ lời khuyên (App My FPT → tab Advice, mở khi có phần thưởng so_loi_khuyen): hiệu ứng 'advice': <id> trong hội thoại zone 5 lưu lời khuyên của đồng nghiệp (from = vai trong characters.json). Lời khuyên do Claude viết cho nhân vật hư cấu (Lan, Minh, Hà, anh Khang).",
+  "advice": [
+    { "id": "lan", "from": "dong_nghiep_1", "text": { "en": "Don't be afraid to ask questions. Everyone here was new once." } },
+    { "id": "minh", "from": "dong_nghiep_2", "text": { "en": "Write things down — names, tools, where things live. Your notes will save you hours." } },
+    { "id": "ha", "from": "dong_nghiep_3", "text": { "en": "Keep your calendar open and turn on reminders — meetings move around a lot." } },
+    { "id": "khang", "from": "khang", "text": { "en": "Take real breaks. Good ideas often turn up away from the screen." } }
   ]
 }

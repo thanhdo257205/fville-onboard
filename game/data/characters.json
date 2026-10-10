@@ -45,9 +45,12 @@
       "hide_if": {
         "flags": [
           "tu_said_bye"
+        ],
+        "not_flags": [
+          "game_complete"
         ]
       },
-      "_hide_ghi_chu": "GDD: sau phòng FSA (zone 4) Tú lên team khác, hẹn gặp lúc tan làm → từ đó không đi theo nữa (zone 5 không có Tú)."
+      "_hide_ghi_chu": "GDD: sau phòng FSA (zone 4) Tú lên team khác, hẹn gặp lúc tan làm → từ đó không đi theo nữa (zone 5 không có Tú). Cảnh kết (cờ game_complete): Tú chạy tới bến xe zone_01 rồi đi cùng người chơi."
     },
     "thao": {
       "model": "huyen",
@@ -142,63 +145,71 @@
       "model": "prajith",
       "place": "node",
       "node": "NPC_mentor",
-      "tint": {
-        "shirt": "#c4472b",
-        "pants": "#2b2b2b"
-      }
+      "_ghi_chu": "Prajith (người thật, đã đồng ý dùng hình): model prajith thật, không đổi màu áo."
     },
     "manager": {
-      "model": "prajith",
+      "model": "intern_nu",
       "place": "node",
       "node": "NPC_manager",
+      "portrait": false,
       "tint": {
-        "shirt": "#56677d",
+        "shirt": "#3b4f7a",
         "pants": "#1c1c1e"
-      }
+      },
+      "_tam": "TẠM: nhân vật hư cấu (chị Manager) dùng model intern_nu + đổi màu áo cho dễ phân biệt; không chân dung (khỏi trùng mặt người chơi). Thay khi có model riêng."
     },
     "dong_nghiep_1": {
-      "model": "prajith",
+      "model": "intern_nu",
       "place": "node",
       "node": "NPC_dong_nghiep_1",
       "pose": "seated",
       "node_marks": "seat",
       "chair_height_m": 0.51,
+      "portrait": false,
       "tint": {
+        "shirt": "#d96c86",
         "pants": "#3f5f8f"
-      }
+      },
+      "_tam": "TẠM: Lan (hư cấu) dùng model intern_nu + áo hồng; không chân dung. Thay khi có model riêng."
     },
     "dong_nghiep_2": {
-      "model": "prajith",
+      "model": "intern_nam",
       "place": "node",
       "node": "NPC_dong_nghiep_2",
       "pose": "seated",
       "node_marks": "seat",
       "chair_height_m": 0.51,
+      "portrait": false,
       "tint": {
         "shirt": "#e3c341",
         "pants": "#5a4636"
-      }
+      },
+      "_tam": "TẠM: Minh (hư cấu) dùng model intern_nam + áo vàng; không chân dung. Thay khi có model riêng."
     },
     "dong_nghiep_3": {
-      "model": "prajith",
+      "model": "intern_nu",
       "place": "node",
       "node": "NPC_dong_nghiep_3",
       "pose": "seated",
       "node_marks": "seat",
       "chair_height_m": 0.51,
+      "portrait": false,
       "tint": {
         "shirt": "#3e9a62",
         "pants": "#2e3440"
-      }
+      },
+      "_tam": "TẠM: Hà (hư cấu) dùng model intern_nu + áo xanh lá; không chân dung. Thay khi có model riêng."
     },
     "khang": {
-      "model": "prajith",
+      "model": "intern_nam",
       "place": "node",
       "node": "NPC_ban_bi_a",
+      "portrait": false,
       "tint": {
         "shirt": "#8058b8",
         "pants": "#4a6a9a"
-      }
+      },
+      "_tam": "TẠM: anh Khang (hư cấu) dùng model intern_nam + áo tím; không chân dung. Thay khi có model riêng."
     }
   },
   "names": {
@@ -220,7 +231,8 @@
       "tai_xe_1": "Bus 1 Driver",
       "tai_xe_3": "Bus 3 Driver",
       "hanh_khach": "Passenger",
-      "hr": "Ms. Nga"
+      "hr": "Ms. Nga",
+      "app": "My FPT"
     }
   },
   "speaker_as": {
@@ -237,14 +249,18 @@
   "character_creation": {
     "fields": [
       "name",
+      "gender",
       "intern_position"
     ],
     "hidden": [
-      "gender",
       "hair",
       "skin"
     ],
-    "_ghi_chu": "Màn tạo nhân vật tạm thời chỉ cho nhập tên và chọn vị trí intern; ẩn chọn giới tính, tóc, da (chưa có model khác).",
+    "_ghi_chu": "Màn tạo nhân vật: nhập tên, chọn giới tính (model intern_nam / intern_nu — roles.player.model_by_gender) và vị trí intern; ẩn chọn tóc, da (chưa có).",
+    "genders": [
+      { "id": "nam", "name": { "en": "Male" } },
+      { "id": "nu", "name": { "en": "Female" } }
+    ],
     "positions": [
       {
         "id": "developer",
@@ -743,6 +759,16 @@
         "run": 4.39
       },
       "portrait": "assets/characters/intern_nu/intern_nu_portrait.png"
+    },
+    "intern_nam_kinh": {
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam đeo kính (hư cấu, Meshy), cao 1,65 m — lựa chọn thứ 3 ở màn tạo nhân vật (giới tính Nam), sau này dùng làm model Tú (khác giới với người chơi). CHƯA có GLB: chờ gắn xương trên Mixamo (assets/characters/intern_nam_kinh/intern_nam_kinh_for_mixamo.fbx) rồi build_character.py; chưa vai nào dùng, chưa có trong màn chọn nhân vật. Áo gốc Meshy là bộ ngày đầu: textures.dau_ngay = áo phông xanh ngọc gốc, không logo; ao_cam = áo phông đổi sang cam theo mặt nạ (cùng màu áo intern_nam, giữ nếp vải) + logo FPT ngực trái 7 cm (build_character.py nhúng bản này vào GLB). mask = mặt nạ vùng 512 px: đỏ áo, xanh dương quần jean, xanh lá giày, vàng da, hồng tóc, xanh lơ kính, đen ngoài UV (outfit_textures.py --original dau_ngay --glasses). Lọn tóc rủ giữa hai mắt kính đã rút ngắn (mesh_fixes.json). Ảnh trong textures/ chỉ có trên máy làm việc (không commit).",
+      "gender": "male",
+      "height_m": 1.65,
+      "textures": {
+        "ao_cam": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_basecolor.jpg",
+        "dau_ngay": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_basecolor_dau_ngay.jpg",
+        "mask": "assets/characters/intern_nam_kinh/textures/intern_nam_kinh_mask.png"
+      }
     }
   }
 }
