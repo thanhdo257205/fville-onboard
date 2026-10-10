@@ -170,7 +170,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   (`Game.showcase` → `game/src/game/showcase.js`: zone dựng như khi vào zone nhưng chưa có người chơi / NPC / trigger, camera
   trôi theo `SHOTS[zone]`, zone không có kịch bản thì quay quanh SPAWN_ đầu zone). Start → `_enterZone` dùng lại zone đó,
   không tải lại GLB; vòng lặp vẽ chạy từ trước màn tiêu đề (`update()` không làm gì khi chưa bắt đầu). Chữ: `title.*` trong
-  i18n. Đổi zone mở đầu thì thêm kịch bản camera vào `SHOTS`.
+  i18n; font riêng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, SIL OFL — font mới phải là OFL / Apache, repo công khai), thiết
+  kế phẳng không gradient. Đổi zone mở đầu thì thêm kịch bản camera vào `SHOTS`.
 - **Bản lưu cũ lệch data** tự sửa khi nạp (`GameState.repair`, gọi trong `main.js`): bỏ quest / phần thưởng / vật / giá
   trị / hạt lúa / lời khuyên không còn, zone không còn → zone xa nhất đã mở, giới tính / ngoại hình / vị trí về giá trị
   hợp lệ; in `[bản lưu] đã sửa N chỗ` (cảnh báo console) rồi ghi lại. Thêm / đổi id trong data thì nghĩ tới bản lưu cũ.

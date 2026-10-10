@@ -80,13 +80,14 @@ Người chơi bắt chuyến xe bus sớm lên Hòa Lạc ở một điểm đ�
 ## Màn tiêu đề
 
 **Đã làm (10/10/2026):** mở game là thấy màn tiêu đề trên nền 3D thật của zone 0 lúc 06:30 (điểm đón xe trong phố, ba xe
-bus, sương sớm): camera trôi chậm từ góc cao bên đường xuống thấp dọc hàng xe rồi lùi lại, nghiêng nhẹ theo chuột; hai dải
-đen như cảnh chuyển. Chữ: dòng "FPT Software · F-Ville 1 Campus · Hòa Lạc", tiêu đề **First Day at / F-VILLE** (bản Việt
-**Ngày Đầu Ở / F-VILLE**, chữ lớn màu cam chuyển sắc), câu dẫn "Catch the 06:30 bus, meet your mentor and earn your FPT
-Orange Shirt.", mặt trời nhô lên trên đường chân trời; mọi thứ hiện dần lần lượt. Nút ngôn ngữ ở góc như màn tạo nhân vật.
-Người mới: **Start** → màn tạo nhân vật (hiện ngay trên nền đó) → vào game; người chơi cũ: "Welcome back, {tên}!",
-**Continue** và **Start over** (hỏi lại rồi xoá bản lưu). Enter / Space = nút chính. Nền chưa dựng xong thì có trời bình minh
-vẽ bằng CSS + dòng "The city is waking up…"; dựng xong (~1 giây) thì lộ cảnh 3D, và khi bấm Start game dùng lại đúng zone
+bus, sương sớm): camera trôi chậm từ góc cao bên đường xuống thấp dọc hàng xe rồi lùi lại, nghiêng nhẹ theo chuột. Khối chữ
+dồn góc dưới trái như menu game hiện đại, phẳng, không gradient — font **Be Vietnam Pro** (SIL OFL, dùng được trong công ty,
+đủ dấu tiếng Việt): vạch cam nhỏ + dòng "FPT Software · F-Ville 1 Campus · Hòa Lạc", tiêu đề **FIRST DAY AT / F-VILLE** (bản
+Việt **NGÀY ĐẦU Ở / F-VILLE**, chữ trắng đặc rất đậm, sát chữ), câu dẫn "Catch the 06:30 bus, meet your mentor and earn your
+FPT Orange Shirt."; mọi thứ hiện dần lần lượt. Nút ngôn ngữ chữ trần ở góc trên phải (gạch cam dưới ngôn ngữ đang chọn).
+Người mới: **Start →** → màn tạo nhân vật (hiện ngay trên nền đó) → vào game; người chơi cũ: "Welcome back, {tên}!",
+**Continue →** và **Start over** (viền trắng, hỏi lại rồi xoá bản lưu). Enter / Space = nút chính. Nền chưa dựng xong thì
+màu trời phẳng + dòng "The city is waking up…"; dựng xong (~1 giây) thì lộ cảnh 3D, và khi bấm Start game dùng lại đúng zone
 đó (không tải lại). Đã xong game → nền là bến xe zone 1 lúc hoàng hôn (camera quay chậm quanh chỗ xuất hiện).
 
 ## Tạo nhân vật

@@ -23,12 +23,7 @@ export function titleScreen({ name = null, onLang = null, onStartOver = null, on
       ${LANGS.map((l) => `<button type="button" data-lang="${l}" lang="${l}">${esc(t(`lang.${l}`))}</button>`).join("")}
     </div>
     <div class="hero">
-      <svg class="sun" viewBox="0 0 120 60" aria-hidden="true">
-        <defs><clipPath id="title-horizon"><rect x="0" y="0" width="120" height="48"/></clipPath></defs>
-        <g clip-path="url(#title-horizon)"><circle class="disc" cx="60" cy="48" r="22"/></g>
-        <path class="line" d="M4 48 H116"/>
-      </svg>
-      <p class="eyebrow" data-t="title.eyebrow"></p>
+      <div class="kicker"><i class="mark" aria-hidden="true"></i><p class="eyebrow" data-t="title.eyebrow"></p></div>
       <h1 id="title-h"><span class="top" data-t="title.top"></span><span class="main" data-t="title.main"></span></h1>
       <p class="tagline" data-t="title.tagline"></p>
       ${back ? `<p class="welcome"></p>` : ""}

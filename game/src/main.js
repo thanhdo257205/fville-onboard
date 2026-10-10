@@ -2,6 +2,11 @@
 import "@fontsource/nunito/400.css";
 import "@fontsource/nunito/700.css";
 import "@fontsource/nunito/800.css";
+// màn tiêu đề (ui/title.js): Be Vietnam Pro — SIL OFL 1.1, đủ dấu tiếng Việt
+import "@fontsource/be-vietnam-pro/600.css";
+import "@fontsource/be-vietnam-pro/700.css";
+import "@fontsource/be-vietnam-pro/800.css";
+import "@fontsource/be-vietnam-pro/900.css";
 import "./style.css";
 import * as THREE from "three";
 import { loadJSON, url } from "./core/assets.js";

@@ -291,9 +291,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   zone 0 lúc 06:30 — `Game.showcase` (`game/src/game/showcase.js`) dựng zone đầu như khi vào zone nhưng chưa có người chơi /
   NPC / trigger, camera trôi theo kịch bản `SHOTS.zone_00` (góc cao bên đường → thấp dọc hàng xe, qua lại), nghiêng nhẹ theo
   chuột; zone không có kịch bản (đã xong game → bến xe zone 1 hoàng hôn, `?start=zone_0X`) thì camera chơi quay quanh
-  SPAWN_. Chữ hiện dần (dòng FPT Software · F-Ville 1 Campus · Hòa Lạc, FIRST DAY AT / F-VILLE chữ cam chuyển sắc, câu
-  dẫn, mặt trời nhô lên), hai dải đen, nút ngôn ngữ; người mới: Start → màn tạo nhân vật trên nền đó; người cũ: Welcome
-  back + Continue + Start over. Trời bình minh CSS tới khi nền dựng xong. Start → `_enterZone` dùng lại zone đã dựng (không
+  SPAWN_. Khối chữ góc dưới trái, phẳng không gradient, font Be Vietnam Pro (SIL OFL 1.1, `@fontsource/be-vietnam-pro`, chỉ
+  màn này dùng; chữ khác vẫn Nunito): vạch cam + dòng FPT Software · F-Ville 1 Campus · Hòa Lạc, FIRST DAY AT / F-VILLE trắng
+  đặc, câu dẫn — hiện dần lần lượt; nút ngôn ngữ chữ trần; người mới: Start → màn tạo nhân vật trên nền đó; người cũ: Welcome
+  back + Continue + Start over. Màu trời phẳng tới khi nền dựng xong. Start → `_enterZone` dùng lại zone đã dựng (không
   tải lại GLB); vòng lặp vẽ chạy từ trước màn tiêu đề. `?title=off` (dev / `?debug`) bỏ màn này — smoke test dùng cho mọi
   đường chạy trừ đường chính (bước mới: nền zone đầu dựng xong, chữ đúng ngôn ngữ, Start → màn tạo nhân vật). Smoke zone 0
   ngoại hình tiếng Việt: giải hội thoại on_enter (tin nhắn HR, 600 ms sau khi vào zone) trước khi bấm Esc đổi ngôn ngữ —
