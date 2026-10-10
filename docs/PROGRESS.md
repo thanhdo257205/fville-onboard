@@ -703,6 +703,27 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Viewer: áp tint của vai (dùng chung `game/src/characters/tint.js` qua `viewer/tint.js`); `?compare=` nhận cả id vai
     (vd `?compare=thao,le_tan,prajith`: model + tint + tên hiển thị của vai).
 
+### Mũ lưỡi trai phần 2: đội trên đầu 3 intern (10/10/2026, nhánh `feat/zone5-seat-cap`)
+- `game/src/characters/accessories.js`: mũ (`assets/accessories/cap/cap.glb`) là con của xương đầu (`mixamorigHead`) → đi theo
+  mọi animation. **Tự ướm theo lưới nhân vật**, không cần số đo tay: lấy các đỉnh thuộc xương đầu (trọng số ≥ 0,5, cả tóc) ở
+  tư thế nghỉ — đỉnh ở hệ xương = boneInverse × bindMatrix × v (GLB lượng tử hoá đưa hệ số giải nén vào boneInverse), × ma
+  trận xương đầu lúc nghỉ (`Character.headRest`, lấy khi tạo nhân vật; `skeleton.pose()` làm hỏng xương gốc nên không dùng).
+  Mép trước vòng đội đầu ở tầm trán (xương đầu + 0,68 × (đỉnh đầu − xương đầu)), vòng đội đầu nghiêng 16,6° như mũ thật; tỉ
+  lệ = vòng đội đầu vừa bề ngang / bề sâu đầu + tóc từ tầm trán trở lên × 1,06, rồi phóng to tới khi vòm thật (bản đồ độ cao
+  ô 1 cm dựng từ đỉnh của GLB mũ) trùm được 97 % đỉnh đầu / tóc trên vòng đội đầu. Kết quả: intern_nam ×1,30, intern_nu
+  ×1,37 (tóc bob dày, tóc lòi ra sau gáy như mũ thật), intern_nam_kinh ×1,60. Đã thử thu 10 % cho 2 nhân vật nam (mũ trông
+  hơi to) → tóc đâm xuyên vòm sau → giữ tỉ lệ máy tính. Chỉnh tay theo model: `accessories.cap.adjust.<model>`.
+- Cấu hình `data/characters.json` → `accessories.cap` (nhãn, GLB, số đo chép từ `cap.json` — `test:data` so khớp, `fit`,
+  `adjust`, `unlock: { flags: ["game_complete"] }`). Bản lưu `player.accessories` (đang đội; `repair()` bỏ id lạ). Chưa có tab
+  Wardrobe (chờ chốt danh sách món) → xong game thì menu Esc có hàng **FPT Orange Cap: On / Off**. Bản build chép
+  `assets/accessories/<id>/<id>.glb` (không `source/`, `.json`).
+- Chơi nhiều người: `join.acc` (máy chủ nhận tối đa 4 id dạng `[a-z0-9_]`, phát lại trong `join`/`zone`) → người khác thấy
+  mũ; máy chủ cũ bỏ qua trường này (không ai thấy mũ của ai, không lỗi).
+- Dev: `__game.setAccessory("cap", true, { force: true })` (bỏ qua mở khoá), `__game.accessoryInfo("cap")` (xương, hộp bao,
+  số đo ướm), `__game.model.accessories`.
+- Kiểm thử: `test:data` mục "phụ kiện (tủ đồ)"; smoke sau màn tổng kết: menu Esc → bật mũ → gắn xương đầu, vòm cao hơn đỉnh
+  đầu 0–15 cm, lưu vào bản lưu; test "mạng + zone 4": bot đội mũ → thấy mũ trên người bot. Ảnh: `renders/game/cap_<model>_{front,side}.png`.
+
 ### Người chơi ngồi vào ghế ở bàn làm việc zone 5 + sửa lỗi cảnh kết (10/10/2026, nhánh `feat/zone5-seat-cap`)
 - **Ngồi ghế** (không sửa GLB): hội thoại `desk_main` có node mới `"sit": { "action": "sit:SPAWN_ban_lam_viec" }` — chọn "Sit
   down now." (hoặc đã chào đủ Lan, Minh, Hà) thì người chơi ngồi vào ghế bàn intern rồi mới mở quà, đăng nhập, checklist.
@@ -774,7 +795,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- Mũ lưỡi trai phần 2 (gắn xương Head của từng intern): chưa làm; phần 1 (`cap.glb`) đã xong.
+- Tủ đồ: mũ lưỡi trai đã đội được (phần 2, 10/10/2026); còn tab Wardrobe + danh sách món (CHECKLIST mục "Tủ đồ").
 - Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
   hưởng khi sau này đổi màu tóc.
 - huyen: bàn tay buông lấn vào đùi 3–5 cm ở 7 animation (talk, talk_2, nod, phone, press, wave, cheer) do dùng lại

@@ -43,6 +43,7 @@ class Remote {
   profile(p) {
     this.name = p.name || "";
     this.outfit = p.outfit || "";
+    this.acc = Array.isArray(p.acc) ? p.acc.filter((x) => typeof x === "string") : [];   // phụ kiện đang đội (vd cap)
     if (this.model && p.model !== this.model) { this.rebuild = true; this.failed = false; }   // đổi model → dựng lại
     this.model = p.model || "";
     if (this.nameTag) this.nameTag.element.textContent = this.name;
@@ -206,6 +207,12 @@ export class RemotePlayers {
         if (o?.texture) ch.setOutfit(wearing ? null : o.texture);
         if (o?.tint) setTint(ch, wearing ? null : o.tint);
       }
+      // phụ kiện (vd mũ lưỡi trai cam): đội / bỏ theo tin join gần nhất; id lạ (data khác bản) bỏ qua
+      const accKey = r.acc.join(",");
+      if (r.accShown !== accKey) {
+        r.accShown = accKey;
+        for (const id of g.characters.accessoryIds()) ch.setAccessory(id, g.characters.accessory(id), r.acc.includes(id)).catch(() => {});
+      }
       // vị trí, hướng, tốc độ (đo từ quãng di chuyển) → animation
       const before = _q.copy(root.position);
       const wasVisible = r.visible;
@@ -250,6 +257,6 @@ export class RemotePlayers {
     return [...this.list.values()].map((r) => ({ id: r.id, name: r.name, model: r.model, outfit: r.outfit, want: !!r.want, visible: r.visible,
       built: !!r.ch, pos: r.ch ? r.ch.root.position.toArray().map((v) => +v.toFixed(2)) : r.position?.toArray(),
       anim: r.buf[r.buf.length - 1]?.anim, speed: +r.speed.toFixed(2), emote: r.emoting ? r.emoting.getClip().name : null,
-      bubble: r.bubble?.visible ? r.sayText : null, tag: r.nameTag ? r.nameTag.visible : null }));
+      bubble: r.bubble?.visible ? r.sayText : null, tag: r.nameTag ? r.nameTag.visible : null, acc: r.ch?.accessoryList ?? [] }));
   }
 }

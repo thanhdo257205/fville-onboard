@@ -6,7 +6,7 @@
 // Trạng thái chỉ nằm trong bộ nhớ + "attachment" gắn theo từng WebSocket (để DO ngủ dậy vẫn biết ai ở đâu, bàn bi-a ra
 // sao) — KHÔNG ghi gì xuống storage.
 // Tin nhắn (JSON gọn):
-//   client → máy chủ: join {name, model, outfit, zone} (gửi lại = cập nhật tên / model / bộ đồ) · state {zone, pos, yaw, anim}
+//   client → máy chủ: join {name, model, outfit, acc, zone} (gửi lại = cập nhật tên / model / bộ đồ / phụ kiện) · state {zone, pos, yaw, anim}
 //                      · emote {id} · phrase {id} · leave · ping (tự trả lời)
 //                      · bi-a (chỉ ở zone của bàn, data/pool.json): pool_join · pool_leave · pool_shot {seq, a, p, cue, b, k,
 //                        s, d} · pool_rerack · pool_poke (người chờ báo hết giờ lượt)
@@ -57,7 +57,7 @@ export function cleanName(s) {
 }
 const fin = (v, lim) => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= lim;
 const r2 = (v) => Math.round(v * 100) / 100;
-const pub = (a) => ({ id: a.id, name: a.name, model: a.model, outfit: a.outfit, pos: a.pos, yaw: a.yaw, anim: a.anim });
+const pub = (a) => ({ id: a.id, name: a.name, model: a.model, outfit: a.outfit, acc: a.acc || [], pos: a.pos, yaw: a.yaw, anim: a.anim });
 
 function originOk(origin) {
   if (!origin) return true;                     // không phải trình duyệt (công cụ thử) — giới hạn vẫn áp
@@ -274,6 +274,8 @@ export class FVilleRoom extends DurableObject {
     a.name = name;
     a.model = typeof m.model === "string" && ID_RE.test(m.model) ? m.model : "";
     a.outfit = typeof m.outfit === "string" && ID_RE.test(m.outfit) ? m.outfit : "";
+    // phụ kiện đang đội (vd ["cap"]): tối đa 4 id dạng ID_RE (máy khách bỏ qua id lạ)
+    a.acc = Array.isArray(m.acc) ? [...new Set(m.acc.filter((x) => typeof x === "string" && x && ID_RE.test(x)))].slice(0, 4) : [];
     if (!a.joined) {
       a.joined = true;
       a.zone = m.zone;

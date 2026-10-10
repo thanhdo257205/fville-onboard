@@ -310,6 +310,21 @@ async function runLook(browser, base, look) {
         const closed = await wait(() => !window.__game?.summary.open, 5000);
         const con2 = problems.splice(0);
         await check(menu && again && closed && !con2.length, "màn tổng kết: Close → menu Esc → View summary mở lại, console sạch", JSON.stringify({ menu, again, closed, console: con2.slice(0, 5) }));
+        // tủ đồ (chưa có tab Wardrobe): xong game → menu Esc có hàng "FPT Orange Cap" → bật → mũ gắn vào xương đầu, vòm trên đỉnh
+        // đầu (không lún, không bay), đi theo animation, vào bản lưu
+        await page.keyboard.press("Escape");
+        const row = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-acc=cap][data-on='1']"), 5000);
+        if (row) await page.click("#menu [data-acc=cap][data-on='1']");
+        const worn = await wait(() => window.__game?.model.accessories.includes("cap"), 15000);
+        const cap = worn ? await ev(() => { const i = __game.accessoryInfo("cap"), c = __game._game.player.character;
+          const root = c.root.position.y, f = i.fit;
+          return { ...i, headTop: +(root + f.top).toFixed(3), saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.accessories }; }) : null;
+        await page.keyboard.press("Escape");
+        const con3 = problems.splice(0);
+        await check(row && worn && /Head$/.test(cap?.bone || "") && cap.top > cap.headTop && cap.top < cap.headTop + 0.15 && cap.bottom < cap.headTop - 0.05
+          && cap.fit.scale > 0.8 && cap.fit.scale < 2 && cap.saved?.includes("cap") && !con3.length,
+          `tủ đồ: menu Esc → đội mũ lưỡi trai (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), lưu vào bản lưu`,
+          JSON.stringify({ row, worn, cap, console: con3.slice(0, 5) }));
         break;
       }
     }
@@ -428,7 +443,7 @@ function startBot(url, zone) {
     bot.moveTo = (pos) => { bot.pos = pos; send({ t: "state", zone, pos, yaw: 0, anim: "idle" }); };
     bot.close = () => { clearInterval(bot.timer); send({ t: "leave" }); try { ws.close(1000); } catch { /* đã đóng */ } };
     ws.onopen = () => {
-      send({ t: "join", name: "Bot Zone Four", model: "intern_nu", outfit: "ao_cam", zone });
+      send({ t: "join", name: "Bot Zone Four", model: "intern_nu", outfit: "ao_cam", acc: ["cap"], zone });
       bot.moveTo(bot.pos);
       bot.timer = setInterval(() => send({ t: "ping" }), 10000);
       resolve(bot);
@@ -452,8 +467,8 @@ async function runNetZone4(browser, base, srv) {
     const remote = async (ms) => {
       const pos = await ev(() => __game.player.pos);
       bot.moveTo([pos[0] + 1.5, pos[1], pos[2]]);
-      const seen = await wait(() => (__game.net?.remotes || []).some((r) => r.name === "Bot Zone Four" && r.built && r.visible), ms);
-      return { seen, net: await ev(() => { const n = __game.net; return { status: n.status, connected: n.connected, online: n.online, remotes: n.remotes.map((r) => [r.name, r.built, r.visible]) }; }) };
+      const seen = await wait(() => (__game.net?.remotes || []).some((r) => r.name === "Bot Zone Four" && r.built && r.visible && r.acc?.includes("cap")), ms);
+      return { seen, net: await ev(() => { const n = __game.net; return { status: n.status, connected: n.connected, online: n.online, remotes: n.remotes.map((r) => [r.name, r.built, r.visible, r.acc]) }; }) };
     };
     const t1 = Date.now();
     await page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&start=zone_04`);
@@ -463,7 +478,7 @@ async function runNetZone4(browser, base, srv) {
     const r1 = conn ? await remote(30000) : { seen: false };
     const con1 = problems.splice(0);
     await check(ok1 && s1.zone === "zone_04" && s1.tier === "low" && !s1.zoneError && conn && r1.seen && !con1.length,
-      `khởi động vào zone_04 (tier high, máy chủ local, bot chờ sẵn) → bản Thấp, ${sec1} s, thấy bot, console sạch`, JSON.stringify({ ok1, ...s1, conn, ...r1, console: con1.slice(0, 5) }));
+      `khởi động vào zone_04 (tier high, máy chủ local, bot chờ sẵn) → bản Thấp, ${sec1} s, thấy bot (đội mũ lưỡi trai), console sạch`, JSON.stringify({ ok1, ...s1, conn, ...r1, console: con1.slice(0, 5) }));
     // sang zone_03 rồi đi qua cổng như người chơi (step: tới vùng chuyển zone)
     await ev(() => __game.goto("zone_03"));
     const g = await ev(() => __game._game.guide.current().key);

@@ -11,7 +11,7 @@ import { TIERS } from "./src/core/quality.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
-const SHARED = ["/assets/glb/", "/assets/characters/", "/data/"];
+const SHARED = ["/assets/glb/", "/assets/characters/", "/assets/accessories/", "/data/"];
 const TYPES = { ".glb": "model/gltf-binary", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp" };
 
 // model chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending): không bao giờ vào bản build
@@ -34,6 +34,8 @@ function wanted(rel, pending = new Set()) {
     return parts.length === 4 && name.endsWith(".glb") && !name.endsWith(".raw.glb")
       && (name === `${parts[2]}.glb` || /^.+_\d+k\.glb$/.test(name));
   }
+  // phụ kiện (tủ đồ): chỉ assets/accessories/<id>/<id>.glb (không source/, .raw.glb, số đo .json)
+  if (rel.startsWith("assets/accessories/")) { const p = rel.split("/"); return p.length === 4 && p[3] === `${p[2]}.glb`; }
   if (rel.startsWith("data/")) return rel.endsWith(".json");
   return false;
 }
@@ -84,7 +86,7 @@ function sharedAssets() {
     closeBundle() {
       let n = 0;
       const pending = pendingModels();
-      for (const top of ["assets/glb", "assets/characters", "data"]) {
+      for (const top of ["assets/glb", "assets/characters", "assets/accessories", "data"]) {
         const dir = join(ROOT, top);
         if (!existsSync(dir)) continue;
         for (const f of walk(dir)) {
@@ -96,7 +98,7 @@ function sharedAssets() {
           n++;
         }
       }
-      console.log(`shared-assets: chép ${n} file (GLB zone, GLB nhân vật, JSON) vào ${outDir}/`
+      console.log(`shared-assets: chép ${n} file (GLB zone, GLB nhân vật, phụ kiện, JSON) vào ${outDir}/`
         + (pending.size ? `; bỏ model chờ đồng ý: ${[...pending].join(", ")}` : ""));
     },
   };

@@ -65,7 +65,7 @@ có chat tự do.
 
 | Chiều | Tin | Ghi chú |
 | --- | --- | --- |
-| client → máy chủ | `join {name, model, outfit, zone}` | Gửi lại khi đổi bộ đồ (vd vừa nhận Áo Cam FPT) |
+| client → máy chủ | `join {name, model, outfit, acc, zone}` | Gửi lại khi đổi bộ đồ (vd vừa nhận Áo Cam FPT) hoặc đội / bỏ phụ kiện (`acc`: vd `["cap"]`, tối đa 4 id) |
 | | `state {zone, pos, yaw, anim}` | Tối đa 5 lần/giây và chỉ khi có thay đổi (> 2 cm, > 2°, đổi anim hoặc zone). Đổi zone cũng bằng tin này |
 | | `emote {id}` · `phrase {id}` · `leave` | |
 | | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |

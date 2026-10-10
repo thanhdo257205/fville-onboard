@@ -12,7 +12,7 @@ import { loadSettings, saveSettings } from "./core/quality.js";
 import { Characters } from "./characters/characters.js";
 import { Game } from "./game/game.js";
 import { GameState, save } from "./game/state.js";
-import { loadContent, validateNodes, validateLinks } from "./content/content.js";
+import { loadContent, validateNodes, validateLinks, tx } from "./content/content.js";
 import { NameTags } from "./ui/nametags.js";
 import { Menu } from "./ui/menu.js";
 import { DialogueUI } from "./ui/dialogue.js";
@@ -67,7 +67,8 @@ async function boot() {
     progress.fromJSON(saved);
     // bản lưu cũ lệch data (zone / quest / phần thưởng / ngoại hình… không còn) → sửa về giá trị hợp lệ gần nhất, ghi lại
     const fixed = progress.repair({ zoneOrder: zones.order, looks: chars.roles.player.looks || {},
-      positions: (chars.character_creation?.positions || []).map((x) => x.id) });
+      positions: (chars.character_creation?.positions || []).map((x) => x.id),
+      accessories: Object.keys(chars.accessories || {}).filter((k) => !k.startsWith("_")) });
     if (fixed.length) { console.warn([`[bản lưu] đã sửa ${fixed.length} chỗ lệch dữ liệu`, ...fixed].join("\n")); save.store(progress); }
   }
   const playAgain = async () => {
@@ -129,7 +130,11 @@ async function boot() {
   const menu = new Menu({
     info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false,
       detail: settings.detail ?? "auto", detailLevel: renderer.detail, net: net.enabled, players: settings.players !== false,
-      complete: game.complete }),
+      complete: game.complete,
+      // phụ kiện đã mở khoá (tủ đồ — chưa có tab Wardrobe): bật / tắt ở đây
+      accessories: chars.accessories ? game.characters.accessoryIds().filter((id) => game.accessoryUnlocked(id))
+        .map((id) => ({ id, label: tx(game.characters.accessory(id).label), on: game.wornAccessories().includes(id) })) : [] }),
+    onAccessory: async (id, on) => { await game.setAccessory(id, on); menu.draw(); },
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },

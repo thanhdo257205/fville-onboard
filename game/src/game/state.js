@@ -136,8 +136,9 @@ export class GameState {
 
   // Bản lưu cũ lệch data (zone / quest / phần thưởng / vật / ngoại hình… không còn): sửa về giá trị hợp lệ gần nhất thay vì
   // kẹt hoặc lỗi về sau. Cờ (flags) giữ nguyên: cờ lạ không ảnh hưởng gì, cờ do code đặt không có danh sách để đối chiếu.
-  // ctx: { zoneOrder, looks: roles.player.looks, positions: [id vị trí intern] } → danh sách chỗ đã sửa (rỗng = đúng hết).
-  repair({ zoneOrder = this.c.zoneOrder || [], looks = {}, positions = [] } = {}) {
+  // ctx: { zoneOrder, looks: roles.player.looks, positions: [id vị trí intern], accessories: [id phụ kiện] } → danh sách chỗ
+  // đã sửa (rỗng = đúng hết).
+  repair({ zoneOrder = this.c.zoneOrder || [], looks = {}, positions = [], accessories = null } = {}) {
     const c = this.c, fixed = [];
     const keep = (name, arr, ok) => {
       const bad = arr.filter((x) => !ok(x));
@@ -180,6 +181,12 @@ export class GameState {
       p.position = positions[0];
     }
     if (this.created && !String(p.name ?? "").trim()) { fixed.push("player.name: trống → Intern"); p.name = "Intern"; }
+    // phụ kiện đang đội (tủ đồ): mảng id còn trong data, không trùng
+    if (p.accessories != null) {
+      const arr = Array.isArray(p.accessories) ? p.accessories : [];
+      const ok = [...new Set(arr.filter((a) => typeof a === "string" && (!accessories || accessories.includes(a))))];
+      if (!Array.isArray(p.accessories) || ok.length !== arr.length) { fixed.push(`player.accessories: ${JSON.stringify(p.accessories)} → ${JSON.stringify(ok)}`); p.accessories = ok; }
+    }
     this.fillEarlierQuests();
     return fixed;
   }

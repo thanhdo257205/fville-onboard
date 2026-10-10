@@ -74,7 +74,8 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
   Thanh Do — 94b7938
 - [ ] P3 Tượng Cuder: quyết giữ / bỏ búi tóc sau gáy (`CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`); đổi bản sao tượng cũ
   nhìn qua vách kính zone 3 (`ENV_tuong_cuder_xa`) — Phụ trách: —
-- [ ] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (làm cùng tủ đồ) — Phụ trách: —
+- [x] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (tự ướm theo lưới, mở khoá khi xong game, bật / tắt ở menu Esc,
+  người khác thấy mũ) — Phụ trách: Claude — nhánh `feat/zone5-seat-cap`; tab Wardrobe vẫn chờ mục "Tủ đồ"
 - [ ] P3 Huyền, Nga: tay lún vào thân 3–6 cm ở vài động tác (tải animation Mixamo riêng nếu cần) — Phụ trách: —
 
 ## 5. Tính năng

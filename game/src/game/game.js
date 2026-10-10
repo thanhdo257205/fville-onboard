@@ -88,6 +88,7 @@ export class Game {
     this.player = new Player(await this.characters.create("player", this.state.tier));
     this.scene.add(this.player.character.root);
     this.updateOutfit();
+    this.updateAccessories();
     const ok = await this.enterZone(zoneId, spawn ?? this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
     this.acts.start();          // thẻ "ACT n" của Act hiện tại trước, rồi tới thẻ tên zone
     if (ok) hud.zoneCard(zoneId, this.zoneClock(zoneId));
@@ -196,6 +197,7 @@ export class Game {
       this.player.setCharacter(await this.characters.create("player", this.state.tier));
       this.scene.add(this.player.character.root);
       this.updateOutfit();
+      this.updateAccessories();
     }
     // SPAWN_ cần có thiếu trong GLB (vd GLB cũ lệch data): lùi về SPAWN_ đầu zone, rồi SPAWN_ bất kỳ — báo lỗi ra console
     // nhưng vẫn vào được zone (trước đây ném lỗi → kẹt mãi ở màn chờ)
@@ -264,6 +266,33 @@ export class Game {
       if (o.tint) setTint(ch, wearing ? null : o.tint);
       this.characters.wearing[role] = !wearing && tex && ch.outfit === tex ? tex : null;
     }
+  }
+
+  // phụ kiện (characters.json → accessories, vd mũ lưỡi trai cam): mở khoá theo accessories.<id>.unlock (vd xong game);
+  // đang đội = bản lưu player.accessories. Chưa có tab Wardrobe → bật / tắt ở menu Esc
+  accessoryUnlocked(id) {
+    const a = this.characters.accessory(id);
+    return !!a && (!a.unlock || this.progress.check(a.unlock));
+  }
+  wornAccessories() {
+    return (this.progress.player.accessories || []).filter((id) => this.accessoryUnlocked(id) || this.debugAccessories?.has(id));
+  }
+  updateAccessories() {
+    const ch = this.player?.character;
+    if (!ch) return Promise.resolve();
+    const on = new Set(this.wornAccessories());
+    return Promise.all(this.characters.accessoryIds().map((id) => ch.setAccessory(id, this.characters.accessory(id), on.has(id))
+      .catch((e) => console.warn(`[phụ kiện] ${id}: ${e.message}`))));
+  }
+  // force: bỏ qua điều kiện mở khoá (thử khi dev / kiểm thử, không lưu điều đó)
+  setAccessory(id, on, { force = false } = {}) {
+    if (!this.characters.accessory(id) || (on && !force && !this.accessoryUnlocked(id))) return Promise.resolve(false);
+    if (force) (this.debugAccessories ||= new Set()).add(id);
+    const p = this.progress.player, cur = new Set(p.accessories || []);
+    if (on) cur.add(id); else cur.delete(id);
+    p.accessories = [...cur];
+    this.persist(true);
+    return this.updateAccessories().then(() => on);
   }
 
   // sự kiện theo giờ trong zone (zones.json → events): vd zone_01, 20 giây sau khi xuống xe Tú kêu mất balo
