@@ -915,6 +915,8 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   Ảnh (`renders/`): `zone_00_pickup_xe_bus_can.png` (cận xe số 2: cửa mở, biển "2"), `zone_00_pickup_xe_bus_toan_canh.png`,
   `zone_00_pickup_cay_via_he.png`, `zone_02_campus_cay_canh_lang.png`, `zone_02_campus_tre_gieng.png`; so trong game trước /
   sau ở đảo giếng zone_02.
+- Commit 84fcbec trên nhánh `feat/env-models` (rebase lên `main` c430b03: test:data, test:pool đạt, smoke 81 bước đạt);
+  Pull Request vào `main`, chưa deploy.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
