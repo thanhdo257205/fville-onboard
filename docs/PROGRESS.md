@@ -919,6 +919,34 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
 - Commit 84fcbec trên nhánh `feat/env-models` (rebase lên `main` c430b03: test:data, test:pool đạt, smoke 81 bước đạt);
   gộp vào `main` qua PR #5 (9f2c335, CI xanh) → deploy `gh-pages` 4b0aed0 (106 file, 17,4 MB, quét riêng tư 0 phát hiện).
 
+### Sửa lỗi bàn bi-a, rò rỉ bộ nhớ GPU, CI ảnh thẻ (10/10/2026, nhánh `fix/pool-float-card`)
+- **Bay lơ lửng khi chỉnh góc cơ** (người dùng báo): `PoolTable.placePlayer` chạy mỗi khung xoay cơ (A/D, kéo chuột), đặt người
+  chơi ở `y` hiện tại + 2 cm; trọng lực −24 m/s² chỉ kéo xuống ~3 mm / khung 1/60 s → lên ~1 m/s (đo: 2 s → 1,94 m). Sửa: lúc vào
+  bàn lấy độ cao sàn `standY` (= `player.safe.y`, chỗ đứng vững gần nhất), `placePlayer` đặt đúng độ cao đó. Smoke zone 5: giữ D
+  rồi A mỗi phím 1 s ở bàn → đi vòng 1,48 m, chân cách sàn 0 mm (bỏ bản sửa: 1940 mm, bước báo đỏ).
+- **Ảnh thẻ: làm thêm sau 680cc30** (canvas CPU — phiên trên máy cloud sửa song song, xem mục "Gộp 2 nhánh…" ở trên): 3 lượt
+  chạy CI để đo trước khi có bản sửa đó — lượt 1 tạo thẻ 1,7–2,3 s (gần hết ở `toBlob`); lượt 2+ phông 0 ms, ảnh 50 ms, vẽ
+  10–20 ms rồi kẹt ở `toBlob`; trang hiện + có focus, hẹn giờ 0 ms gọi lại ngay, nhưng hẹn giờ 6 s (dự phòng) đặt trước đó không
+  chạy trong 20 s → luồng chính bị chặn ngay trong `toBlob` (cùng kết luận: canvas GPU chờ SwiftShader vẽ xong cảnh 3D). Thêm:
+  `toDataURL` thay `toBlob` (đồng bộ, ~50 ms → ảnh thẻ 0,1 s ở mọi lượt; `toBlob` 1–2 s cả trên máy thật vì chờ lúc luồng chính
+  rảnh, vòng lặp game không để rảnh); phông 3 s / ảnh 5 s có hạn giờ; `Summary.lastDownload.ms` ghi thời gian từng khâu; smoke
+  in ra khi chậm, hỏng thì thử hẹn giờ + khung hình của trang (hẹn giờ phía Node).
+- **Rò rỉ bộ nhớ GPU khi đổi zone** (thấy khi tìm lỗi trên): đo `renderer.info.memory` ở zone_01 — mới mở 27 geometry / 11
+  texture, sau 1 vòng zone 2 → 5 → 1: 53 / 29, 2 vòng: 78 / 44. Lần theo (đánh dấu `dispose`, móc `addEventListener("dispose")`
+  của texture = lúc three.js đưa lên GPU): (1) vật do code đặt (`data/interactables.json` → `object`: hạt lúa, hũ, ví, bảng tên,
+  bàn bi-a…) thêm vào `scene` chứ không vào `zone.root`, đổi zone chỉ gỡ ra; (2) đường ngắm bàn bi-a là `Line`, `disposeZone`
+  chỉ dọn `Mesh`; (3) mỗi nhân vật dựng ra có `DataTexture` 12×12 cho ma trận xương, `Character.dispose` không gọi
+  `skeleton.dispose()` (zone 5: 7 cái mỗi lần vào). Sửa: `disposeTree(root)` (`game/src/world/zone.js`) — geometry của mọi đối
+  tượng, mọi texture của vật liệu, bỏ qua đồ dùng chung `userData.shared` (vật liệu vàng của hạt lúa, gradient toon);
+  `Interaction.setup` dọn vật của zone cũ; `Character.dispose` dọn xương, vật liệu riêng, túi cầm tay, `mixer.uncacheRoot`.
+  Geometry / texture màu của nhân vật dùng chung với GLB trong bộ nhớ đệm → giữ. Sau sửa: 3 vòng vẫn 28 / 14. Smoke (nhóm bản
+  lưu cũ): zone_04 ↔ zone_05 2 vòng, số geometry / texture sau vòng 2 = vòng 1 (bỏ phần sửa xương: texture 18 → 27, báo đỏ).
+- **CI:** chạy tay (Actions → test → Run workflow) giờ chạy đủ 3 ngoại hình (biểu thức cũ `== 'workflow_dispatch' && '' || …`
+  luôn ra vế sau). Smoke "bi-a 2 người · An ngồi → tập một mình": chờ máy Bình phát lại cú 40 s (trước 20 s — lần chạy đầu Vite
+  còn biên dịch, khung hình thấp, cú phá ~8 s có lúc quá 20 s; đã hỏng ngẫu nhiên 2 lần).
+- Kiểm thử: build + smoke như CI (`--build --look intern_nam,intern_nu`) 61/61 bước (2 phút 34 giây); test:data đạt. CI chạy
+  tay trên nhánh (3 ngoại hình): test:data, test:pool, build, smoke 78/78 bước (5 phút 8 giây), ảnh thẻ 0,1 s cả 3 lượt.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

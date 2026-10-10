@@ -162,6 +162,10 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   → `console.error` + hộp lỗi trên màn tải (nút Retry, Back to <zone trước> / Reload page; `hud.zoneError`), trả `false`
   thay vì ném lỗi. Thiếu SPAWN_ → xuất hiện ở `start` của zone hoặc SPAWN_ đầu tiên (kèm cảnh báo console). Người chơi
   khác (mạng) chỉ dựng sau khi zone xong (`phase === "playing"`); lỗi mạng trong vòng lặp chỉ log, không dừng game.
+- **Đổi zone phải dọn hết tài nguyên GPU của zone cũ** (rò rỉ cũ: mỗi vòng zone đọng ~25 geometry, ~15 texture): vật do code
+  tạo thì cho vào `zone.root` (dọn cùng zone) hoặc tự gọi `disposeTree` (`game/src/world/zone.js`) khi gỡ; nhân vật gỡ bằng
+  `Character.dispose()` (dọn cả texture xương); vật liệu / texture dùng chung nhiều zone đánh dấu `userData.shared = true`.
+  Smoke kiểm tra: zone_04 ↔ zone_05 2 vòng, `renderer.info.memory` không tăng.
 - **Bản lưu cũ lệch data** tự sửa khi nạp (`GameState.repair`, gọi trong `main.js`): bỏ quest / phần thưởng / vật / giá
   trị / hạt lúa / lời khuyên không còn, zone không còn → zone xa nhất đã mở, giới tính / ngoại hình / vị trí về giá trị
   hợp lệ; in `[bản lưu] đã sửa N chỗ` (cảnh báo console) rồi ghi lại. Thêm / đổi id trong data thì nghĩ tới bản lưu cũ.
@@ -194,7 +198,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   mạng dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
 - Sau phần chơi theo ngoại hình, smoke chạy thêm các test (`--extra off` bỏ, `--extra only` chỉ chạy các test này, ~35 giây):
   bản lưu cũ lệch data (`scripts/tests/fixtures/old_save.json`, ẩn danh) → sửa, vào zone_04, tải lại trang, GLB hỏng →
-  bảng lỗi + bấm Back; vào zone_04 khi có bot chờ sẵn (khởi động thẳng + đi qua cổng từ zone_03, phải xong trong 20 s,
+  bảng lỗi + bấm Back, bộ nhớ GPU không tăng khi đổi zone (zone_04 ↔ zone_05 2 vòng); vào zone_04 khi có bot chờ sẵn (khởi động thẳng + đi qua cổng từ zone_03, phải xong trong 20 s,
   thấy bot) — cả hai đặt sẵn cài đặt cũ tier "high"; bi-a 2 người (2 trình duyệt chơi trọn một ván qua máy chủ local, chặn cú
   sai lượt, người xem vào giữa ván, bi trong tay, rớt mạng → giải phóng ghế, máy chủ cũ → tập một mình); chia phòng (31 kết
   nối → người thứ 31 sang phòng 2). `test:data` cũng thử `repair()` trên file đó và kiểm tra `start` của mọi zone có trong GLB bản Thấp.

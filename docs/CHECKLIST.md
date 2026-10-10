@@ -58,6 +58,18 @@ thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy ch
     tầm nhìn thì làm mờ bằng `seeThrough` sẵn có (không sửa GLB) và không tính đèn trong `clampCamera`; giới hạn chiều cao
     camera lúc ngắm thấp hơn mép chao
   - [ ] Kiểm thử: smoke bi-a — trong lúc bi lăn, tia từ camera tới tâm bàn không cắt lưới nào (trừ bi); chụp 1 ảnh để xem
+- [x] P1 **Lỗi: nhân vật bay lơ lửng khi chỉnh góc cơ ở bàn bi-a** (người dùng báo 10/10/2026; đã sửa — nhánh
+  `fix/pool-float-card`; còn: deploy). Giữ A/D hoặc kéo chuột 2 s → người chơi lên cao 1,94 m. Nguyên nhân: mỗi khung xoay cơ
+  `placePlayer()` (`game/src/pool/table.js`) đặt người chơi ở độ cao hiện tại + 2 cm, trọng lực chỉ kéo xuống ~3 mm / khung →
+  bay lên ~1 m/s. Sửa: đặt theo độ cao sàn lúc vào bàn (`standY`, chỗ đứng vững gần nhất), không cộng thêm; smoke giữ D rồi A
+  ở bàn: chân cách sàn 0 mm (bỏ bản sửa thì 1940 mm) — Phụ trách: Claude
+- [x] P2 **Rò rỉ bộ nhớ GPU khi đổi zone** (thấy khi tìm lỗi CI; đã sửa — nhánh `fix/pool-float-card`). Mỗi vòng zone 2 → 5 → 1
+  đọng thêm ~25 geometry, ~15 texture: vật do code đặt (hạt lúa, hũ, ví, bảng tên — nằm ngoài `zone.root`), đường ngắm bàn
+  bi-a (Line, `disposeZone` chỉ dọn Mesh), texture xương của mọi nhân vật (`Character.dispose` không gọi `skeleton.dispose()`,
+  zone 5 đọng 7 cái mỗi lần vào). Người chơi thật đi một mạch zone 0 → 5 → bến xe cũng đọng như vậy (laptop dùng chung RAM
+  cho card đồ hoạ). Sửa: `disposeTree` (`game/src/world/zone.js`), dọn vật do code đặt khi đổi zone, `Character.dispose` dọn
+  xương + vật liệu riêng; đồ dùng chung đánh dấu `userData.shared`; smoke: zone_04 ↔ zone_05 2 vòng, số geometry / texture
+  không tăng — Phụ trách: Claude
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
@@ -260,7 +272,12 @@ thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy ch
   — Phụ trách: Claude
 - [x] P1 **Lỗi: CI hỏng bước ảnh thẻ ở màn tổng kết** (ngoại hình thứ 2, sau cảnh kết: "Preparing your card…" mãi) — trên
   Chromium headless shell `canvas.toBlob` chờ GPU 52 s. Sửa: canvas ảnh thẻ trên CPU (`willReadFrequently`,
-  `game/src/ui/summary.js`) — Phụ trách: Claude
+  `game/src/ui/summary.js`). Thêm (nhánh `fix/pool-float-card`, đo trên CI 3 lượt:
+  phông, ảnh, vẽ xong trong 0,1 s rồi kẹt; hẹn giờ 6 s đặt trước đó không chạy → luồng chính bị chặn ngay trong `toBlob`):
+  `toDataURL` thay `toBlob` (0,1 s; `toBlob` 1–2 s cả trên máy thật vì chờ lúc luồng chính rảnh), phông / ảnh có hạn giờ, smoke
+  in thời gian từng khâu, hỏng thì thử hẹn giờ / khung hình của trang. Cùng lúc: chạy tay workflow (Run workflow) giờ đủ 3
+  ngoại hình — biểu thức `== 'workflow_dispatch' && '' || '--look …'` luôn ra vế sau vì chuỗi rỗng bị coi là sai — Phụ trách:
+  Claude
 - [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
 - [ ] P3 `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 kiểm tra có dấu "!" hoặc mũi tên (`__game.guide` → `marker` /
   `arrow`), để lỗi mất dấu không quay lại mà không ai biết — Phụ trách: —
