@@ -26,6 +26,7 @@ import { worldPos, inTrigger } from "./world/zone.js";
 import { penetration } from "./world/collision.js";
 import { hud } from "./ui/hud.js";
 import { pickChoice } from "./game/autoplay.js";
+import { tx } from "./content/content.js";
 
 export function installDebug(game, loop) {
   const v3 = (v) => v && [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(3)];
@@ -112,7 +113,23 @@ export function installDebug(game, loop) {
       game.player.setCharacter(await game.characters.create("player", game.state.tier));
       game.scene.add(game.player.character.root);
       game.updateOutfit();
+      // Tú khác giới với người chơi (roles.tu.model_by_gender) → dựng lại zone ngay chỗ đang đứng để Tú đổi model theo
+      if (game.follower) {
+        const p = game.player;
+        await game.enterZone(game.state.zone, null, { fade: false, zoneCard: false, keepPose: { pos: p.position.clone(), rot: p.character.root.rotation.y } });
+      }
       return api.model;
+    },
+    // Tú: model đúng giới tính (khác người chơi), bộ đồ đang mặc, chân dung hộp thoại, đại từ trong chữ ({tu_he}…)
+    get tu() {
+      const c = game.characters, f = game.follower, id = c.modelId("tu");
+      return { id, gender: c.model(id)?.gender ?? null, built: f?.character.modelId ?? null, outfit: f ? f.character.outfit ?? null : undefined,
+        wearing: c.wearing.tu ?? null, portrait: c.portrait("tu"), visible: !!f && !f.gone && f.character.root.visible, he: tx("{tu_he}") };
+    },
+    // chữ của 1 nút hội thoại như game hiện (thay {player}, {tu_his}…)
+    textOf(dialogue, node) {
+      const n = game.content.dialogues.get(dialogue)?.nodes?.[node];
+      return n ? tx(n.text, { player: game.progress.player.name }) : null;
     },
     get triggers() { return game.zone.triggers.map((t) => ({ name: t.name, inside: t.inside, cfg: game.triggerCfg(t.name) || null })); },
 

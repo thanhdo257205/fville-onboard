@@ -370,6 +370,41 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     khi cần xem bằng mắt, tối đa 3 ảnh.
 - `main` 774fb9e; đã deploy `gh-pages` d82183d (từ `main` 774fb9e, chơi nhiều người vẫn bật).
 
+### Màn chọn nhân vật mới, Tú khác giới với người chơi (10/10/2026)
+- **Màn chọn nhân vật** (`game/src/ui/creator.js`, thay nút Male / Female): cảnh 3D nhỏ (renderer riêng + viền nét) với
+  intern_nam, intern_nam_kinh, intern_nu đứng trên bục, mặc dau_ngay, phát idle; người đang chọn bước lên, vẫy tay, vòng
+  sáng cam dưới chân; 2 người còn lại lùi nhẹ, tối hơn. Đổi: bấm vào nhân vật (tia trúng trụ ẩn quanh người), ←/→ khi
+  canvas / nút mũi tên đang được chọn, nút ‹ ›; kéo chuột / vuốt xoay 360°. Thẻ thông tin: chân dung, tên gọi + 1 dòng
+  mô tả (`character_creation.looks`: Easygoing / Bookworm / Go-getter, không nói về giới tính), nút "Preview FPT shirt"
+  (aria-pressed; đổi cả 3 nhân vật và chân dung sang ao_cam). Giữ ô tên, vị trí intern, nút Start (Enter trong ô tên).
+  3 GLB tải song song khi mở màn (cùng bộ nhớ đệm với game), chữ "Loading characters…"; màn < 700 px hoặc Detail =
+  Faster (hoặc WebGL / GLB lỗi): 3 thẻ chân dung (radio) thay cảnh 3D. Bắt đầu chơi → dừng vòng vẽ, huỷ chất liệu riêng +
+  renderer (`forceContextLoss`), không đụng GLB / texture dùng chung. Giới tính suy ra từ nhân vật; bản lưu `player.look`
+  (bản lưu cũ không có → model mặc định theo giới tính). Radio vị trí / thẻ ảnh trước đây `display: none` (Tab không vào
+  được) → ẩn trực quan, có viền khi focus. Bảng tạo nhân vật trên màn ≤ 400 px tràn 24 px (content-box + padding, có từ
+  trước) → `box-sizing: border-box`.
+- **Tú khác giới với người chơi** (`roles.tu.model_by_gender`: người chơi nam → `intern_nu`, nữ → `intern_nam_kinh`; bỏ
+  model prajith + tint áo cũ). Bộ đồ ngày đầu không trùng người chơi (`roles.tu.outfit.texture_by_model`): intern_nu →
+  `tu_dau_ngay` (polo vàng nhạt #f3df8a theo mặt nạ áo, giữ nếp vải, không logo — `outfit_textures.py --outfit
+  tu_dau_ngay --shirt f3df8a`, WebP 66 KB), intern_nam_kinh → `dau_ngay` (áo phông xanh ngọc). Ở cổng zone 2 Tú cũng
+  đổi sang Áo Cam (cùng lúc chụp check-in): `Game.updateOutfit` áp cho cả người chơi và Tú.
+- **Chân dung theo bộ đồ**: `models.<id>.outfit_portraits.<bộ>` (`render_portrait.py --outfit`), `Characters.portrait`
+  chọn theo bộ đang mặc (`characters.wearing`). Có cho tu_dau_ngay (intern_nu) và dau_ngay của cả 3 nhân vật người chơi →
+  chân dung người chơi trước cổng giờ cũng mặc áo ngày đầu (trước đây luôn là áo cam). Tú không còn dùng ảnh Prajith.
+  `vite.config.js` cho phép `<id>_portrait_<bộ>.png` (trước đó server dev trả index.html — ảnh vỡ, test đã thêm kiểm tra).
+- **Đại từ của Tú**: biến `{tu_he}` `{tu_his}` `{tu_him}` `{tu_himself}` (+ `{Tu_he}`… viết hoa) thay ở mọi chữ (`i18n.fill`
+  dùng chung cho `t()` và `tx()`; `Characters.gender` đặt theo giới tính model của Tú). Rà toàn bộ data: 5 câu nói về
+  Tú (lời dẫn trên xe bus, Tú quẹt thẻ, gợi ý tìm balo, chụp check-in, mô tả danh hiệu Teammate No. 1); "He slips through…
+  / He heads back…" ở cửa quẹt thẻ là người lạ → giữ. GDD: mục Tạo nhân vật, bảng nhân vật, "Đại từ của Tú".
+- **Kiểm thử**: test:data thêm "đại từ của Tú" (Tú khác giới theo data; không còn he/his/him/she/her cứng nhắc tới Tú —
+  tên gần nhất trước đại từ là Tú, hoặc câu dẫn không tên ngay sau lời của Tú; biến `{tu_*}` hợp lệ và thay hết cho cả 2
+  giới), chân dung theo bộ đồ, texture bộ đồ của vai, tên / mô tả ngoại hình. test:smoke chọn qua màn mới (ngoại hình 1:
+  3D + phím ←/→, 2: 3D + bấm chuột, 3: thẻ ảnh màn hẹp; xem trước áo, ảnh tải được thật, cảnh 3D được giải phóng), kiểm
+  tra Tú trước / sau cổng (model, áo, chân dung là ảnh PNG thật, câu dẫn "her backpack … beside her" / "his … him").
+  Kết quả: test:data đạt; test:smoke 3 ngoại hình zone 0 → 5: **43 bước đạt (2 phút 45 giây)**. Thử ngược: bỏ sửa
+  `vite.config.js` → test đỏ đúng 2 bước (ảnh màn chọn, chân dung Tú).
+- Ảnh: `renders/game/creator_3d.png`, `creator_the_anh.png`, `tu_nu_hoi_thoai.png`.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.
@@ -510,8 +545,6 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- intern_nam_kinh: thêm mục chọn ngoại hình vào màn tạo nhân vật (dữ liệu `roles.player.looks` đã có); dùng làm model Tú
-  (khác giới với người chơi).
 - Mũ lưỡi trai phần 2 (gắn xương Head của từng intern): chưa làm; phần 1 (`cap.glb`) đã xong.
 - Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
   hưởng khi sau này đổi màu tóc.

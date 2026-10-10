@@ -6,10 +6,22 @@ import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { loadGLTF, url } from "../core/assets.js";
 import { makeCharacterMaterial } from "../render/renderer.js";
 import { applyTint, setTint } from "./tint.js";
-import { lang } from "../i18n.js";
+import { lang, setTextVars, tuPronouns } from "../i18n.js";
 
 export class Characters {
-  constructor(cfg) { this.cfg = cfg; this.swap = {}; this.gender = "nam"; this.look = null; }
+  constructor(cfg) {
+    this.cfg = cfg; this.swap = {}; this.look = null;
+    this.wearing = {};                      // bộ đồ (texture) vai đang mặc, Game.updateOutfit đặt — chân dung theo bộ đồ
+    this.gender = "nam";
+  }
+  // giới tính người chơi: đổi model của người chơi và của Tú (roles.tu.model_by_gender: khác giới với người chơi) →
+  // đổi luôn đại từ của Tú trong mọi chữ ({tu_he}, {tu_his}…, i18n.textVars)
+  get gender() { return this._gender; }
+  set gender(g) {
+    this._gender = g;
+    const tu = this.model(this.modelId("tu"));
+    if (tu) setTextVars(tuPronouns(tu.gender));
+  }
   role(name) { return this.cfg.roles[name]; }
   roles() { return Object.entries(this.cfg.roles).filter(([k]) => !k.startsWith("_")); }
   roleOfNode(nodeName) { return this.roles().find(([, r]) => (r.place === "node" || r.place === "near_node") && [].concat(r.node).includes(nodeName))?.[0] ?? null; }
@@ -35,7 +47,15 @@ export class Characters {
     if (this.role(r)?.portrait === false) return null;     // vai dùng tạm model của người khác (vd intern) → không chân dung
     const id = this.modelId(r);
     if (!id || this.swap[id]) return null;
-    return this.model(id)?.portrait ?? null;
+    // đang mặc bộ khác texture trong GLB (vd dau_ngay) và có chân dung của bộ đó (models.<id>.outfit_portraits) → dùng nó
+    const m = this.model(id), o = this.wearing[r];
+    return (o && m?.outfit_portraits?.[o]) || m?.portrait || null;
+  }
+  // texture bộ đồ chưa nhận Áo Cam của vai (roles.<vai>.outfit): theo model (texture_by_model, vd Tú = intern_nu →
+  // tu_dau_ngay, khác áo người chơi) hoặc chung (texture)
+  outfitTexture(role, modelId = this.modelId(role)) {
+    const o = this.role(role)?.outfit;
+    return o?.texture_by_model?.[modelId] ?? o?.texture ?? null;
   }
 
   // model chờ người thật đồng ý (models.<id>.consent_pending): GLB + chân dung chỉ có trên máy làm việc, không có trên
@@ -66,11 +86,12 @@ export class Characters {
   async create(role, tier) {
     const r = this.role(role);
     if (!r) throw new Error(`characters.json: thiếu vai "${role}"`);
-    const m = this.model(this.modelId(role));
+    const id = this.modelId(role), m = this.model(id);
     const glb = m.glb[tier] ?? m.glb.high ?? m.glb.low;
     const gltf = await loadGLTF(url(glb), { cached: true });
     const ch = new Character(SkeletonUtils.clone(gltf.scene), gltf.animations, m, role);
     ch.tier = tier;
+    ch.modelId = id;
     await ch.loadOutfits();                 // texture bộ đồ (vd dau_ngay) tải sẵn → đổi áo lúc chơi không chờ, không chớp
     applyTint(ch, r.tint || r.outfit?.tint, { dynamic: !!r.outfit?.tint });   // TẠM: màu áo / quần riêng từng vai (NPC)
     if (r.carry) attachCarry(ch, r.carry);  // đồ cầm tay (vd túi của hành khách)

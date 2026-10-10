@@ -60,6 +60,9 @@ def arg(name, default=None, cast=str):
 
 CID = arg("--id")
 SHIRT_HEX = arg("--shirt", "cfe0ee")          # bộ "dau_ngay": áo sơ mi xanh nhạt (GDD, giống tint của vai player)
+# --outfit <tên>: ghi bộ đổi màu áo thành textures/<id>_basecolor_<tên>.jpg thay cho dau_ngay (vd intern_nu làm Tú:
+# --outfit tu_dau_ngay --shirt f3df8a — polo vàng nhạt, khác áo người chơi); bộ dau_ngay có sẵn không bị ghi đè
+OUTFIT = arg("--outfit", "dau_ngay")
 ORIGINAL = arg("--original", "ao_cam")         # áo gốc Meshy là bộ nào: ao_cam (mặc định) | dau_ngay
 ORANGE_HEX = arg("--orange", "fb8136")         # --original dau_ngay: màu áo cam = màu mẫu áo của intern_nam (đo 10/10/2026)
 GLASSES = "--glasses" in ARGS
@@ -80,7 +83,7 @@ TEX_DIR = os.path.join(CHAR_DIR, "textures")
 P = {"blend": os.path.join(CHAR_DIR, f"{CID}_prep.blend"),
      "nologo": os.path.join(TEX_DIR, f"{CID}_basecolor_nologo.jpg"),
      "ao_cam": os.path.join(TEX_DIR, f"{CID}_basecolor.jpg"),
-     "dau_ngay": os.path.join(TEX_DIR, f"{CID}_basecolor_dau_ngay.jpg"),
+     "dau_ngay": os.path.join(TEX_DIR, f"{CID}_basecolor_{OUTFIT}.jpg"),
      "mask": os.path.join(TEX_DIR, f"{CID}_mask.png"),
      "logo": os.path.join(CHAR_DIR, "chest_logo.json")}
 RENDER_DIR = os.path.join(ROOT, "renders", "characters")
@@ -482,6 +485,8 @@ def make_img(name, px):
 def main():
     if not CID:
         raise SystemExit("cần --id <nhân vật>")
+    if ORIGINAL == "dau_ngay" and OUTFIT != "dau_ngay":
+        raise SystemExit("--outfit chỉ dùng khi áo gốc là ao_cam (bộ đổi màu từ áo gốc)")
     if ORIGINAL == "dau_ngay":
         # ảnh màu gốc = bộ ngày đầu: lần đầu chép từ _basecolor.jpg (prepare_for_mixamo.py vừa ghi, chưa có _nologo);
         # các lần sau đọc lại bản chép (lúc đó _basecolor.jpg đã là áo cam + logo)
@@ -559,7 +564,7 @@ def main():
         target = hex_rgb(SHIRT_HEX)
         dau_ngay, info = recolor_shirt(px, tlab_g, covered, ref, target, near3d)
         save_pixels(dau_ngay, P["dau_ngay"], "JPEG")
-        print(f"[dau_ngay] áo → #{SHIRT_HEX}: {info} → {P['dau_ngay']} ({os.path.getsize(P['dau_ngay']) // 1024} KB)")
+        print(f"[{OUTFIT}] áo → #{SHIRT_HEX}: {info} → {P['dau_ngay']} ({os.path.getsize(P['dau_ngay']) // 1024} KB)")
     else:
         dau_ngay = px
         cam, info = recolor_shirt(px, tlab_g, covered, ref, hex_rgb(ORANGE_HEX), near3d)
@@ -578,7 +583,7 @@ def main():
         imgs = {"ao_cam": ao_cam_img or bpy.data.images.load(P["ao_cam"]), "dau_ngay": make_img("dau_ngay", dau_ngay),
                 "mask": make_img("mask", np.concatenate([mask_image(tlab_g), np.ones((SIZE, SIZE, 1), np.float32)], -1))}
         paths = render_set(obj, imgs, lc)
-        compose(paths, os.path.join(RENDER_DIR, f"{CID}_trang_phuc.png"))
+        compose(paths, os.path.join(RENDER_DIR, f"{CID}_trang_phuc{'' if OUTFIT == 'dau_ngay' else '_' + OUTFIT}.png"))
     print(f"TOM_TAT id={CID} cut_z={zc:.3f} mask={P['mask']} dau_ngay={P['dau_ngay']}")
 
 

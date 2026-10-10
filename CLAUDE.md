@@ -21,7 +21,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
 | `scripts/tests/` | Kiểm thử tự động: `data.mjs` (`npm run test:data`), `smoke.mjs` (`npm run test:smoke`); ảnh bước hỏng vào `test-results/` (không commit). CI: `.github/workflows/test.yml` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
-| `assets/characters/<id>/` | GLB nhân vật, chân dung, texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
+| `assets/characters/<id>/` | GLB nhân vật, chân dung (`<id>_portrait.png`, theo bộ đồ `<id>_portrait_<bộ>.png`), texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`, `intern_nu_tu_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
 | `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc |
 | `assets/props/<id>/source/` | Mô hình Meshy gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
@@ -72,11 +72,11 @@ python -m http.server 8765           # ở thư mục gốc, mở http://localho
 # Nhân vật (cần Blender + file riêng trên máy làm việc)
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/prepare_for_mixamo.py -- --id <id> --height 1.60 --tris 25000 [--protect-face] [--protect-logo]
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/apply_chest_logo.py -- --id <id> [--logo <png>] [--compare prajith]
-tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/outfit_textures.py -- --id <id> [--shirt cfe0ee] [--glasses]   # sau apply_chest_logo
+tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/outfit_textures.py -- --id <id> [--shirt cfe0ee] [--outfit tu_dau_ngay] [--glasses]   # sau apply_chest_logo
 #   áo gốc Meshy là bộ ngày đầu (intern_nam_kinh): outfit_textures.py -- --id <id> --original dau_ngay --glasses --no-render
 #   → apply_chest_logo.py (dán lên bản áo cam) → outfit_textures.py lại (render); xem đầu outfit_textures.py
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/build_character.py -- --id <id> --height 1.60 --tris 6000 --single [--decimate-only]
-tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id>
+tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id> [--outfit dau_ngay]   # chân dung theo bộ đồ
 python scripts/tools/anim_sheet.py <id>
 
 # Đo hiệu năng bản build với độ trễ mạng giả lập (~GitHub Pages): xem docs/perf_report.md
@@ -151,7 +151,11 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại). Vai `player` chọn model theo giới tính
   (`roles.player.model_by_gender`: nam → `intern_nam`, nu → `intern_nu`; bản lưu `player.gender`, mặc định nam; thử khi dev:
   `?gender=nu` hoặc `__game.setGender("nu")`; ngoại hình khác cùng giới tính: `roles.player.looks`, bản lưu `player.look`, dev
-  `?look=intern_nam_kinh` hoặc `__game.setLook(...)`); bộ đồ đổi bằng texture (`dau_ngay` → texture trong GLB khi nhận Áo Cam). Lời thoại
+  `?look=intern_nam_kinh` hoặc `__game.setLook(...)`; màn tạo nhân vật `game/src/ui/creator.js` chọn ngoại hình theo
+  `character_creation.looks`); bộ đồ đổi bằng texture (`dau_ngay` → texture trong GLB khi nhận Áo Cam), chân dung theo bộ đồ
+  (`models.<id>.outfit_portraits`). **Tú khác giới với người chơi** (`roles.tu.model_by_gender`: nam → `intern_nu`, nữ →
+  `intern_nam_kinh`; áo ngày đầu `outfit.texture_by_model`); mọi chữ nói về Tú dùng `{tu_he}` `{tu_his}` `{tu_him}`
+  `{tu_himself}` (`{Tu_he}`… đầu câu), không viết cứng he/his/him — `test:data` kiểm tra. Lời thoại
   nhân vật dựa trên người thật (Ms. Huyền, Ms. Nga, Prajith): tự viết chi tiết cá nhân, giữ nhẹ nhàng, thân thiện, không nói chuyện
   sức khỏe, gia đình, tiền bạc hay điều làm họ trông thiếu chuyên nghiệp.
 - Làm theo đợt và **dừng lại báo cáo** sau mỗi đợt; báo cáo bằng tiếng Việt.

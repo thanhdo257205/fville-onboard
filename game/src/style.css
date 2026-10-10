@@ -131,16 +131,51 @@ button { font-family: "Nunito", sans-serif; }
 /* màn thấp (điện thoại xoay ngang ~360 px): bảng cuộn được, nút Start / Finish không bị khuất dưới mép màn hình */
 #creator .panel, #minigame .panel, .confirm .panel { max-height: calc(100dvh - 16px); overflow: auto; }
 #creator h2, #minigame h2 { margin: 0 0 14px; font-weight: 800; }
-#creator label { display: grid; gap: 6px; font-weight: 700; margin-bottom: 14px; }
+#creator .panel { width: min(780px, calc(100vw - 32px)); box-sizing: border-box; }   /* tính cả padding: không tràn màn hẹp */
+#creator label.name { display: grid; gap: 6px; font-weight: 700; margin-bottom: 14px; }
 #creator input[name=name] { font: 700 17px "Nunito"; padding: 10px 12px; border-radius: 10px; border: 2px solid #343944; background: #262a31; color: var(--fg); }
-#creator fieldset { border: 0; padding: 0; margin: 0 0 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#creator fieldset { border: 0; padding: 0; margin: 0 0 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; min-inline-size: 0; }
+#creator .look-row > * { min-width: 0; }   /* fieldset / ô lưới mặc định rộng ít nhất bằng nội dung → tràn màn hẹp */
 #creator legend { font-weight: 700; margin-bottom: 6px; }
-#creator .pos { display: block; margin: 0; }
-#creator .pos input { display: none; }
+#creator .pos, #creator .card { display: block; margin: 0; position: relative; }
+/* radio ẩn trực quan nhưng vẫn Tab / phím mũi tên được (display: none thì bàn phím không chọn được) */
+#creator .pos input, #creator .card input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
 #creator .pos span { display: block; text-align: center; padding: 10px; border-radius: 10px; background: #262a31; cursor: pointer; font-weight: 700; }
-#creator .pos input:checked + span { background: var(--orange); }
+#creator .pos input:checked + span, #creator .card input:checked + span { background: var(--orange); }
+#creator input:focus-visible + span, #creator .stage canvas:focus-visible, #creator button:focus-visible { outline: 3px solid #ffd3b0; outline-offset: 2px; }
 #creator .err { color: #ff8a65; min-height: 1.2em; margin: 0 0 8px; }
 #creator .primary { width: 100%; }
+/* chọn nhân vật: cảnh 3D (hoặc 3 thẻ chân dung) + thẻ thông tin */
+#creator .look-row { display: grid; grid-template-columns: 1fr 200px; gap: 14px; margin-bottom: 14px; align-items: stretch; }
+#creator .stage { position: relative; height: 300px; border-radius: 14px; overflow: hidden; background: radial-gradient(ellipse at 50% 85%, #39404d 0%, #23272f 60%, #1d2027 100%); }
+#creator .stage[hidden], #creator .cards[hidden] { display: none; }
+#creator .stage canvas { display: block; width: 100%; height: 100%; cursor: grab; border-radius: 14px; }
+#creator .stage canvas:active { cursor: grabbing; }
+#creator .arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(27, 30, 36, .8); color: var(--fg); font: 800 24px/1 "Nunito"; cursor: pointer; }
+#creator .arrow:hover { background: var(--orange); }
+#creator .arrow.prev { left: 10px; }
+#creator .arrow.next { right: 10px; }
+#creator .stage-msg { position: absolute; inset: auto 0 44%; margin: 0; text-align: center; font-weight: 700; color: #c9ced8; }
+#creator .stage-msg[hidden] { display: none; }
+#creator .hint { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; text-align: center; font-size: 12px; color: #9aa1ad; pointer-events: none; }
+#creator .cards { grid-template-columns: repeat(3, 1fr); margin: 0; }
+#creator .card span { display: grid; justify-items: center; gap: 4px; padding: 8px 6px; border-radius: 12px; background: #262a31; cursor: pointer; font-weight: 800; }
+#creator .card img { width: 100%; max-width: 120px; aspect-ratio: 1; object-fit: cover; border-radius: 10px; background: #1d2027; }
+#creator .info { display: grid; align-content: start; gap: 8px; background: #23272f; border-radius: 14px; padding: 12px; }
+#creator .info .portrait { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; background: #1d2027; border: 3px solid var(--orange); box-sizing: border-box; }
+#creator .info h3 { margin: 0; font-weight: 800; }
+#creator .info p { margin: 4px 0 10px; color: #c9ced8; font-size: 14px; line-height: 1.35; }
+#creator .info .shirt { width: 100%; padding: 8px 10px; font-size: 14px; }
+#creator .info .shirt[aria-pressed=true] { background: var(--orange); color: #fff; }
+#creator .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
+/* màn hẹp: thẻ thông tin xuống dưới, chân dung nhỏ bên trái chữ */
+@media (max-width: 699px) {
+  #creator .panel { width: calc(100vw - 16px); padding: 18px 16px; }
+  #creator .look-row { grid-template-columns: 1fr; }
+  #creator .info { grid-template-columns: 84px 1fr; align-items: start; }
+  #creator .info p { margin-bottom: 6px; }
+  #creator fieldset.positions { grid-template-columns: 1fr 1fr; }
+}
 #minigame .muted { color: var(--muted); }
 #minigame .row, .confirm .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
 

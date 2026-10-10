@@ -66,7 +66,7 @@ Người chơi bắt chuyến xe bus sớm lên Hòa Lạc ở một điểm đ�
 | Nhân vật | Vai trò | Xuất hiện | Đối tượng trong GLB |
 | --- | --- | --- | --- |
 | Người chơi | Intern mới, tự tạo ở màn đầu | Toàn game | `SPAWN_*` |
-| Tú (tên tạm) | Intern cùng đợt, bạn đồng hành | Zone 0 đến zone 4 | Không có, code tự đặt (zone 0: đứng ở mái chờ; từ lúc bắt chuyện: đi theo người chơi) |
+| Tú (tên tạm) | Intern cùng đợt, bạn đồng hành. **Khác giới với người chơi:** người chơi nam → Tú là nữ (model `intern_nu`, áo polo vàng nhạt ngày đầu); người chơi nữ → Tú là nam (model `intern_nam_kinh`, áo phông xanh ngọc). Tên "Tú" dùng được cho cả nam và nữ. Nhận Áo Cam ở cổng zone 2 cùng người chơi | Zone 0 đến zone 4 | Không có, code tự đặt (zone 0: đứng ở mái chờ; từ lúc bắt chuyện: đi theo người chơi) |
 | Chị Huyền (Ms. Huyền) | FSofter lâu năm, buddy đón intern. Người thật, đã đồng ý dùng hình; model riêng `huyen` (áo polo cam có logo FPT, không đổi màu áo bằng code). Id vai trong dữ liệu vẫn là `thao` | Zone 0, zone 1 | `NPC_thao_cua_xe` (zone 0, cửa xe số 2), `NPC_dong_nghiep_don` (zone 1) |
 | Bác tài | Tài xế xe bus FPT | Zone 1 | `NPC_tai_xe` |
 | Bác tài xe số 1, xe số 3 | Tài xế hai tuyến khác, chỉ đường sang xe số 2 | Zone 0 | `NPC_tai_xe_1`, `NPC_tai_xe_3` |
@@ -92,11 +92,13 @@ Người chơi tạo nhân vật trên một màn hình duy nhất trước khi 
 | Tên hiển thị | Nhập tự do, tối đa 16 ký tự | In lên thẻ nhân viên; lọc từ ngữ không phù hợp |
 | Vị trí intern | Developer, Tester, BA, Designer | Đổi một số lời thoại với Prajith và nhiệm vụ của Manager |
 
-**Đã làm (10/10/2026):** màn tạo nhân vật có tên, giới tính (Male / Female → model `intern_nam` / `intern_nu`) và vị trí intern. Tóc, da, kính, túi chưa có.
+**Đã làm (10/10/2026):** màn tạo nhân vật có chọn nhân vật, tên và vị trí intern. Chọn nhân vật: cảnh 3D nhỏ với 3 nhân vật làm sẵn đứng trên bục (`intern_nam`, `intern_nam_kinh` đeo kính, `intern_nu`), mặc bộ đồ ngày đầu; nhân vật đang chọn bước lên, vẫy tay, có vòng sáng dưới chân. Đổi bằng cách bấm vào nhân vật, phím ←/→ hoặc nút mũi tên; kéo để xoay 360°. Thẻ thông tin bên cạnh: chân dung, tên gọi ngắn, một dòng mô tả và nút xem trước Áo Cam FPT. Màn hình hẹp hoặc độ nét "Faster": 3 thẻ chân dung thay cảnh 3D. Giới tính suy ra từ nhân vật đã chọn. Tóc, da, túi riêng lẻ chưa có.
 
 **Trang phục:** nhân vật bắt đầu với áo sơ mi thường. Khi nhận Áo Cam FPT ở cổng (zone 2), áo được mặc vào ngay, và các huy hiệu nhận về sau hiện trên ngực áo.
 
 **Cách xưng hô:** lời dẫn và giao diện gọi người chơi là "bạn". Người lớn tuổi hơn (chị Huyền, chị Nga, mentor, manager, đồng nghiệp) gọi "em"; người chơi xưng "em" và gọi "anh/chị". Tú và người chơi xưng "mình" – "cậu". Cách này không phụ thuộc giới tính đã chọn, nên không cần viết lời thoại hai phiên bản.
+
+**Đại từ của Tú:** Tú khác giới với người chơi nên mọi chữ nói về Tú (lời dẫn, gợi ý, mô tả) không viết cứng "he / his / him". Dùng biến `{tu_he}`, `{tu_his}`, `{tu_him}`, `{tu_himself}` (viết hoa đầu câu: `{Tu_he}`…); game thay thành he / his / him hoặc she / her / her theo giới tính của Tú. Ví dụ: "Tú drops {tu_his} backpack on the seat beside {tu_him}". Lời thoại giữa Tú và người chơi (ngôi thứ nhất, thứ hai) giữ nguyên. `npm run test:data` báo lỗi nếu còn đại từ cứng nhắc tới Tú.
 
 **Chi tiết cá nhân của nhân vật dựa trên người thật** (chị Huyền, chị Nga, Prajith): nhóm tự viết, không chờ người thật xác nhận (có thay đổi thì sửa sau). Giữ nhẹ nhàng, thân thiện, không gây ngượng: không nói chuyện sức khỏe, gia đình, tiền bạc, hay chuyện làm họ trông thiếu chuyên nghiệp.
 

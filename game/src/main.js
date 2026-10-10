@@ -20,7 +20,8 @@ import { MyFptApp } from "./ui/app.js";
 import { Summary } from "./ui/summary.js";
 import { EmotePanel } from "./ui/emotes.js";
 import { Net } from "./net/net.js";
-import { characterCreator, confirmBox } from "./ui/panels.js";
+import { confirmBox } from "./ui/panels.js";
+import { characterCreator } from "./ui/creator.js";
 import { MinigameHost } from "./minigames/host.js";
 import { hud } from "./ui/hud.js";
 import { installDebug } from "./debug.js";
@@ -163,13 +164,14 @@ async function boot() {
   addEventListener("resize", () => game.resize(innerWidth, innerHeight));
   installDebug(game, loop);
 
-  // người chơi mới → màn tạo nhân vật (tạm: tên + vị trí intern)
+  // người chơi mới → màn tạo nhân vật: chọn nhân vật (giới tính suy ra từ nhân vật), tên, vị trí intern
   if (!progress.created) {
     hud.loading(null);
-    const who = await characterCreator(chars.character_creation);
+    const who = await characterCreator(chars.character_creation, { characters, settings, initial: progress.player.look });
     progress.player.name = who.name;
     progress.player.position = who.position;
     if (who.gender) { progress.player.gender = who.gender; characters.gender = who.gender; }
+    if (who.look) { progress.player.look = who.look; characters.look = who.look; }
     progress.created = true;
     save.store(progress);
     hud.loading(t("app.loading"));

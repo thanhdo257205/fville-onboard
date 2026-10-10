@@ -169,7 +169,16 @@
     "name_bad": "Please choose a different name.",
     "position": "Intern position",
     "start": "Start my first day",
-    "gender": "Your character"
+    "gender": "Your character",
+    "look": "Your character",
+    "look_loading": "Loading characters…",
+    "look_failed": "3D preview unavailable — pick a card instead.",
+    "look_prev": "Previous character",
+    "look_next": "Next character",
+    "look_stage": "Characters on stage. Use the left and right arrow keys to switch, drag to turn around.",
+    "look_hint": "Drag to turn · ← → to switch",
+    "look_selected": "{name} selected ({n} of {total})",
+    "preview_shirt": "Preview FPT shirt"
   },
   "myfpt": {
     "title": "My FPT",

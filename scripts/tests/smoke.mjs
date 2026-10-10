@@ -2,7 +2,10 @@
 // tắt (?net=off — không đụng máy chủ thật). Dùng window.__game (game/src/debug.js): step() = tới đích của mục tiêu hiện tại
 // (dịch chuyển), bấm E / bước vào vùng, tự giải hội thoại (autoplay.pickChoice), mini-game (debug solve), cảnh chuyển.
 // Mỗi zone kiểm tra: việc bắt buộc xong, sang đúng zone, đúng áo (dau_ngay → texture trong GLB sau khi nhận Áo Cam), không
-// lỗi / cảnh báo console. Zone 5 thêm: Esc lúc màn mờ ăn trưa, cờ lunch_done lưu trước khi mờ, mini-game Đăng nhập không
+// lỗi / cảnh báo console. Màn chọn nhân vật: ngoại hình thứ 1 chọn trong cảnh 3D bằng phím ←/→, thứ 2 bấm chuột vào nhân
+// vật, thứ 3 ở màn hẹp (< 700 px: thẻ chân dung); nút xem trước áo FPT; cảnh 3D được giải phóng khi vào game. Tú: model khác
+// giới với người chơi, áo trước / sau cổng (tu_dau_ngay | dau_ngay → Áo Cam), chân dung theo bộ đồ, câu dẫn ra đúng he / she.
+// Zone 5 thêm: Esc lúc màn mờ ăn trưa, cờ lunch_done lưu trước khi mờ, mini-game Đăng nhập không
 // có form / ô username / autocomplete mật khẩu, tải lại giữa cảnh kết → vẫn ra tổng kết, Close rồi mở lại từ menu Esc,
 // tải ảnh thẻ (tên file bỏ dấu).
 //
@@ -42,6 +45,16 @@ const verbose = !!arg("verbose");
 const zoneIsLast = (z) => z === order[order.length - 1];
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
 const NAMES = { intern_nam: ["Đỗ Minh Khôi", "do-minh-khoi"], intern_nam_kinh: ["Trần Đức Anh", "tran-duc-anh"], intern_nu: ["Nguyễn Thị Hà", "nguyen-thi-ha"] };
+// Tú khác giới với người chơi (roles.tu): model, bộ đồ trước cổng, chân dung theo bộ đồ, câu dẫn trên xe bus
+const tuOf = (look) => {
+  const r = chars.roles.tu, id = r.model_by_gender?.[look.gender] ?? r.model, m = chars.models[id];
+  const tex = r.outfit?.texture_by_model?.[id] ?? r.outfit?.texture ?? null;
+  const female = m.gender === "female";
+  return { id, tex, female, portrait: m.outfit_portraits?.[tex] ?? m.portrait, portraitCam: m.portrait,
+    bus: `Tú drops ${female ? "her" : "his"} backpack on the seat beside ${female ? "her" : "him"}` };
+};
+// cách chọn ở màn tạo nhân vật theo thứ tự ngoại hình trong lần chạy: 3D + phím, 3D + bấm chuột, thẻ ảnh (màn hẹp)
+const PICK = ["keys", "click", "cards"];
 
 // ---------- playwright (game/node_modules; máy cloud: bản cài sẵn toàn cục) ----------
 function loadPlaywright() {
@@ -82,7 +95,9 @@ let shots = 0;
 const line = (ok, text) => { console.log(`${ok ? "✓" : "✗"} ${text}`); };
 
 async function runLook(browser, base, look) {
-  const ctx = await browser.newContext({ viewport: { width: 640, height: 360 }, acceptDownloads: true });
+  const pick = PICK[looks.indexOf(look) % PICK.length];
+  // màn chọn 3D cần khung ≥ 700 px; vào game rồi thu về 640 × 360 như trước (nhanh hơn trên swiftshader)
+  const ctx = await browser.newContext({ viewport: pick === "cards" ? { width: 640, height: 360 } : { width: 1000, height: 640 }, acceptDownloads: true });
   const page = await ctx.newPage();
   const problems = [];   // lỗi / cảnh báo console chưa báo
   const ignore = [/\[vite\]/, /Download the React DevTools/];
@@ -112,16 +127,52 @@ async function runLook(browser, base, look) {
   const noLock = () => ev(() => { const i = __game._game.input; i.lockSupported = false; if (document.pointerLockElement) { i._releasing = true; document.exitPointerLock(); } });
 
   try {
-    const q = `?debug&net=off&look=${look.id}${onlyZone ? `&start=${startZone}` : ""}`;
+    // không ?look: chọn ngoại hình qua màn tạo nhân vật
+    const q = `?debug&net=off${onlyZone ? `&start=${startZone}` : ""}`;
     await page.goto(`${base}/${q}`);
     await page.waitForSelector("#creator input[name=name]", { timeout: 90000 });
+    const cr = { mode: await ev(() => window.__creator?.mode) };
+    if (pick !== "cards" && cr.mode === "3d") {
+      cr.ready = await wait(() => window.__creator?.ready, 90000);
+      if (pick === "keys") {
+        await page.focus("#creator .stage canvas");
+        for (let i = 0; i < looks.length + 1 && await ev(() => __creator.selected) !== look.id; i++) await page.keyboard.press("ArrowRight");
+      } else {
+        const i = await ev((id) => __creator.looks.indexOf(id), look.id);
+        const p = await ev((k) => __creator.screen(k), i);
+        if (p) await page.mouse.click(p.x, p.y);
+      }
+    } else if (cr.mode === "cards") await page.click(`#creator .card input[value=${look.id}] + span`);
+    cr.selected = await ev(() => __creator.selected);
+    await page.click("#creator .info .shirt");
+    cr.shirtOn = await ev(() => [__creator.shirt, document.querySelector("#creator .shirt").getAttribute("aria-pressed"), document.querySelector("#creator .info .portrait").src.split("/").pop()]);
+    await page.click("#creator .info .shirt");
+    cr.shirtOff = await ev(() => [__creator.shirt, document.querySelector("#creator .info .portrait").src.split("/").pop()]);
+    // ảnh chân dung (thẻ thông tin + thẻ ảnh) tải được thật — server dev trả index.html cho file không cho phép (mã 200)
+    cr.imgs = await ev(async () => { const im = [...document.querySelectorAll("#creator img")]; await Promise.all(im.map((i) => i.decode().catch(() => null)));
+      return im.filter((i) => !i.naturalWidth).map((i) => i.src.split("/").pop()); });
     await page.fill("#creator input[name=name]", name);
-    await page.click(`#creator input[name=gender][value=${look.gender}] + span`);
-    await page.click("#creator button.primary");
+    await page.keyboard.press("Enter");                 // Enter trong ô tên = Start my first day
     const booted = await wait(() => window.__game?.state.phase === "playing", 120000);
     if (booted) await noLock();
+    cr.disposed = await ev(() => !!window.__creator?.disposed && !document.getElementById("creator"));
+    if (pick !== "cards") await page.setViewportSize({ width: 640, height: 360 });
+    const wantMode = pick === "cards" ? "cards" : "3d";
+    const crOk = cr.mode === wantMode && (wantMode === "cards" || cr.ready) && cr.selected === look.id && cr.shirtOn[0] && cr.shirtOn[1] === "true"
+      && /_portrait\.png$/.test(cr.shirtOn[2]) && !cr.shirtOff[0] && /_portrait_dau_ngay\.png$/.test(cr.shirtOff[1]) && !cr.imgs.length && cr.disposed;
+    await check(crOk, `màn chọn nhân vật (${wantMode === "3d" ? `3D, ${pick === "keys" ? "phím ←/→" : "bấm chuột"}` : "thẻ ảnh, màn hẹp"}): chọn ${look.id}, xem trước áo FPT, giải phóng cảnh 3D`, JSON.stringify(cr));
     const m = booted ? await ev(() => __game.model) : null;
-    if (!await check(booted && m.id === look.id, `${startZone}: vào game "${name}", model ${look.id}${onlyZone ? `, bản lưu mẫu ?start=${startZone}` : ""}`, JSON.stringify(m))) return;
+    if (!await check(booted && m.id === look.id && m.look === look.id && m.gender === look.gender, `${startZone}: vào game "${name}", model ${look.id}${onlyZone ? `, bản lưu mẫu ?start=${startZone}` : ""}`, JSON.stringify(m))) return;
+    // Tú (zone có Tú): đúng model khác giới, áo ngày đầu, chân dung theo bộ đồ, câu dẫn he / she
+    const tu = tuOf(look);
+    const tuCheck = async (when, cam) => {
+      const x = await ev(async () => { const t = __game.tu;
+        return { ...t, bus: __game.textOf("tu_bus_ride", "n2"), img: await fetch(t.portrait).then((r) => r.headers.get("content-type"), () => null) }; });
+      const ok = x.img?.startsWith("image/png") && x.id === tu.id && x.built === tu.id && x.gender !== chars.models[look.id].gender && x.outfit === (cam ? null : tu.tex)
+        && x.portrait === (cam ? tu.portraitCam : tu.portrait) && x.bus?.startsWith(tu.bus) && x.he === (tu.female ? "she" : "he");
+      await check(ok, `Tú ${when}: ${tu.id} (${tu.female ? "nữ" : "nam"}), áo ${cam ? "ao_cam" : tu.tex}, chân dung ${(cam ? tu.portraitCam : tu.portrait).split("/").pop()}, "${tu.bus}…"`, JSON.stringify(x));
+    };
+    if (startZone === order[0]) await tuCheck("trước cổng", false);
 
     const pauses = (st) => zoneIsLast(st.zone) ? [...(st.lunch ? [] : ["time_skip"]), ...(st.login ? [] : ["login"]), ...(st.reloaded || look !== looks[0] ? [] : ["ending:lan"])] : [];
     for (let zi = order.indexOf(startZone); zi < order.length && !failed; zi++) {
@@ -179,6 +230,7 @@ async function runLook(browser, base, look) {
         next && !st.complete && st.zone !== next && `đang ở ${st.zone}, không sang ${next}`, con.length && `console: ${con.slice(0, 5).join(" | ")}`].filter(Boolean);
       const where = st.complete ? "cảnh kết" : next ? `→ ${next}` : "";
       await check(!bad.length, `${zone}: ${required.length} việc bắt buộc, áo ${st.ao ? "ao_cam" : "dau_ngay"}, ${where}, console sạch (${Math.round((Date.now() - zt) / 1000)} s)`, bad.join("; "));
+      if (zone === "zone_02" && !failed && await ev(() => __game.tu.visible)) await tuCheck("sau cổng", true);
       if (failed || onlyZone && !st.complete) break;
       if (st.complete) {
         // ---------- màn tổng kết ----------

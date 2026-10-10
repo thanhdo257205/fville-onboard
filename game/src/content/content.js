@@ -3,7 +3,7 @@
 // Chữ hiển thị trong nội dung là object theo mã ngôn ngữ {"en": "..."} → tx() chọn theo ngôn ngữ hiện tại.
 // Kiểm tra khi tải: mọi node mà JSON nhắc tới phải có thật trong GLB của zone đó; tham chiếu nội bộ phải khớp.
 import { loadJSON, url } from "../core/fetch.js";
-import { lang, t } from "../i18n.js";
+import { lang, t, fill } from "../i18n.js";
 
 export const FILES = ["dialogues", "quests", "interactables", "quiz", "rewards", "values", "cutscenes", "guidance", "acts", "achievements"];
 
@@ -42,11 +42,11 @@ export function buildContent(raw) {
   };
 }
 
-// chữ theo ngôn ngữ + thay {biến}
+// chữ theo ngôn ngữ + thay {biến} (vars của chỗ gọi, rồi biến chung i18n.textVars — vd đại từ của Tú {tu_his})
 export function tx(obj, vars = {}) {
   if (obj == null) return "";
   const s = typeof obj === "string" ? obj : obj[lang] ?? obj.en ?? "";
-  return s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? `{${k}}`));
+  return fill(s, vars);
 }
 export const draftMark = (isDraft) => (isDraft ? `${t("hud.draft_marker")} ` : "");
 

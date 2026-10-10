@@ -25,7 +25,8 @@ function wanted(rel, pending = new Set()) {
     const parts = rel.split("/");             // assets/characters/<id>/<id>.glb hoặc <id>_6k.glb (bản nhẹ)
     if (pending.has(parts[2])) return false;
     const name = parts[3] || "";
-    if (parts.length === 4 && name === `${parts[2]}_portrait.png`) return true;   // chân dung hộp thoại
+    // chân dung hộp thoại: <id>_portrait.png, theo bộ đồ <id>_portrait_<bộ>.png (models.<id>.outfit_portraits)
+    if (parts.length === 4 && (name === `${parts[2]}_portrait.png` || /^.+_portrait_[a-z0-9_]+\.png$/.test(name) && name.startsWith(`${parts[2]}_`))) return true;
     if (parts.length === 4 && name.startsWith(`${parts[2]}_`) && name.endsWith(".webp")) return true;   // texture bộ đồ
     return parts.length === 4 && name.endsWith(".glb") && !name.endsWith(".raw.glb")
       && (name === `${parts[2]}.glb` || /^.+_\d+k\.glb$/.test(name));

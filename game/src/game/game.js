@@ -194,15 +194,20 @@ export class Game {
     setTimeout(() => this.prefetchNext(zoneId), 2000);
   }
 
-  // trang phục người chơi (characters.json roles.player.outfit): bộ đồ ngày đầu (texture outfit.texture, vd dau_ngay) tới
-  // khi nhận Áo Cam FPT ở cổng → texture trong GLB (áo cam + logo). outfit.tint: cách cũ, đổi màu áo bằng shader.
-  // Theo phần thưởng đã lưu → tải lại game vẫn đúng áo.
+  // trang phục người chơi và Tú (characters.json roles.<vai>.outfit): bộ đồ ngày đầu (texture outfit.texture hoặc theo model
+  // outfit.texture_by_model, vd dau_ngay / tu_dau_ngay) tới khi nhận Áo Cam FPT ở cổng (cả hai cùng mặc từ lúc chụp check-in)
+  // → texture trong GLB (áo cam + logo). outfit.tint: cách cũ, đổi màu áo bằng shader. Theo phần thưởng đã lưu → tải lại
+  // game vẫn đúng áo. characters.wearing: bộ đang mặc → chân dung theo bộ đồ.
   updateOutfit() {
-    const o = this.characters.role("player")?.outfit;
-    if (!o || !this.player) return;
-    const wearing = this.outfitOverride === o.until_reward || this.progress.hasReward(o.until_reward);
-    if (o.texture) this.player.character.setOutfit(wearing ? null : o.texture);
-    if (o.tint) setTint(this.player.character, wearing ? null : o.tint);
+    for (const [role, ch] of [["player", this.player?.character], ["tu", this.follower?.character]]) {
+      const o = this.characters.role(role)?.outfit;
+      if (!o || !ch) continue;
+      const wearing = this.outfitOverride === o.until_reward || this.progress.hasReward(o.until_reward);
+      const tex = this.characters.outfitTexture(role, ch.modelId);
+      if (tex) ch.setOutfit(wearing ? null : tex);
+      if (o.tint) setTint(ch, wearing ? null : o.tint);
+      this.characters.wearing[role] = !wearing && tex && ch.outfit === tex ? tex : null;
+    }
   }
 
   // sự kiện theo giờ trong zone (zones.json → events): vd zone_01, 20 giây sau khi xuống xe Tú kêu mất balo
@@ -285,6 +290,7 @@ export class Game {
       this.follower.placeNear(this.player, { view: this.camera.position, obstacles: this.npcs.map((n) => n.capsule()).filter(Boolean),
         collider: this.zone.collider, occluders: this.cam.occluders });
     }
+    this.updateOutfit();            // áo của Tú vừa tạo (bộ ngày đầu / Áo Cam theo phần thưởng)
     // NPC_ trong GLB mà không vai nào trỏ tới → báo để sửa characters.json
     this.state.missingNpcRoles = this.zone.npcs.map((n) => n.name).filter((n) => !this.characters.roleOfNode(n));
   }
