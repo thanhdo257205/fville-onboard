@@ -324,7 +324,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Mạng: người A lên xe bus zone 0 → 1, người B đứng ở bến: A gửi zone_00 → zone_99 → zone_01; sau khi A khuất vào xe B
     không còn thấy A (0/72 mẫu). Zone 5: 3 bot (`net_bots.js --zone zone_05`) hiện đủ quanh người chơi, "4 online · 4 in
     this zone".
-  - Main: 08872eb.
+  - Bản đã deploy (`dist/` = gh-pages, phục vụ local vì máy cloud không vào được github.io; net.json chặn về máy chủ
+    local): vào game, chọn được Male / Female, zone 5 đủ 6 NPC, console sạch.
+  - `main` 08872eb (+ e338289 PROGRESS); đã deploy `gh-pages` 0be1660 (từ `main` e338289, chơi nhiều người vẫn bật
+    `wss://fville-net.fville-onboard.workers.dev/ws`).
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
