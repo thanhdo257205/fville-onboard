@@ -32,6 +32,7 @@ import { MinigameHost } from "./minigames/host.js";
 import { hud } from "./ui/hud.js";
 import { installDebug } from "./debug.js";
 import { buildStartState } from "./game/autoplay.js";
+import { sound, SOUND_DEFAULTS } from "./core/sound.js";
 
 async function boot() {
   const params = new URLSearchParams(location.search);
@@ -40,12 +41,18 @@ async function boot() {
   await loadStrings(pickLang({ param: params.get("lang"), saved: settings.lang, nav: navigator.languages?.length ? navigator.languages : [navigator.language] }));
   document.title = t("app.title");
   hud.loading(t("app.loading"));
-  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg] = await Promise.all([
+  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds] = await Promise.all([
     loadJSON(url("data/zones.json")), loadJSON(url("data/characters.json")),
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
     loadJSON(url("data/pool.json")).catch(() => null),            // bàn bi-a zone 5 (thiếu → không có chế độ bi-a)
+    loadJSON(url("data/sounds.json")).catch(() => null),          // hiệu ứng âm thanh (thiếu → game im lặng)
   ]);
+  // âm thanh: AudioContext chỉ tạo được sau lần bấm / phím đầu tiên (trình duyệt chặn tự phát) — core/sound.js
+  sound.configure(sounds);
+  sound.apply(settings.sound);
+  const unlockAudio = () => sound.unlock();
+  for (const ev of ["pointerdown", "keydown", "touchend"]) addEventListener(ev, unlockAudio, { capture: true, passive: true });
   const debugMode = params.has("debug");
   // tham số thử — khi phát triển, hoặc bản build mở với ?debug (smoke test chạy trên bản build):
   //   ?gender=nu|nam · ?look=intern_nam_kinh (ngoại hình, đặt luôn giới tính) · ?start=zone_05 (bản lưu mẫu)
@@ -149,6 +156,7 @@ async function boot() {
   const menu = new Menu({
     info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false,
       detail: settings.detail ?? "auto", detailLevel: renderer.detail, net: net.enabled, players: settings.players !== false,
+      sound: { ...SOUND_DEFAULTS, ...settings.sound },
       complete: game.complete,
       // phụ kiện đã mở khoá (tủ đồ — chưa có tab Wardrobe): bật / tắt ở đây
       accessories: chars.accessories ? game.characters.accessoryIds().filter((id) => game.accessoryUnlocked(id))
@@ -159,6 +167,13 @@ async function boot() {
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
     onPlayers: (on) => { settings.players = on; saveSettings(settings); net.setShow(on); menu.draw(); },
     onLang: async (l) => { await setLanguage(l); menu.draw(); },
+    // âm thanh: bật / tắt, âm lượng hiệu ứng / tiếng nền (kéo thanh: đổi ngay, thả tay mới lưu)
+    onSound: (patch, { redraw = false, store = true } = {}) => {
+      settings.sound = { ...SOUND_DEFAULTS, ...settings.sound, ...patch };
+      sound.apply(settings.sound);
+      if (store) saveSettings(settings);
+      if (redraw) menu.draw();
+    },
     onSummary: () => { menu.hide(true); game.openSummary(); },   // chỉ hiện khi đã xong game
     onClose: () => game.setMode("play"),
     onPlayAgain: playAgain,
@@ -219,6 +234,7 @@ async function boot() {
     try { net.update(dt); } catch (e) { if (netErr !== e.message) { netErr = e.message; console.error("[mạng]", e); } }
     if (emotes?.open && game.mode !== "play") emotes.hide();
     game.render(dt);
+    sound.update(dt, game.camera);            // tai nghe ở camera, tiếng nền, tiếng máy xe bus
     hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t("hud.click_to_look") : null);
     frames++; acc += dt;
     if (acc >= 0.5) {

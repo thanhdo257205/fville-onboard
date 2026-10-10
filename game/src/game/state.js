@@ -40,9 +40,11 @@ export class GameState {
       && list(cond.grains).every((g) => this.grains.has(g));
   }
 
-  // áp hiệu ứng → danh sách thông báo (chữ đã dịch) để HUD hiện lần lượt
+  // áp hiệu ứng → danh sách thông báo (chữ đã dịch) để HUD hiện lần lượt; out.kinds: loại việc vừa có (reward, checklist,
+  // value, quest, grain, item, advice) → Game.applyEffects chọn tiếng
   apply(e = {}) {
-    const out = [];
+    const out = [], kinds = new Set();
+    out.kinds = kinds;
     const quests = list(e.quest);
     // làm lại việc đã xong: không cộng điểm/phần thưởng lần nữa (chỉ cập nhật cờ)
     const repeat = quests.length > 0 && quests.every((q) => this.quests.has(q));
@@ -52,12 +54,13 @@ export class GameState {
     for (const a of list(e.advice)) {
       if (this.advice.includes(a)) continue;
       this.advice.push(a);
+      kinds.add("advice");
       const from = this.c.adviceById?.get(a)?.from;
       out.push(t("hud.advice_new", { name: from ? this.c.names?.(from) ?? from : "" }));
     }
-    for (const g of list(e.grain)) if (!this.grains.has(g)) { this.grains.add(g); out.push(t("hud.grain_found", { n: this.grains.size, total: this.c.grainsTotal })); }
+    for (const g of list(e.grain)) if (!this.grains.has(g)) { this.grains.add(g); kinds.add("grain"); out.push(t("hud.grain_found", { n: this.grains.size, total: this.c.grainsTotal })); }
     if (e.photo) { this.photos[e.photo.key] = e.photo.data; out.push(t(`hud.photo_saved_${e.photo.key}`)); }
-    for (const id of list(e.item)) if (!this.items.includes(id)) { this.items.push(id); out.push(t("hud.item_new", { name: tx(this.c.carry.get(id)?.name) })); }
+    for (const id of list(e.item)) if (!this.items.includes(id)) { this.items.push(id); kinds.add("item"); out.push(t("hud.item_new", { name: tx(this.c.carry.get(id)?.name) })); }
     for (const id of list(e.remove_item)) if (this.items.includes(id)) { this.items = this.items.filter((x) => x !== id); out.push(t("hud.item_gone", { name: tx(this.c.carry.get(id)?.name) })); }
     if (repeat) return out;
     for (const s of STATS) if (e[s]) {
@@ -68,6 +71,7 @@ export class GameState {
     for (const id of list(e.reward)) {
       if (this.hasReward(id)) continue;
       this.rewards.push(id);
+      kinds.add("reward");
       const r = this.c.rewards.get(id);
       out.push(draftMark(r?.draft) + t("hud.reward_new", { name: tx(r?.name) }));
       // nhận huy hiệu 6 giá trị → các ô đã thể hiện từ trước sáng lên ngay
@@ -76,14 +80,16 @@ export class GameState {
     for (const v of list(e.value)) {
       if (this.values.has(v)) continue;
       this.values.add(v);
+      kinds.add("value");
       const name = tx(this.c.valueById.get(v)?.name);
       out.push(t(this.hasReward(this.c.badge.reward) ? "hud.value_lit" : "hud.value_saved", { name }));
     }
     for (const q of quests) {
       if (this.quests.has(q)) continue;
       this.quests.add(q);
+      kinds.add("quest");
       const ck = this.c.questById.get(q)?.checklist;
-      if (ck && this.checklistDone(ck)) out.push(t("hud.checklist_done", { name: tx(this.c.checklist.find((x) => x.id === ck)?.title) }));
+      if (ck && this.checklistDone(ck) && kinds.add("checklist")) out.push(t("hud.checklist_done", { name: tx(this.c.checklist.find((x) => x.id === ck)?.title) }));
     }
     return out;
   }

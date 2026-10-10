@@ -189,7 +189,7 @@
     {
       "id": "card_gate", "start": "tap",
       "nodes": {
-        "tap": { "speaker": "narrator", "text": { "en": "You hold your new employee card to the reader. Beep — green light! The glass doors swing open.", "vi": "Bạn chạm thẻ nhân viên mới vào đầu đọc. Bíp — đèn xanh! Cửa kính từ từ mở ra." },
+        "tap": { "speaker": "narrator", "sfx": "card_ok", "text": { "en": "You hold your new employee card to the reader. Beep — green light! The glass doors swing open.", "vi": "Bạn chạm thẻ nhân viên mới vào đầu đọc. Bíp — đèn xanh! Cửa kính từ từ mở ra." },
           "effects": { "quest": "z4_card_gate", "hieu_biet": 5, "banner": { "en": "First card tap!", "vi": "Lần quẹt thẻ đầu tiên!" } }, "next": "s0" },
         "s0": { "branch": [{ "if": { "flags": ["stranger_done"] }, "next": "tu0" }], "next": "s1" },
         "s1": { "speaker": "nguoi_la", "anim": "wave", "text": { "en": "Excuse me! Could I come in with you? I left my card on the bus.", "vi": "Em ơi, cho anh vào cùng em được không? Anh để quên thẻ trên xe mất rồi." },
@@ -205,7 +205,7 @@
         "s_back2": { "speaker": "narrator", "text": { "en": "He heads back down the corridor towards the lobby.", "vi": "Anh ấy quay lại hành lang, đi về phía sảnh." },
           "effects": { "walk": { "who": "nguoi_la", "to": [11.6, 0, 0.3], "hide": true } }, "next": "tu0" },
         "tu0": { "branch": [{ "if": { "flags": ["tu_card_done"] }, "next": null }], "next": "tu1" },
-        "tu1": { "speaker": "narrator", "text": { "en": "Tú taps {tu_his} card. Beep — the light flashes red.", "vi": "Tú quẹt thẻ. Bíp — đèn nháy đỏ." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
+        "tu1": { "speaker": "narrator", "sfx": "card_fail", "text": { "en": "Tú taps {tu_his} card. Beep — the light flashes red.", "vi": "Tú quẹt thẻ. Bíp — đèn nháy đỏ." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
         "tu2": { "speaker": "tu", "anim": "think", "text": { "en": "Huh? My card's red… Could you just let me follow you through?", "vi": "Ủa? Thẻ mình báo đỏ… Cho mình đi theo cậu vào luôn được không?" },
           "choices": [
             { "text": { "en": "Sure, come with me.", "vi": "Được, đi cùng mình." }, "effects": { "flags": ["tu_tailgated", "tu_card_done"] }, "next": "tu_follow" },
@@ -216,7 +216,7 @@
         "tu_follow2": { "speaker": "thao", "style": "phone", "text": { "en": "{player}, I saw Tú come in on your card. 🙂 Even friends should each tap their own. If a card doesn't work, just message Ms. Nga in the app!", "vi": "{player} ơi, chị thấy Tú đi vào bằng thẻ của em rồi. 🙂 Thân mấy đi nữa thì mỗi người vẫn tự quẹt thẻ nhé. Thẻ không mở được thì cứ nhắn chị Nga qua app!" }, "next": null },
         "nga1": { "speaker": "narrator", "text": { "en": "You open My FPT and message Ms. Nga: \"Tú's card shows red at the gate — could you help?\"", "vi": "Bạn mở My FPT và nhắn cho chị Nga: \"Chị ơi, thẻ của Tú bị báo đỏ ở cửa — chị giúp bạn ấy với ạ!\"" }, "next": "nga2" },
         "nga2": { "speaker": "hr", "style": "phone", "text": { "en": "Got it! I've just activated Tú's card — try again now. Thanks for looking out for each other!", "vi": "Chị biết rồi! Chị vừa kích hoạt thẻ cho Tú, hai đứa thử lại xem. Biết để ý giúp nhau thế là tốt lắm!" }, "next": "nga3" },
-        "nga3": { "speaker": "narrator", "text": { "en": "Tú taps again. Beep — green!", "vi": "Tú quẹt lại. Bíp — đèn xanh!" }, "effects": { "value": "teamwork", "ket_noi": 5, "flags": ["tu_card_fixed", "tu_card_done"] }, "next": "nga4" },
+        "nga3": { "speaker": "narrator", "sfx": "card_ok", "text": { "en": "Tú taps again. Beep — green!", "vi": "Tú quẹt lại. Bíp — đèn xanh!" }, "effects": { "value": "teamwork", "ket_noi": 5, "flags": ["tu_card_fixed", "tu_card_done"] }, "next": "nga4" },
         "nga4": { "speaker": "tu", "anim": "wave", "text": { "en": "It works! Thanks, {player} — you always know who to ask.", "vi": "Được rồi! Cảm ơn cậu, {player} — lúc nào cậu cũng biết phải hỏi ai." }, "next": null },
         "tu_rec": { "speaker": "tu", "anim": "nod", "text": { "en": "Okay… I'll go and ask. You go on ahead — I'll catch up!", "vi": "Ừ… để mình đi hỏi. Cậu cứ đi trước đi — mình theo sau!" },
           "effects": { "walk": { "who": "tu", "to": [11.6, 0, 0.3], "return_s": 40, "return_line": { "en": "I'm back! Reception sorted my card out.", "vi": "Mình quay lại đây! Lễ tân sửa xong thẻ cho mình rồi." }, "return_flag": "tu_back" } }, "next": null }

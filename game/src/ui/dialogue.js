@@ -1,8 +1,11 @@
 // Hộp hội thoại: chân dung bên trái, tên người nói, lời thoại; tiếp lời bằng Space/click, chọn đáp án bằng phím 1–4 hoặc click.
 // Chạy cây hội thoại trong dialogues.json: branch / action (mini-game) / lời thoại có anim / choices + effects.
+// Tiếng: sang câu (line), chọn đáp án (select), câu kiểu tin nhắn style "phone" (phone); câu có "sfx": "<tên>" (data/sounds.json)
+// phát tiếng đó khi câu hiện (vd tiếng bíp đầu đọc thẻ ở cửa quẹt thẻ zone 4).
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
 import { url } from "../core/assets.js";
+import { sound } from "../core/sound.js";
 
 export class DialogueUI {
   constructor() {
@@ -35,8 +38,9 @@ export class DialogueUI {
     this.el.querySelector(".more").textContent = choices?.length ? t("dialogue.choose_hint", { n: choices.length }) : t("dialogue.continue");
     return new Promise((resolve) => { this.waiting = { kind: choices?.length ? "choice" : "next", resolve, count: choices?.length || 0 }; });
   }
-  next() { if (this.waiting?.kind === "next") { const w = this.waiting; this.waiting = null; w.resolve(null); } }
-  choose(i) { if (this.waiting?.kind === "choice" && i >= 0 && i < this.waiting.count) { const w = this.waiting; this.waiting = null; w.resolve(i); } }
+  // auto: tự sang câu (cảnh chuyển) → không có tiếng
+  next({ auto = false } = {}) { if (this.waiting?.kind === "next") { const w = this.waiting; this.waiting = null; if (!auto) sound.play("line"); w.resolve(null); } }
+  choose(i) { if (this.waiting?.kind === "choice" && i >= 0 && i < this.waiting.count) { const w = this.waiting; this.waiting = null; sound.play("select"); w.resolve(i); } }
   hide() { this.el.hidden = true; this.waiting = null; }
   // huỷ hội thoại đang chờ (vd chuyển zone) — trả 'abort' cho vòng chạy
   abort() { const w = this.waiting; this.waiting = null; this.el.hidden = true; w?.resolve("abort"); }
@@ -85,7 +89,9 @@ export class DialogueRunner {
         const choices = n.choices?.filter((ch) => this.state.check(ch.if)).map((ch) => tx(ch.text, v));
         const shown = this.ui.show({ name: who.name, portrait: who.portrait, text, choices, style: n.style || null });
         let timer = null;
-        if (auto && !choices?.length) timer = setTimeout(() => this.ui.next(), auto * 1000);
+        if (n.sfx) sound.play(n.sfx);
+        else if (n.style === "phone") sound.play("phone");
+        if (auto && !choices?.length) timer = setTimeout(() => this.ui.next({ auto: true }), auto * 1000);
         const pick = await shown;
         clearTimeout(timer);
         if (pick === "abort" || this.active?.aborted) break;

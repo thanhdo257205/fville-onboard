@@ -71,6 +71,30 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   cho card đồ hoạ). Sửa: `disposeTree` (`game/src/world/zone.js`), dọn vật do code đặt khi đổi zone, `Character.dispose` dọn
   xương + vật liệu riêng; đồ dùng chung đánh dấu `userData.shared`; smoke: zone_04 ↔ zone_05 2 vòng, số geometry / texture
   không tăng — Phụ trách: Claude
+- [ ] P1 **Lỗi: mô hình bối cảnh bị hở nhiều chỗ** (người dùng gửi 5 ảnh, 10/10/2026; sửa trong script Blender → cần máy có
+  Blender) — Phụ trách: —
+  - Các chỗ trong ảnh (vị trí đoán theo ảnh — đứng đúng chỗ, mở `?debug` ghi lại toạ độ khi sửa):
+    1. zone_04 tầng trên (sàn xanh nhạt): khối tường bao (quanh giếng cầu thang / giếng trời) **hở ở cả 4 góc** — các đoạn
+       tường không khớp nhau ở góc.
+    2. zone_04 chiếu nghỉ cầu thang: khe tối dọc mép chiếu nghỉ sát tường, nhìn xuyên xuống dưới.
+    3. zone_04 tầng trệt (sàn gạch sáng, chậu cây trên tủ trắng cạnh cửa kính): chân tường xám không chạm sàn, lộ dải trời
+       xanh giữa sàn và tường.
+    4. zone_04 cầu thang lên tầng trên: khe hở dọc mép trái bậc thang với tường, nhìn xuyên xuống dưới.
+    5. zone_03 sảnh lễ tân (chỗ chị Nga): nhìn qua vách kính thấy mảng sân / mái màu nâu lơ lửng, bên dưới là trời — mặt đất
+       ngoài sảnh không kéo tới chân kính.
+  - Nguyên nhân chỗ 1 (đọc code): `kit.seg_box` (`scripts/blender/lib/kit.py`) dựng đoạn tường dài đúng bằng khoảng cách 2
+    đầu mút, không cộng bề dày → 2 đoạn gặp nhau ở góc thiếu một ô vuông (nửa bề dày × nửa bề dày) ở góc ngoài. Các chỗ
+    còn lại: sàn / bậc thang / chiếu nghỉ không áp sát tường, mặt đất ngoài nhà không đủ rộng; nhìn rõ vì trời trong nhà là
+    màu xanh sáng (`mood.sky` mặc định `#9cc4e8`).
+  - [ ] Sửa trong script Blender (`scripts/blender/zone_03.py`, `zone_04.py`, `lib/kit.py`, `lib/interior.py`): đoạn tường kéo
+    dài thêm nửa bề dày ở mỗi đầu (tham số mới của `seg_box`, mặc định giữ như cũ để không xê dịch zone khác) hoặc thêm cột
+    góc; sàn chạy dưới chân tường; bậc thang / chiếu nghỉ áp sát tường (hoặc thêm tấm ốp chân tường); mặt đất ngoài sảnh
+    zone_03 kéo ra đủ xa. Build lại zone bản Thấp, `check_glb` 0 lỗi; `COL_` giữ nguyên chỗ cũ
+  - [ ] Rà các zone còn lại tìm chỗ hở tương tự bằng công cụ tự dò (chạy trong game / viewer, không cần Blender): từ các điểm
+    đi được bắn tia ngang và chéo xuống, tia trong nhà mà không chạm lưới nào (lọt ra trời) → ghi toạ độ → danh sách chỗ hở
+  - [ ] Tạm thời (không cần Blender): zone trong nhà 3–5 đặt màu nền tối trung tính (`data/zones.json` → `mood.sky`) để khe
+    hở không lộ dải xanh — chỉ che bớt, không thay việc sửa mô hình
+  - [ ] Kiểm thử: công cụ dò → 0 chỗ hở trong nhà; smoke zone 3–5 (cả bước camera không xuyên trần); ảnh trước / sau 5 chỗ
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
@@ -168,10 +192,54 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     + máy chủ local chơi trọn một ván; vị trí bi khớp sau mỗi cú; chặn cú sai lượt; bi trong tay; ghế giải phóng khi rớt mạng;
     người xem vào giữa ván thấy đúng bàn; máy chủ cũ)
   - [x] Build, push `main` (PR #1, `main` 56537a3); [x] deploy `gh-pages` (0790018); [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
-- [ ] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
-  `/status` (sau khi bản Web xong việc trên) — Phụ trách: —
+- [x] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
+  `/status` (sau khi bản Web xong việc trên) — Phụ trách: Claude (máy Desktop) — 10/10/2026, Cloudflare version 3764cab6:
+  tin chào `features: ["pool"]`; 2 trình duyệt độc lập trên trang thật (`gh-pages` a9a3dcc) ngồi 2 ghế zone_05, 4 cú → bàn 2
+  bên = bàn máy chủ sau mọi cú, phát lại không lệch, rời bàn thì ghế trống
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
-- [ ] P3 Bi-a: chốt có thêm đánh xoáy (2D + xoáy) và phím V nhìn từ trên xuống hay không; 3D thật thì bỏ qua — Phụ trách: —
+- [ ] P3 Bi-a: chốt có thêm phím V nhìn bàn từ trên xuống hay không — Phụ trách: —
+- [ ] P2 Bi-a: đánh xoáy ngang (side spin / "xoáy trái – phải") — Phụ trách: —
+  - Hiện trạng: `game/src/pool/physics.js` chỉ có vị trí + vận tốc mỗi bi (đầu file: "Chưa có xoáy"); bi trắng luôn đánh vào
+    giữa tâm.
+  - [ ] Chọn điểm chạm trên bi trắng: lệch trái / phải (đề xuất 5 nấc: −2 … +2; xoáy lên / xuống — follow / draw — chốt làm
+    cùng hay để sau). Bảng bi-a có hình bi trắng với chấm điểm chạm (bấm / kéo chấm, hoặc phím riêng — đề xuất Z / X, không
+    trùng A / D ngắm, E, R, J, Space); điện thoại: kéo chấm bằng ngón tay
+  - [ ] Vật lý (mỗi bi thêm 1 số `spin`): chạm băng → góc bật lệch theo chiều xoáy (xoáy thuận tay "running" mở góc, ngược
+    "check" khép góc), mỗi lần chạm băng xoáy giảm; bi trắng lệch nhẹ ngược phía xoáy lúc vừa đánh (squirt, ~1°); va bi →
+    truyền một phần xoáy, bi mục tiêu lệch hướng rất nhẹ (throw); xoáy giảm dần theo thời gian lăn trên nỉ
+  - [ ] Giữ **tất định**: chỉ + − × ÷, `Math.sqrt`, `dsin` / `dcos` / `datan2` (quy tắc bi-a trong `CLAUDE.md`); `spin = 0`
+    phải cho kết quả **giống từng bit** như hiện nay (ván cũ, phát lại, thử thách của anh Khang không đổi)
+  - [ ] Chơi nhiều người: tin nhắn cú đánh thêm `spin`; máy chủ (`server/src/pool.js`) kiểm tra giới hạn và tính lại cú như
+    máy khách; báo `features` mới (vd `"pool_spin"`) — máy khách / máy chủ bản cũ thì bàn chung không cho đánh xoáy, không
+    lệch bàn; cần `npx wrangler deploy` ở máy Desktop
+  - [ ] Đường ngắm: thêm đoạn bi trắng sau khi chạm băng / chạm bi có tính xoáy (ngắn, để gợi ý chứ không lộ hết); thử thách
+    của anh Khang giữ đánh tâm (hoặc chỉ cho xoáy sau khi vào bi lần đầu)
+  - [ ] Chữ giao diện en + vi; dòng hướng dẫn bảng bi-a ghi cách chọn xoáy
+  - [ ] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
+    `spin = 0` khớp bản cũ, xoáy trái / phải làm góc bật băng lệch đúng chiều; smoke bi-a 2 người: cú có xoáy phát lại khớp
+    bàn máy chủ
+- [ ] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: —
+  - Hiện trạng (`game/src/pool/rules.js`, dùng chung với máy chủ): nhóm trơn 1–7 / sọc 9–15 nhận theo bi vào lỗ đầu tiên;
+    lỗi duy nhất là bi trắng rơi lỗ → đối thủ đặt bi trắng ở khu đầu bàn; không phạt chạm sai bi trước / không chạm bi nào;
+    bi 8 không phải gọi lỗ.
+  - [ ] Chốt bộ luật theo luật 8 bi quốc tế (WPA), viết tóm tắt vào `docs/GDD.md` (mục bi-a), gồm các ý dưới
+  - [ ] Cú phá hợp lệ: có bi vào lỗ hoặc ít nhất 4 bi chạm băng — không thì đối thủ chọn xếp lại phá hoặc đánh tiếp; bi trắng
+    rơi lúc phá → đối thủ đặt bi trắng ở khu đầu bàn; bi 8 vào lỗ lúc phá → đặt lại bi 8 (như hiện nay) hoặc xếp lại
+  - [ ] Bàn vẫn "mở" sau cú phá (bi vào lỗ lúc phá không quyết định nhóm); nhóm chọn ở cú vào bi hợp lệ đầu tiên sau đó
+  - [ ] Lỗi (foul) → đổi lượt, đối thủ có **bi trong tay đặt bất kỳ đâu trên bàn** (trừ sau cú phá chỉ ở khu đầu bàn):
+    bi trắng rơi lỗ / văng khỏi bàn; bi trắng chạm bi nhóm khác trước (bàn mở: chạm bi 8 trước); không chạm bi nào; sau khi
+    chạm không có bi nào vào lỗ và không bi nào (kể cả bi trắng) chạm băng
+  - [ ] Bi 8: phải **gọi lỗ** trước cú đánh bi 8 (bấm vào lỗ trên bàn); thua khi đưa bi 8 vào lỗ sớm (nhóm chưa hết), vào lỗ
+    khác lỗ đã gọi, vào lỗ kèm lỗi, hoặc làm bi 8 văng khỏi bàn
+  - [ ] Giao diện: HUD ghi nhóm của mỗi người (trơn / sọc) + số bi còn lại; báo lỗi kèm lý do ("Chạm bi 3 trước — lỗi"); đặt bi
+    trong tay trên cả bàn (không chồng bi khác); chọn lỗ cho bi 8; bấm H xem tóm tắt luật; chữ en + vi
+  - [ ] Bàn chung: thêm giới hạn thời gian mỗi cú (vd 60 s, hết giờ = lỗi) để không ai giữ bàn mãi
+  - [ ] Máy chủ (`server/src/pool.js`) áp đúng bộ luật mới (kiểm tra chỗ đặt bi trong tay, lỗ đã gọi); báo `features` mới (vd
+    `"pool_rules2"`) — máy khách cũ không vào được bàn luật mới, không lệch bàn; `npx wrangler deploy` ở máy Desktop
+  - [ ] Tập một mình và thử thách của anh Khang giữ như cũ (không áp luật thi đấu)
+  - [ ] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
+    trong tay toàn bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi; ván 2 người giả chơi trọn; smoke bi-a 2 người với luật
+    mới
 - [ ] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: —
   - Hiện trạng: chuột chỉ xoay cơ khi con trỏ đang bị khoá (Pointer Lock, `game/src/core/input.js`: không khoá thì bỏ qua di
     chuột và kéo chuột). Khoá không được (vừa bấm Esc, trình duyệt từ chối) thì chuột không làm gì; bấm chuột để khoá lại thì
@@ -188,7 +256,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   (cắt bỏ trần / mái ở sàn + 2,4 m, nét tường tối), mũi tên "Bạn" theo hướng mặt, chấm Tú, dấu "!" + dòng mục tiêu (khác tầng:
   "(tầng trên / dưới)"); zone_04 mỗi tầng một ảnh; smoke mở tab ở zone 2–5
 - [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
-  Phụ trách: Claude — nhánh `feat/pool-step3`
+  Phụ trách: Claude — nhánh `feat/pool-step3`; [x] đã `wrangler deploy` (10/10/2026, version 3764cab6): `/status` có
+  `room_size` 30, `max_rooms` 6, danh sách `rooms`
 - [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —
   - [ ] Chốt với nhóm / HR: cho gõ chữ tự do hay chỉ mở rộng câu soạn sẵn (hiện có câu chat soạn sẵn ở phím T); quy tắc ứng xử
     hiện khi mở khung chat lần đầu
@@ -255,17 +324,28 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [ ] File `assets/voice/<ngôn ngữ>/<hội thoại>_<câu>.ogg` (OGG/Opus, mỗi câu khoảng ≤ 50 KB), tải theo zone; phát khi câu
     hiện, dừng khi sang câu; phụ đề giữ nguyên; thiếu file thì im lặng
   - [ ] Âm lượng giọng trong menu Esc; `test:data` báo câu thiếu file / file thừa
-- [ ] P2 Nhạc nền và hiệu ứng âm thanh — Phụ trách: —
-  - [ ] Chọn nhạc nền theo zone / thời điểm (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc
-    hoàng hôn) — nguồn CC0 hoặc có giấy phép, ghi `CREDITS.md`
-  - [ ] Hiệu ứng âm thanh: điền file cho các chỗ gọi sẵn trong `game/src/core/sound.js` (mini-game đúng / sai, nhặt hạt lúa,
-    chụp ảnh, tin nhắn điện thoại, …) + thêm cửa quẹt thẻ, xe bus, bi-a (bi chạm bi, chạm băng, vào lỗ — `physics.js` đã
-    trả các sự kiện này)
-  - [ ] Phát nhạc sau lần bấm đầu tiên (trình duyệt chặn tự phát); chuyển zone thì chuyển bài êm; nhỏ lại khi đang hội
-    thoại; tắt / mở và thanh âm lượng nhạc, hiệu ứng (và giọng) trong menu Esc, lưu trong cài đặt
-  - [ ] Dung lượng: nhạc OGG khoảng 128 kbps, mỗi bài ≤ ~1,5 MB, tải lười theo zone (không làm chậm lúc mở game); đo lại
-    theo `docs/perf_report.md`
-  - [ ] Kiểm thử: `test:smoke` chạy khi tắt âm thanh, không lỗi console; `test:data` báo file âm thanh thiếu
+- [ ] P2 Nhạc nền và hiệu ứng âm thanh — Phụ trách: Claude (hiệu ứng + tiếng nền, nhánh `feat/sfx`); nhạc nền: —
+  - [x] Chốt (người dùng, 10/10/2026): nguồn CC0 (gói Kenney) + tự tạo bằng code; đợt này làm hiệu ứng, bi-a / cửa / xe bus,
+    bước chân + tiếng nền; nhạc nền để đợt sau
+  - [x] Hiệu ứng: 58 file MP3, 286 KB (48 từ 5 gói Kenney CC0, 10 tự tạo bằng `scripts/blender/audio/synth.py`) —
+    `data/sounds.json`; mọi chỗ gọi sẵn + hội thoại (sang câu, chọn đáp án, câu kiểu tin nhắn), app My FPT, menu Esc, quest /
+    checklist / giá trị / phần thưởng / thẻ Act / thành tựu; cửa quẹt thẻ (bíp xanh / đỏ — trường `sfx` của câu thoại, khoá
+    nhả, cánh cửa); xe bus (cửa hơi nén, phanh, tiếng máy theo tốc độ xe); bi-a (đầu cơ, bi chạm bi / băng / vào lỗ theo lực
+    va, cả khi phát lại cú của người khác); bước chân người chơi + Tú (cỏ / nền cứng / thảm)
+  - [x] Danh sách file + nguồn + bằng chứng giấy phép: `docs/audio_credits.md` (tự sinh: gói, link tải, SHA-256 zip và từng
+    file gốc, `License.txt` của từng gói chép vào `assets/sfx/licenses/`)
+  - [x] Tiếng nền theo zone tạo bằng code lúc chơi (phố sáng sớm, campus, hoàng hôn ở bến xe, sảnh, hành lang, văn phòng) +
+    tiếng vang trong nhà — `game/src/core/ambience.js`, `zones.json` → `audio`
+  - [x] Phát sau lần bấm / phím đầu tiên; đổi zone tiếng nền chuyển êm; nhỏ lại khi hội thoại / mini-game / app; menu Esc: Âm
+    thanh Bật / Tắt + thanh Hiệu ứng, Tiếng nền, lưu trong cài đặt; tab ẩn thì tạm dừng; tiếng của zone tải khi vào zone
+  - [x] Kiểm thử: `test:data` (file thiếu / thừa, chỉ nhận gói CC0, mọi file có trong `audio_credits.md`, tên trong
+    `sound.play("…")` / `sfx` / `zones.json` có thật, dung lượng); `test:smoke` (AudioContext chạy, file tải được, tiếng nền đúng
+    zone, đi bộ có tiếng bước chân, các tiếng chính đã phát qua zone 0 → 4, console sạch)
+  - [ ] Người trong team nghe thử, chỉnh âm lượng / đổi file nghe chưa hợp (chọn file theo số đo, chưa ai nghe bằng tai)
+  - [ ] Nhạc nền theo zone / thời điểm (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc hoàng hôn)
+    — nguồn CC0, khai ở `data/sounds.json` như hiệu ứng; chuyển bài êm khi đổi zone, nhỏ lại khi hội thoại, thanh âm lượng nhạc
+    (và giọng) trong menu Esc; mỗi bài ≤ ~1,5 MB (MP3 ~128 kbps — Safari cũ không đọc OGG), tải lười theo zone, đo lại theo
+    `docs/perf_report.md`
 
 ## 7. Kỹ thuật và vận hành
 

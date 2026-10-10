@@ -49,3 +49,6 @@ Thumbs.db
 
 # kết quả smoke test (ảnh chụp bước hỏng) — scripts/tests/smoke.mjs
 test-results/
+
+# Âm thanh: gói gốc tải về (Kenney CC0 — URL + SHA-256 trong data/sounds.json); build_sfx.py đọc từ đây
+assets/sfx/source/

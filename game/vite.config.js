@@ -11,8 +11,8 @@ import { TIERS } from "./src/core/quality.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
-const SHARED = ["/assets/glb/", "/assets/characters/", "/assets/accessories/", "/data/"];
-const TYPES = { ".glb": "model/gltf-binary", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp" };
+const SHARED = ["/assets/glb/", "/assets/characters/", "/assets/accessories/", "/assets/sfx/", "/data/"];
+const TYPES = { ".glb": "model/gltf-binary", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".mp3": "audio/mpeg" };
 
 // model chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending): không bao giờ vào bản build
 function pendingModels() {      // JSON lỗi → build dừng (không lặng lẽ chép hết)
@@ -36,6 +36,8 @@ function wanted(rel, pending = new Set()) {
   }
   // phụ kiện (tủ đồ): chỉ assets/accessories/<id>/<id>.glb (không source/, .raw.glb, số đo .json)
   if (rel.startsWith("assets/accessories/")) { const p = rel.split("/"); return p.length === 4 && p[3] === `${p[2]}.glb`; }
+  // hiệu ứng âm thanh: chỉ assets/sfx/<tên>.mp3 (không source/ — gói zip gốc, không licenses/)
+  if (rel.startsWith("assets/sfx/")) return rel.split("/").length === 3 && rel.endsWith(".mp3");
   if (rel.startsWith("data/")) return rel.endsWith(".json");
   return false;
 }
@@ -86,7 +88,7 @@ function sharedAssets() {
     closeBundle() {
       let n = 0;
       const pending = pendingModels();
-      for (const top of ["assets/glb", "assets/characters", "assets/accessories", "data"]) {
+      for (const top of ["assets/glb", "assets/characters", "assets/accessories", "assets/sfx", "data"]) {
         const dir = join(ROOT, top);
         if (!existsSync(dir)) continue;
         for (const f of walk(dir)) {
@@ -98,7 +100,7 @@ function sharedAssets() {
           n++;
         }
       }
-      console.log(`shared-assets: chép ${n} file (GLB zone, GLB nhân vật, phụ kiện, JSON) vào ${outDir}/`
+      console.log(`shared-assets: chép ${n} file (GLB zone, GLB nhân vật, phụ kiện, âm thanh, JSON) vào ${outDir}/`
         + (pending.size ? `; bỏ model chờ đồng ý: ${[...pending].join(", ")}` : ""));
     },
   };

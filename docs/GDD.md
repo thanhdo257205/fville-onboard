@@ -448,7 +448,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
     - Hạt lúa vàng, tab Bản đồ và Sổ lời khuyên
 3. **Hoàn thiện**
     - Thay toàn bộ nội dung `[DRAFT]` bằng nội dung HR
-    - Âm thanh và nhạc nền, cảnh hoàng hôn ở zone 1
+    - Âm thanh (hiệu ứng + tiếng nền theo zone đã làm 10/10/2026) và nhạc nền, cảnh hoàng hôn ở zone 1
     - Mini-game tùy chọn (Một cú bi-a, Đừng ngủ gật), chỉnh ngưỡng danh hiệu
 
 **Cắt được nếu thiếu thời gian**, theo thứ tự cắt trước: Đừng ngủ gật, Một cú bi-a, cảnh hoàng hôn, hạt lúa vàng. Tú là phần đắt nhất nhưng cũng giữ mạch cảm xúc; nếu phải bỏ Tú, chuyển tình huống thẻ báo đỏ sang một intern khác do code đặt tạm ở cửa.
