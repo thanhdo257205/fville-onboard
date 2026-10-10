@@ -809,7 +809,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - `feat/zone5-seat-cap` (PR #1 → `main` 56537a3) và `fix/camera-ceiling` (PR #2 → `main` bef8792) đã gộp; `gh-pages` 0790018
   build từ `main` bef8792 (pages build and deployment: xanh). 2 lỗi P1 (không ra được khỏi zone 5, camera xuyên trần) + lỗi
   rơi xuyên sàn đã lên trang thật. Sau đó: PR #3 tiếng Việt (`main` ccf259f) + sửa ảnh thẻ (`main` 680cc30, CI xanh) →
-  deploy `gh-pages` 6416ec3 (106 file, 16,9 MB, quét riêng tư 0 phát hiện).
+  deploy `gh-pages` 6416ec3 (106 file, 16,9 MB, quét riêng tư 0 phát hiện). Deploy lại `gh-pages` 202c71d từ `main` ac4d358
+  (code game như 680cc30, chỉ thêm tài liệu; test:data đạt, 106 file, quét riêng tư 0 phát hiện).
 - **CI không chạy từ c2439ba:** tên bước "Cài máy chủ … (test mạng: zone 4 …)" trong `.github/workflows/test.yml` có `: `
   → YAML lỗi, GitHub báo đỏ ngay mà không có job nào (run 18–21: 2 nhánh + 2 lần gộp). Sửa: tên bước trong ngoặc kép.
 - Kiểm tra lại `main` bef8792 trên máy cloud: test:data đạt; test:pool đạt (cả `pool_rules`); build + smoke
