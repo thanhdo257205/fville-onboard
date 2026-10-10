@@ -4,7 +4,12 @@
     "title": "First Day at F-Ville",
     "loading": "Loading…",
     "loading_zone": "Heading to {zone}…",
-    "error": "Something went wrong: {message}"
+    "error": "Something went wrong: {message}",
+    "zone_error": "Couldn't open {zone}.",
+    "zone_timeout": "Loading took longer than {s} seconds.",
+    "zone_retry": "Retry",
+    "zone_back": "Back to {zone}",
+    "zone_reload": "Reload page"
   },
   "zones": {
     "zone_00": {
