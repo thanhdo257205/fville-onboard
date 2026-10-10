@@ -83,6 +83,13 @@ thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a t
 - [x] P3 Máy tính bàn ở bàn intern zone 5: mô hình Sketchfab "Desktop Computer" (CC BY 4.0) thay laptop hộp; màn hình
   `monitor_screen` hiện màn đăng nhập "My FPT", game đổi texture được (`scripts/blender/lib/desktop_computer.py`) — Phụ trách:
   Thanh Do — 94b7938
+- [ ] P3 Thay mô hình bối cảnh bằng mô hình Sketchfab (CC BY 4.0; script `scripts/blender/lib/bus.py`, `trees.py`, `bamboo.py`) —
+  Phụ trách: Claude — nhánh `feat/env-models`
+  - [ ] Xe bus zone 0–1 ("Bus jb5 Low Poly"): sơn trắng–đỏ như xe cũ, cánh cửa tách riêng đúng chỗ TRIGGER_len_xe, biển số
+    1/2/3 trên kính, dùng chung lưới mọi xe trong zone
+  - [ ] Cây ngoài trời zone 0–3 ("Tree low poly lowpoly"): lá alphaTest không viền, dùng chung lưới, mỗi cây làm mờ riêng
+  - [ ] Bụi tre zone 2 ("bamboo tree"): ≤ 3.000 tam giác / bụi, quanh giếng + ven đường xe vào, COL_ ở gốc
+  - [ ] Đo FPS trước / sau (`__game.benchmark(120)` zone 0–3, draw call, tam giác, dung lượng GLB) — không giảm quá 10 %
 - [ ] P3 Tượng Cuder: quyết giữ / bỏ búi tóc sau gáy (`CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`); đổi bản sao tượng cũ
   nhìn qua vách kính zone 3 (`ENV_tuong_cuder_xa`) — Phụ trách: —
 - [x] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (tự ướm theo lưới, mở khoá khi xong game, bật / tắt ở menu Esc,

@@ -22,7 +22,7 @@ for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
 import bpy  # noqa: E402
 
 from lib import interior as it  # noqa: E402
-from lib import kit, props, zone  # noqa: E402
+from lib import kit, props, trees, zone  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
 
@@ -151,10 +151,13 @@ def build_outside(col, rng):
     kit.building_block(b, 42, -30, 56, 30, floors=3, facades=("W",))
     kit.building_block(b, -30, -58, 40, -44, floors=3, facades=("N",))
     obj = b.to_object("ENV_ngoai_troi", col)
-    vb = MeshBuilder()  # cây ngoài sân: object riêng, tán tròn mềm
+    vb = MeshBuilder()  # cây ngoài sân: mô hình Sketchfab (lib/trees.py), gốc vôi trắng vẫn dựng khối
+    kit.TREES = []
     for _ in range(12):
         kit.tree(vb, rng.uniform(14, 38), rng.uniform(-38, 24), rng, z=PLAZA_Z, detail=1)
     vb.to_object("ENV_cay_san", col, smooth_angle=80, tint="foliage")
+    trees.place(col, kit.TREES)
+    kit.TREES = None
     pb = MeshBuilder()
     kit.brick_paving(pb, -30, -44, 42, -5.5, PLAZA_Z, cell=3.0)
     kit.brick_paving(pb, 10, -5.5, 42, 30, PLAZA_Z, cell=3.0)

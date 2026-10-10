@@ -24,7 +24,7 @@ for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
 
 import bpy  # noqa: E402
 
-from lib import kit, props, zone  # noqa: E402
+from lib import bus, kit, props, trees, zone  # noqa: E402
 from lib import quality as Q  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
@@ -84,6 +84,7 @@ def build_props(col, rng):
 
 def build_vegetation(col, rng):
     b = MeshBuilder()
+    kit.TREES = []                       # cây mô hình Sketchfab (lib/trees.py), gốc vôi trắng vẫn dựng khối
     for x in range(-44, 46, 7 if not Q.HIGH else 4):  # hàng cây phía nam đường
         kit.tree(b, x + rng.uniform(-1.5, 1.5), -8 + rng.uniform(-1.5, 1.5), rng)
     for x in (-26, -16, 20, 24):
@@ -95,34 +96,40 @@ def build_vegetation(col, rng):
         kit.bush(b, rng.uniform(-48, 48), rng.uniform(-28, -10), rng.uniform(0.5, 1.0), rng,
                  flowers=rng.random() < 0.3, lobes=1)
     kit.grass_tufts(b, (-30, 26, 4.6, 6.0), 30, rng, z=WALK_Z)
-    return b.to_object("ENV_vegetation", col, smooth_angle=80, tint="foliage")
+    veg = b.to_object("ENV_vegetation", col, smooth_angle=80, tint="foliage")
+    trees.place(col, kit.TREES)
+    kit.TREES = None
+    return veg
+
+
+PARKED = (("ENV_xe_bus_dau_1", (-15.0, 2.3, 0), 180), ("ENV_xe_bus_dau_2", PARKED_2, 0), ("ENV_xe_bus_dau_3", (6.0, -2.3, 0), 0))
 
 
 def build_buses(cols):
-    """Xe chính (tương tác) + 3 xe đậu cùng chung một mesh (instance → GLB nhẹ).
-    Cánh cửa khách xe chính là object con riêng (xe_bus_cua, gốc = bản lề) để game đóng/mở khi xe vào trạm;
-    trong GLB đang mở như trước."""
-    b = MeshBuilder()
-    props.bus(b, door_open=False)
-    main = b.to_object("xe_bus_mesh", cols["INT"], location=(*BUS_MAIN, 0), bevel=0.16)
+    """Xe chính (tương tác) + 3 xe đậu dùng chung lưới thân + lưới cánh cửa (mô hình Sketchfab, lib/bus.py — instance
+    → GLB nhẹ). Cánh cửa khách xe chính là object con riêng (xe_bus_cua, gốc = bản lề) để game đóng/mở khi xe vào trạm,
+    trong GLB đang mở như trước; xe đậu đóng cửa."""
+    body, door_me, info = bus.build_meshes(cols["ENV"], props.BUS_DOOR_X)
+    main = bpy.data.objects.new("xe_bus_mesh", body)
+    cols["INT"].objects.link(main)
+    main.location = (*BUS_MAIN, 0)
     main.rotation_euler = (0, 0, math.radians(180))
-    d = MeshBuilder()
-    props.bus_door(d)
-    door = d.to_object("xe_bus_cua", cols["INT"])
+    door = bpy.data.objects.new("xe_bus_cua", door_me)
+    cols["INT"].objects.link(door)
     door.parent = main
-    door.location = props.bus_door_hinge()
+    door.location = info["hinge"]
     door.rotation_euler = (0, 0, math.radians(props.BUS_DOOR_OPEN_DEG))
-    b2 = MeshBuilder()
-    props.bus(b2, door_open=False)
-    parked = b2.to_object("ENV_xe_bus_dau_1", cols["ENV"], location=(-15.0, 2.3, 0), bevel=0.16)
-    parked.rotation_euler = (0, 0, math.radians(180))
-    for name, loc, yaw in (("ENV_xe_bus_dau_2", PARKED_2, 0), ("ENV_xe_bus_dau_3", (6.0, -2.3, 0), 0)):
-        o = bpy.data.objects.new(name, parked.data)  # dùng chung mesh
+    for name, loc, yaw in PARKED:
+        o = bpy.data.objects.new(name, body)
         cols["ENV"].objects.link(o)
         o.location = loc
         o.rotation_euler = (0, 0, math.radians(yaw))
-    bus = mk.interactive("xe_bus", "Xe Bus FPT", (*BUS_MAIN, 0), cols["INT"])
-    mk.parent(main, bus)
+        d = bpy.data.objects.new(f"{name}_cua", door_me)
+        cols["ENV"].objects.link(d)
+        d.parent = o
+        d.location = info["hinge"]
+    it = mk.interactive("xe_bus", "Xe Bus FPT", (*BUS_MAIN, 0), cols["INT"])
+    mk.parent(main, it)
     return main
 
 
@@ -155,8 +162,10 @@ def build_colliders(col):
     C = mk.collider
     C("ground", (0, 5, -0.25), (100, 70, 0.5), col)
     C("sidewalk", ((WALK[0] + WALK[1]) / 2, (WALK[2] + WALK[3]) / 2, WALK_Z / 2), (WALK[1] - WALK[0], 10, WALK_Z), col)
-    for x, y in ((BUS_MAIN[0], BUS_MAIN[1]), (-15, 2.3), PARKED_2[:2], (6, -2.3)):
-        C(f"xe_bus_{x:+.0f}", (x, y, 1.75), (props.BUS_L, props.BUS_W, 3.5), col)
+    x0, x1, hy, h = bus.body_box()
+    for x, y, yaw in ((*BUS_MAIN, 180), *((loc[0], loc[1], yaw) for _, loc, yaw in PARKED)):
+        off = (x0 + x1) / 2 * (1 if yaw == 0 else -1)   # tâm thân xe thật lệch khỏi gốc xe theo hướng đầu xe
+        C(f"xe_bus_{x:+.0f}", (x + off, y, h / 2), (x1 - x0, 2 * hy, h), col)
     bx0, bx1, by0, by1 = BUILDING
     C("toa_nha", ((bx0 + bx1) / 2, (by0 + 2 + by1) / 2, 7), (bx1 - bx0 - 4, by1 - by0 - 2, 14), col)
     C("ban_do", (BOARD[0], BOARD[1] + 0.05, 1.8), (9.2, 0.3, 3.6), col)

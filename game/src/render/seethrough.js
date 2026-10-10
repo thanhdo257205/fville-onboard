@@ -6,10 +6,14 @@
 // không thì vỏ viền đen lộ ra chỗ lá đã mờ.
 // Cấu hình: data/scene_fixes.json → see_through (chung mọi zone) + <zone>.see_through.add (mesh gộp lẫn đồ khác, vd nội
 // thất sảnh zone_03: chỉ lấy các mảnh có tâm nằm trong hộp).
+// Cây mô hình dùng chung lưới (world/zone.js batchInstances: mesh gộp có thuộc tính đỉnh plantId): mỗi plantId = đúng 1
+// cây, không chia mảnh, không gộp với cây có tán chạm nhau; lá là mảng phẳng (không kín) → "camera trong tán" xét bằng
+// hộp tán (phần trên CANOPY_FROM chiều cao, thu vào CANOPY_SHRINK mỗi bên) thay cho đếm số lần cắt mặt.
 import * as THREE from "three";
 import { MeshBVH } from "three-mesh-bvh";
 
 const SLOTS = 8;   // số cây mờ cùng lúc tối đa (mảng uniform)
+const CANOPY_FROM = 0.35, CANOPY_SHRINK = 0.15;
 
 const DEFAULTS = {
   meshes: "^ENV_(vegetation|cay_)",
@@ -101,10 +105,26 @@ function components(mesh) {
   return { compOf, boxes };
 }
 
+// mesh gộp từ bản sao (thuộc tính plantId): mảnh = bản sao → { compOf, boxes } như components()
+function instances(mesh) {
+  const pos = mesh.geometry.attributes.position, pid = mesh.geometry.attributes.plantId;
+  const compOf = new Int32Array(pos.count), slot = new Map(), boxes = [], pids = [];
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    const id = pid.getX(i);
+    let c = slot.get(id);
+    if (c === undefined) { c = boxes.length; slot.set(id, c); boxes.push(new THREE.Box3()); pids.push(id); }
+    compOf[i] = c;
+    boxes[c].expandByPoint(v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld));
+  }
+  return { compOf, boxes, pids };
+}
+
 export class SeeThrough {
   constructor(cfg = {}) {
     this.cfg = { ...DEFAULTS, ...cfg };
     this.bvh = null;
+    this.canopies = [];         // cây mô hình: { id, box } hộp tán (containing)
     this.fades = new Map();     // số cây → { f: 0..1, since: giây từ lần che gần nhất }
     this.hits = new Set();
     this._ray = new THREE.Ray();
@@ -118,6 +138,7 @@ export class SeeThrough {
   // zoneCfg: data/scene_fixes.json → <zone>.see_through ({ add: [{ mesh, boxes: [{center, size}] }] })
   setup(zone, zoneCfg = {}) {
     this.bvh = null;
+    this.canopies = [];
     this.fades.clear();
     this.hits.clear();
     this.writeUniforms();
@@ -135,18 +156,27 @@ export class SeeThrough {
     // mảnh của mọi mesh (thế giới) → gộp mảnh chạm nhau thành cây (quét theo trục x)
     const parts = [];
     for (const [mesh, filter] of targets) {
-      const { compOf, boxes } = components(mesh);
+      const inst = !!mesh.geometry.attributes.plantId;
+      const { compOf, boxes, pids } = inst ? instances(mesh) : components(mesh);
       const c = new THREE.Vector3();
       const keep = boxes.map((b) => !filter || filter.some((f) => f.containsPoint(b.getCenter(c))));
-      parts.push({ mesh, compOf, boxes, keep, plantOf: new Int32Array(boxes.length) });
+      parts.push({ mesh, inst, compOf, boxes, pids, keep, plantOf: new Int32Array(boxes.length) });
     }
-    const all = parts.flatMap((p, pi) => p.boxes.map((box, ci) => ({ pi, ci, box: box.clone().expandByScalar(0.02) })).filter((x) => p.keep[x.ci]));
+    const all = parts.flatMap((p, pi) => p.boxes.map((box, ci) => ({ pi, ci, inst: p.inst, box: box.clone().expandByScalar(0.02) })).filter((x) => p.keep[x.ci]));
     all.sort((a, b) => a.box.min.x - b.box.min.x);
     const par = all.map((_, i) => i);
     const find = (a) => { while (par[a] !== a) a = par[a] = par[par[a]]; return a; };
+    // cùng 1 bản sao ở nhiều mesh gộp (thân, lá: mỗi chất liệu 1 mesh) → 1 cây; bản sao không gộp với gì khác
+    const instRoot = new Map();
     for (let i = 0; i < all.length; i++) {
+      if (!all[i].inst) continue;
+      const p = parts[all[i].pi], key = `${p.mesh.userData.batchGroup}|${p.pids[all[i].ci]}`;
+      if (instRoot.has(key)) par[find(i)] = find(instRoot.get(key)); else instRoot.set(key, i);
+    }
+    for (let i = 0; i < all.length; i++) {
+      if (all[i].inst) continue;
       for (let j = i + 1; j < all.length && all[j].box.min.x <= all[i].box.max.x; j++) {
-        if (all[i].box.intersectsBox(all[j].box)) par[find(j)] = find(i);
+        if (!all[j].inst && all[i].box.intersectsBox(all[j].box)) par[find(j)] = find(i);
       }
     }
     const rootBox = new Map();
@@ -163,6 +193,17 @@ export class SeeThrough {
       plantBoxes.push(box);
     }
     for (let i = 0; i < all.length; i++) parts[all[i].pi].plantOf[all[i].ci] = ids.get(find(i)) ?? 0;
+    // hộp tán của cây mô hình (camera trong tán)
+    this.canopies = [];
+    for (const [root, box] of rootBox) {
+      const id = ids.get(root);
+      if (!id || !all[root].inst) continue;
+      const b = box.clone(), size = b.getSize(new THREE.Vector3());
+      b.min.y += size.y * CANOPY_FROM;
+      b.min.x += size.x * CANOPY_SHRINK; b.max.x -= size.x * CANOPY_SHRINK;
+      b.min.z += size.z * CANOPY_SHRINK; b.max.z -= size.z * CANOPY_SHRINK;
+      this.canopies.push({ id, box: b });
+    }
     // số cây theo đỉnh (attribute cho shader) + lưới tam giác thế giới có BVH (dò che khuất)
     const tri = [], triPlant = [], triComp = [];
     const v = new THREE.Vector3();
@@ -180,7 +221,7 @@ export class SeeThrough {
           v.fromBufferAttribute(pos, idx ? idx.getX(t + k) : t + k).applyMatrix4(p.mesh.matrixWorld);
           tri.push(v.x, v.y, v.z);
           triPlant.push(plant[a]);
-          triComp.push(compBase + p.compOf[a]);     // mảnh kín (cụm lá, thân, chậu…) → kiểm tra camera trong tán
+          triComp.push(p.inst ? -1 : compBase + p.compOf[a]);   // mảnh kín (cụm lá, thân, chậu…) → kiểm tra camera trong tán
         }
       }
       compBase += p.boxes.length;
@@ -204,10 +245,12 @@ export class SeeThrough {
   // = p ở trong mảnh (đếm riêng từng mảnh vì các cụm lá chồng lên nhau). Không có → 0
   containing(p) {
     if (!this.bvh) return 0;
+    for (const c of this.canopies) if (c.box.containsPoint(p)) return c.id;   // cây mô hình: hộp tán
     this._upRay.origin.copy(p);
     const idx = this.bvh.geometry.index, crossings = new Map(), plantOf = new Map();
     for (const h of this.bvh.raycast(this._upRay, THREE.DoubleSide, 0, 200)) {
       const v = idx.getX(h.faceIndex * 3), comp = this.vertComp[v];
+      if (comp < 0) continue;                                                     // mảng lá cây mô hình (không kín)
       crossings.set(comp, (crossings.get(comp) || 0) + 1);
       plantOf.set(comp, this.vertPlant[v]);
     }

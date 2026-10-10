@@ -42,5 +42,19 @@ do người dùng cung cấp, chỉ nằm trong texture.
   `scripts/blender/lib/desktop_computer.py` thu nhỏ, gộp và nén texture, thay hình nền màn hình bằng màn đăng nhập
   "My FPT" tự vẽ khi build zone.
 
+- Xe bus đưa đón ở zone 0 và zone 1 (`zone_00_pickup.glb`, `zone_01_bus.glb`: lưới `bus_body` + cánh cửa `bus_door`, dùng
+  chung cho mọi xe trong zone): "Bus jb5 Low Poly" by seenkonkgrng (Sketchfab), giấy phép CC BY 4.0 —
+  https://sketchfab.com/3d-models/bus-jb5-low-poly-fae01c4c820c4a7b958c3de2b3b011ab (link nguồn ghi trong file gốc, glTF
+  `asset.extras.source`). File gốc không có trên repo; `scripts/blender/lib/bus.py` đổi sơn sang màu xe đưa đón F-Ville,
+  xoá chữ thương hiệu / biển số, tách cánh cửa khách, bỏ clearcoat khi build zone.
+- Cây ngoài trời ở zone 0–3 (lưới `cay_lo_1`, `cay_lo_2`, dùng chung cho mọi cây): "Tree low poly lowpoly" by 00amza
+  (Sketchfab), giấy phép CC BY 4.0 — https://sketchfab.com/3d-models/tree-low-poly-lowpoly-73201f05280d48dcb10ed4ca362d69f8
+  (link nguồn ghi trong file gốc). File gốc không có trên repo; `scripts/blender/lib/trees.py` tách vỏ / lá, đổi màu lá
+  theo bảng màu game, lá cắt alpha khi build zone.
+- Bụi tre ở zone 2 (lưới `bamboo`, dùng chung cho mọi bụi): "bamboo tree" by tojamerlin (Sketchfab), giấy phép CC BY 4.0 —
+  https://sketchfab.com/3d-models/bamboo-tree-d0161434cf6844a8bc6eaeb0c0692ed0 (link nguồn ghi trong file gốc). File gốc
+  không có trên repo; `scripts/blender/lib/bamboo.py` dựng lại bản low-poly (thân trụ + lá 2 tam giác) theo đúng vị trí
+  thân, lá của mô hình gốc và gộp texture khi build zone.
+
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.

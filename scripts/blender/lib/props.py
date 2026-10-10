@@ -203,7 +203,11 @@ def fpt_sign(b, length=9.4, base_z=0.72):
 
 
 # ---------------- Xe bus (kiểu b: trắng trên, đỏ dưới, sọc vàng) ----------------
+# Xe trong game là mô hình Sketchfab (lib/bus.py). bus() / bus_door() khối dưới đây giữ lại để tham khảo (không zone nào
+# gọi). BUS_L, BUS_W: kích thước tham chiếu cũ — chỗ cửa, SPAWN_, NPC_, TRIGGER_ quanh xe tính theo đây, giữ nguyên;
+# khung va chạm / kiểm tra đường chạy dùng kích thước thật của mô hình (bus.body_box()).
 BUS_L, BUS_W, BUS_H = 12.0, 2.5, 3.5
+BUS_DOOR_X = BUS_L / 2 - 1.325   # tâm cửa khách (local x của xe) — lib/bus.py đặt cửa vẽ trên mô hình trùng chỗ này
 
 
 def bus(b, door_open=True):
@@ -292,16 +296,26 @@ def _digit(b, text, center, face, height):
     bpy.data.meshes.remove(me)
 
 
-def route_signs(b, number):
+def route_signs(b, number, front, side):
     """Biển số tuyến: bảng LED đen, chữ số hổ phách — trên kính lái (nhìn +X) và trên cửa khách (nhìn -Y).
-    Toạ độ local của xe; chỉ là con số, không chữ thương hiệu."""
-    hx, hy = BUS_L / 2, BUS_W / 2
+    Toạ độ local của xe; chỉ là con số, không chữ thương hiệu. front = (x, z, nghiêng °) ngay trước kính lái (bảng ngả
+    về sau theo kính), side = (x, y, z) mặt hông trên cửa — lib/bus.py đo trên mô hình."""
     text = str(number)
-    b.box((hx + 0.035, 0, 2.98), (0.03, 0.95, 0.42), "black")
-    _digit(b, text, (hx + 0.052, 0, 2.98), (1, 0), 0.3)
-    dx0, dx1 = hx - 1.9, hx - 0.75
-    b.box(((dx0 + dx1) / 2, -hy - 0.035, 3.16), (0.8, 0.03, 0.34), "black")
-    _digit(b, text, ((dx0 + dx1) / 2, -hy - 0.052, 3.16), (0, -1), 0.24)
+    fx, fz, tilt = front
+    b.box((fx, 0, fz), (0.03, 0.95, 0.42), "black", rot=(0, -tilt, 0))
+    me = text_mesh(text, extrude=0.0, resolution=2)
+    xs = [v.co.x for v in me.vertices]
+    ys = [v.co.y for v in me.vertices]
+    s = 0.3 / (max(ys) - min(ys))
+    cx, cy = (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
+    face_x = Matrix(((0, 0, 1, 0), (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 0, 1)))   # chữ: X → +Y, Y → +Z, pháp tuyến → +X
+    m = (Matrix.Translation((fx, 0, fz)) @ Matrix.Rotation(math.radians(-tilt), 4, "Y") @ Matrix.Translation((0.017, 0, 0))
+         @ face_x @ Matrix.Scale(s, 4) @ Matrix.Translation((-cx, -cy, 0)))
+    b.add_mesh(me, "led_amber", mat="light", matrix=m)
+    bpy.data.meshes.remove(me)
+    sx, sy, sz = side
+    b.box((sx, sy, sz), (0.8, 0.03, 0.34), "black")
+    _digit(b, text, (sx, sy - 0.017, sz), (0, -1), 0.24)
 
 
 def route_map_board(b, width=9.0, height=3.2):

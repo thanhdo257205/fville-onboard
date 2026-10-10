@@ -1,7 +1,7 @@
 {
   "zone": "zone_03_lobby",
   "quality": "low",
-  "triangles_visible": 48366,
+  "triangles_visible": 58918,
   "triangles_collision": 312,
   "materials": [
     "M_brick_tex",
@@ -10,9 +10,11 @@
     "M_gloss",
     "M_light",
     "M_louver_tex",
-    "M_palette"
+    "M_palette",
+    "M_tree_bark",
+    "M_tree_leaf"
   ],
-  "objects": 52,
+  "objects": 64,
   "game_objects": {
     "COL_": [
       "COL_bien_chieu_nghi",
@@ -58,7 +60,9 @@
       "TRIGGER_quay_le_tan",
       "TRIGGER_zone_02_enter",
       "TRIGGER_zone_04_enter"
-    ]
+    ],
+    "CAM_": [],
+    "PATH_": []
   },
   "labels": {
     "INT_quay_le_tan": "Quầy lễ tân",

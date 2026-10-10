@@ -107,14 +107,15 @@ function applyMaterials() {
     if (lm) hasLM = true;
     const params = {
       color: src.color, map: src.map, vertexColors: true,
-      transparent: src.transparent, opacity: src.opacity, side: src.side,
+      transparent: src.transparent, opacity: src.opacity, side: src.side, alphaTest: src.alphaTest || 0,
       lightMap: useLM ? lm : null, lightMapIntensity: 2.2,
     };
     let m;
     if ($("lmonly").checked && lm) m = new THREE.MeshBasicMaterial({ map: lm });   // chỉ xem lightmap
     else if (toon) m = new THREE.MeshToonMaterial({ ...params, gradientMap: grad, emissive: src.emissive, emissiveIntensity: src.emissiveIntensity });
     else m = new THREE.MeshStandardMaterial({ ...params, roughness: src.roughness, metalness: src.metalness, emissive: src.emissive, emissiveIntensity: src.emissiveIntensity });
-    if (src.transparent) m.userData.outlineParameters = { visible: false };
+    // như game (renderer.js makeZoneMaterial): lá cây alpha cắt / chất liệu outline = false → không viền nét
+    if (src.transparent || src.alphaTest > 0 || src.userData?.outline === false) m.userData.outlineParameters = { visible: false };
     o.material = m;
   });
   // có lightmap: nắng/bóng đã nướng → giảm đèn thời gian thực

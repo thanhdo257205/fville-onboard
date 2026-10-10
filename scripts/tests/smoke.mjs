@@ -248,6 +248,28 @@ async function runLook(browser, base, look) {
       const zone = order[zi], next = order[zi + 1], zt = Date.now();
       const required = await ev((z) => __game._game.content.quests.filter((q) => q.zone === z && q.required).map((q) => q.id), zone);
       const ps = { zone, lunch: false, login: false, reloaded: false };
+      // cây / bụi tre mô hình Sketchfab (zone 0–3): bản sao dùng chung lưới đã gộp thành vài mesh (world/zone.js
+      // batchInstances), mỗi bản sao = 1 cây riêng để làm mờ (số cây khác nhau, camera giữa tán → cây mờ), lá cắt alpha
+      // (alphaTest) không viền nét; zone_00 / zone_01: xe bus mô hình (thân + cánh cửa dùng chung lưới, chất liệu M_bus_tex)
+      if (["zone_00", "zone_01", "zone_02", "zone_03"].includes(zone) && look === looks[0]) {
+        const v = await ev((z) => {
+          const g = __game._game, st = g.seeThrough, root = g.zone.root;
+          const merged = [], mats = {};
+          root.traverse((o) => { if (o.isMesh && o.geometry.attributes.plantId) merged.push(o.name); });
+          root.traverse((o) => { if (o.isMesh) mats[o.userData.srcMaterial?.name ?? o.material.name] = o.material; });
+          const leaf = mats.M_tree_leaf;
+          const c = new (g.camera.position.constructor)();
+          const own = new Set(st.canopies.map((x) => x.id)).size === st.canopies.length && st.canopies.every(({ box }) => st.containing(box.getCenter(c)) > 0);
+          const bus = z === "zone_00" ? ["xe_bus_1", "xe_bus_2", "xe_bus_3"] : z === "zone_01" ? ["xe_bus_mesh"] : [];
+          const busOk = bus.every((n) => { const o = root.getObjectByName(n), d = root.getObjectByName(z === "zone_00" ? `${n}_cua` : "xe_bus_cua");
+            let m = null; o?.traverse((x) => { if (x.isMesh && !m) m = x; }); return o && d && m?.userData.srcMaterial?.name === "M_bus_tex"; });
+          return { batched: g.zone.batched, merged, canopies: st.canopies.length, own, busOk,
+            leaf: leaf && { alphaTest: leaf.alphaTest, outline: leaf.userData.outlineParameters?.visible !== false } };
+        }, zone);
+        await check(v.batched > 0 && v.merged.length >= 2 && v.canopies === v.batched && v.own && v.busOk && v.leaf?.alphaTest > 0 && !v.leaf.outline,
+          `${zone}: ${v.batched} cây / bụi tre gộp thành ${v.merged.length} mesh, mỗi bản sao 1 cây (làm mờ riêng), lá alphaTest không viền${zone < "zone_02" ? ", xe bus mô hình" : ""}`,
+          JSON.stringify(v));
+      }
       // zone_05: bàn bi-a (mô hình Sketchfab, node pool_table + 16 bi + cơ, COL): chơi một mình (lời nhắc "Play pool", đánh
       // bằng __game.pool.shoot, bi lăn rồi dừng, rời bàn) và mini-game Một cú bi-a của anh Khang trên bàn thật (thử thách)
       if (zone === "zone_05" && look === looks[0]) {

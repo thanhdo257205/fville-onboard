@@ -96,15 +96,18 @@ export function createLights(scene) {
 }
 
 // Chất liệu bối cảnh: vertex color (đã nhân AO) × texture; bản Cao dùng occlusionTexture (UV 1) làm lightMap.
+// Lá cây (glTF MASK → alphaTest, cắt theo alpha của ảnh, không blend) và chất liệu Blender đặt custom property
+// outline = false (extras → userData): không vẽ viền nét — viền OutlineEffect không đọc alpha, sẽ thành khung đen quanh
+// cả mảng lá.
 export function makeZoneMaterial(src, { lightmap = false } = {}) {
   const lm = lightmap ? src.aoMap || null : null;
   const m = new THREE.MeshToonMaterial({
     color: src.color, map: src.map ?? null, vertexColors: true, gradientMap: toonGradient,
-    transparent: src.transparent, opacity: src.opacity, side: src.side,
+    transparent: src.transparent, opacity: src.opacity, side: src.side, alphaTest: src.alphaTest || 0,
     emissive: src.emissive, emissiveIntensity: src.emissiveIntensity,
     lightMap: lm, lightMapIntensity: LIGHTMAP_INTENSITY,
   });
-  if (src.transparent) m.userData.outlineParameters = { visible: false };
+  if (src.transparent || src.alphaTest > 0 || src.userData?.outline === false) m.userData.outlineParameters = { visible: false };
   return { material: m, hasLightmap: !!lm };
 }
 
