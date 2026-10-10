@@ -703,6 +703,23 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Viewer: áp tint của vai (dùng chung `game/src/characters/tint.js` qua `viewer/tint.js`); `?compare=` nhận cả id vai
     (vd `?compare=thao,le_tan,prajith`: model + tint + tên hiển thị của vai).
 
+### Rà lời thoại, phiếu chơi thử, đề nghị HR (10/10/2026, nhánh `content/playtest-dialogue`)
+- **Lời thoại tiếng Anh** (~870 chuỗi đã đọc, 42 chuỗi sửa: dialogues 24, interactables 7, guidance 4, quests 2, i18n 2,
+  acts / quiz / values 1): mọi câu thoại ≤ 30 từ (trừ câu chuyện tượng Cuder của mentor), câu lựa chọn dài nhất 11 từ;
+  chính tả Mỹ; thống nhất "pool / pool table" (id `billiards` giữ), "FPT Orange Shirt", "FSA Room", "Information Security
+  course", dấu "…"; tên zone 1 "F-Ville Bus Stop" (khác zone 0 "City Pickup Stop"); "Becoming an FSofter"; sửa câu sai chỗ
+  ("Your card opens the gates upstairs" → cửa quẹt thẻ ở cuối hành lang), câu hũ hạt lúa khi đã nhặt đủ. Không đổi id, key,
+  `next`, điều kiện, giá trị, phần thưởng, `draft`. Các câu trích trong `dialogue_huyen.md`, `dialogue_nga.md`, GDD sửa theo.
+  Ghi chép + 10 điểm cần mentor / HR quyết: `docs/dialogue_review.md`.
+- **Phiếu chơi thử** `docs/playtest_form.md`: chuẩn bị, cấu hình máy, lời dặn đọc nguyên văn, quy tắc quan sát (không nhắc);
+  bảng theo dõi zone 0 → 5, 13 mini-game (số lần sai, Skip), lựa chọn gắn 6 giá trị, màn tổng kết; hiệu năng
+  (`benchmark`, `detailLevel` từng zone, FPS bật / tắt Show other players); 8 câu phỏng vấn; cách gộp thành GitHub Issues
+  (nhãn bug / ux / content / perf, P1–P3). Chỉ dùng mã người chơi P1, P2…
+- **`docs/hr_content_request.md`** cập nhật đủ 20 mục [DRAFT] theo game hiện tại (zone 0 → 5), câu tạm lấy đúng chữ trong
+  game, bảng đối chiếu với danh sách cuối file này; tách 3 nội dung không [DRAFT] nên để HR xác nhận (quy định quẹt thẻ, 5
+  việc tuần đầu, checklist ngày đầu).
+- Kiểm tra: test:data đạt; privacy_scan 0 phát hiện.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

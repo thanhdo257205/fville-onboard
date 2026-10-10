@@ -37,8 +37,10 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
-- [ ] P1 Gửi `docs/hr_content_request.md` cho HR (20 mục [DRAFT]) — Phụ trách: —
-- [ ] P1 Chuẩn bị buổi chơi thử: 3–5 người chưa từng thấy game, ít nhất 1 laptop Intel UHD/Iris Xe, phiếu ghi nhận — Phụ trách: —
+- [ ] P1 Gửi `docs/hr_content_request.md` cho HR (20 mục [DRAFT]; file đã cập nhật đủ 20 mục theo game hiện tại, gửi thẳng
+  được — nhánh `content/playtest-dialogue`) — Phụ trách: —
+- [ ] P1 Chuẩn bị buổi chơi thử: 3–5 người chưa từng thấy game, ít nhất 1 laptop Intel UHD/Iris Xe, phiếu ghi nhận (đã có:
+  `docs/playtest_form.md` — theo dõi từng zone, mini-game, hiệu năng, phỏng vấn sau khi chơi, cách gộp thành Issues) — Phụ trách: —
 
 ## 2. Buổi chơi thử với người thật
 
@@ -55,7 +57,11 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [ ] P2 Hỏi mentor: tượng Cuder cầm "pickaxe" (cuốc chim) hay "hoe" (cuốc làm ruộng) — Phụ trách: —
 - [ ] P2 Hỏi mentor / HR tên tiếng Anh chính thức của 6 giá trị (Tôn Đổi Đồng Chí Gương Sáng) — Phụ trách: —
 - [ ] P2 Xin tư liệu chính thức cho Giếng Làng và Phòng Hạt Lúa (như tư liệu tượng Cuder) — Phụ trách: —
-- [ ] P2 Rà lại toàn bộ lời thoại tiếng Anh (chính tả, giọng văn, độ dài câu) — Phụ trách: —
+- [x] P2 Rà lại toàn bộ lời thoại tiếng Anh (chính tả, giọng văn, độ dài câu): 42 chuỗi, mọi câu thoại ≤ 30 từ (trừ câu
+  chuyện tượng Cuder của mentor) — Phụ trách: Claude — nhánh `content/playtest-dialogue`, chi tiết `docs/dialogue_review.md`
+- [ ] P2 Quyết các điểm trong `docs/dialogue_review.md` → "Điểm cần mentor / HR quyết": ô Respect (chữ nói nhường hành khách
+  nhưng chỉ cảm ơn bác tài mới sáng ô), danh hiệu "The Explorer" trùng xu hướng La bàn nghề nghiệp, "an FSofter", tên huy
+  hiệu Teamwork Spirit, Manager chưa có tên… — Phụ trách: —
 - [ ] P3 Xin file logo FPT chính thức từ phòng thương hiệu, thay logo tạm trên áo (prajith, huyen, nga, 3 intern) và mũ — Phụ trách: —
 
 ## 4. Nhân vật và 3D (cần máy có Blender + file gốc)
