@@ -11,6 +11,7 @@
 //   __game.collisionScan()    → quét lỗi va chạm quanh mọi SPAWN_ của zone hiện tại
 //   __game.cameraCeiling()    → camera chơi ngẩng / lùi hết cỡ ở chỗ người chơi + mọi SPAWN_: có lên xuyên trần không
 //   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
+//   __game.gaps(opts)         → chỗ hở của mô hình zone đang chơi: từ chỗ đứng trong nhà bắn tia, tia lọt ra trời (world/gaps.js)
 //   __game.talkCam            → camera hội thoại (đang bật, vai trái/phải, điểm chọn vai, người đối thoại)
 //   __game.guide              → hướng dẫn: mục tiêu, vị trí dấu "!", mũi tên, giờ đứng yên, các lần nhắc; help() = phím H
 //   __game.acts               → 4 Act: Act hiện tại, tiến độ từng Act, các thẻ Act đã hiện; __game.cards = thẻ giữa màn hình gần đây
@@ -27,6 +28,7 @@ import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
 import { penetration } from "./world/collision.js";
+import { findGaps } from "./world/gaps.js";
 import { hud } from "./ui/hud.js";
 import { pickChoice } from "./game/autoplay.js";
 import { tx } from "./content/content.js";
@@ -290,6 +292,10 @@ export function installDebug(game, loop) {
     },
     get info() { const i = game.renderer.info; return { triangles: i.triangles, calls: i.calls }; },
     get seeThrough() { return game.seeThrough.info(); },
+    gaps(opts) {
+      const from = [game.player.position];
+      game.zone.root.traverse((o) => { if (/^(SPAWN|NPC|INT)_/.test(o.name)) from.push(o.getWorldPosition(new THREE.Vector3())); });
+      return findGaps(game.zone, from, { skip: new RegExp(game.seeThrough.cfg.meshes), ...opts }); },
     get talkCam() { const c = game.talkCam; return { active: c.active, goal: c.goal, t: +c.t.toFixed(2), side: c.side, lift: c.lift, pick: c.info, partner: c.partner?.role ?? (c.partner ? "tu" : null) }; },
     get _game() { return game; },          // truy cập nội bộ khi cần soi sâu
     nodes(prefix = "") { return [...game.zone.nodes.keys()].filter((n) => n.startsWith(prefix)); },

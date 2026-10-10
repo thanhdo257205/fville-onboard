@@ -376,6 +376,17 @@ async function runLook(browser, base, look) {
           `${zone}: camera ngẩng / lùi hết cỡ không xuyên trần (${cc.fixed.n} góc ở ${cc.fixed.points} điểm, cao nhất ${cc.fixed.maxUp} m trên chân; chỉ tránh COL_: xuyên ${cc.old.through} lần, cao ${cc.old.maxUp} m)`,
           JSON.stringify(cc));
       }
+      // zone trong nhà: không có chỗ hở (__game.gaps, game/src/world/gaps.js) — từ mọi chỗ đi tới được, tia chéo xuống ở tầm
+      // mắt không lọt ra trời (sàn không áp tường, mặt đất ngoài kính thiếu…). Tia ngang lọt qua cửa mở ra sân là đúng, chỉ in
+      // số. GAP_FREE: zone đã build lại sau khi sửa script; zone_03, zone_05 thêm vào khi build lại trên máy có file gốc Sketchfab
+      if (/^zone_0[345]$/.test(zone) && look === looks[0]) {
+        const GAP_FREE = ["zone_04"];
+        const gp = await ev(() => { const r = __game.gaps(); const n = (k) => r.gaps.filter((g) => g.kind === k).reduce((a, g) => a + g.rays, 0); return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), top: r.gaps.slice(0, 5) }; });
+        const strict = GAP_FREE.includes(zone);
+        await check(gp.spots > 50 && (!strict || gp.down === 0),
+          `${zone}: chỗ hở mô hình — ${gp.spots} chỗ đứng, ${gp.rays} tia: ${gp.down} tia nhìn xuống lọt ra trời, ${gp.flat} tia ngang ra ngoài${strict ? "" : " (chưa build lại, chỉ ghi số)"}`,
+          JSON.stringify(gp));
+      }
       // app My FPT → tab Bản đồ (đã có app từ zone 1): ảnh zone nhìn từ trên tải được, dấu bạn + mục tiêu nằm trong ảnh,
       // đóng app (Tab) → chơi tiếp
       if (/^zone_0[2-5]$/.test(zone) && look === looks[0]) {

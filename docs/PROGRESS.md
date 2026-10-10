@@ -1044,6 +1044,37 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   bước; thử tay trong trình duyệt: bi-a (cơ 1, bi chạm bi 7, băng 8, lỗ 1), cửa quẹt thẻ, cảnh lên / xuống xe (tiếng máy 0 →
   12 m/s rồi 7,4 → 0 khi vào bến).
 
+### Sửa chỗ hở của mô hình bối cảnh zone 3–5 + công cụ dò (11/10/2026, nhánh `fix/scene-gaps`)
+
+- Công cụ dò (không cần Blender): `__game.gaps(opts)` → `game/src/world/gaps.js`. Lưới điểm 1 m trên mọi mặt sàn `COL_` có lưới
+  phía trên (trong nhà / dưới mái), chỉ giữ chỗ đi tới được (lan từ người chơi + `SPAWN_` / `NPC_` / `INT_` sang ô kề, chênh ≤
+  0,7 m, không vướng `COL_`). Từ tầm mắt 1,6 m bắn 24 hướng × 4 góc (0°, −8°, −20°, −40°) vào lưới đục (kính, cây bỏ qua): tia
+  nhìn xuống không chạm gì = thấy trời dưới đường chân trời (luôn là lỗi); tia ngang lọt ra không qua kính = khe / ô mở (cửa ra
+  sân là đúng). Trả về chỗ hở gộp theo ô 1 m (toạ độ glTF). ~0,4 s mỗi zone.
+- Trước khi sửa (tia nhìn xuống lọt ra trời): zone_03 399, zone_04 118, zone_05 304. Ngoài 5 chỗ người dùng chụp còn: góc tây
+  nam vách kính hành lang zone_04 (hở 0,5 m), nhìn chéo qua cửa FSA ở cả zone_04 (thiếu tường bên) lẫn zone_05 (sau cửa không có
+  gì), cuối hành lang Hạt Lúa → zone_04 ở zone_03 (để trống).
+- Sửa script Blender:
+  - `lib/kit.py` `seg_box(…, ext=0.0)`: kéo dài 2 đầu. Lan can / ống giếng trời / thành lỗ thông tầng zone_04 dùng
+    `ext = bề dày / 2 + 2 cm` → góc ngoài kín (thêm 2 cm để mặt đầu đoạn này không trùng mặt bên đoạn kia — trùng thì nhấp
+    nháy). Mặc định 0: zone khác không đổi.
+  - zone_04: sàn + trần hành lang chạy tới chân tường tây (trước đây hở 0,4 m — chỗ 3); vách kính nam bắt đầu từ tường tây;
+    ngoài kính có sân cỏ + dãy nhà đối diện (`building_block` kính xám, không thêm texture); vế 1, chiếu nghỉ, vế 2, chiếu
+    trên kéo tới mặt trong tường sảnh (chỗ 2, 4) + 5 `COL_` mới cho dải 0,4 m đó (`ve_1_mep_tay`, `chieu_nghi_mep_tay`,
+    `chieu_nghi_mep_dong`, `ve_2_mep_dong`, `chieu_tren_mep_dong`; trước đây bước vào khe thì rơi xuống sàn), `COL_` cũ giữ
+    nguyên; 2 tường bên chỗ nhìn qua cửa FSA.
+  - zone_03: sân gạch hai bên bậc chiếu nghỉ (y −5,5…−3) và phía tây sảnh (chỗ 5); tường + cửa trắng 2 cánh cuối hành lang sang
+    zone_04 (trùng `COL_hanh_lang_cuoi`).
+  - zone_05: đoạn sàn tầng trên zone_04 (6 × 9,2 m), tường, trần sau cửa FSA.
+- Build lại **zone_04** bản Thấp (máy này có Blender 5.2): `check_glb` 0 lỗi, 9.220 → 11.632 tam giác hiện, 99 → 112 KB; build
+  lại bản cũ trước khi sửa ra cùng số node / tam giác (lệch 8 byte). Dò lại: 0 tia lọt (lưới 1 m) và 0 / 419.328 tia (lưới
+  0,5 m, 48 hướng, 6 góc).
+- **zone_03, zone_05 chưa build lại**: cần file gốc Sketchfab (cây; bàn bi-a, máy tính) — máy này không có. Đã dựng thử bản
+  thay các mô hình đó bằng chỗ trống (không commit): 0 tia nhìn xuống lọt ra trời ở cả hai (zone_03 còn tia ngang qua cửa chính
+  ra sân — đúng). Build lại trên máy có file gốc rồi thêm vào `GAP_FREE` trong smoke.
+- Smoke: bước mới "chỗ hở mô hình" ở zone 3–5 (ngoại hình đầu): zone trong `GAP_FREE` (hiện `zone_04`) phải 0 tia nhìn xuống
+  lọt ra trời, zone khác chỉ ghi số. `--zone 3`, `--zone 4`, `--zone 5` đạt; test:data đạt.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
