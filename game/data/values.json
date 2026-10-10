@@ -3,39 +3,39 @@
   "badge": {
     "reward": "huy_hieu_6_gia_tri",
     "name": "Tôn Đổi Đồng Chí Gương Sáng",
-    "subtitle": { "en": "FPT's six core values. Each slot lights up when you act in that spirit today." },
+    "subtitle": { "en": "FPT's six core values. Each slot lights up when you act in that spirit today.", "vi": "Sáu giá trị cốt lõi của FPT. Mỗi ô sẽ sáng lên khi hôm nay bạn hành động theo tinh thần đó." },
     "draft": true
   },
   "values": [
     {
-      "id": "respect", "vi": "Tôn trọng", "name": { "en": "Respect" }, "active": true, "zone": "zone_01", "draft": true,
-      "how": { "en": "Thank the bus driver and let others get off first." },
-      "hint": { "en": "Small courtesies count — like thanking the bus driver." }
+      "id": "respect", "vi": "Tôn trọng", "name": { "en": "Respect", "vi": "Tôn trọng" }, "active": true, "zone": "zone_01", "draft": true,
+      "how": { "en": "Thank the bus driver and let others get off first.", "vi": "Cảm ơn anh tài xế và nhường người khác đi trước." },
+      "hint": { "en": "Small courtesies count — like thanking the bus driver.", "vi": "Những phép lịch sự nhỏ cũng đáng quý — như cảm ơn anh tài xế." }
     },
     {
-      "id": "innovation", "vi": "Đổi mới", "name": { "en": "Innovation" }, "active": true, "zone": "zone_04", "draft": true,
-      "how": { "en": "Set an extra learning goal of your own in the FSA Room." },
-      "hint": { "en": "Try setting a learning goal beyond the suggested path." }
+      "id": "innovation", "vi": "Đổi mới", "name": { "en": "Innovation", "vi": "Đổi mới" }, "active": true, "zone": "zone_04", "draft": true,
+      "how": { "en": "Set an extra learning goal of your own in the FSA Room.", "vi": "Tự đặt thêm một mục tiêu học tập ở Phòng FSA." },
+      "hint": { "en": "Try setting a learning goal beyond the suggested path.", "vi": "Thử đặt một mục tiêu học tập ngoài lộ trình gợi ý." }
     },
     {
-      "id": "teamwork", "vi": "Đồng đội", "name": { "en": "Teamwork" }, "active": true, "zone": "zone_04", "draft": true,
-      "how": { "en": "Message Ms. Nga in the app when Tú's card turns red." },
-      "hint": { "en": "When a friend is stuck, find the right way to help." }
+      "id": "teamwork", "vi": "Đồng đội", "name": { "en": "Teamwork", "vi": "Đồng đội" }, "active": true, "zone": "zone_04", "draft": true,
+      "how": { "en": "Message Ms. Nga in the app when Tú's card turns red.", "vi": "Nhắn chị Nga qua app khi thẻ của Tú báo đỏ." },
+      "hint": { "en": "When a friend is stuck, find the right way to help.", "vi": "Khi bạn bè gặp khó, hãy tìm cách giúp cho đúng." }
     },
     {
-      "id": "fairness", "vi": "Chí công", "name": { "en": "Fairness" }, "active": true, "zone": "zone_03", "draft": true,
-      "how": { "en": "Take the lost wallet to reception instead of leaving it." },
-      "hint": { "en": "Found something that isn't yours? Hand it in." }
+      "id": "fairness", "vi": "Chí công", "name": { "en": "Fairness", "vi": "Chí công" }, "active": true, "zone": "zone_03", "draft": true,
+      "how": { "en": "Take the lost wallet to reception instead of leaving it.", "vi": "Mang chiếc ví bị đánh rơi tới lễ tân thay vì để nguyên đó." },
+      "hint": { "en": "Found something that isn't yours? Hand it in.", "vi": "Nhặt được đồ không phải của mình? Hãy nộp lại." }
     },
     {
-      "id": "role_model", "vi": "Gương mẫu", "name": { "en": "Role Model" }, "active": true, "zone": "zone_04", "draft": true,
-      "how": { "en": "Don't let a stranger follow you through the card gate; point them to reception." },
-      "hint": { "en": "Security rules apply to everyone, even when it feels awkward." }
+      "id": "role_model", "vi": "Gương mẫu", "name": { "en": "Role Model", "vi": "Gương mẫu" }, "active": true, "zone": "zone_04", "draft": true,
+      "how": { "en": "Don't let a stranger follow you through the card gate; point them to reception.", "vi": "Không để người lạ đi theo mình qua cửa quẹt thẻ; chỉ họ tới lễ tân." },
+      "hint": { "en": "Security rules apply to everyone, even when it feels awkward.", "vi": "Quy định an ninh áp dụng cho tất cả mọi người, kể cả khi thấy hơi ngại." }
     },
     {
-      "id": "wisdom", "vi": "Sáng suốt", "name": { "en": "Wisdom" }, "active": true, "zone": "zone_05", "draft": true,
-      "how": { "en": "Put your first-week tasks in a sensible order with the manager." },
-      "hint": { "en": "Deadlines first, nice-to-haves last." }
+      "id": "wisdom", "vi": "Sáng suốt", "name": { "en": "Wisdom", "vi": "Sáng suốt" }, "active": true, "zone": "zone_05", "draft": true,
+      "how": { "en": "Put your first-week tasks in a sensible order with the manager.", "vi": "Sắp xếp việc tuần đầu cho hợp lý cùng chị quản lý." },
+      "hint": { "en": "Deadlines first, nice-to-haves last.", "vi": "Việc có deadline làm trước, việc không bắt buộc để sau." }
     }
   ]
 }

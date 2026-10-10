@@ -7,7 +7,8 @@
       "node": "INT_bien_xe_1",
       "radius": 3.0,
       "prompt": {
-        "en": "Read the route sign"
+        "en": "Read the route sign",
+        "vi": "Đọc biển tuyến xe"
       },
       "action": "dialogue:bien_xe_1",
       "_ly_do": "Biển số tuyến trên kính lái (cao 3 m), người chơi đứng trên vỉa hè cách ~2 m."
@@ -17,7 +18,8 @@
       "node": "INT_bien_xe_2",
       "radius": 3.0,
       "prompt": {
-        "en": "Read the route sign"
+        "en": "Read the route sign",
+        "vi": "Đọc biển tuyến xe"
       },
       "action": "dialogue:bien_xe_2"
     },
@@ -26,7 +28,8 @@
       "node": "INT_bien_xe_3",
       "radius": 3.0,
       "prompt": {
-        "en": "Read the route sign"
+        "en": "Read the route sign",
+        "vi": "Đọc biển tuyến xe"
       },
       "action": "dialogue:bien_xe_3"
     },
@@ -35,7 +38,8 @@
       "node": "NPC_tai_xe_1",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the driver"
+        "en": "Talk to the driver",
+        "vi": "Nói chuyện với anh tài xế"
       },
       "action": "dialogue:tai_xe_1_hoi"
     },
@@ -44,7 +48,8 @@
       "node": "NPC_tai_xe_3",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the driver"
+        "en": "Talk to the driver",
+        "vi": "Nói chuyện với anh tài xế"
       },
       "action": "dialogue:tai_xe_3_hoi"
     },
@@ -53,7 +58,8 @@
       "node": "NPC_thao_cua_xe",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to Ms. Huyền"
+        "en": "Talk to Ms. Huyền",
+        "vi": "Nói chuyện với chị Huyền"
       },
       "action": "dialogue:thao_bus"
     },
@@ -62,7 +68,8 @@
       "node": "NPC_hanh_khach",
       "radius": 1.8,
       "prompt": {
-        "en": "Talk to the passenger"
+        "en": "Talk to the passenger",
+        "vi": "Nói chuyện với hành khách"
       },
       "action": "dialogue:hanh_khach",
       "hide_if": {
@@ -77,7 +84,8 @@
       "actor": "tu",
       "radius": 2.2,
       "prompt": {
-        "en": "Say hi"
+        "en": "Say hi",
+        "vi": "Chào hỏi"
       },
       "action": "dialogue:tu_bat_chuyen",
       "requires": {
@@ -91,7 +99,8 @@
       "zone": "zone_01",
       "node": "NPC_dong_nghiep_don",
       "prompt": {
-        "en": "Talk to Ms. Huyền"
+        "en": "Talk to Ms. Huyền",
+        "vi": "Nói chuyện với chị Huyền"
       },
       "action": "dialogue:thao_main"
     },
@@ -101,7 +110,8 @@
       "at": [-6.0, 0.15, -4.55],
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the bus driver"
+        "en": "Talk to the bus driver",
+        "vi": "Nói chuyện với anh tài xế"
       },
       "action": "dialogue:tai_xe_thanks",
       "_ly_do": "Bác tài đứng trên vỉa hè cạnh cửa xe (characters.json roles.tai_xe: near_node NPC_tai_xe + offset) → điểm tương tác = chỗ bác đứng (at), bán kính như NPC đứng ngoài khác."
@@ -111,7 +121,8 @@
       "node": "INT_ban_do_tuyen_xe",
       "area": "TRIGGER_ban_do_tuyen_xe",
       "prompt": {
-        "en": "Read the route map"
+        "en": "Read the route map",
+        "vi": "Xem bản đồ tuyến xe"
       },
       "action": "dialogue:route_map"
     },
@@ -119,7 +130,8 @@
       "zone": "zone_01",
       "node": "INT_xe_bus",
       "prompt": {
-        "en": "Look for Tú's backpack"
+        "en": "Look for Tú's backpack",
+        "vi": "Tìm balo của Tú"
       },
       "action": "pickup:balo_tu",
       "requires": {
@@ -140,7 +152,8 @@
       "actor": "tu",
       "radius": 2.0,
       "prompt": {
-        "en": "Give Tú the backpack"
+        "en": "Give Tú the backpack",
+        "vi": "Đưa balo cho Tú"
       },
       "action": "dialogue:tu_backpack_thanks",
       "requires": {
@@ -158,7 +171,8 @@
       "node": "INT_cong_fville",
       "area": "TRIGGER_cong_fville",
       "prompt": {
-        "en": "Take a check-in photo"
+        "en": "Take a check-in photo",
+        "vi": "Chụp ảnh check-in"
       },
       "action": "dialogue:checkin_intro",
       "hide_if": {
@@ -174,7 +188,8 @@
       "area": "TRIGGER_gieng_lang",
       "radius": 2.2,
       "prompt": {
-        "en": "Draw water from the well"
+        "en": "Draw water from the well",
+        "vi": "Kéo nước ở giếng"
       },
       "action": "dialogue:well_intro",
       "hide_if": {
@@ -188,7 +203,8 @@
       "node": "INT_tuong_cuder",
       "area": "TRIGGER_tuong_cuder",
       "prompt": {
-        "en": "Read about the Cuder Statue"
+        "en": "Read about the Cuder Statue",
+        "vi": "Đọc về tượng Cuder"
       },
       "action": "dialogue:cuder_intro",
       "hide_if": {
@@ -203,7 +219,8 @@
       "area": "TRIGGER_quay_le_tan",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to Ms. Nga"
+        "en": "Talk to Ms. Nga",
+        "vi": "Nói chuyện với chị Nga"
       },
       "action": "dialogue:le_tan_main"
     },
@@ -212,7 +229,8 @@
       "node": "INT_hat_lua",
       "area": "TRIGGER_hat_lua",
       "prompt": {
-        "en": "Explore the Rice Grain Room"
+        "en": "Explore the Rice Grain Room",
+        "vi": "Khám phá Phòng Hạt Lúa"
       },
       "action": "dialogue:timeline_intro",
       "hide_if": {
@@ -229,7 +247,8 @@
       "radius": 1.6,
       "model": "wallet",
       "prompt": {
-        "en": "Pick up the wallet"
+        "en": "Pick up the wallet",
+        "vi": "Nhặt chiếc ví"
       },
       "action": "dialogue:wallet_found",
       "hide_if": {
@@ -249,7 +268,8 @@
       "model": "jar",
       "radius": 1.8,
       "prompt": {
-        "en": "Look at the glass jar"
+        "en": "Look at the glass jar",
+        "vi": "Xem hũ thủy tinh"
       },
       "action": "dialogue:jar_look",
       "_ly_do": "Hũ thủy tinh (GDD: Phòng Hạt Lúa hiện số hạt lúa vàng đã nhặt) — code đặt cạnh lối vào phòng, trong hũ có đúng số hạt đã nhặt."
@@ -259,7 +279,8 @@
       "node": "INT_cua_quet_the",
       "area": "TRIGGER_cua_quet_the",
       "prompt": {
-        "en": "Tap your employee card"
+        "en": "Tap your employee card",
+        "vi": "Quẹt thẻ nhân viên"
       },
       "action": "dialogue:card_gate",
       "requires": {
@@ -279,7 +300,8 @@
       "node": "INT_cua_phong_fsa",
       "area": "TRIGGER_cua_phong_fsa",
       "prompt": {
-        "en": "Plan your learning path"
+        "en": "Plan your learning path",
+        "vi": "Lên lộ trình học"
       },
       "action": "dialogue:fsa_visit",
       "hide_if": {
@@ -294,7 +316,8 @@
       "node": "NPC_mentor",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to Prajith"
+        "en": "Talk to Prajith",
+        "vi": "Nói chuyện với anh Prajith"
       },
       "action": "dialogue:mentor_main",
       "_ly_do": "GDD zone 5: Gặp Prajith — 4 câu định hướng nghề nghiệp (minigames.career_compass) → La bàn nghề nghiệp; Kết nối +5."
@@ -304,7 +327,8 @@
       "node": "NPC_manager",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the manager"
+        "en": "Talk to the manager",
+        "vi": "Nói chuyện với chị quản lý"
       },
       "action": "dialogue:manager_main",
       "requires": {
@@ -319,7 +343,8 @@
       "node": "NPC_manager",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the manager"
+        "en": "Talk to the manager",
+        "vi": "Nói chuyện với chị quản lý"
       },
       "action": "dialogue:manager_wait",
       "hide_if": {
@@ -334,7 +359,8 @@
       "node": "NPC_dong_nghiep_1",
       "radius": 2.4,
       "prompt": {
-        "en": "Say hello to Lan"
+        "en": "Say hello to Lan",
+        "vi": "Chào chị Lan"
       },
       "action": "dialogue:lan_hello",
       "_ly_do": "Ngồi ở phía bắc cụm bàn: người chơi nói chuyện được qua mặt bàn (cách ~2,1 m) hoặc đi vòng ra sau."
@@ -344,7 +370,8 @@
       "node": "NPC_dong_nghiep_2",
       "radius": 2.0,
       "prompt": {
-        "en": "Say hello to Minh"
+        "en": "Say hello to Minh",
+        "vi": "Chào anh Minh"
       },
       "action": "dialogue:minh_hello"
     },
@@ -353,7 +380,8 @@
       "node": "NPC_dong_nghiep_3",
       "radius": 2.4,
       "prompt": {
-        "en": "Say hello to Hà"
+        "en": "Say hello to Hà",
+        "vi": "Chào chị Hà"
       },
       "action": "dialogue:ha_hello",
       "_ly_do": "Ngồi ở phía bắc cụm bàn: người chơi nói chuyện được qua mặt bàn (cách ~2,1 m) hoặc đi vòng ra sau."
@@ -363,7 +391,8 @@
       "node": "NPC_ban_bi_a",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to Khang"
+        "en": "Talk to Khang",
+        "vi": "Nói chuyện với anh Khang"
       },
       "action": "dialogue:khang_main",
       "_ly_do": "GDD zone 5: anh Khang — trò chuyện + mini-game tùy chọn Một cú bi-a (minigames.billiards), thêm 1 lời khuyên; Kết nối +5. Không bắt buộc."
@@ -374,7 +403,8 @@
       "radius": 1.75,
       "action": "pool:play",
       "prompt": {
-        "en": "Play pool"
+        "en": "Play pool",
+        "vi": "Chơi bi-a"
       },
       "_ly_do": "Bàn bi-a (data/pool.json): chơi một mình — xếp bi, phá bi, đếm cú / bi vào lỗ (game/src/pool/table.js). Điểm tương tác = tâm bàn (node pool_table), bán kính phủ hai đầu bàn dài 2,5 m; đứng gần anh Khang hơn thì lời nhắc là của anh Khang."
     },
@@ -383,7 +413,8 @@
       "node": "INT_ban_lam_viec",
       "area": "TRIGGER_ban_lam_viec",
       "prompt": {
-        "en": "Sit at your desk"
+        "en": "Sit at your desk",
+        "vi": "Ngồi vào bàn làm việc"
       },
       "action": "dialogue:desk_main",
       "requires": {
@@ -398,7 +429,8 @@
       "node": "INT_ban_lam_viec",
       "area": "TRIGGER_ban_lam_viec",
       "prompt": {
-        "en": "Look at the desk"
+        "en": "Look at the desk",
+        "vi": "Xem bàn làm việc"
       },
       "action": "dialogue:desk_wait",
       "hide_if": {
@@ -415,7 +447,8 @@
       "model": "nameplate",
       "radius": 0,
       "prompt": {
-        "en": ""
+        "en": "",
+        "vi": ""
       },
       "action": "none",
       "_ly_do": "Bảng tên trên bàn intern (trong GLB là tấm trắng để trống, gộp vào ban_lam_viec_mesh): code đặt tấm chữ sát mặt tấm trắng (face = pháp tuyến mặt tấm, toạ độ glTF), hiện tên người chơi + vị trí khi có cờ nameplate_on (sau mini-game Đăng nhập). Toạ độ suy từ scripts/blender/zone_05.py (bàn yaw 180, tấm ở (0; −0,66; 0,8) nghiêng −30°). action none: chỉ để nhìn, không bấm E.",
@@ -432,60 +465,76 @@
     "install_app": {
       "kind": "install_app",
       "title": {
-        "en": "Install My FPT"
+        "en": "Install My FPT",
+        "vi": "Cài My FPT"
       },
       "line": {
-        "en": "Tap the three setup steps in the right order — or press 1, 2, 3."
+        "en": "Tap the three setup steps in the right order — or press 1, 2, 3.",
+        "vi": "Bấm ba bước cài đặt theo đúng thứ tự (hoặc nhấn phím 1–3)."
       },
       "ready": {
-        "en": "Ready to set up — which step comes first?"
+        "en": "Ready to set up — which step comes first?",
+        "vi": "Sẵn sàng cài đặt — bước nào làm trước?"
       },
       "steps": [
         {
           "text": {
-            "en": "Download the My FPT app"
+            "en": "Download the My FPT app",
+            "vi": "Tải app My FPT"
           },
           "doing": {
-            "en": "Downloading My FPT…"
+            "en": "Downloading My FPT…",
+            "vi": "Đang tải My FPT…"
           },
           "after": {
-            "en": "My FPT downloaded ✓ — what's next?"
+            "en": "My FPT downloaded ✓ — what's next?",
+            "vi": "Đã tải My FPT ✓ — tiếp theo là gì?"
           },
           "hint": {
-            "en": "Hint: you need the app on your phone before anything else."
+            "en": "Hint: you need the app on your phone before anything else.",
+            "vi": "Gợi ý: phải có app trên điện thoại trước đã."
           }
         },
         {
           "text": {
-            "en": "Log in with your intern code"
+            "en": "Log in with your intern code",
+            "vi": "Đăng nhập bằng mã intern"
           },
           "doing": {
-            "en": "Logging in with code FV-2026…"
+            "en": "Logging in with code FV-2026…",
+            "vi": "Đang đăng nhập bằng mã FV-2026…"
           },
           "after": {
-            "en": "Logged in as {player} ✓ — one more step!"
+            "en": "Logged in as {player} ✓ — one more step!",
+            "vi": "Đã đăng nhập với tên {player} ✓ — còn một bước nữa!"
           },
           "hint": {
-            "en": "Hint: the app is installed — now log in with the intern code from Ms. Nga's message."
+            "en": "Hint: the app is installed — now log in with the intern code from Ms. Nga's message.",
+            "vi": "Gợi ý: app đã cài xong — giờ đăng nhập bằng mã intern trong tin nhắn của chị Nga."
           }
         },
         {
           "text": {
-            "en": "Turn on notifications"
+            "en": "Turn on notifications",
+            "vi": "Bật thông báo"
           },
           "doing": {
-            "en": "Turning on notifications…"
+            "en": "Turning on notifications…",
+            "vi": "Đang bật thông báo…"
           },
           "after": {
-            "en": "Notifications on ✓"
+            "en": "Notifications on ✓",
+            "vi": "Đã bật thông báo ✓"
           },
           "hint": {
-            "en": "Hint: notifications come last — after you've logged in."
+            "en": "Hint: notifications come last — after you've logged in.",
+            "vi": "Gợi ý: bật thông báo là bước cuối — sau khi đã đăng nhập."
           }
         }
       ],
       "done": {
-        "en": "My FPT is ready!"
+        "en": "My FPT is ready!",
+        "vi": "My FPT đã sẵn sàng!"
       },
       "result": {
         "reward": "app_my_fpt",
@@ -497,10 +546,12 @@
     "checkin_photo": {
       "kind": "photo_checkin",
       "title": {
-        "en": "Check-in Photo"
+        "en": "Check-in Photo",
+        "vi": "Ảnh check-in"
       },
       "line": {
-        "en": "Pick a pose (1–3) and take the photo (Space). Tú jumps in if {tu_he}'s with you."
+        "en": "Pick a pose (1–3) and take the photo (Space). Tú jumps in if {tu_he}'s with you.",
+        "vi": "Chọn dáng (1–3) rồi chụp ảnh (Space). Nếu Tú đang đi cùng, Tú sẽ chen vào ảnh."
       },
       "anchor": "INT_cong_fville",
       "stand_offset_x": -0.5,
@@ -512,21 +563,26 @@
       ],
       "pose_names": {
         "idle": {
-          "en": "Classic"
+          "en": "Classic",
+          "vi": "Tự nhiên"
         },
         "wave": {
-          "en": "Wave"
+          "en": "Wave",
+          "vi": "Vẫy tay"
         },
         "cheer": {
-          "en": "Cheer"
+          "en": "Cheer",
+          "vi": "Ăn mừng"
         }
       },
       "idle": {
         "shoot": {
-          "en": "Pick a pose with 1–3, then press Space (or Take photo)."
+          "en": "Pick a pose with 1–3, then press Space (or Take photo).",
+          "vi": "Chọn dáng bằng phím 1–3, rồi nhấn Space (hoặc bấm Chụp ảnh)."
         },
         "keep": {
-          "en": "Happy with it? Press Enter to keep it, or R to retake."
+          "en": "Happy with it? Press Enter to keep it, or R to retake.",
+          "vi": "Ưng chưa? Nhấn Enter để giữ ảnh, hoặc R để chụp lại."
         }
       },
       "camera": {
@@ -541,10 +597,12 @@
       "size": [480, 360],
       "max_kb": 60,
       "caption": {
-        "en": "{player} · F-Ville · Day 1"
+        "en": "{player} · F-Ville · Day 1",
+        "vi": "{player} · F-Ville · Ngày 1"
       },
       "tu_hint": {
-        "en": "Tú squeezes into the shot!"
+        "en": "Tú squeezes into the shot!",
+        "vi": "Tú chen vào khung hình!"
       },
       "wear": "ao_cam",
       "result": {
@@ -559,38 +617,47 @@
     "well": {
       "kind": "well",
       "title": {
-        "en": "Draw Water"
+        "en": "Draw Water",
+        "vi": "Kéo nước"
       },
       "line": {
-        "en": "Press Space (or Pull!) when the marker is inside the green zone — three buckets."
+        "en": "Press Space (or Pull!) when the marker is inside the green zone — three buckets.",
+        "vi": "Nhấn Space (hoặc bấm Kéo!) khi vạch nằm trong vùng xanh — kéo đủ ba gàu."
       },
       "speed": [0.55, 0.7, 0.85],
       "zone_width": [0.22, 0.18, 0.15],
       "assist_width": 0.12,
       "hint_early": {
-        "en": "Too early — wait until the marker reaches the green zone."
+        "en": "Too early — wait until the marker reaches the green zone.",
+        "vi": "Sớm quá — đợi vạch chạy vào vùng xanh đã."
       },
       "hint_late": {
-        "en": "A little late — pull while the marker is inside the green zone."
+        "en": "A little late — pull while the marker is inside the green zone.",
+        "vi": "Hơi muộn rồi — kéo khi vạch còn nằm trong vùng xanh nhé."
       },
       "idle": {
         "pull": {
-          "en": "Watch the marker: press Space (or Pull!) the moment it's inside the green zone."
+          "en": "Watch the marker: press Space (or Pull!) the moment it's inside the green zone.",
+          "vi": "Nhìn vạch: nhấn Space (hoặc bấm Kéo!) ngay khi vạch vào vùng xanh."
         },
         "read": {
-          "en": "Read the note, then press Enter (or Next) for the next bucket."
+          "en": "Read the note, then press Enter (or Next) for the next bucket.",
+          "vi": "Đọc câu chuyện nhỏ, rồi nhấn Enter (hoặc bấm Tiếp) để kéo gàu sau."
         }
       },
       "draft_snippets": true,
       "snippets": [
         {
-          "en": "F-Ville is a \"tech village\": a green campus with open spaces, where people know their neighbors and help each other."
+          "en": "F-Ville is a \"tech village\": a green campus with open spaces, where people know their neighbors and help each other.",
+          "vi": "F-Ville là một \"làng công nghệ\": khuôn viên xanh, nhiều không gian mở, nơi hàng xóm biết nhau và giúp đỡ nhau."
         },
         {
-          "en": "The village well is where the community gathers — to share stories, and to look out for one another."
+          "en": "The village well is where the community gathers — to share stories, and to look out for one another.",
+          "vi": "Giếng làng là nơi cả làng tụ họp — để kể cho nhau nghe đủ chuyện, và để quan tâm đến nhau."
         },
         {
-          "en": "\"Làng Công Nghệ\" means building world-class software while keeping Vietnamese village roots close."
+          "en": "\"Làng Công Nghệ\" means building world-class software while keeping Vietnamese village roots close.",
+          "vi": "\"Làng Công Nghệ\" là làm ra phần mềm tầm cỡ thế giới mà vẫn giữ trọn nếp làng quê Việt Nam."
         }
       ],
       "result": {
@@ -604,17 +671,21 @@
       "quiz": "cuder",
       "per_correct": 5,
       "title": {
-        "en": "The Cuder Statue"
+        "en": "The Cuder Statue",
+        "vi": "Tượng Cuder"
       },
       "line": {
-        "en": "Read the story, then answer three questions (1–4 or click)."
+        "en": "Read the story, then answer three questions (1–4 or click).",
+        "vi": "Đọc câu chuyện, rồi trả lời ba câu hỏi (phím 1–4 hoặc bấm chuột)."
       },
       "idle": {
         "story": {
-          "en": "Read the story, then press Enter (or Start the quiz)."
+          "en": "Read the story, then press Enter (or Start the quiz).",
+          "vi": "Đọc câu chuyện, rồi nhấn Enter (hoặc bấm Bắt đầu trả lời)."
         },
         "next": {
-          "en": "Press Enter (or Next) for the next question."
+          "en": "Press Enter (or Next) for the next question.",
+          "vi": "Nhấn Enter (hoặc bấm Tiếp) để sang câu tiếp theo."
         }
       },
       "result": {
@@ -626,86 +697,107 @@
     "profile_check": {
       "kind": "profile_check",
       "title": {
-        "en": "Check Your Profile"
+        "en": "Check Your Profile",
+        "vi": "Kiểm tra hồ sơ"
       },
       "line": {
-        "en": "One detail on this form is wrong — click it (or press 1–5), then pick the right value."
+        "en": "One detail on this form is wrong — click it (or press 1–5), then pick the right value.",
+        "vi": "Có một thông tin trên tờ khai bị sai — bấm vào dòng đó (hoặc nhấn 1–5), rồi chọn lại cho đúng."
       },
       "form_title": {
-        "en": "New Intern Profile"
+        "en": "New Intern Profile",
+        "vi": "Hồ sơ intern mới"
       },
       "fields": [
         {
           "key": "name",
           "label": {
-            "en": "Full name"
+            "en": "Full name",
+            "vi": "Họ và tên"
           }
         },
         {
           "key": "position",
           "label": {
-            "en": "Intern position"
+            "en": "Intern position",
+            "vi": "Vị trí intern"
           }
         },
         {
           "key": "office",
           "label": {
-            "en": "Office"
+            "en": "Office",
+            "vi": "Nơi làm việc"
           },
           "value": {
-            "en": "F-Ville 1, Hòa Lạc"
+            "en": "F-Ville 1, Hòa Lạc",
+            "vi": "F-Ville 1, Hòa Lạc"
           }
         },
         {
           "key": "bus",
           "label": {
-            "en": "Morning shuttle"
+            "en": "Morning shuttle",
+            "vi": "Xe buổi sáng"
           }
         },
         {
           "key": "start",
           "label": {
-            "en": "First day"
+            "en": "First day",
+            "vi": "Ngày bắt đầu"
           },
           "value": {
-            "en": "Today"
+            "en": "Today",
+            "vi": "Hôm nay"
           }
         }
       ],
       "bus_value": {
-        "en": "Bus No. 2"
+        "en": "Bus No. 2",
+        "vi": "Xe số 2"
       },
       "bus_wrong": {
-        "en": "Bus No. 3"
+        "en": "Bus No. 3",
+        "vi": "Xe số 3"
       },
       "bus_options": [
         {
-          "en": "Bus No. 1"
+          "en": "Bus No. 1",
+          "vi": "Xe số 1"
         },
         {
-          "en": "Bus No. 2"
+          "en": "Bus No. 2",
+          "vi": "Xe số 2"
         },
         {
-          "en": "Bus No. 3"
+          "en": "Bus No. 3",
+          "vi": "Xe số 3"
         }
       ],
       "hint_find": {
-        "en": "That one looks right. Check what you know for sure: your position and the bus you took this morning."
+        "en": "That one looks right. Check what you know for sure: your position and the bus you took this morning.",
+        "vi": "Dòng này đúng rồi. Soát lại điều bạn biết chắc: vị trí intern và xe bạn đi sáng nay."
       },
       "idle_find": {
-        "en": "Compare each line with what you know: your name, your intern position and the bus you took this morning. Click the one that's wrong."
+        "en": "Compare each line with what you know: your name, your intern position and the bus you took this morning. Click the one that's wrong.",
+        "vi": "So từng dòng với những gì bạn biết: tên, vị trí intern và chiếc xe bạn đi sáng nay. Bấm vào dòng bị sai."
       },
       "hint_position": {
-        "en": "Not quite — which position did you sign up for?"
+        "en": "Not quite — which position did you sign up for?",
+        "vi": "Chưa đúng — bạn đăng ký vị trí nào nhỉ?"
       },
       "hint_bus": {
-        "en": "Not quite — which bus did you ride this morning?"
+        "en": "Not quite — which bus did you ride this morning?",
+        "vi": "Chưa đúng — sáng nay bạn đi xe nào nhỉ?"
       },
       "found": {
-        "en": "Good catch! Now pick the right value."
+        "en": "Good catch! Now pick the right value.",
+        "vi": "Tinh mắt đấy! Giờ chọn lại thông tin đúng."
       },
       "done": {
-        "en": "All fixed — thank you!"
+        "en": "All fixed — thank you!",
+        "vi": "Sửa xong hết rồi — cảm ơn nhé!"
       },
       "result": {},
       "_ly_do": "Chỗ sai chọn ngẫu nhiên giữa vị trí intern (người chơi chọn ở màn tạo nhân vật) và số xe đã đi sáng nay (xe số 2)."
@@ -713,10 +805,12 @@
     "id_photo": {
       "kind": "photo_id",
       "title": {
-        "en": "ID Photo"
+        "en": "ID Photo",
+        "vi": "Ảnh thẻ"
       },
       "line": {
-        "en": "Pick an expression (1–3) and take your card photo (Space)."
+        "en": "Pick an expression (1–3) and take your card photo (Space).",
+        "vi": "Chọn biểu cảm (1–3) rồi chụp ảnh thẻ (Space)."
       },
       "poses": [
         "idle",
@@ -725,21 +819,26 @@
       ],
       "pose_names": {
         "idle": {
-          "en": "Neutral"
+          "en": "Neutral",
+          "vi": "Tự nhiên"
         },
         "cheer": {
-          "en": "Big smile"
+          "en": "Big smile",
+          "vi": "Cười tươi"
         },
         "think": {
-          "en": "Thoughtful"
+          "en": "Thoughtful",
+          "vi": "Trầm ngâm"
         }
       },
       "idle": {
         "shoot": {
-          "en": "Pick an expression with 1–3, then press Space (or Take photo)."
+          "en": "Pick an expression with 1–3, then press Space (or Take photo).",
+          "vi": "Chọn biểu cảm bằng phím 1–3, rồi nhấn Space (hoặc bấm Chụp ảnh)."
         },
         "keep": {
-          "en": "Happy with it? Press Enter to keep it, or R to retake."
+          "en": "Happy with it? Press Enter to keep it, or R to retake.",
+          "vi": "Ưng chưa? Nhấn Enter để giữ ảnh, hoặc R để chụp lại."
         }
       },
       "camera": {
@@ -759,59 +858,71 @@
       "kind": "timeline",
       "draft": true,
       "title": {
-        "en": "FPT Timeline"
+        "en": "FPT Timeline",
+        "vi": "Dòng thời gian FPT"
       },
       "line": {
-        "en": "Put the five milestones in order, oldest at the top: drag the cards (or ↑/↓ to pick, Shift+↑/↓ to move), then Check."
+        "en": "Put the five milestones in order, oldest at the top: drag the cards (or ↑/↓ to pick, Shift+↑/↓ to move), then Check.",
+        "vi": "Xếp năm cột mốc theo thứ tự, mốc sớm nhất ở trên: kéo thả các thẻ (hoặc ↑/↓ để chọn, Shift+↑/↓ để di chuyển), rồi bấm Kiểm tra."
       },
       "idle": {
-        "en": "Drag the cards so the oldest is at the top (or ↑/↓ to pick, Shift+↑/↓ to move), then press Check."
+        "en": "Drag the cards so the oldest is at the top (or ↑/↓ to pick, Shift+↑/↓ to move), then press Check.",
+        "vi": "Kéo thả các thẻ để mốc sớm nhất nằm trên cùng (hoặc ↑/↓ để chọn, Shift+↑/↓ để di chuyển), rồi bấm Kiểm tra."
       },
       "items": [
         {
           "text": {
-            "en": "FPT is founded"
+            "en": "FPT is founded",
+            "vi": "FPT được thành lập"
           },
           "year": 1988
         },
         {
           "text": {
-            "en": "FPT Software is founded"
+            "en": "FPT Software is founded",
+            "vi": "FPT Software được thành lập"
           },
           "year": 1999
         },
         {
           "text": {
-            "en": "FPT University opens its doors"
+            "en": "FPT University opens its doors",
+            "vi": "Trường Đại học FPT ra đời"
           },
           "year": 2006
         },
         {
           "text": {
-            "en": "FPT celebrates its 30th birthday"
+            "en": "FPT celebrates its 30th birthday",
+            "vi": "FPT kỷ niệm 30 năm thành lập"
           },
           "year": 2018
         },
         {
           "text": {
-            "en": "FPT Software celebrates its 20th birthday"
+            "en": "FPT Software celebrates its 20th birthday",
+            "vi": "FPT Software kỷ niệm 20 năm thành lập"
           },
           "year": 2019
         }
       ],
       "hints": [
         {
-          "en": "Hint: the cards in green are already in the right place. FPT itself came first."
+          "en": "Hint: the cards in green are already in the right place. FPT itself came first.",
+          "vi": "Gợi ý: thẻ màu xanh là thẻ đã đúng chỗ. FPT ra đời đầu tiên."
         },
         {
-          "en": "Hint: FPT Software was born 11 years after FPT. The two birthdays come last."
+          "en": "Hint: FPT Software was born 11 years after FPT. The two birthdays come last.",
+          "vi": "Gợi ý: FPT Software ra đời sau FPT 11 năm. Hai dịp kỷ niệm nằm cuối cùng."
         },
         {
-          "en": "Hint: a university needs a company behind it — FPT University came after FPT Software."
+          "en": "Hint: a university needs a company behind it — FPT University came after FPT Software.",
+          "vi": "Gợi ý: trường đại học cần có công ty đứng sau — Đại học FPT ra đời sau FPT Software."
         }
       ],
       "done": {
-        "en": "Perfect order! Like grains of rice, every milestone adds up to a harvest."
+        "en": "Perfect order! Like grains of rice, every milestone adds up to a harvest.",
+        "vi": "Đúng thứ tự rồi! Như từng hạt lúa, mỗi cột mốc góp phần làm nên mùa vàng."
       },
       "result": {
         "quest": "z3_rice_room",
@@ -823,181 +934,223 @@
       "kind": "learning_path",
       "draft": true,
       "title": {
-        "en": "My Learning Path"
+        "en": "My Learning Path",
+        "vi": "Lộ trình học"
       },
       "line": {
-        "en": "Put the three courses on your first-week calendar, basics first: drag a card onto the calendar, or click it / press 1–3 to fill the next free day."
+        "en": "Put the three courses on your first-week calendar, basics first: drag a card onto the calendar, or click it / press 1–3 to fill the next free day.",
+        "vi": "Xếp ba khóa học vào lịch tuần đầu, khóa cơ bản trước: kéo thả thẻ vào lịch, hoặc bấm vào thẻ / nhấn 1–3 để điền vào ngày trống tiếp theo."
       },
       "days": [
         {
-          "en": "Mon"
+          "en": "Mon",
+          "vi": "Thứ Hai"
         },
         {
-          "en": "Wed"
+          "en": "Wed",
+          "vi": "Thứ Tư"
         },
         {
-          "en": "Fri"
+          "en": "Fri",
+          "vi": "Thứ Sáu"
         }
       ],
       "courses": {
         "developer": [
           {
             "title": {
-              "en": "Git & Code Review Basics"
+              "en": "Git & Code Review Basics",
+              "vi": "Git & Code Review cơ bản"
             },
             "tag": {
-              "en": "Start here"
+              "en": "Start here",
+              "vi": "Bắt đầu từ đây"
             }
           },
           {
             "title": {
-              "en": "Clean Code in Practice"
+              "en": "Clean Code in Practice",
+              "vi": "Clean Code trong thực tế"
             },
             "tag": {
-              "en": "After: Git & Code Review"
+              "en": "After: Git & Code Review",
+              "vi": "Sau: Git & Code Review"
             }
           },
           {
             "title": {
-              "en": "Unit Testing 101"
+              "en": "Unit Testing 101",
+              "vi": "Nhập môn Unit Testing"
             },
             "tag": {
-              "en": "After: Clean Code"
+              "en": "After: Clean Code",
+              "vi": "Sau: Clean Code"
             }
           }
         ],
         "tester": [
           {
             "title": {
-              "en": "Software Testing Fundamentals"
+              "en": "Software Testing Fundamentals",
+              "vi": "Kiểm thử phần mềm cơ bản"
             },
             "tag": {
-              "en": "Start here"
+              "en": "Start here",
+              "vi": "Bắt đầu từ đây"
             }
           },
           {
             "title": {
-              "en": "Writing Good Test Cases"
+              "en": "Writing Good Test Cases",
+              "vi": "Viết test case tốt"
             },
             "tag": {
-              "en": "After: Testing Fundamentals"
+              "en": "After: Testing Fundamentals",
+              "vi": "Sau: Kiểm thử phần mềm"
             }
           },
           {
             "title": {
-              "en": "Intro to Test Automation"
+              "en": "Intro to Test Automation",
+              "vi": "Nhập môn kiểm thử tự động"
             },
             "tag": {
-              "en": "After: Good Test Cases"
+              "en": "After: Good Test Cases",
+              "vi": "Sau: Viết test case"
             }
           }
         ],
         "ba": [
           {
             "title": {
-              "en": "Business Analysis Basics"
+              "en": "Business Analysis Basics",
+              "vi": "Phân tích nghiệp vụ cơ bản"
             },
             "tag": {
-              "en": "Start here"
+              "en": "Start here",
+              "vi": "Bắt đầu từ đây"
             }
           },
           {
             "title": {
-              "en": "Writing User Stories"
+              "en": "Writing User Stories",
+              "vi": "Viết user story"
             },
             "tag": {
-              "en": "After: BA Basics"
+              "en": "After: BA Basics",
+              "vi": "Sau: Phân tích nghiệp vụ"
             }
           },
           {
             "title": {
-              "en": "Running a Requirements Workshop"
+              "en": "Running a Requirements Workshop",
+              "vi": "Tổ chức workshop lấy yêu cầu"
             },
             "tag": {
-              "en": "After: User Stories"
+              "en": "After: User Stories",
+              "vi": "Sau: User story"
             }
           }
         ],
         "designer": [
           {
             "title": {
-              "en": "Design Thinking Basics"
+              "en": "Design Thinking Basics",
+              "vi": "Design Thinking cơ bản"
             },
             "tag": {
-              "en": "Start here"
+              "en": "Start here",
+              "vi": "Bắt đầu từ đây"
             }
           },
           {
             "title": {
-              "en": "UI Patterns & Accessibility"
+              "en": "UI Patterns & Accessibility",
+              "vi": "UI pattern & khả năng tiếp cận"
             },
             "tag": {
-              "en": "After: Design Thinking"
+              "en": "After: Design Thinking",
+              "vi": "Sau: Design Thinking"
             }
           },
           {
             "title": {
-              "en": "Prototyping Your First Flow"
+              "en": "Prototyping Your First Flow",
+              "vi": "Làm prototype cho luồng đầu tiên"
             },
             "tag": {
-              "en": "After: UI Patterns"
+              "en": "After: UI Patterns",
+              "vi": "Sau: UI pattern"
             }
           }
         ]
       },
       "hints": [
         {
-          "en": "Hint: start with the basics — the card marked \"Start here\"."
+          "en": "Hint: start with the basics — the card marked \"Start here\".",
+          "vi": "Gợi ý: bắt đầu từ khóa cơ bản — thẻ ghi \"Bắt đầu từ đây\"."
         },
         {
-          "en": "Hint: next comes the course that builds on {prev}."
+          "en": "Hint: next comes the course that builds on {prev}.",
+          "vi": "Gợi ý: tiếp theo là khóa học sau {prev}."
         },
         {
-          "en": "Hint: the last course builds on {prev}."
+          "en": "Hint: the last course builds on {prev}.",
+          "vi": "Gợi ý: khóa cuối là khóa học sau {prev}."
         }
       ],
       "placed": {
-        "en": "{course} → {day} ✓"
+        "en": "{course} → {day} ✓",
+        "vi": "{course} → {day} ✓"
       },
       "idle": {
         "place": {
-          "en": "Look at the small line on each card: it says which course it builds on. Put the next one on {day}."
+          "en": "Look at the small line on each card: it says which course it builds on. Put the next one on {day}.",
+          "vi": "Xem dòng chữ nhỏ trên mỗi thẻ: nó cho biết khóa đó học sau khóa nào. Đặt khóa tiếp theo vào {day}."
         },
         "goal": {
-          "en": "Pick a goal of your own (1–3), or press 4 for \"Not now\"."
+          "en": "Pick a goal of your own (1–3), or press 4 for \"Not now\".",
+          "vi": "Chọn một mục tiêu của riêng bạn (1–3), hoặc nhấn 4 (\"Chưa cần\")."
         }
       },
       "goal_question": {
-        "en": "Nice plan! Want to add a learning goal of your own, beyond the suggested path?"
+        "en": "Nice plan! Want to add a learning goal of your own, beyond the suggested path?",
+        "vi": "Kế hoạch hay lắm! Bạn có muốn thêm một mục tiêu học tập của riêng mình, ngoài lộ trình gợi ý không?"
       },
       "goals": [
         {
           "id": "english",
           "text": {
-            "en": "Practice English for work — 15 minutes a day"
+            "en": "Practice English for work — 15 minutes a day",
+            "vi": "Luyện tiếng Anh cho công việc — 15 phút mỗi ngày"
           }
         },
         {
           "id": "reading",
           "text": {
-            "en": "Read one tech article every week"
+            "en": "Read one tech article every week",
+            "vi": "Mỗi tuần đọc một bài viết công nghệ"
           }
         },
         {
           "id": "club",
           "text": {
-            "en": "Join an FSA learning club"
+            "en": "Join an FSA learning club",
+            "vi": "Tham gia một câu lạc bộ học tập của FSA"
           }
         }
       ],
       "goal_skip": {
-        "en": "Not now"
+        "en": "Not now",
+        "vi": "Chưa cần"
       },
       "done_goal": {
-        "en": "Plan saved — with a goal of your own. That's the spirit!"
+        "en": "Plan saved — with a goal of your own. That's the spirit!",
+        "vi": "Đã lưu kế hoạch, kèm mục tiêu riêng của bạn. Tinh thần tốt lắm!"
       },
       "done": {
-        "en": "Plan saved to your Learning Notebook."
+        "en": "Plan saved to your Learning Notebook.",
+        "vi": "Đã lưu kế hoạch vào Sổ tay học tập."
       },
       "result": {
         "reward": "so_tay_hoc_tap",
@@ -1009,26 +1162,31 @@
     "career_compass": {
       "kind": "compass",
       "title": {
-        "en": "Career Compass"
+        "en": "Career Compass",
+        "vi": "La bàn nghề nghiệp"
       },
       "line": {
-        "en": "Four quick questions from Prajith — there are no right or wrong answers. Click an answer or press 1 or 2."
+        "en": "Four quick questions from Prajith — there are no right or wrong answers. Click an answer or press 1 or 2.",
+        "vi": "Bốn câu hỏi nhanh của anh Prajith — không có câu trả lời đúng hay sai. Bấm chọn câu trả lời hoặc nhấn phím 1, 2."
       },
       "questions": [
         {
           "q": {
-            "en": "Which sounds more fun?"
+            "en": "Which sounds more fun?",
+            "vi": "Bạn thấy việc nào vui hơn?"
           },
           "options": [
             {
               "text": {
-                "en": "Tracking down a tricky bug"
+                "en": "Tracking down a tricky bug",
+                "vi": "Truy tìm một con bug khó nhằn"
               },
               "trait": "solver"
             },
             {
               "text": {
-                "en": "Building a brand-new feature"
+                "en": "Building a brand-new feature",
+                "vi": "Xây dựng một tính năng hoàn toàn mới"
               },
               "trait": "builder"
             }
@@ -1036,18 +1194,21 @@
         },
         {
           "q": {
-            "en": "You're stuck on a problem. You…"
+            "en": "You're stuck on a problem. You…",
+            "vi": "Khi bị bí một vấn đề, bạn sẽ…"
           },
           "options": [
             {
               "text": {
-                "en": "Talk it through with a teammate"
+                "en": "Talk it through with a teammate",
+                "vi": "Trao đổi với một đồng đội"
               },
               "trait": "people"
             },
             {
               "text": {
-                "en": "Try a few experiments on your own first"
+                "en": "Try a few experiments on your own first",
+                "vi": "Tự thử vài cách trước đã"
               },
               "trait": "explorer"
             }
@@ -1055,18 +1216,21 @@
         },
         {
           "q": {
-            "en": "Which day sounds better?"
+            "en": "Which day sounds better?",
+            "vi": "Bạn thích một ngày như thế nào hơn?"
           },
           "options": [
             {
               "text": {
-                "en": "A workshop with customers and the team"
+                "en": "A workshop with customers and the team",
+                "vi": "Một buổi workshop với khách hàng và cả team"
               },
               "trait": "people"
             },
             {
               "text": {
-                "en": "A quiet day finishing something you planned"
+                "en": "A quiet day finishing something you planned",
+                "vi": "Một ngày yên tĩnh làm cho xong việc mình đã định"
               },
               "trait": "builder"
             }
@@ -1074,18 +1238,21 @@
         },
         {
           "q": {
-            "en": "When you learn a new tool, you…"
+            "en": "When you learn a new tool, you…",
+            "vi": "Khi học một công cụ mới, bạn sẽ…"
           },
           "options": [
             {
               "text": {
-                "en": "Read how it works under the hood"
+                "en": "Read how it works under the hood",
+                "vi": "Tìm hiểu xem bên trong nó hoạt động thế nào"
               },
               "trait": "solver"
             },
             {
               "text": {
-                "en": "Play with it and see what it can do"
+                "en": "Play with it and see what it can do",
+                "vi": "Mày mò thử xem nó làm được những gì"
               },
               "trait": "explorer"
             }
@@ -1095,119 +1262,151 @@
       "traits": {
         "builder": {
           "name": {
-            "en": "The Builder"
+            "en": "The Builder",
+            "vi": "Người kiến tạo"
           },
           "desc": {
-            "en": "You love seeing something new take shape."
+            "en": "You love seeing something new take shape.",
+            "vi": "Bạn thích nhìn một thứ mới dần thành hình."
           }
         },
         "solver": {
           "name": {
-            "en": "The Problem Solver"
+            "en": "The Problem Solver",
+            "vi": "Người gỡ rối"
           },
           "desc": {
-            "en": "You enjoy getting to the bottom of things."
+            "en": "You enjoy getting to the bottom of things.",
+            "vi": "Bạn thích tìm ra tận gốc rễ của mọi chuyện."
           }
         },
         "people": {
           "name": {
-            "en": "The Team Player"
+            "en": "The Team Player",
+            "vi": "Người làm việc nhóm"
           },
           "desc": {
-            "en": "You think best together with others."
+            "en": "You think best together with others.",
+            "vi": "Bạn nảy ra ý hay nhất khi được làm cùng mọi người."
           }
         },
         "explorer": {
           "name": {
-            "en": "The Explorer"
+            "en": "The Explorer",
+            "vi": "Người khám phá"
           },
           "desc": {
-            "en": "You learn fastest by trying things out."
+            "en": "You learn fastest by trying things out.",
+            "vi": "Bạn học nhanh nhất bằng cách tự tay thử."
           }
         }
       },
       "directions": {
         "developer": {
           "builder": {
-            "en": "Ship small features end to end, then grow into system design."
+            "en": "Ship small features end to end, then grow into system design.",
+            "vi": "Làm trọn những tính năng nhỏ từ đầu tới cuối, rồi dần tiến lên thiết kế hệ thống."
           },
           "solver": {
-            "en": "Dig into debugging and performance, and learn to write great tests."
+            "en": "Dig into debugging and performance, and learn to write great tests.",
+            "vi": "Đào sâu debug và tối ưu hiệu năng, đồng thời học cách viết test thật tốt."
           },
           "people": {
-            "en": "Pair-program often and learn code review — a path towards tech lead."
+            "en": "Pair-program often and learn code review — a path towards tech lead.",
+            "vi": "Thường xuyên lập trình cặp (pair programming) và học cách review code — con đường hướng tới tech lead."
           },
           "explorer": {
-            "en": "Try new frameworks in small side projects and share what you learn."
+            "en": "Try new frameworks in small side projects and share what you learn.",
+            "vi": "Thử framework mới qua những dự án phụ nho nhỏ và chia sẻ lại những gì học được."
           }
         },
         "tester": {
           "builder": {
-            "en": "Build automated test suites and grow into test architecture."
+            "en": "Build automated test suites and grow into test architecture.",
+            "vi": "Xây dựng các bộ test tự động, rồi dần tiến lên kiến trúc kiểm thử."
           },
           "solver": {
-            "en": "Become the go-to person for tricky bugs and root-cause analysis."
+            "en": "Become the go-to person for tricky bugs and root-cause analysis.",
+            "vi": "Trở thành người ai cũng tìm đến khi gặp bug khó và cần tìm nguyên nhân gốc."
           },
           "people": {
-            "en": "Work closely with developers and users — a path towards QA lead."
+            "en": "Work closely with developers and users — a path towards QA lead.",
+            "vi": "Làm việc sát với developer và người dùng — con đường hướng tới QA lead."
           },
           "explorer": {
-            "en": "Try exploratory testing and new test tools, then share your findings."
+            "en": "Try exploratory testing and new test tools, then share your findings.",
+            "vi": "Thử exploratory testing và các công cụ kiểm thử mới, rồi chia sẻ những gì phát hiện được."
           }
         },
         "ba": {
           "builder": {
-            "en": "Turn ideas into clear user stories and prototypes."
+            "en": "Turn ideas into clear user stories and prototypes.",
+            "vi": "Biến ý tưởng thành user story và prototype rõ ràng."
           },
           "solver": {
-            "en": "Get great at process analysis and finding what's really going wrong."
+            "en": "Get great at process analysis and finding what's really going wrong.",
+            "vi": "Rèn kỹ năng phân tích quy trình và tìm ra chỗ thực sự đang trục trặc."
           },
           "people": {
-            "en": "Run workshops with customers — a path towards product owner."
+            "en": "Run workshops with customers — a path towards product owner.",
+            "vi": "Tổ chức workshop với khách hàng — con đường hướng tới product owner."
           },
           "explorer": {
-            "en": "Explore data and new domains, and bring back fresh questions."
+            "en": "Explore data and new domains, and bring back fresh questions.",
+            "vi": "Khám phá dữ liệu và những lĩnh vực mới, rồi mang về những câu hỏi mới mẻ."
           }
         },
         "designer": {
           "builder": {
-            "en": "Take features from sketch to polished UI and build a design system."
+            "en": "Take features from sketch to polished UI and build a design system.",
+            "vi": "Đưa tính năng từ bản phác thảo tới giao diện hoàn chỉnh, và xây dựng một design system."
           },
           "solver": {
-            "en": "Dig into usability problems with research and testing."
+            "en": "Dig into usability problems with research and testing.",
+            "vi": "Đào sâu vào các vấn đề trải nghiệm người dùng bằng nghiên cứu và kiểm thử."
           },
           "people": {
-            "en": "Run design reviews and user interviews with the team."
+            "en": "Run design reviews and user interviews with the team.",
+            "vi": "Tổ chức design review và phỏng vấn người dùng cùng team."
           },
           "explorer": {
-            "en": "Prototype bold ideas and try new tools and styles."
+            "en": "Prototype bold ideas and try new tools and styles.",
+            "vi": "Làm prototype cho những ý tưởng táo bạo, thử công cụ và phong cách mới."
           }
         }
       },
       "card_title": {
-        "en": "Your Career Compass"
+        "en": "Your Career Compass",
+        "vi": "La bàn nghề nghiệp của bạn"
       },
       "card_note": {
-        "en": "Saved in My FPT → Bag. Prajith will go through it with you again in a month."
+        "en": "Saved in My FPT → Bag. Prajith will go through it with you again in a month.",
+        "vi": "Đã lưu trong My FPT → Túi đồ. Một tháng nữa anh Prajith sẽ cùng bạn xem lại."
       },
       "done": {
-        "en": "Career Compass saved!"
+        "en": "Career Compass saved!",
+        "vi": "Đã lưu La bàn nghề nghiệp!"
       },
       "idle": {
-        "en": "Pick the answer that sounds more like you — either is fine. Click it or press 1 or 2."
+        "en": "Pick the answer that sounds more like you — either is fine. Click it or press 1 or 2.",
+        "vi": "Chọn câu trả lời giống bạn hơn — câu nào cũng được. Bấm vào câu đó hoặc nhấn phím 1, 2."
       },
       "messages": {
         "builder": {
-          "en": "{player}, you light up when you're building something. Pick one small thing next week and take it all the way to done — I'll be right behind you. — Prajith"
+          "en": "{player}, you light up when you're building something. Pick one small thing next week and take it all the way to done — I'll be right behind you. — Prajith",
+          "vi": "{player} này, em hào hứng hẳn lên mỗi khi được tự tay làm ra thứ gì đó. Tuần sau em chọn một việc nhỏ và làm tới nơi tới chốn nhé — anh sẽ hỗ trợ em. — Prajith"
         },
         "solver": {
-          "en": "{player}, you like getting to the bottom of things — that's a superpower here. Bring me your trickiest question next week! — Prajith"
+          "en": "{player}, you like getting to the bottom of things — that's a superpower here. Bring me your trickiest question next week! — Prajith",
+          "vi": "{player} này, em thích truy đến tận gốc vấn đề — ở team mình, đó là siêu năng lực đấy. Tuần sau mang câu hỏi hóc búa nhất tới hỏi anh nhé! — Prajith"
         },
         "people": {
-          "en": "{player}, you think best with others around you. Don't be shy in meetings — your questions will help the whole team. — Prajith"
+          "en": "{player}, you think best with others around you. Don't be shy in meetings — your questions will help the whole team. — Prajith",
+          "vi": "{player} này, em làm việc tốt nhất khi có mọi người cùng bàn bạc. Đừng ngại lên tiếng trong các buổi họp — câu hỏi của em sẽ giúp cả team. — Prajith"
         },
         "explorer": {
-          "en": "{player}, you learn by trying. Keep experimenting, and share what you find with the team — we'll all learn from it. — Prajith"
+          "en": "{player}, you learn by trying. Keep experimenting, and share what you find with the team — we'll all learn from it. — Prajith",
+          "vi": "{player} này, em học qua việc làm thử. Cứ thử nghiệm tiếp, rồi chia sẻ điều em tìm ra với team — ai cũng sẽ học được từ đó. — Prajith"
         }
       },
       "result": {
@@ -1218,86 +1417,107 @@
     "priorities": {
       "kind": "priorities",
       "title": {
-        "en": "Plan Your First Week"
+        "en": "Plan Your First Week",
+        "vi": "Lên kế hoạch tuần đầu"
       },
       "line": {
-        "en": "Put the five tasks in order, most urgent at the top: drag the cards (or ↑/↓ to pick, Shift+↑/↓ to move), then Check."
+        "en": "Put the five tasks in order, most urgent at the top: drag the cards (or ↑/↓ to pick, Shift+↑/↓ to move), then Check.",
+        "vi": "Xếp năm việc theo thứ tự, gấp nhất ở trên: kéo thả các thẻ (hoặc ↑/↓ để chọn, Shift+↑/↓ để di chuyển), rồi bấm Kiểm tra."
       },
       "items": [
         {
           "id": "infosec",
           "text": {
-            "en": "Complete the mandatory Information Security course"
+            "en": "Complete the mandatory Information Security course",
+            "vi": "Hoàn thành khóa học bắt buộc về An toàn thông tin"
           },
           "tag": {
-            "en": "Due today"
+            "en": "Due today",
+            "vi": "Hạn hôm nay"
           },
           "rank": "first"
         },
         {
           "id": "setup",
           "text": {
-            "en": "Set up your laptop and work tools"
+            "en": "Set up your laptop and work tools",
+            "vi": "Cài đặt laptop và công cụ làm việc"
           },
           "tag": {
-            "en": "This week"
+            "en": "This week",
+            "vi": "Trong tuần"
           }
         },
         {
           "id": "docs",
           "text": {
-            "en": "Read the project documents"
+            "en": "Read the project documents",
+            "vi": "Đọc tài liệu dự án"
           },
           "tag": {
-            "en": "This week"
+            "en": "This week",
+            "vi": "Trong tuần"
           }
         },
         {
           "id": "code",
           "text": {
-            "en": "Look through the project source code"
+            "en": "Look through the project source code",
+            "vi": "Xem qua mã nguồn dự án"
           },
           "tag": {
-            "en": "This week"
+            "en": "This week",
+            "vi": "Trong tuần"
           }
         },
         {
           "id": "club",
           "text": {
-            "en": "Sign up for a sports club"
+            "en": "Sign up for a sports club",
+            "vi": "Đăng ký một câu lạc bộ thể thao"
           },
           "tag": {
-            "en": "Anytime"
+            "en": "Anytime",
+            "vi": "Lúc nào cũng được"
           },
           "rank": "last"
         }
       ],
       "top": {
-        "en": "Most urgent"
+        "en": "Most urgent",
+        "vi": "Gấp nhất"
       },
       "bottom": {
-        "en": "Can wait"
+        "en": "Can wait",
+        "vi": "Chưa gấp"
       },
       "feedback_first": {
-        "en": "Manager: \"Check the tags — one of these is due today. That one should come first.\""
+        "en": "Manager: \"Check the tags — one of these is due today. That one should come first.\"",
+        "vi": "Chị quản lý: \"Em xem các nhãn nhé — có một việc hạn hôm nay. Việc đó phải làm trước.\""
       },
       "feedback_last": {
-        "en": "Manager: \"The sports club is fun, but it can wait until you've settled in — put it at the bottom.\""
+        "en": "Manager: \"The sports club is fun, but it can wait until you've settled in — put it at the bottom.\"",
+        "vi": "Chị quản lý: \"Câu lạc bộ thể thao vui đấy, nhưng đợi em quen việc rồi hẵng tính — để xuống cuối nhé.\""
       },
       "retry": {
-        "en": "You can reorder once more, then press Check."
+        "en": "You can reorder once more, then press Check.",
+        "vi": "Bạn được xếp lại thêm một lần — xong thì bấm Kiểm tra."
       },
       "done_good": {
-        "en": "A sensible plan: deadlines first, nice-to-haves last!"
+        "en": "A sensible plan: deadlines first, nice-to-haves last!",
+        "vi": "Kế hoạch hợp lý: việc có hạn làm trước, việc không gấp để sau!"
       },
       "done_ok": {
-        "en": "Plan saved. Next time, put what's due today first."
+        "en": "Plan saved. Next time, put what's due today first.",
+        "vi": "Đã lưu kế hoạch. Lần sau nhớ xếp việc hạn hôm nay lên đầu nhé."
       },
       "idle": {
-        "en": "Read the tags on the cards: what's due today? What can wait?"
+        "en": "Read the tags on the cards: what's due today? What can wait?",
+        "vi": "Đọc nhãn trên các thẻ: việc nào hạn hôm nay? Việc nào chưa gấp?"
       },
       "mission": {
-        "en": "Complete the mandatory Information Security course — due today"
+        "en": "Complete the mandatory Information Security course — due today",
+        "vi": "Hoàn thành khóa học bắt buộc về An toàn thông tin — hạn hôm nay"
       },
       "result": {
         "reward": "nhiem_vu_dau_tien"
@@ -1307,31 +1527,40 @@
     "billiards": {
       "kind": "pool_shot",
       "title": {
-        "en": "One Shot"
+        "en": "One Shot",
+        "vi": "Một cú bi-a"
       },
       "line": {
-        "en": "Aim with the mouse (or A/D), hold the left button or Space to build power, then let go to shoot. Sink the orange ball — you have 3 shots!"
+        "en": "Aim with the mouse (or A/D), hold the left button or Space to build power, then let go to shoot. Sink the orange ball — you have 3 shots!",
+        "vi": "Ngắm bằng chuột (hoặc A/D), giữ chuột trái hoặc Space để nạp lực, thả ra để đánh. Đưa bi cam vào lỗ — bạn có 3 cú!"
       },
       "idle": {
-        "en": "Turn until the line from the white ball hits the orange ball and points it at a pocket. Hold to build power, let go to shoot."
+        "en": "Turn until the line from the white ball hits the orange ball and points it at a pocket. Hold to build power, let go to shoot.",
+        "vi": "Xoay hướng ngắm tới khi đường kẻ từ bi trắng chạm bi cam và chỉ bi cam về một lỗ. Giữ để nạp lực, thả ra để đánh."
       },
       "miss": {
-        "en": "Missed — line it up and have another go!"
+        "en": "Missed — line it up and have another go!",
+        "vi": "Trượt rồi — ngắm lại và thử lần nữa nhé!"
       },
       "scratch": {
-        "en": "Oops, the white ball went in. Try again!"
+        "en": "Oops, the white ball went in. Try again!",
+        "vi": "Ối, bi trắng vào lỗ mất rồi. Thử lại nào!"
       },
       "potted": {
-        "en": "In the pocket! Nice shot!"
+        "en": "In the pocket! Nice shot!",
+        "vi": "Vào lỗ! Cú đánh đẹp lắm!"
       },
       "assist": {
-        "en": "Follow the green line — it shows a shot that works."
+        "en": "Follow the green line — it shows a shot that works.",
+        "vi": "Ngắm theo đường kẻ xanh — đánh theo hướng đó là vào."
       },
       "reset": {
-        "en": "Three shots gone — let's set the balls up again. Three more tries!"
+        "en": "Three shots gone — let's set the balls up again. Three more tries!",
+        "vi": "Hết ba cú rồi — xếp lại bi nào. Thêm ba cú nữa!"
       },
       "shots_left": {
-        "en": "Shots left: {n}"
+        "en": "Shots left: {n}",
+        "vi": "Còn {n} cú"
       },
       "setup": {
         "ball": 5,
@@ -1350,90 +1579,112 @@
       "kind": "login",
       "draft": true,
       "title": {
-        "en": "First Login"
+        "en": "First Login",
+        "vi": "Đăng nhập lần đầu"
       },
       "line": {
-        "en": "Create a password that ticks every rule, then turn on two-factor authentication."
+        "en": "Create a password that ticks every rule, then turn on two-factor authentication.",
+        "vi": "Tạo một mật khẩu đạt đủ mọi quy tắc, rồi bật xác thực hai lớp."
       },
       "rules": [
         {
           "id": "len",
           "text": {
-            "en": "At least 12 characters"
+            "en": "At least 12 characters",
+            "vi": "Ít nhất 12 ký tự"
           }
         },
         {
           "id": "case",
           "text": {
-            "en": "Upper- and lowercase letters"
+            "en": "Upper- and lowercase letters",
+            "vi": "Có cả chữ hoa và chữ thường"
           }
         },
         {
           "id": "digit",
           "text": {
-            "en": "At least one number"
+            "en": "At least one number",
+            "vi": "Có ít nhất một chữ số"
           }
         },
         {
           "id": "symbol",
           "text": {
-            "en": "At least one symbol (! @ # - …)"
+            "en": "At least one symbol (! @ # - …)",
+            "vi": "Có ít nhất một ký hiệu (! @ # - …)"
           }
         },
         {
           "id": "name",
           "text": {
-            "en": "Doesn't contain your name"
+            "en": "Doesn't contain your name",
+            "vi": "Không chứa tên của bạn"
           }
         }
       ],
       "placeholder": {
-        "en": "New password"
+        "en": "New password",
+        "vi": "Mật khẩu mới"
       },
       "strength": [
         {
-          "en": "Too weak"
+          "en": "Too weak",
+          "vi": "Quá yếu"
         },
         {
-          "en": "Weak"
+          "en": "Weak",
+          "vi": "Yếu"
         },
         {
-          "en": "Fair"
+          "en": "Fair",
+          "vi": "Tạm được"
         },
         {
-          "en": "Good"
+          "en": "Good",
+          "vi": "Khá"
         },
         {
-          "en": "Strong"
+          "en": "Strong",
+          "vi": "Mạnh"
         }
       ],
       "login_btn": {
-        "en": "Set password"
+        "en": "Set password",
+        "vi": "Đặt mật khẩu"
       },
       "not_yet": {
-        "en": "Not quite — every rule needs a tick."
+        "en": "Not quite — every rule needs a tick.",
+        "vi": "Chưa đạt — mật khẩu chưa đáp ứng đủ mọi quy tắc."
       },
       "suggest": {
-        "en": "Tip: join a few words with symbols and a number, e.g. Orange-Rice-Field-26!"
+        "en": "Tip: join a few words with symbols and a number, e.g. Orange-Rice-Field-26!",
+        "vi": "Mẹo: ghép vài từ bằng ký hiệu và thêm một con số, ví dụ Ao-Cam-Lua-Vang-26!"
       },
       "twofa_title": {
-        "en": "Two-factor authentication"
+        "en": "Two-factor authentication",
+        "vi": "Xác thực hai lớp"
       },
       "twofa_desc": {
-        "en": "Each login will also need a code from the authenticator app on your phone."
+        "en": "Each login will also need a code from the authenticator app on your phone.",
+        "vi": "Mỗi lần đăng nhập sẽ cần thêm một mã từ app xác thực trên điện thoại của bạn."
       },
       "twofa_on": {
-        "en": "Turn on 2FA"
+        "en": "Turn on 2FA",
+        "vi": "Bật 2FA"
       },
       "done": {
-        "en": "All set — your account is protected with 2FA."
+        "en": "All set — your account is protected with 2FA.",
+        "vi": "Xong rồi — tài khoản của bạn đã được bảo vệ bằng 2FA."
       },
       "idle": {
         "pw": {
-          "en": "Type a password that ticks every rule — a few words joined with symbols and a number works well."
+          "en": "Type a password that ticks every rule — a few words joined with symbols and a number works well.",
+          "vi": "Gõ một mật khẩu đạt đủ mọi quy tắc — ghép vài từ bằng ký hiệu và thêm một con số là ổn."
         },
         "twofa": {
-          "en": "Now turn on two-factor authentication (click the switch or press Space)."
+          "en": "Now turn on two-factor authentication (click the switch or press Space).",
+          "vi": "Giờ bật xác thực hai lớp (bấm vào công tắc hoặc nhấn Space)."
         }
       },
       "result": {
@@ -1447,16 +1698,20 @@
     "day_checklist": {
       "kind": "day_checklist",
       "title": {
-        "en": "Your First Day"
+        "en": "Your First Day",
+        "vi": "Ngày đầu tiên của bạn"
       },
       "line": {
-        "en": "Your first-day checklist ticks itself off. Press Enter (or Done) when you're ready."
+        "en": "Your first-day checklist ticks itself off. Press Enter (or Done) when you're ready.",
+        "vi": "Các mục trong checklist ngày đầu sẽ tự được đánh dấu. Nhấn Enter (hoặc bấm Xong) khi đã sẵn sàng."
       },
       "done_btn": {
-        "en": "Done"
+        "en": "Done",
+        "vi": "Xong"
       },
       "idle": {
-        "en": "Press Enter or click Done to finish your first day."
+        "en": "Press Enter or click Done to finish your first day.",
+        "vi": "Nhấn Enter hoặc bấm Xong để kết thúc ngày đầu tiên."
       },
       "result": {},
       "_ly_do": "GDD zone 5: xem checklist ngày đầu tự tick (theo 4 Act). Mục bàn làm việc tick cuối cùng."
@@ -1464,7 +1719,8 @@
   },
   "grains_total": 10,
   "grain_prompt": {
-    "en": "Pick up the golden grain"
+    "en": "Pick up the golden grain",
+    "vi": "Nhặt hạt lúa vàng"
   },
   "_grains_ghi_chu": "Hạt lúa vàng (GDD: 10 hạt, zone 1: 2, zone 2: 3, zone 3: 2, zone 4: 1, zone 5: 2). Code đặt, không có trong GLB: pos = toạ độ glTF (m), game chiếu tia xuống để đặt lên mặt thật gần nhất. where = vị trí theo GDD.",
   "grains": [

@@ -17,128 +17,128 @@
   },
   "goals": {
     "z0_find_bus": {
-      "help": { "en": "Ms. Nga's message says Bus No. 2. Walk along the buses and read the big number on each windshield — press E near a sign." },
+      "help": { "en": "Ms. Nga's message says Bus No. 2. Walk along the buses and read the big number on each windshield — press E near a sign.", "vi": "Tin nhắn của chị Nga ghi xe số 2. Đi dọc hàng xe và đọc số to trên kính lái từng xe — đứng gần biển rồi nhấn E." },
       "tu": [
-        { "en": "Bus No. 2… let's check the numbers on the windshields!" },
-        { "en": "Look for the big amber \"2\" on a windshield!" }
+        { "en": "Bus No. 2… let's check the numbers on the windshields!", "vi": "Xe số 2… mình xem số trên kính lái đi!" },
+        { "en": "Look for the big amber \"2\" on a windshield!", "vi": "Tìm số \"2\" to màu vàng cam trên kính lái ấy!" }
       ],
       "phone": [
-        { "en": "Hi {player}, it's Huyền from FPT! I'm waiting by Bus No. 2 — look for the big amber \"2\" on the windshield." },
-        { "en": "Huyền again: Bus No. 2 is the middle one of the three buses. Read the windshield signs to be sure!" }
+        { "en": "Hi {player}, it's Huyền from FPT! I'm waiting by Bus No. 2 — look for the big amber \"2\" on the windshield.", "vi": "Chào {player}, chị Huyền bên FPT đây! Chị đang đứng chờ ở xe số 2 — em tìm số \"2\" to màu vàng cam trên kính lái nhé." },
+        { "en": "Huyền again: Bus No. 2 is the middle one of the three buses. Read the windshield signs to be sure!", "vi": "Chị nhắc thêm: xe số 2 là xe ở giữa trong ba xe. Em đọc số trên kính lái cho chắc nhé!" }
       ]
     },
     "z0_meet_tu": {
-      "help": { "en": "Another new intern is waiting at the bus shelter. Walk up and press E to say hi — first days are easier together." }
+      "help": { "en": "Another new intern is waiting at the bus shelter. Walk up and press E to say hi — first days are easier together.", "vi": "Có một bạn intern mới nữa đang đợi ở nhà chờ xe. Đi lại gần rồi nhấn E để chào — ngày đầu có bạn đi cùng thì dễ hơn nhiều." }
     },
     "z0_meet_thao": {
-      "help": { "en": "Ms. Huyền from FPT is waiting at the door of Bus No. 2. Walk up to her and press E to say hello." },
+      "help": { "en": "Ms. Huyền from FPT is waiting at the door of Bus No. 2. Walk up to her and press E to say hello.", "vi": "Chị Huyền bên FPT đang đợi ở cửa xe số 2. Đi tới chỗ chị ấy rồi nhấn E để chào." },
       "tu": [
-        { "en": "That lady at the bus door is wearing FPT orange — let's say hi!" },
-        { "en": "Let's go talk to Ms. Huyền at the door of Bus No. 2." }
+        { "en": "That lady at the bus door is wearing FPT orange — let's say hi!", "vi": "Chị mặc áo cam FPT đứng ở cửa xe kìa — mình ra chào đi!" },
+        { "en": "Let's go talk to Ms. Huyền at the door of Bus No. 2.", "vi": "Mình ra nói chuyện với chị Huyền ở cửa xe số 2 đi." }
       ],
       "phone": [
-        { "en": "I'm right at the door of Bus No. 2 — come say hello!" },
-        { "en": "{player}, I'm the one in the FPT orange shirt by the bus door. Come on over!" }
+        { "en": "I'm right at the door of Bus No. 2 — come say hello!", "vi": "Chị đứng ngay cửa xe số 2 đây — em ra chào chị nhé!" },
+        { "en": "{player}, I'm the one in the FPT orange shirt by the bus door. Come on over!", "vi": "{player} ơi, chị là người mặc áo cam FPT đứng cạnh cửa xe đấy. Ra đây với chị nào!" }
       ]
     },
     "z0_board": {
-      "help": { "en": "You've met Ms. Huyền — now walk through the open door of Bus No. 2 to board." },
+      "help": { "en": "You've met Ms. Huyền — now walk through the open door of Bus No. 2 to board.", "vi": "Bạn đã gặp chị Huyền — giờ lên xe số 2 qua cửa đang mở." },
       "tu": [
-        { "en": "Come on, let's get on the bus before it leaves!" },
-        { "en": "The door's open — let's hop on Bus No. 2!" }
+        { "en": "Come on, let's get on the bus before it leaves!", "vi": "Mau lên, kẻo xe chạy mất bây giờ!" },
+        { "en": "The door's open — let's hop on Bus No. 2!", "vi": "Cửa mở rồi — lên xe số 2 thôi!" }
       ],
       "phone": [
-        { "en": "Hop on whenever you're ready — the door of Bus No. 2 is open!" },
-        { "en": "We leave at 06:45 sharp — step through the bus door to board!" }
+        { "en": "Hop on whenever you're ready — the door of Bus No. 2 is open!", "vi": "Em sẵn sàng thì lên xe nhé — cửa xe số 2 đang mở." },
+        { "en": "We leave at 06:45 sharp — step through the bus door to board!", "vi": "Xe chạy đúng 06:45 — em bước qua cửa để lên xe nhé!" }
       ]
     },
     "z1_get_app": {
-      "help": { "en": "Ms. Huyền is waiting by the bus. Talk to her (E) to install the My FPT app before heading to the gate." },
+      "help": { "en": "Ms. Huyền is waiting by the bus. Talk to her (E) to install the My FPT app before heading to the gate.", "vi": "Chị Huyền đang đợi cạnh xe. Nói chuyện với chị ấy (E) để cài app My FPT trước khi ra cổng." },
       "tu": [
-        { "en": "Ms. Huyền said she'd help us with the app — let's go find her!" },
-        { "en": "There's Ms. Huyền — let's get that My FPT app set up!" }
+        { "en": "Ms. Huyền said she'd help us with the app — let's go find her!", "vi": "Chị Huyền bảo sẽ giúp tụi mình cài app — mình đi tìm chị ấy đi!" },
+        { "en": "There's Ms. Huyền — let's get that My FPT app set up!", "vi": "Chị Huyền kia rồi — mình cài app My FPT luôn thôi!" }
       ],
       "phone": [
-        { "en": "I'm just over here by the bus — come find me and we'll set up My FPT!" },
-        { "en": "Don't forget the My FPT app — come see me before you head to the gate!" }
+        { "en": "I'm just over here by the bus — come find me and we'll set up My FPT!", "vi": "Chị đứng ngay cạnh xe nè — em ra đây, chị em mình cài My FPT nhé!" },
+        { "en": "Don't forget the My FPT app — come see me before you head to the gate!", "vi": "Đừng quên app My FPT nhé — em ghé chỗ chị trước khi ra cổng!" }
       ]
     },
     "z1_thank_driver": {
-      "help": { "en": "The bus driver is standing on the sidewalk by the bus door. A quick thank-you goes a long way — press E to talk." }
+      "help": { "en": "The bus driver is standing on the sidewalk by the bus door. A quick thank-you goes a long way — press E to talk.", "vi": "Anh tài xế đang đứng trên vỉa hè cạnh cửa xe. Một lời cảm ơn nhỏ cũng đáng quý lắm — nhấn E để nói chuyện." }
     },
     "z1_route_map": {
-      "help": { "en": "The big route map on the wall shows when the shuttle buses run. Stand in front of it and press E." }
+      "help": { "en": "The big route map on the wall shows when the shuttle buses run. Stand in front of it and press E.", "vi": "Bản đồ tuyến xe treo trên tường có ghi giờ chạy của xe đưa đón. Đứng trước bản đồ rồi nhấn E." }
     },
     "z1_backpack": {
-      "help": { "en": "Tú left {tu_his} backpack on the bus! Go to the bus door and press E to look for it, then bring it back to Tú." }
+      "help": { "en": "Tú left {tu_his} backpack on the bus! Go to the bus door and press E to look for it, then bring it back to Tú.", "vi": "Tú để quên balo trên xe! Ra cửa xe nhấn E để tìm, rồi mang balo về cho Tú." }
     },
     "z2_checkin": {
-      "help": { "en": "Find the big FPT SOFTWARE sign, stand in front of it and press E for your check-in photo." },
+      "help": { "en": "Find the big FPT SOFTWARE sign, stand in front of it and press E for your check-in photo.", "vi": "Tìm tấm biển lớn FPT SOFTWARE, đứng trước biển rồi nhấn E để chụp ảnh check-in." },
       "tu": [
-        { "en": "Look, the FPT SOFTWARE sign! Let's take a check-in photo!" },
-        { "en": "Photo first! Let's stand in front of the big FPT SOFTWARE sign." }
+        { "en": "Look, the FPT SOFTWARE sign! Let's take a check-in photo!", "vi": "Nhìn kìa, biển FPT SOFTWARE! Chụp ảnh check-in đi!" },
+        { "en": "Photo first! Let's stand in front of the big FPT SOFTWARE sign.", "vi": "Chụp ảnh trước đã! Mình ra đứng trước tấm biển FPT SOFTWARE to kia nhé." }
       ],
       "phone": [
-        { "en": "Welcome to F-Ville! Start with a check-in photo at the big FPT SOFTWARE sign." },
-        { "en": "Don't miss the check-in photo at the FPT SOFTWARE sign!" }
+        { "en": "Welcome to F-Ville! Start with a check-in photo at the big FPT SOFTWARE sign.", "vi": "Chào mừng em đến F-Ville! Việc đầu tiên: chụp một tấm ảnh check-in trước biển FPT SOFTWARE nhé." },
+        { "en": "Don't miss the check-in photo at the FPT SOFTWARE sign!", "vi": "Em nhớ chụp ảnh check-in ở biển FPT SOFTWARE nhé!" }
       ]
     },
     "z2_well": {
-      "help": { "en": "Walk over to the Village Well and press E to draw water — three buckets, three little stories." },
+      "help": { "en": "Walk over to the Village Well and press E to draw water — three buckets, three little stories.", "vi": "Đi tới Giếng Làng rồi nhấn E để kéo nước — ba gàu nước, ba câu chuyện nhỏ." },
       "tu": [
-        { "en": "There's a village well over there — let's try drawing water!" },
-        { "en": "Let's go to the well — I want to try that rope!" }
+        { "en": "There's a village well over there — let's try drawing water!", "vi": "Đằng kia có giếng làng kìa — mình thử kéo nước đi!" },
+        { "en": "Let's go to the well — I want to try that rope!", "vi": "Ra giếng đi — mình muốn thử kéo cái dây đó!" }
       ],
       "phone": [
-        { "en": "Have you seen the Village Well? Draw some water there — each bucket has a story." },
-        { "en": "The Village Well is close by — give it a try!" }
+        { "en": "Have you seen the Village Well? Draw some water there — each bucket has a story.", "vi": "Em thấy Giếng Làng chưa? Kéo thử ít nước nhé — gàu nào cũng có một câu chuyện." },
+        { "en": "The Village Well is close by — give it a try!", "vi": "Giếng Làng ở ngay gần đó — em thử xem!" }
       ]
     },
     "z2_cuder": {
-      "help": { "en": "Follow the path to the Cuder Statue in the rice field, then press E to read its story and answer three questions." },
+      "help": { "en": "Follow the path to the Cuder Statue in the rice field, then press E to read its story and answer three questions.", "vi": "Đi theo con đường tới tượng Cuder giữa ruộng lúa, rồi nhấn E để đọc câu chuyện và trả lời ba câu hỏi." },
       "tu": [
-        { "en": "Let's go see the Cuder Statue — it's further along the path." },
-        { "en": "The Cuder Statue is in the rice field up ahead — come on!" }
+        { "en": "Let's go see the Cuder Statue — it's further along the path.", "vi": "Mình ra xem tượng Cuder đi — thêm một đoạn nữa là tới." },
+        { "en": "The Cuder Statue is in the rice field up ahead — come on!", "vi": "Tượng Cuder ở giữa ruộng lúa phía trước — đi nào!" }
       ],
       "phone": [
-        { "en": "Stop by the Cuder Statue on your way — read its story and earn a badge!" },
-        { "en": "The Cuder Statue stands in the rice field along the path. Don't skip it!" }
+        { "en": "Stop by the Cuder Statue on your way — read its story and earn a badge!", "vi": "Trên đường đi, em ghé tượng Cuder nhé — đọc câu chuyện và nhận một huy hiệu!" },
+        { "en": "The Cuder Statue stands in the rice field along the path. Don't skip it!", "vi": "Tượng Cuder đứng giữa ruộng lúa bên đường. Đừng bỏ qua nhé!" }
       ]
     },
     "z3_card": {
-      "help": { "en": "Ms. Nga is at the reception desk in the lobby. Talk to her (E) to get your employee card." },
+      "help": { "en": "Ms. Nga is at the reception desk in the lobby. Talk to her (E) to get your employee card.", "vi": "Chị Nga đang ở quầy lễ tân trong sảnh. Nói chuyện với chị ấy (E) để nhận thẻ nhân viên." },
       "tu": [
-        { "en": "That's the reception desk — let's get our cards from Ms. Nga!" },
-        { "en": "Ms. Nga is waiting at reception — let's go say hi!" }
+        { "en": "That's the reception desk — let's get our cards from Ms. Nga!", "vi": "Quầy lễ tân kia rồi — mình tới nhận thẻ chỗ chị Nga đi!" },
+        { "en": "Ms. Nga is waiting at reception — let's go say hi!", "vi": "Chị Nga đang chờ ở lễ tân — mình ra chào chị đi!" }
       ],
       "phone": [
-        { "en": "I'm at the reception desk, right in the lobby — come and get your card!" },
-        { "en": "Your employee card is ready at reception — come find me!" }
+        { "en": "I'm at the reception desk, right in the lobby — come and get your card!", "vi": "Chị ở quầy lễ tân, ngay trong sảnh — em tới nhận thẻ nhé!" },
+        { "en": "Your employee card is ready at reception — come find me!", "vi": "Thẻ nhân viên của em làm xong rồi — em ra lễ tân gặp chị nhé!" }
       ]
     },
     "z3_rice_room": {
-      "help": { "en": "The Rice Grain Room is at the back of the lobby. Walk to its entrance and press E to explore it." },
+      "help": { "en": "The Rice Grain Room is at the back of the lobby. Walk to its entrance and press E to explore it.", "vi": "Phòng Hạt Lúa ở cuối sảnh. Đi tới lối vào rồi nhấn E để khám phá." },
       "tu": [
-        { "en": "What's that room at the back? The Rice Grain Room — let's look inside!" },
-        { "en": "Let's explore the Rice Grain Room before we go up." }
+        { "en": "What's that room at the back? The Rice Grain Room — let's look inside!", "vi": "Phòng ở cuối kia là gì thế? Phòng Hạt Lúa — mình vào xem thử đi!" },
+        { "en": "Let's explore the Rice Grain Room before we go up.", "vi": "Mình khám phá Phòng Hạt Lúa trước khi lên tầng nhé." }
       ],
       "phone": [
-        { "en": "Before you go up, take a look at the Rice Grain Room at the back of the lobby." },
-        { "en": "The Rice Grain Room tells FPT's story — it's at the back of the lobby!" }
+        { "en": "Before you go up, take a look at the Rice Grain Room at the back of the lobby.", "vi": "Trước khi lên tầng, em ghé Phòng Hạt Lúa ở cuối sảnh xem nhé." },
+        { "en": "The Rice Grain Room tells FPT's story — it's at the back of the lobby!", "vi": "Phòng Hạt Lúa kể câu chuyện của FPT — ở cuối sảnh đấy!" }
       ]
     },
     "z3_wallet": {
-      "help": { "en": "You're carrying a lost wallet. Hand it to Ms. Nga at the reception desk (E)." }
+      "help": { "en": "You're carrying a lost wallet. Hand it to Ms. Nga at the reception desk (E).", "vi": "Bạn đang cầm một chiếc ví bị đánh rơi. Mang tới đưa chị Nga ở quầy lễ tân (E)." }
     },
     "z4_card_gate": {
-      "help": { "en": "Walk down the corridor to the glass doors and tap your employee card on the reader (E). From here on, your card opens the gates." },
+      "help": { "en": "Walk down the corridor to the glass doors and tap your employee card on the reader (E). From here on, your card opens the gates.", "vi": "Đi dọc hành lang tới cửa kính rồi quẹt thẻ nhân viên vào đầu đọc (E). Từ giờ, bạn dùng thẻ này để mở các cửa." },
       "tu": [
-        { "en": "The card gate is just down the corridor — let's try our new cards!" },
-        { "en": "Let's tap our cards on the reader by the glass doors over there." }
+        { "en": "The card gate is just down the corridor — let's try our new cards!", "vi": "Cửa quẹt thẻ ở cuối hành lang kia — thử thẻ mới thôi!" },
+        { "en": "Let's tap our cards on the reader by the glass doors over there.", "vi": "Mình ra quẹt thẻ ở đầu đọc cạnh cửa kính đằng kia đi." }
       ],
       "phone": [
-        { "en": "Hi {player}! Your card opens the glass gate down the corridor — just tap it on the reader." },
-        { "en": "Tap your employee card on the reader by the glass doors and they'll open for you." }
+        { "en": "Hi {player}! Your card opens the glass gate down the corridor — just tap it on the reader.", "vi": "Chào {player}! Cửa kính cuối hành lang mở bằng thẻ của em — cứ quẹt vào đầu đọc là được." },
+        { "en": "Tap your employee card on the reader by the glass doors and they'll open for you.", "vi": "Em quẹt thẻ nhân viên vào đầu đọc cạnh cửa kính là cửa mở thôi." }
       ]
     },
     "z4_fsa": {
@@ -150,122 +150,122 @@
         { "pos": [-8.8, 4.2, 1.9], "r": 1.8 }
       ],
       "_route_ly_do": "Phòng FSA ở tầng trên: dấu \"!\" dẫn lần lượt qua chân cầu thang (ngay sau cửa quẹt thẻ), chiếu nghỉ (nửa tây rồi nửa đông — đi thẳng từ đầu vế 1 tới đầu vế 2 thì vướng lan can giữa), đầu vế 2, góc tây bắc tầng trên (đi vòng giếng trời) rồi tới cửa FSA.",
-      "help": { "en": "Go through the card gate and up the stairs. The FSA Room is at the far end of the upstairs corridor — press E at its glass door." },
+      "help": { "en": "Go through the card gate and up the stairs. The FSA Room is at the far end of the upstairs corridor — press E at its glass door.", "vi": "Đi qua cửa quẹt thẻ rồi lên cầu thang. Phòng FSA ở cuối hành lang tầng trên — nhấn E ở cửa kính của phòng." },
       "tu": [
-        { "en": "The FSA Room is upstairs — let's take the stairs!" },
-        { "en": "Up the stairs and all the way down the corridor — that's the FSA Room." }
+        { "en": "The FSA Room is upstairs — let's take the stairs!", "vi": "Phòng FSA ở tầng trên — mình đi cầu thang nhé!" },
+        { "en": "Up the stairs and all the way down the corridor — that's the FSA Room.", "vi": "Lên cầu thang rồi đi hết hành lang — Phòng FSA ở đó." }
       ],
       "phone": [
-        { "en": "Next stop: the FSA Room, upstairs at the end of the corridor." },
-        { "en": "Take the stairs behind the card gate — the FSA Room is at the far end upstairs." }
+        { "en": "Next stop: the FSA Room, upstairs at the end of the corridor.", "vi": "Điểm tiếp theo: Phòng FSA, ở cuối hành lang tầng trên." },
+        { "en": "Take the stairs behind the card gate — the FSA Room is at the far end upstairs.", "vi": "Em đi cầu thang phía sau cửa quẹt thẻ — Phòng FSA ở cuối tầng trên." }
       ]
     },
     "z5_prajith": {
       "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.2 }, { "pos": [-18.0, 0, -3.7], "r": 0.9 }],
       "_route_ly_do": "Phòng họp chỉ mở cửa phía lối đi chính (giữa vách nam, x −19,3 … −16,7): dấu \"!\" dẫn tới trước cửa, vào hẳn trong cửa rồi mới tới Prajith (đi thẳng từ trước cửa tới Prajith thì vướng mép vách).",
-      "help": { "en": "Prajith is waiting in the mentor meeting room on the left side of the office. Walk in and press E to talk." },
+      "help": { "en": "Prajith is waiting in the mentor meeting room on the left side of the office. Walk in and press E to talk.", "vi": "Anh Prajith đang đợi ở phòng họp mentor bên trái văn phòng. Đi vào rồi nhấn E để nói chuyện." },
       "phone": [
-        { "en": "Hi {player}, I'm in the meeting room on the left — just walk in! 🙂" },
-        { "en": "Head down the corridor on the left: I'm in the first meeting room. See you there!" }
+        { "en": "Hi {player}, I'm in the meeting room on the left — just walk in! 🙂", "vi": "Chào {player}, anh đang ở phòng họp bên trái — em cứ vào nhé! 🙂" },
+        { "en": "Head down the corridor on the left: I'm in the first meeting room. See you there!", "vi": "Em đi theo hành lang bên trái: anh ở phòng họp đầu tiên. Anh đợi em nhé!" }
       ]
     },
     "z5_manager": {
       "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.5 }, { "pos": [-27.0, 0, -1.4], "r": 1.2 }, { "pos": [-27.0, 0, -3.7], "r": 0.9 }],
       "_route_ly_do": "Từ phòng Prajith ra cửa, đi dọc lối chính tới trước cửa phòng Manager, vào hẳn trong cửa rồi tới Manager.",
-      "help": { "en": "The manager's room is next door to Prajith's, a little further down the corridor. Press E to talk to her." },
+      "help": { "en": "The manager's room is next door to Prajith's, a little further down the corridor. Press E to talk to her.", "vi": "Phòng chị quản lý ở cạnh phòng anh Prajith, đi thêm một chút dọc hành lang. Nhấn E để nói chuyện với chị ấy." },
       "phone": [
-        { "en": "The manager's room is right next to mine — she's expecting you!" },
-        { "en": "Just one door further down from my room. Good luck! 🙂" }
+        { "en": "The manager's room is right next to mine — she's expecting you!", "vi": "Phòng chị quản lý ở ngay cạnh phòng anh — chị ấy đang đợi em đấy!" },
+        { "en": "Just one door further down from my room. Good luck! 🙂", "vi": "Chỉ cách phòng anh một cửa thôi. Chúc em may mắn! 🙂" }
       ]
     },
     "z5_lan": {
-      "help": { "en": "Lan sits in the first cluster of desks, next to your own desk near the entrance. Walk up and press E to say hello." },
+      "help": { "en": "Lan sits in the first cluster of desks, next to your own desk near the entrance. Walk up and press E to say hello.", "vi": "Chị Lan ngồi ở cụm bàn đầu tiên, ngay cạnh bàn của bạn gần lối vào. Đi lại gần rồi nhấn E để chào." },
       "phone": [
-        { "en": "Say hi to the team! Lan sits in the first cluster of desks, right by your desk." },
-        { "en": "Lan is in the first desk cluster near the entrance — she's lovely, go say hello!" }
+        { "en": "Say hi to the team! Lan sits in the first cluster of desks, right by your desk.", "vi": "Đi chào team đi em! Chị Lan ngồi ở cụm bàn đầu tiên, ngay cạnh bàn em." },
+        { "en": "Lan is in the first desk cluster near the entrance — she's lovely, go say hello!", "vi": "Chị Lan ngồi ở cụm bàn đầu tiên gần lối vào — chị ấy dễ thương lắm, em ra chào đi!" }
       ]
     },
     "z5_minh": {
-      "help": { "en": "Minh sits across from Lan in the first cluster of desks. Walk up and press E to say hello." },
+      "help": { "en": "Minh sits across from Lan in the first cluster of desks. Walk up and press E to say hello.", "vi": "Anh Minh ngồi đối diện chị Lan ở cụm bàn đầu tiên. Đi lại gần rồi nhấn E để chào." },
       "phone": [
-        { "en": "Next up: Minh, across from Lan in the first desk cluster." },
-        { "en": "Minh is right across from Lan — he knows every tool we use!" }
+        { "en": "Next up: Minh, across from Lan in the first desk cluster.", "vi": "Tiếp theo là anh Minh, ngồi đối diện chị Lan ở cụm bàn đầu tiên." },
+        { "en": "Minh is right across from Lan — he knows every tool we use!", "vi": "Anh Minh ngồi ngay đối diện chị Lan — team mình dùng công cụ gì anh ấy cũng rành!" }
       ]
     },
     "z5_ha": {
-      "help": { "en": "Hà sits in the second cluster of desks, a little further into the office. Walk up and press E to say hello." },
+      "help": { "en": "Hà sits in the second cluster of desks, a little further into the office. Walk up and press E to say hello.", "vi": "Chị Hà ngồi ở cụm bàn thứ hai, vào sâu trong văn phòng thêm một chút. Đi lại gần rồi nhấn E để chào." },
       "phone": [
-        { "en": "Don't forget Hà — she's in the second cluster of desks, a bit further in." },
-        { "en": "Hà sits in the second desk cluster. Say hello and your team is complete!" }
+        { "en": "Don't forget Hà — she's in the second cluster of desks, a bit further in.", "vi": "Đừng quên chị Hà nhé — chị ấy ngồi ở cụm bàn thứ hai, phía trong một chút." },
+        { "en": "Hà sits in the second desk cluster. Say hello and your team is complete!", "vi": "Chị Hà ngồi ở cụm bàn thứ hai. Chào chị ấy nữa là em gặp đủ cả team rồi!" }
       ]
     },
     "z5_desk": {
-      "help": { "en": "Your desk is the one near the entrance with the gift box on it. Walk up and press E to sit down." },
+      "help": { "en": "Your desk is the one near the entrance with the gift box on it. Walk up and press E to sit down.", "vi": "Bàn của bạn ở gần lối vào, trên bàn có hộp quà. Đi lại gần rồi nhấn E để ngồi xuống." },
       "phone": [
-        { "en": "Your desk is ready — it's the one near the entrance with the gift box on it!" },
-        { "en": "Time to settle in: your desk is by the entrance, with a gift from the team. 🎁" }
+        { "en": "Your desk is ready — it's the one near the entrance with the gift box on it!", "vi": "Bàn của em chuẩn bị xong rồi — bàn gần lối vào, có hộp quà ấy!" },
+        { "en": "Time to settle in: your desk is by the entrance, with a gift from the team. 🎁", "vi": "Ổn định chỗ ngồi thôi em: bàn của em ở cạnh lối vào, có quà của team đấy. 🎁" }
       ]
     },
     "z5_khang": {
-      "help": { "en": "Khang hangs out by the pool table in the break area near the entrance. It's optional — but he has good advice (and a pool challenge)." }
+      "help": { "en": "Khang hangs out by the pool table in the break area near the entrance. It's optional — but he has good advice (and a pool challenge).", "vi": "Anh Khang hay đứng cạnh bàn bi-a ở khu nghỉ gần lối vào. Không bắt buộc đâu — nhưng anh ấy có lời khuyên hay (và một thử thách bi-a)." }
     }
   },
   "zone_exits": {
     "zone_00": {
       "target": null,
-      "help": { "en": "You're on board! Find a seat — next stop, Hòa Lạc." }
+      "help": { "en": "You're on board! Find a seat — next stop, Hòa Lạc.", "vi": "Bạn đã lên xe! Tìm chỗ ngồi đi — điểm tiếp theo: Hòa Lạc." }
     },
     "zone_01": {
       "target": "TRIGGER_zone_02_enter",
-      "help": { "en": "All set here! Follow the sidewalk to the F-Ville gate at the end of the street." },
+      "help": { "en": "All set here! Follow the sidewalk to the F-Ville gate at the end of the street.", "vi": "Ở đây xong cả rồi! Đi theo vỉa hè tới cổng F-Ville ở cuối đường." },
       "tu": [
-        { "en": "App installed! Let's head to the F-Ville gate." },
-        { "en": "The gate is at the end of this sidewalk — let's go!" }
+        { "en": "App installed! Let's head to the F-Ville gate.", "vi": "Cài app xong rồi! Mình ra cổng F-Ville thôi." },
+        { "en": "The gate is at the end of this sidewalk — let's go!", "vi": "Cổng ở cuối vỉa hè này — đi thôi!" }
       ],
       "phone": [
-        { "en": "Head along the sidewalk to the F-Ville gate — see you upstairs!" },
-        { "en": "The gate is just ahead at the end of the sidewalk!" }
+        { "en": "Head along the sidewalk to the F-Ville gate — see you upstairs!", "vi": "Em đi dọc vỉa hè tới cổng F-Ville nhé — hẹn gặp em trên văn phòng!" },
+        { "en": "The gate is just ahead at the end of the sidewalk!", "vi": "Cổng ở ngay phía trước, cuối vỉa hè đấy!" }
       ]
     },
     "zone_02": {
       "target": "TRIGGER_zone_03_enter",
-      "help": { "en": "You've done everything out here! Follow the path to the office building — reception is right inside." },
+      "help": { "en": "You've done everything out here! Follow the path to the office building — reception is right inside.", "vi": "Ngoài này bạn đã làm hết rồi! Đi theo con đường tới tòa văn phòng — quầy lễ tân ở ngay bên trong." },
       "tu": [
-        { "en": "We've seen everything here — let's go inside the office!" },
-        { "en": "The building entrance is at the end of the path. Let's go!" }
+        { "en": "We've seen everything here — let's go inside the office!", "vi": "Ở đây xem hết rồi — mình vào văn phòng thôi!" },
+        { "en": "The building entrance is at the end of the path. Let's go!", "vi": "Lối vào tòa nhà ở cuối con đường. Đi nào!" }
       ],
       "phone": [
-        { "en": "Great job! Come into the office building — reception is right inside." },
-        { "en": "The office entrance is at the end of the path — reception is waiting!" }
+        { "en": "Great job! Come into the office building — reception is right inside.", "vi": "Giỏi lắm! Em vào tòa văn phòng nhé — quầy lễ tân ở ngay bên trong." },
+        { "en": "The office entrance is at the end of the path — reception is waiting!", "vi": "Lối vào văn phòng ở cuối con đường — lễ tân đang đợi em đấy!" }
       ]
     },
     "zone_03": {
       "target": "TRIGGER_zone_04_enter",
-      "help": { "en": "Card and Rice Grain Room done! Head to the corridor behind the stairs at the back of the lobby — the card gate is next." },
+      "help": { "en": "Card and Rice Grain Room done! Head to the corridor behind the stairs at the back of the lobby — the card gate is next.", "vi": "Đã nhận thẻ và xem Phòng Hạt Lúa! Đi tới hành lang phía sau cầu thang ở cuối sảnh — tiếp theo là cửa quẹt thẻ." },
       "tu": [
-        { "en": "We've got our cards — let's find the card gate. It's down the corridor at the back." },
-        { "en": "The corridor to the card gate is at the back of the lobby. Let's go!" }
+        { "en": "We've got our cards — let's find the card gate. It's down the corridor at the back.", "vi": "Tụi mình có thẻ rồi — đi tìm cửa quẹt thẻ thôi. Ở cuối hành lang phía sau ấy." },
+        { "en": "The corridor to the card gate is at the back of the lobby. Let's go!", "vi": "Hành lang tới cửa quẹt thẻ ở cuối sảnh. Đi thôi!" }
       ],
       "phone": [
-        { "en": "Your card is ready to use — the card gate is down the corridor at the back of the lobby." },
-        { "en": "Head to the corridor at the back of the lobby — the card gate is just there." }
+        { "en": "Your card is ready to use — the card gate is down the corridor at the back of the lobby.", "vi": "Thẻ của em dùng được rồi — cửa quẹt thẻ ở cuối hành lang, phía sau sảnh." },
+        { "en": "Head to the corridor at the back of the lobby — the card gate is just there.", "vi": "Em đi tới hành lang ở cuối sảnh nhé — cửa quẹt thẻ ở ngay đó." }
       ]
     },
     "zone_04": {
       "target": "TRIGGER_zone_05_enter",
-      "help": { "en": "Your first-week plan is ready! Walk through the FSA Room's glass door — the office is right behind it." },
+      "help": { "en": "Your first-week plan is ready! Walk through the FSA Room's glass door — the office is right behind it.", "vi": "Kế hoạch tuần đầu đã sẵn sàng! Đi qua cửa kính của Phòng FSA — văn phòng ở ngay phía sau." },
       "tu": [
-        { "en": "Go on in — your team's waiting!" },
-        { "en": "The office is right behind the glass door. Off you go!" }
+        { "en": "Go on in — your team's waiting!", "vi": "Cậu vào đi — team cậu đang chờ đấy!" },
+        { "en": "The office is right behind the glass door. Off you go!", "vi": "Văn phòng ngay sau cửa kính đấy. Vào thôi, cố lên cậu!" }
       ],
       "phone": [
-        { "en": "Your team is waiting in the office — go on through the glass door at the end of the corridor!" },
-        { "en": "The office is right behind the FSA Room's glass door. See you there!" }
+        { "en": "Your team is waiting in the office — go on through the glass door at the end of the corridor!", "vi": "Team của em đang đợi trong văn phòng — em đi qua cửa kính ở cuối hành lang nhé!" },
+        { "en": "The office is right behind the FSA Room's glass door. See you there!", "vi": "Văn phòng ở ngay sau cửa kính của Phòng FSA. Em vào đi nhé!" }
       ]
     },
     "zone_05": {
       "target": null,
-      "help": { "en": "You've done everything on today's list! Two golden grains are hiding in the office if you'd like to look around." }
+      "help": { "en": "You've done everything on today's list! Two golden grains are hiding in the office if you'd like to look around.", "vi": "Bạn đã xong mọi việc hôm nay! Trong văn phòng vẫn còn hai hạt lúa vàng — muốn thì đi tìm nhé." }
     }
   }
 }

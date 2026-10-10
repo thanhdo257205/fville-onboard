@@ -15,17 +15,17 @@
   "_transit_ly_do": "Đang ngồi trên xe bus (cảnh chuyển zone 0 → 1, cảnh kết): nhân vật khuất → client báo zone này (không zone nào dùng) để người cùng zone thấy mình rời đi, không còn đứng ở cửa xe. Máy chủ không cần sửa (zone_NN hợp lệ).",
   "_client_ly_do": "send_hz: gửi vị trí tối đa bấy nhiêu lần/giây và chỉ khi có thay đổi; interp_ms: vẽ người khác trễ chừng ấy để nội suy mượt — phải lớn hơn khoảng cách 2 bản tin (1000 / send_hz = 200 ms) cộng dao động mạng: 120 ms thì cứ 200 ms người khác đứng ~80 ms rồi nhảy, animation đi chỉ trộn ~40% (đo trên máy chủ thật 10/10/2026); 260 ms: tốc độ đo 1,34 / 4,28 m/s (thật 1,4 / 4,4), animation đi / chạy 96%; max_visible: chỉ hiện bấy nhiêu người gần nhất cùng zone; heartbeat_s: đứng yên thì gửi ping (máy chủ tự trả lời, không đánh thức Durable Object); dead_after_s: không nhận được gì từ máy chủ chừng ấy giây → coi như rớt, kết nối lại; retry_s: các lần thử lại (giây, cộng ngẫu nhiên), lần cuối lặp mãi; full_retry_s: phòng đầy thì chờ lâu hơn; cooldown_s: giữa 2 lần emote / câu chat.",
   "emotes": [
-    { "id": "wave", "anim": "wave", "icon": "👋", "label": { "en": "Wave" } },
-    { "id": "nod", "anim": "nod", "icon": "🙂", "label": { "en": "Nod" } },
-    { "id": "cheer", "anim": "cheer", "icon": "🎉", "label": { "en": "Cheer" } }
+    { "id": "wave", "anim": "wave", "icon": "👋", "label": { "en": "Wave", "vi": "Vẫy tay" } },
+    { "id": "nod", "anim": "nod", "icon": "🙂", "label": { "en": "Nod", "vi": "Gật đầu" } },
+    { "id": "cheer", "anim": "cheer", "icon": "🎉", "label": { "en": "Cheer", "vi": "Ăn mừng" } }
   ],
   "phrases": [
-    { "id": "hi", "text": { "en": "Hi!" } },
-    { "id": "good_luck", "text": { "en": "Good luck!" } },
-    { "id": "follow_me", "text": { "en": "Follow me!" } },
-    { "id": "thank_you", "text": { "en": "Thank you!" } },
-    { "id": "see_you_lunch", "text": { "en": "See you at lunch!" } },
-    { "id": "welcome", "text": { "en": "Welcome to F-Ville!" } }
+    { "id": "hi", "text": { "en": "Hi!", "vi": "Chào mọi người!" } },
+    { "id": "good_luck", "text": { "en": "Good luck!", "vi": "Chúc may mắn nhé!" } },
+    { "id": "follow_me", "text": { "en": "Follow me!", "vi": "Theo mình nào!" } },
+    { "id": "thank_you", "text": { "en": "Thank you!", "vi": "Cảm ơn nhé!" } },
+    { "id": "see_you_lunch", "text": { "en": "See you at lunch!", "vi": "Trưa gặp nhau nhé!" } },
+    { "id": "welcome", "text": { "en": "Welcome to F-Ville!", "vi": "Chào mừng đến F-Ville!" } }
   ],
   "_emote_ly_do": "Emote dùng animation có sẵn của model (characters.json → models.<id>.animations). Câu chat soạn sẵn, KHÔNG có chat tự do: máy chủ chỉ nhận id nằm trong 2 danh sách này.",
   "server": {

@@ -3,28 +3,28 @@
   "quizzes": [
     {
       "id": "cuder", "zone": "zone_02", "node": "INT_tuong_cuder",
-      "story": { "en": "Meet Cuder! The name mixes CU (cucumber) and DER (coder) — a playful nickname for every FPT Software employee.\n\nBig head, glasses and a round tummy: a hard-working IT person, through and through.\n\nHis pickaxe recalls Vietnam's farming roots and the hard-working spirit we now bring to technology. The coins shaped like 0 and 1 at his feet stand for the digital world we build.\n\nCuder celebrates the dedication of FPT Software people — because people, not just products, are at the heart of FPT's success." },
+      "story": { "en": "Meet Cuder! The name mixes CU (cucumber) and DER (coder) — a playful nickname for every FPT Software employee.\n\nBig head, glasses and a round tummy: a hard-working IT person, through and through.\n\nHis pickaxe recalls Vietnam's farming roots and the hard-working spirit we now bring to technology. The coins shaped like 0 and 1 at his feet stand for the digital world we build.\n\nCuder celebrates the dedication of FPT Software people — because people, not just products, are at the heart of FPT's success.", "vi": "Làm quen với Cuder nhé! Cái tên ghép từ CU (cucumber — dưa chuột) và DER (coder — lập trình viên): biệt danh vui dành cho mọi nhân viên FPT Software.\n\nĐầu to, đeo kính, bụng tròn: đúng chất dân IT chăm chỉ.\n\nChiếc cuốc của Cuder gợi nhớ cội nguồn nông nghiệp của Việt Nam và tinh thần cần cù mà giờ đây chúng ta mang vào công nghệ. Những đồng xu hình số 0 và 1 dưới chân Cuder tượng trưng cho thế giới số mà chúng ta đang xây dựng.\n\nCuder tôn vinh sự tận tâm của người FPT Software — bởi con người, chứ không chỉ sản phẩm, mới là cốt lõi làm nên thành công của FPT." },
       "questions": [
         {
-          "q": { "en": "Where does the name Cuder come from?" },
-          "options": [{ "en": "Cute + leader" }, { "en": "CU (cucumber) + DER (coder)" }, { "en": "Cube + builder" }, { "en": "Customer + order" }],
+          "q": { "en": "Where does the name Cuder come from?", "vi": "Cái tên Cuder từ đâu mà có?" },
+          "options": [{ "en": "Cute + leader", "vi": "Cute + leader" }, { "en": "CU (cucumber) + DER (coder)", "vi": "CU (cucumber — dưa chuột) + DER (coder)" }, { "en": "Cube + builder", "vi": "Cube + builder" }, { "en": "Customer + order", "vi": "Customer + order" }],
           "answer": 1,
-          "hint": { "en": "It's a playful mix of a vegetable and a job." },
-          "explain": { "en": "CU (cucumber) + DER (coder) = Cuder: a playful nickname for every FPT Software employee — and from today, that includes you!" }
+          "hint": { "en": "It's a playful mix of a vegetable and a job.", "vi": "Đó là cách ghép vui giữa tên một loại rau và một nghề." },
+          "explain": { "en": "CU (cucumber) + DER (coder) = Cuder: a playful nickname for every FPT Software employee — and from today, that includes you!", "vi": "CU (cucumber — dưa chuột) + DER (coder) = Cuder: biệt danh vui dành cho mọi nhân viên FPT Software — và từ hôm nay, có cả bạn nữa!" }
         },
         {
-          "q": { "en": "What does Cuder's pickaxe stand for?" },
-          "options": [{ "en": "Digging for gold in the hills" }, { "en": "Building new roads for the city" }, { "en": "Farming roots and hard work, now in tech" }, { "en": "Winning a big sports trophy" }],
+          "q": { "en": "What does Cuder's pickaxe stand for?", "vi": "Chiếc cuốc của Cuder tượng trưng cho điều gì?" },
+          "options": [{ "en": "Digging for gold in the hills", "vi": "Đi đào vàng trên núi" }, { "en": "Building new roads for the city", "vi": "Làm đường mới cho thành phố" }, { "en": "Farming roots and hard work, now in tech", "vi": "Cội nguồn nông nghiệp và sự cần cù, nay mang vào công nghệ" }, { "en": "Winning a big sports trophy", "vi": "Giành một chiếc cúp thể thao lớn" }],
           "answer": 2,
-          "hint": { "en": "Think about the rice fields around F-Ville." },
-          "explain": { "en": "Vietnam's roots are in farming. Cuder's pickaxe carries that hard-working spirit into technology — and the 0/1 coins at his feet show the digital world we build." }
+          "hint": { "en": "Think about the rice fields around F-Ville.", "vi": "Hãy nghĩ tới những cánh đồng lúa quanh F-Ville." },
+          "explain": { "en": "Vietnam's roots are in farming. Cuder's pickaxe carries that hard-working spirit into technology — and the 0/1 coins at his feet show the digital world we build.", "vi": "Việt Nam có cội nguồn từ nông nghiệp. Chiếc cuốc của Cuder mang tinh thần cần cù ấy vào công nghệ — còn những đồng xu 0/1 dưới chân Cuder tượng trưng cho thế giới số chúng ta đang xây dựng." }
         },
         {
-          "q": { "en": "According to Cuder, what is at the heart of FPT's success?" },
-          "options": [{ "en": "Its people" }, { "en": "Its buildings" }, { "en": "Its logo" }, { "en": "Its coffee" }],
+          "q": { "en": "According to Cuder, what is at the heart of FPT's success?", "vi": "Theo câu chuyện về Cuder, điều gì là cốt lõi làm nên thành công của FPT?" },
+          "options": [{ "en": "Its people", "vi": "Con người" }, { "en": "Its buildings", "vi": "Những tòa nhà" }, { "en": "Its logo", "vi": "Logo" }, { "en": "Its coffee", "vi": "Cà phê" }],
           "answer": 0,
-          "hint": { "en": "Read the last line of the story again." },
-          "explain": { "en": "People, not just products: Cuder celebrates the dedication of everyone at FPT Software — they're at the heart of FPT's success." }
+          "hint": { "en": "Read the last line of the story again.", "vi": "Đọc lại dòng cuối của câu chuyện nhé." },
+          "explain": { "en": "People, not just products: Cuder celebrates the dedication of everyone at FPT Software — they're at the heart of FPT's success.", "vi": "Con người, chứ không chỉ sản phẩm: Cuder tôn vinh sự tận tâm của mọi người ở FPT Software — họ chính là cốt lõi làm nên thành công của FPT." }
         }
       ]
     }
