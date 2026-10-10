@@ -45,6 +45,26 @@ thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a t
   zone 5); cứu "rơi khỏi bản đồ" lại đưa về vị trí khung trước + 1 m (đã ở dưới sàn) → rơi mãi quanh y −9 … −10. Sửa: chặn dt
   âm (`game/src/main.js`), rơi thì về chỗ đứng vững gần nhất (`game/src/player/player.js`); smoke kiểm tra lúc vào zone —
   Phụ trách: Claude
+- [ ] P1 **Lỗi: mất dấu Objective markers** (dấu "!" trên mục tiêu + mũi tên ở mép màn hình; người dùng báo 10/10/2026, chưa
+  rõ lúc nào) — Phụ trách: —
+  - [ ] Tái hiện và ghi lại: zone, mục tiêu đang làm, ngôn ngữ, vừa làm gì trước đó (bàn bi-a, app, menu Esc, hội thoại, chuyển
+    zone, tải lại trang); mở `?debug`, gõ `__game.guide` xem `goal`, `target`, `marker`, `arrow`
+  - [ ] Nghi vấn (theo `game/src/game/guide.js` → `update`: dấu chỉ hiện khi `mode === "play"`, cài đặt bật và tìm được vị trí
+    mục tiêu): (a) không tìm thấy node mục tiêu trong zone (đổi tên khi build lại zone, mục tiêu mới) → không có vị trí;
+    (b) `mode` kẹt khác `"play"` sau bàn bi-a / app / màn tổng kết; (c) cài đặt "Objective markers" bị tắt và đã lưu trong
+    `fville.settings`; (d) dấu "!" là phần tử HTML (CSS2D) nên bị bảng khác che hoặc đang ở sau camera
+  - [ ] Sửa, rồi thêm vào `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 phải có dấu "!" hoặc mũi tên (`marker` / `arrow`
+    khác null), cả sau khi rời bàn bi-a, đóng app, đổi ngôn ngữ
+- [ ] P1 **Lỗi: đánh bi-a xong camera nâng lên, bị đèn treo của bàn che** — Phụ trách: —
+  - Nguyên nhân (đọc code): lúc bi lăn (`phase === "roll"`, camera trong `game/src/pool/table.js`) camera đặt cao hơn mặt bi
+    1,55 m (~2,4 m trên sàn), lùi 1,15 m. 3 chao đèn thả (`pool_lamps`, `scripts/blender/lib/interior.py`: chao ở 1,62–1,87 m,
+    bán kính 0,24 m, cách nhau 0,8 m) nằm ngay giữa camera và mặt bàn. `clampCamera` xét cả lưới hiển thị nên tia từ bi tới
+    camera chạm chao đèn → camera bị kéo vào sát chao. Lúc ngắm, lăn chuột kéo camera ra xa hết cỡ (`camDist` 2,4 → cao ~2 m)
+    cũng chạm đèn.
+  - [ ] Sửa (đề xuất): camera lúc bi lăn hạ xuống dưới mép chao (≤ ~1,5 m) và lùi xa hơn, nhìn chéo xuống bàn; đèn nào che
+    tầm nhìn thì làm mờ bằng `seeThrough` sẵn có (không sửa GLB) và không tính đèn trong `clampCamera`; giới hạn chiều cao
+    camera lúc ngắm thấp hơn mép chao
+  - [ ] Kiểm thử: smoke bi-a — trong lúc bi lăn, tia từ camera tới tâm bàn không cắt lưới nào (trừ bi); chụp 1 ảnh để xem
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
@@ -136,6 +156,17 @@ thẻ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a t
   `/status` (sau khi bản Web xong việc trên) — Phụ trách: —
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
 - [ ] P3 Bi-a: chốt có thêm đánh xoáy (2D + xoáy) và phím V nhìn từ trên xuống hay không; 3D thật thì bỏ qua — Phụ trách: —
+- [ ] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: —
+  - Hiện trạng: chuột chỉ xoay cơ khi con trỏ đang bị khoá (Pointer Lock, `game/src/core/input.js`: không khoá thì bỏ qua di
+    chuột và kéo chuột). Khoá không được (vừa bấm Esc, trình duyệt từ chối) thì chuột không làm gì; bấm chuột để khoá lại thì
+    cú bấm đó cũng bắt đầu lấy lực (`mouseButton` trong `game/src/pool/table.js`).
+  - [ ] Không khoá con trỏ: cơ chỉ theo con trỏ — chiếu con trỏ xuống mặt bàn, cơ hướng từ bi trắng tới điểm đó; giữ chuột
+    trái để lấy lực, thả để đánh (hoặc kéo lùi chuột để chỉnh lực)
+  - [ ] Đang khoá con trỏ: di chuột ngang xoay cơ như hiện nay; giữ Shift để ngắm tinh (chậm lại); A / D vẫn dùng được
+  - [ ] Cú bấm đầu tiên chỉ để khoá con trỏ / lấy lại chuột, không bắt đầu lấy lực
+  - [ ] Dùng cho cả tập một mình, bàn chung 2 người, thử thách của anh Khang; dòng hướng dẫn trên bảng bi-a ghi cách ngắm bằng
+    chuột (`data/i18n/en.json` + `vi.json`); trên điện thoại: kéo ngón tay để ngắm (xem mục "Chơi trên trình duyệt điện thoại")
+  - [ ] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
 - [ ] P3 Tab Bản đồ trong app My FPT — Phụ trách: —
 - [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
