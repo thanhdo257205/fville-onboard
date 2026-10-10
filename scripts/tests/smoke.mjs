@@ -190,19 +190,42 @@ async function runLook(browser, base, look) {
       const zone = order[zi], next = order[zi + 1], zt = Date.now();
       const required = await ev((z) => __game._game.content.quests.filter((q) => q.zone === z && q.required).map((q) => q.id), zone);
       const ps = { zone, lunch: false, login: false, reloaded: false };
-      // zone_05: bàn bi-a (mô hình Sketchfab, node pool_table + 16 bi + cơ, COL) và mini-game Một cú bi-a của anh Khang
+      // zone_05: bàn bi-a (mô hình Sketchfab, node pool_table + 16 bi + cơ, COL): chơi một mình (lời nhắc "Play pool", đánh
+      // bằng __game.pool.shoot, bi lăn rồi dừng, rời bàn) và mini-game Một cú bi-a của anh Khang trên bàn thật (thử thách)
       if (zone === "zone_05" && look === looks[0]) {
         const bi = await ev(async () => {
           const g = __game._game, t = g.zone.root.getObjectByName("pool_table");
           const scene = { table: !!t, balls: t ? t.children.filter((c) => /^ball_\d+$/.test(c.name)).length : 0,
             cue: !!t?.getObjectByName("cue"), col: g.zone.colMeshes.some((m) => m.name === "COL_ban_bi_a") };
-          const a = await __game.approach("NPC_ban_bi_a");
+          const a = await __game.approach("pool_table");
+          const prompt = __game.prompt?.text;
           __game.interact();
-          const r = await __game.resolve({ maxMs: 30000 });
-          return { scene, ok: a.ok, minigames: r.minigames, played: g.progress.flags.has("billiards_played"), mode: g.mode };
+          const inPool = { mode: g.mode, ...__game.pool };
+          const before = __game.pool.cue;
+          const shot = __game.pool.shoot(Math.PI / 2 + 0.01, 0.9);
+          for (let i = 0; i < 2000 && g.pool.playback; i++) { g.update(1 / 20); if (i % 20 === 0) await new Promise((r) => setTimeout(r, 0)); }
+          const res = await shot;
+          const after = __game.pool;
+          // vị trí bi đang vẽ khớp trạng thái cuối, mọi bi trên bàn nằm trong mép băng
+          const tb = g.pool.table, st = g.pool.state;
+          const drawn = st.balls.every((b, i) => !b.on || (Math.abs(g.pool.balls[i].position.x - b.x) < 1e-6 && Math.abs(g.pool.balls[i].position.z - b.z) < 1e-6));
+          const inside = st.balls.every((b) => !b.on || (Math.abs(b.x) <= tb.rx && Math.abs(b.z) <= tb.rz));
+          const left = __game.pool.leave();
+          const out = { mode: g.mode, cuesBack: !left.cuesHidden };
+          // anh Khang: Một cú bi-a trên bàn thật (tự giải = cú tìm được bằng vật lý)
+          const k = await __game.approach("NPC_ban_bi_a");
+          __game.interact();
+          const r = await __game.resolve({ maxMs: 60000 });
+          return { scene, ok: a.ok && k.ok, prompt, inPool: { mode: inPool.mode, active: inPool.active, hidden: inPool.cuesHidden }, before, res, after: { phase: after.phase, shots: after.shots, cue: after.cue }, drawn, inside, out,
+            khang: { minigames: r.minigames, dialogues: r.dialogues, played: g.progress.flags.has("billiards_played"), potted: g.progress.flags.has("billiards_potted"),
+              hit: g.progress.flags.has("billiards_last_hit"), pool: g.pool.active, mode: g.mode } };
         });
-        await check(bi.scene.table && bi.scene.balls === 16 && bi.scene.cue && bi.scene.col && bi.minigames.includes("billiards") && bi.played && bi.mode === "play",
-          "zone_05: bàn bi-a (pool_table, 16 bi, cơ, COL) + anh Khang → mini-game Một cú bi-a chạy, billiards_played", JSON.stringify(bi));
+        await check(bi.scene.table && bi.scene.balls === 16 && bi.scene.cue && bi.scene.col && bi.ok && bi.prompt === "Play pool" && bi.inPool.mode === "pool" && bi.inPool.active && bi.inPool.hidden
+          && bi.res && bi.res.frames > 10 && bi.res.time > 0.3 && bi.after.phase === "aim" && bi.after.shots === 1 && (bi.after.cue.z !== bi.before.z || !bi.after.cue.on) && bi.drawn && bi.inside
+          && bi.out.mode === "play" && bi.out.cuesBack,
+          `zone_05: bàn bi-a — "Play pool", phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
+        await check(bi.khang.minigames.includes("billiards") && bi.khang.played && bi.khang.potted && bi.khang.hit && !bi.khang.pool && bi.khang.mode === "play",
+          "zone_05: anh Khang → Một cú bi-a trên bàn thật: bi vào lỗ, billiards_potted + billiards_played (gộp)", JSON.stringify(bi.khang));
       }
       let steps = 0, stepFail = null;
       while (steps++ < 40) {

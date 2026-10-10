@@ -481,6 +481,37 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   thẳng zone_04, bản Thấp, URL có `?v=efb03ed-…`. Lưu ý: GitHub Pages cho trình duyệt giữ `index.html` tới 10 phút — trong
   lúc đó tải lại thường vẫn có thể ra bản cũ (đã thấy: transferSize 0, bundle cũ); Ctrl+F5 hoặc chờ 10 phút là ra bản mới.
 
+### Bi-a bước 2: chơi một mình + "Một cú bi-a" trên bàn thật (10/10/2026)
+- **Vật lý** `game/src/pool/physics.js` (JS thuần, không three.js, chạy cả trong Node): 2D trên mặt bàn theo toạ độ cục bộ
+  của node `pool_table` (data/pool.json), bước cố định 1/240 s. **Tất định**: chỉ + − × ÷ và `Math.sqrt` (cùng abs / min /
+  max / floor — không làm tròn); góc → hướng bằng `dsin` / `dcos` (đa thức Taylor cố định), `datan2` (chuỗi) — không dùng
+  Math.sin / cos / atan2 / hypot / pow. Bi–bi đàn hồi hệ số 0,95 (đẩy tách khi chồng), bi–băng 0,8: băng là 6 đoạn thẳng
+  chừa miệng lỗ (lỗ góc 1,35 × bán kính lỗ dọc mỗi băng, lỗ giữa ± bán kính lỗ), đầu đoạn = hàm lỗ. Ma sát lăn giảm tốc
+  0,4 m/s² + 0,1·v. Vào lỗ khi tâm bi lọt bán kính lỗ hoặc qua hẳn mép băng ở miệng lỗ; bi dừng ở miệng lỗ mà tâm đã qua
+  mép băng → rơi. API: `simulateShot(table, state, {angle, power})` → `{frames (60/s), events, finalState, pocketed[],
+  firstContact, cueScratch, time}`; `rackState`, `customState`, `respotCue`, `aimInfo` (bi ma), `findPottingShot`. Chưa có xoáy.
+- **Chơi một mình** `game/src/pool/table.js`: lời nhắc **Play pool** (interactables.json → `pool:play`), chế độ "pool":
+  camera sau bi trắng xoay theo hướng ngắm (lăn chuột: gần / xa; tránh tường và đồ đạc theo cả hộp COL_ lẫn lưới hiển thị),
+  lúc bi lăn nhìn bao quát bàn; người chơi đứng cạnh bàn (gần bi trắng, không chắn hướng đánh / camera). Ngắm bằng chuột
+  (con trỏ khoá) hoặc A/D, ←/→ (Shift: chậm); đường ngắm + bi ma + hướng bi bị chạm. Giữ chuột trái / Space nạp lực (thanh
+  lực lên xuống), thả để đánh: cây cơ (bản sao cue_2, đầu cơ nhận theo đầu nhỏ của lưới) lùi theo lực rồi đẩy tới; bi lăn
+  xoay theo quãng đường, vào lỗ thì ẩn. Ẩn `cue` + `cue_2` khi đang chơi. Bảng góc trái: số cú, số bi vào lỗ, **Rerack**
+  (R), **Leave table** (Esc); bi trắng rơi lỗ → đặt lại ở điểm đầu bàn; dọn hết bàn → thông báo. Trạng thái bàn giữ trong
+  lượt chơi (`game.poolSession`, cả khi ra / vào lại zone; không vào bản lưu). Dòng hướng dẫn hiện điều khiển bi-a.
+- **"Một cú bi-a" của anh Khang** (`minigames.billiards`, kind mới `pool_shot`, bỏ bản canvas 2D cũ): trên bàn thật, thế bi
+  dễ cho sẵn (`setup`: bi trắng + bi 5 màu cam gần lỗ góc foot_right), đưa bi vào lỗ trong 3 cú, hết 3 cú thì xếp lại.
+  Mỗi cú trượt = 1 lần sai (gợi ý tăng dần như mọi mini-game: sai 2 → đường xanh = cú tìm được bằng vật lý, sai 3 → Skip).
+  Khung mini-game là bảng chữ nhỏ phía trên (layout "pool"), thanh lực kèm "Shots left". Giữ nguyên lời thoại + phần thưởng
+  (`billiards_played` + `billiards_potted`, `billiards_last_hit` → anh Khang khen).
+- **Kiểm thử**: `npm run test:pool` (Node, ~3 giây): 1.000 cú phá bi ngẫu nhiên (hạt giống cố định) — không NaN, không bi
+  chồng nhau sau khi dừng (chồng lớn nhất 0,0000 mm), không bi ra ngoài mép băng, mọi bi tự dừng (lâu nhất 5,2 s), chạy lại
+  cùng đầu vào → **giống hệt từng bit**, ghi khung không đổi kết quả; dsin / dcos / datan2 lệch Math.* ≤ 2e-14; thử thách
+  của anh Khang giải được bằng 1 cú. Trung bình **1,8 ms / cú** (735 bước), 0,34 bi vào lỗ / cú phá. Đã thêm vào GitHub
+  Actions. `test:smoke` zone 5: "Play pool" → chế độ pool, cue/cue_2 ẩn, `__game.pool.shoot` phá bi → bi lăn rồi dừng (vị trí
+  vẽ khớp trạng thái cuối, trong mép băng), rời bàn (cơ hiện lại); anh Khang → thử thách tự giải → bi vào lỗ, cờ gộp đúng.
+  Kết quả: test:data đạt; test:pool đạt; test:smoke 1 ngoại hình zone 0 → 5 + bản lưu cũ + mạng: **22 bước đạt (1 phút 39 giây)**.
+- Sửa nhỏ: chọn chỗ đứng cạnh bàn — bản đầu đứng ngay sau bi trắng nên camera lọt vào người chơi (thấy qua ảnh kiểm tra).
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.

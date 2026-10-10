@@ -31,10 +31,11 @@ async function boot() {
   await loadStrings("en");
   document.title = t("app.title");
   hud.loading(t("app.loading"));
-  const [zones, chars, collision, sceneFixes, content, netCfg] = await Promise.all([
+  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg] = await Promise.all([
     loadJSON(url("data/zones.json")), loadJSON(url("data/characters.json")),
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
+    loadJSON(url("data/pool.json")).catch(() => null),            // bàn bi-a zone 5 (thiếu → không có chế độ bi-a)
   ]);
   const params = new URLSearchParams(location.search);
   const debugMode = params.has("debug");
@@ -102,7 +103,7 @@ async function boot() {
     if (sp.length) console.warn(`[bản lưu mẫu]\n${sp.join("\n")}`);
     if (created) save.store(progress);
   }
-  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters,
+  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes, pool: poolCfg }, characters,
     input, settings, nametags, content, progress, ui });
   game.validation = { problems, nodes: nodeCheck };
   // chơi nhiều người "thấy nhau" (data/net.json → url trống = tắt, game y như chơi một mình). ?net=off: tắt (smoke test,
@@ -153,10 +154,16 @@ async function boot() {
   input.on("Tab", () => game.toggleApp());
   // Esc khi đang khoá con trỏ: trình duyệt tự nhả khoá → mở menu ở onUnlock (bỏ qua phím Esc đi kèm nếu có)
   const pause = () => { if (!menu.open) { menu.show(); game.setMode("menu"); } };
-  input.onUnlock = () => { if (game.mode === "play" && game.state.phase === "playing") pause(); };
+  // Esc khi đang khoá con trỏ ở bàn bi-a (chơi một mình): trình duyệt tự nhả khoá → rời bàn
+  input.onUnlock = () => {
+    if (game.mode === "pool") return game.pool?.leave();
+    if (game.mode === "play" && game.state.phase === "playing") pause();
+  };
+  input.on("KeyR", () => { if (game.pool?.active) game.pool.rerack(); });   // bi-a: xếp lại bi
   input.on("Escape", () => {
     if (game.cutscene) return game.cutscene.skip();
     if (game.timeSkipping) return;            // màn mờ chuyển giờ (vd "12:00 · lunch"): không mở menu giữa chừng
+    if (game.mode === "pool") return game.pool?.leave();
     if (input.locked || performance.now() - input.unlockedAt < 300) return;
     if (ui.summary.open) return ui.summary.hide();
     if (ui.app.open) return game.toggleApp();

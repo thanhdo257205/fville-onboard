@@ -434,11 +434,6 @@ body.overlay-open #emotes { display: none; }
 .compass-card .note { display: block; margin: 8px 0 10px; text-transform: none; letter-spacing: 0; font-weight: 700; }
 .compass-card .done { width: 100%; }
 .prio .cards li .tag { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 800; color: #1d1f23; background: #ffd27a; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
-.billiards canvas { width: 100%; height: auto; border-radius: 12px; display: block; cursor: crosshair; touch-action: none; }
-.billiards .pbar { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-weight: 800; }
-.billiards .bar { position: relative; flex: 1; height: 12px; background: #262a31; border-radius: 999px; overflow: visible; }
-.billiards .bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #8fe0a8, #ffd27a, #f37021); border-radius: 999px; }
-.billiards .bar .mark { position: absolute; top: -5px; width: 4px; height: 22px; margin-left: -2px; background: #ffd27a; border-radius: 2px; box-shadow: 0 0 6px #ffd27a; }
 .login .pwrow { display: flex; gap: 8px; }
 .login .pw { flex: 1; font: 700 17px "Nunito"; padding: 10px 12px; border-radius: 10px; border: 2px solid #343944; background: #262a31; color: var(--fg); }
 .login .pw:focus { outline: none; border-color: var(--orange); }
@@ -490,3 +485,24 @@ body.overlay-open #emotes { display: none; }
 #summary .note { margin: 12px 0 0; background: #fff7ef; color: #1d1f23; border-radius: 12px; padding: 10px 12px; }
 #summary .note b { color: #c4520f; font-size: 13px; } #summary .note p { margin: 4px 0 0; font-weight: 700; line-height: 1.4; }
 #summary footer { flex-wrap: wrap; }
+
+/* bàn bi-a zone 5 (game/src/pool/table.js): bảng nhỏ góc trên trái (tập một mình), thanh lực giữa dưới */
+#pool-hud { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+#pool-hud .panel { position: absolute; left: 16px; top: 64px; pointer-events: auto; display: grid; gap: 4px; padding: 10px 14px;
+  border-radius: 14px; background: rgba(27, 30, 36, .88); color: var(--fg); box-shadow: 0 6px 24px rgba(0, 0, 0, .35); }
+#pool-hud .panel span { color: var(--muted); font-weight: 700; font-size: 13px; }
+#pool-hud .panel .row { display: flex; gap: 8px; margin-top: 4px; }
+#pool-hud .power { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); width: min(360px, calc(100vw - 32px));
+  display: flex; align-items: center; gap: 10px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); opacity: 0; transition: opacity .2s; }
+#pool-hud .power.keep { opacity: .6; }
+#pool-hud .power.on { opacity: 1; }
+#pool-hud .power .bar { flex: 1; height: 12px; background: rgba(38, 42, 49, .85); border-radius: 999px; overflow: hidden; }
+#pool-hud .power .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #8fe0a8, #ffd27a, #f37021); border-radius: 999px; }
+#pool-hud .power em { font-style: normal; font-size: 13px; min-width: 6em; text-align: right; }
+#minigame.mg-pool { background: none; place-items: start center; pointer-events: none; }
+#minigame.mg-pool .panel { pointer-events: auto; margin-top: 12px; width: min(560px, calc(100vw - 32px)); background: rgba(27, 30, 36, .92); padding: 12px 16px; }
+#minigame.mg-pool .mg header h2 { font-size: 17px; }
+#minigame.mg-pool .mg .line { margin: 2px 0 6px; font-size: 13px; }
+#minigame.mg-pool .mg .body:empty { display: none; }
+#minigame.mg-pool .mg .hint { margin: 4px 0 0; min-height: 0; }
+#minigame.mg-pool .mg .hint:empty { display: none; }

@@ -25,6 +25,7 @@ import { Guide } from "./guide.js";
 import { Acts, earnedTitles } from "./acts.js";
 import { setTint } from "../characters/characters.js";
 import { sound } from "../core/sound.js";
+import { PoolTable } from "../pool/table.js";
 
 // chuyển zone quá chừng này chưa xong → hiện lỗi + nút Retry / Back (Game.enterZone)
 export const ZONE_TIMEOUT_MS = 20000;
@@ -156,7 +157,8 @@ export class Game {
   // silent: tải sau màn tối của cảnh chuyển — không hiện màn chờ, thẻ tên zone, hội thoại vào zone
   async _enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false, zoneCard = true } = {}) {
     this.state.phase = "transition";
-    // đang hội thoại / mini-game / mở app thì đóng lại trước khi rời zone
+    // đang hội thoại / mini-game / mở app / chơi bi-a thì đóng lại trước khi rời zone
+    if (this.pool?.active) this.pool.leave();
     if (this.runner.active) this.runner.abort();
     if (this.ui.minigame.open) this.ui.minigame.close(false);
     if (this.ui.app.open) this.ui.app.hide();
@@ -181,6 +183,10 @@ export class Game {
     this.nametags.clear();
     this.zone = zone;
     this.scene.add(zone.root, zone.collider);
+    // bàn bi-a (data/pool.json, zone_05): bi + cơ trong GLB, trạng thái bàn giữ trong lượt chơi (this.poolSession)
+    this.pool?.detach();
+    this.pool = null;
+    if (this.data.pool?.zone === zoneId) { const pool = new PoolTable(this, this.data.pool); if (pool.attach(zone)) this.pool = pool; }
     this.lights.setLightmapMode(zone.hasLightmap);
     this.applyMood(this.zoneVariant(zoneId)?.mood ?? this.zoneCfg(zoneId)?.mood);
     this.state.zone = zoneId;
@@ -658,7 +664,7 @@ export class Game {
   setMode(m) {
     this.mode = m;
     this.input.enabled = m === "play";
-    this.input.setLook(m === "play");   // chơi: khoá + ẩn con trỏ, chuột xoay camera; còn lại: hiện con trỏ để bấm
+    this.input.setLook(m === "play" || m === "pool");   // chơi: khoá + ẩn con trỏ, chuột xoay camera; còn lại: hiện con trỏ để bấm
     if (m !== "play") { hud.prompt(null); this.guide.hideMarks(); }   // dấu "!" / mũi tên chỉ hiện lúc đang đi lại
     hud.cover(m === "dialogue" || m === "minigame" || m === "app" || m === "summary");   // ẩn dòng hướng dẫn điều khiển
   }
@@ -671,6 +677,7 @@ export class Game {
     const [kind, id] = e.item.action.split(":");
     if (kind === "dialogue") return this.runDialogue(id, { npc: this.interaction.npcFor(e), actor: e.item.actor });
     if (kind === "minigame") return this.runMinigame(id);
+    if (kind === "pool") return this.pool?.enter();          // bàn bi-a: chơi một mình (pool:play)
     if (kind === "pickup") { sound.play("pickup"); return this.applyEffects({ item: id, flags: [`has_${id}`] }); }
     if (kind === "grain") { sound.play("grain"); return this.applyEffects({ grain: id }); }
     return null;
@@ -770,6 +777,7 @@ export class Game {
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
     const drag = this.input.consumeDrag();
+    if (this.pool?.active) this.pool.update(dt, drag);      // bi-a: ngắm, nạp lực, bi lăn, camera riêng (cameraOverride)
     const still = { x: 0, y: 0, run: false };
     // Tú hết chờ (vd vừa bắt chuyện ở mái chờ) → đi theo người chơi
     if (this.followerWait && this.follower?.waiting && this.progress.check(this.followerWait)) { this.follower.stopWaiting(); this.followerWait = null; }

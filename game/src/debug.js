@@ -55,6 +55,20 @@ export function installDebug(game, loop) {
     get cards() { return { recent: hud.lastCards || [], queued: hud.cards.map((c) => c.kind) }; },
     finish() { game.finishGame(); return api.cards; },
     get net() { return game.net?.info(); },
+    // bàn bi-a zone 5 (game/src/pool/table.js): trạng thái + enter() (chơi một mình), shoot(angle, power, {instant}) →
+    // Promise kết quả khi bi dừng, leave(), rerack(), solve() (thử thách của anh Khang: đánh cú tìm được bằng vật lý)
+    get pool() {
+      const p = game.pool;
+      if (!p) return null;
+      return Object.assign(p.info(), {
+        enter: () => { if (!p.active) p.enter(); return p.info(); },
+        shoot: (angle, power = 0.5, opts) => p.shoot(angle ?? p.angle, power, opts),
+        leave: () => { p.leave(); return p.info(); },
+        rerack: () => { p.rerack(); return p.info(); },
+        solve: () => p.solve(),
+        aim: () => p.aim ?? null,
+      });
+    },
     netEmote(id) { return game.net?.emote(id); },
     netPhrase(id) { return game.net?.phrase(id); },
     // thẻ PNG của màn tổng kết (nút Download card): kích thước + độ dài data URL

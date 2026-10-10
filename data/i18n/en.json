@@ -123,6 +123,18 @@
     "players": "Show other players",
     "view_summary": "View summary"
   },
+  "pool": {
+    "title": "Pool",
+    "stats": "Shots: {shots} · Potted: {potted} / {total}",
+    "rerack": "Rerack",
+    "leave": "Leave table",
+    "power": "Power",
+    "controls": "Mouse or A/D: aim (Shift: fine) · Hold click or Space: power, let go: shoot · Wheel: zoom · R: rerack · Esc: leave the table",
+    "controls_challenge": "Mouse or A/D: aim (Shift: fine) · Hold click or Space: power, let go: shoot · Wheel: zoom",
+    "scratch": "Scratch! The white ball goes back to the head spot.",
+    "cleared": "Table cleared in {n} shots! Press R to rack them up again.",
+    "no_table": "The pool table is in the break area of the office."
+  },
   "tiers": {
     "low": "Low",
     "high": "High"

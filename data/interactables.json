@@ -370,6 +370,16 @@
     },
     {
       "zone": "zone_05",
+      "node": "pool_table",
+      "radius": 1.75,
+      "action": "pool:play",
+      "prompt": {
+        "en": "Play pool"
+      },
+      "_ly_do": "Bàn bi-a (data/pool.json): chơi một mình — xếp bi, phá bi, đếm cú / bi vào lỗ (game/src/pool/table.js). Điểm tương tác = tâm bàn (node pool_table), bán kính phủ hai đầu bàn dài 2,5 m; đứng gần anh Khang hơn thì lời nhắc là của anh Khang."
+    },
+    {
+      "zone": "zone_05",
       "node": "INT_ban_lam_viec",
       "area": "TRIGGER_ban_lam_viec",
       "prompt": {
@@ -1295,15 +1305,15 @@
       "_ly_do": "GDD zone 5: 5 thẻ; việc có hạn hôm nay lên đầu, câu lạc bộ xuống cuối, 3 việc giữa đổi chỗ vẫn đúng. Xếp chưa hợp lý → Manager góp ý 1 câu (thẻ đặt sai được làm sáng) và cho xếp lại 1 lần; lần 2 vẫn chưa hợp lý thì vẫn xong (không có ô Wisdom). Xếp hợp lý → value wisdom + cờ priorities_sensible."
     },
     "billiards": {
-      "kind": "billiards",
+      "kind": "pool_shot",
       "title": {
         "en": "One Shot"
       },
       "line": {
-        "en": "Aim with the mouse or ←/→, then click or press Space when the power bar looks right. Sink the orange ball!"
+        "en": "Aim with the mouse (or A/D), hold the left button or Space to build power, then let go to shoot. Sink the orange ball — you have 3 shots!"
       },
       "idle": {
-        "en": "Line up the white ball with the orange one so the orange ball rolls towards a pocket, then shoot (click or Space)."
+        "en": "Turn until the line from the white ball hits the orange ball and points it at a pocket. Hold to build power, let go to shoot."
       },
       "miss": {
         "en": "Missed — line it up and have another go!"
@@ -1315,14 +1325,26 @@
         "en": "In the pocket! Nice shot!"
       },
       "assist": {
-        "en": "Follow the dotted line — it shows a shot that works."
+        "en": "Follow the green line — it shows a shot that works."
+      },
+      "reset": {
+        "en": "Three shots gone — let's set the balls up again. Three more tries!"
+      },
+      "shots_left": {
+        "en": "Shots left: {n}"
+      },
+      "setup": {
+        "ball": 5,
+        "object": [0.4, 0.92],
+        "cue": [0.054, 0.493],
+        "shots": 3
       },
       "result": {
         "flags": [
           "billiards_played"
         ]
       },
-      "_ly_do": "GDD zone 5: mini-game tùy chọn của anh Khang — chỉnh hướng và lực (thanh lực chạy qua lại, bấm để đánh), đưa bi cam vào lỗ. Trượt → thử lại; sai 2 lần → hiện đường ngắm gợi ý; sai 3 lần → Skip. Vào lỗ → cờ billiards_potted, billiards_last_hit."
+      "_ly_do": "GDD zone 5: mini-game tùy chọn của anh Khang trên bàn bi-a thật (data/pool.json, vật lý game/src/pool/physics.js): thế bi dễ cho sẵn (setup: toạ độ cục bộ bàn, x = trục ngắn, z = trục dài; ball = số bi, bi 5 = bi cam), đưa bi vào lỗ trong 3 cú (hết 3 cú thì xếp lại, thêm 3 cú). Mỗi cú trượt = 1 lần sai: sai 2 lần → đường ngắm gợi ý (cú tìm được bằng vật lý); sai 3 lần → Skip. Vào lỗ → cờ billiards_potted, billiards_last_hit (gộp với result)."
     },
     "login": {
       "kind": "login",

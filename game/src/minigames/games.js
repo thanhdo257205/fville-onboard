@@ -541,179 +541,20 @@ const priorities = {
   },
 };
 
-// ---------- Một cú bi-a (anh Khang, zone 5, tùy chọn): bàn nhìn từ trên xuống; chỉnh hướng (chuột / ←→), thanh lực chạy
-// qua lại, bấm (click / Space) để đánh. Bi cam vào lỗ = thắng; trượt → thử lại; sai 2 lần → đường ngắm gợi ý ----------
-const billiards = {
-  layout: "panel",
+// ---------- Một cú bi-a (anh Khang, zone 5, tùy chọn): trên bàn bi-a thật của zone 5 (game/src/pool/table.js, vật lý
+// game/src/pool/physics.js). Thế bi dễ cho sẵn (data: setup), đưa bi vào lỗ trong 3 cú (hết thì xếp lại); mỗi cú trượt =
+// 1 lần sai (sai 2 → đường ngắm gợi ý tìm bằng vật lý, sai 3 → Skip). Khung mini-game chỉ là bảng chữ nhỏ phía trên ----------
+const pool_shot = {
+  layout: "pool",
   start(ctx) {
-    const d = ctx.data;
-    const W = 440, H = 240, R = 9, POCKET_R = 17, DECEL = 120, VMIN = 140, VMAX = 640;
-    const pockets = [[0, 0], [W / 2, 0], [W, 0], [0, H], [W / 2, H], [W, H]];
-    const rnd = (a, b) => a + Math.random() * (b - a);
-    const start = { cue: [rnd(95, 125), rnd(140, 175)], ball: [rnd(300, 330), rnd(70, 100)] };
-    let cue, ball, aim = -0.35, power = 0, phase = 0, state = "aim", shots = 0, raf = 0, last = 0;
-    const reset = () => {
-      cue = { p: [...start.cue], v: [0, 0], in: false };
-      ball = { p: [...start.ball], v: [0, 0], in: false };
-      state = "aim";
-    };
-    reset();
-    ctx.body.innerHTML = `<div class="billiards"><canvas width="${W + 24}" height="${H + 24}"></canvas>
-      <div class="pbar"><span>${t("minigame.power")}</span><div class="bar"><i></i><b class="mark" hidden></b></div>
-      <button class="primary shoot">${t("minigame.shoot")} ${kbd("Space")}</button></div></div>`;
-    const cv = ctx.body.querySelector("canvas"), g2 = cv.getContext("2d"), barI = ctx.body.querySelector(".bar i"), mark = ctx.body.querySelector(".bar .mark");
-    // lời giải (đường ngắm gợi ý + __game): bi ma cạnh bi cam, hướng về lỗ dễ nhất; lực đủ để bi cam tới lỗ
-    const solution = () => {
-      let best = null;
-      for (const P of pockets) {
-        const tp = [P[0] - ball.p[0], P[1] - ball.p[1]], dt = Math.hypot(...tp);
-        const ghost = [ball.p[0] - tp[0] / dt * 2 * R, ball.p[1] - tp[1] / dt * 2 * R];
-        const cg = [ghost[0] - cue.p[0], ghost[1] - cue.p[1]], dc = Math.hypot(...cg);
-        const cos = (cg[0] * tp[0] + cg[1] * tp[1]) / (dc * dt);
-        if (cos < 0.45) continue;                                       // cắt quá mỏng
-        const vt = Math.sqrt(2 * DECEL * dt) * 1.25, vc = vt / cos, v0 = Math.sqrt(vc * vc + 2 * DECEL * dc);
-        const pw = (v0 - VMIN) / (VMAX - VMIN);
-        if (pw > 1) continue;
-        const score = cos - dt / 2000;
-        if (!best || score > best.score) best = { angle: Math.atan2(cg[1], cg[0]), power: Math.max(0.05, pw), score };
-      }
-      return best;
-    };
-    let sol = solution();
-    const draw = () => {
-      const o = 12;
-      g2.clearRect(0, 0, cv.width, cv.height);
-      g2.fillStyle = "#6b3f24"; g2.fillRect(0, 0, cv.width, cv.height);
-      g2.fillStyle = "#1f7a4d"; g2.fillRect(o, o, W, H);
-      g2.fillStyle = "#0d1310";
-      for (const [x, y] of pockets) { g2.beginPath(); g2.arc(o + x, o + y, POCKET_R - 3, 0, Math.PI * 2); g2.fill(); }
-      if (state === "aim") {
-        // đường ngắm (sai 2 lần: thêm đường gợi ý chấm vàng tới bi ma)
-        if (ctx.assist && sol) {
-          g2.setLineDash([4, 6]); g2.strokeStyle = "#ffd27a"; g2.lineWidth = 2; g2.beginPath();
-          g2.moveTo(o + cue.p[0], o + cue.p[1]); g2.lineTo(o + cue.p[0] + Math.cos(sol.angle) * 400, o + cue.p[1] + Math.sin(sol.angle) * 400); g2.stroke();
-        }
-        g2.setLineDash([6, 6]); g2.strokeStyle = "rgba(255,255,255,.75)"; g2.lineWidth = 2; g2.beginPath();
-        g2.moveTo(o + cue.p[0], o + cue.p[1]); g2.lineTo(o + cue.p[0] + Math.cos(aim) * 120, o + cue.p[1] + Math.sin(aim) * 120); g2.stroke();
-        g2.setLineDash([]);
-        // gậy
-        g2.strokeStyle = "#d9b77e"; g2.lineWidth = 5; g2.beginPath();
-        const back = 16 + power * 40;
-        g2.moveTo(o + cue.p[0] - Math.cos(aim) * back, o + cue.p[1] - Math.sin(aim) * back);
-        g2.lineTo(o + cue.p[0] - Math.cos(aim) * (back + 150), o + cue.p[1] - Math.sin(aim) * (back + 150)); g2.stroke();
-      }
-      for (const [b, col] of [[ball, "#f37021"], [cue, "#f7f7f2"]]) {
-        if (b.in) continue;
-        g2.fillStyle = col; g2.beginPath(); g2.arc(o + b.p[0], o + b.p[1], R, 0, Math.PI * 2); g2.fill();
-        g2.strokeStyle = "rgba(0,0,0,.35)"; g2.lineWidth = 1; g2.stroke();
-      }
-      barI.style.width = `${Math.round(power * 100)}%`;
-      mark.hidden = !(ctx.assist && sol);
-      if (sol) mark.style.left = `${Math.round(sol.power * 100)}%`;
-    };
-    // vật lý: bước cố định 1/240 s; trả true khi mọi bi đã dừng / rơi lỗ
-    const step = (dt) => {
-      for (const b of [cue, ball]) {
-        if (b.in) continue;
-        const sp = Math.hypot(...b.v);
-        if (sp > 0) { const ns = Math.max(0, sp - DECEL * dt); b.v = [b.v[0] / sp * ns, b.v[1] / sp * ns]; }
-        b.p[0] += b.v[0] * dt; b.p[1] += b.v[1] * dt;
-        for (const [px, py] of pockets) if (Math.hypot(b.p[0] - px, b.p[1] - py) < POCKET_R) { b.in = true; b.v = [0, 0]; }
-        if (b.in) continue;
-        if (b.p[0] < R) { b.p[0] = R; b.v[0] = Math.abs(b.v[0]) * 0.8; }
-        if (b.p[0] > W - R) { b.p[0] = W - R; b.v[0] = -Math.abs(b.v[0]) * 0.8; }
-        if (b.p[1] < R) { b.p[1] = R; b.v[1] = Math.abs(b.v[1]) * 0.8; }
-        if (b.p[1] > H - R) { b.p[1] = H - R; b.v[1] = -Math.abs(b.v[1]) * 0.8; }
-      }
-      if (!cue.in && !ball.in) {                                    // va chạm 2 bi (khối lượng bằng nhau, gần đàn hồi)
-        const dx = ball.p[0] - cue.p[0], dy = ball.p[1] - cue.p[1], dist = Math.hypot(dx, dy);
-        if (dist < 2 * R && dist > 0) {
-          const nx = dx / dist, ny = dy / dist;
-          const rel = (cue.v[0] - ball.v[0]) * nx + (cue.v[1] - ball.v[1]) * ny;
-          if (rel > 0) {
-            const j = rel * 0.97;
-            cue.v[0] -= j * nx; cue.v[1] -= j * ny; ball.v[0] += j * nx; ball.v[1] += j * ny;
-          }
-          const push = (2 * R - dist) / 2;
-          cue.p[0] -= nx * push; cue.p[1] -= ny * push; ball.p[0] += nx * push; ball.p[1] += ny * push;
-        }
-      }
-      return [cue, ball].every((b) => b.in || Math.hypot(...b.v) < 3);
-    };
-    const settle = () => {
-      if (ball.in) {
-        state = "done";
-        ctx.correct(tx(d.potted));
-        draw();
-        ctx.later(() => ctx.finish({ flags: ["billiards_potted", "billiards_last_hit"] }), 1200);
-        return;
-      }
-      ctx.mistake(tx(cue.in ? d.scratch : d.miss));
-      reset();
-      sol = solution();
-      draw();
-    };
-    const shoot = () => {
-      if (state !== "aim") return;
-      sound.play("tap");
-      shots++;
-      const v = VMIN + power * (VMAX - VMIN);
-      cue.v = [Math.cos(aim) * v, Math.sin(aim) * v];
-      state = "rolling";
-    };
-    const frame = (now) => {
-      raf = requestAnimationFrame(frame);
-      const dt = Math.min(0.05, last ? (now - last) / 1000 : 0);
-      last = now;
-      if (state === "aim") { phase += dt * 1.25; power = 0.5 - 0.5 * Math.cos(phase * Math.PI); }
-      if (state === "rolling") {
-        let stopped = false;
-        for (let k = 0; k < Math.round(dt * 240) && !stopped; k++) stopped = step(1 / 240);
-        if (stopped) settle();
-      }
-      draw();
-    };
-    raf = requestAnimationFrame(frame);
-    const toTable = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width - 12, (e.clientY - r.top) * cv.height / r.height - 12]; };
-    cv.addEventListener("pointermove", (e) => { if (state !== "aim") return; const [x, y] = toTable(e); aim = Math.atan2(y - cue.p[1], x - cue.p[0]); });
-    cv.addEventListener("pointerdown", (e) => { if (state !== "aim") return; const [x, y] = toTable(e); aim = Math.atan2(y - cue.p[1], x - cue.p[0]); shoot(); });
-    ctx.body.querySelector(".shoot").addEventListener("click", shoot);
-    ctx.idleHint = () => (state === "aim" ? tx(ctx.assist ? d.assist : d.idle) : null);
-    ctx.onAssist = () => draw();
-    ctx.onKey = (e) => {
-      if (state !== "aim") return false;
-      if (e.code === "ArrowLeft") { aim -= THREE_DEG * (e.shiftKey ? 0.5 : 2); return true; }
-      if (e.code === "ArrowRight") { aim += THREE_DEG * (e.shiftKey ? 0.5 : 2); return true; }
-      if (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter") { shoot(); return true; }
-      return false;
-    };
-    ctx.skipExtra = () => ({});
-    // __game: đánh ngay theo lời giải (mô phỏng tức thì); wrong: đánh trượt hẳn
-    const simulate = () => { for (let k = 0; k < 240 * 20; k++) if (step(1 / 240)) break; settle(); };
-    ctx.debug = {
-      solve: () => {
-        for (let n = 0; n < 6 && state === "aim"; n++) {
-          const s = solution();
-          if (!s) break;
-          const tries = [s.power, s.power * 1.1, s.power * 0.92, Math.min(1, s.power * 1.25)];
-          for (const p of tries) {
-            const save = { cue: JSON.parse(JSON.stringify(cue)), ball: JSON.parse(JSON.stringify(ball)) };
-            aim = s.angle; power = p; shoot();
-            for (let k = 0; k < 240 * 20; k++) if (step(1 / 240)) break;
-            if (ball.in) { settle(); return; }
-            Object.assign(cue, save.cue); Object.assign(ball, save.ball); state = "aim";
-          }
-          break;
-        }
-        if (state === "aim") ctx.finish({ flags: ["billiards_potted", "billiards_last_hit"] });
-      },
-      wrong: () => { aim = Math.atan2(-(cue.p[1] - 0), -(cue.p[0] - 0)) + Math.PI; power = 0.15; shoot(); simulate(); },
-      state: () => ({ state, shots, aim: +aim.toFixed(3), power: +power.toFixed(2), cue: cue.p.map((v) => +v.toFixed(1)), ball: ball.p.map((v) => +v.toFixed(1)), sol }),
-    };
-    return () => cancelAnimationFrame(raf);
+    const pool = ctx.game?.pool;
+    if (pool?.root) return pool.enter({ challenge: { ctx, data: ctx.data } });
+    // không ở cạnh bàn (vd mở bằng __game khi đang ở zone khác): chỉ còn Skip
+    ctx.hint(t("pool.no_table"), "info");
+    ctx.debug = { solve: () => ctx.finish() };
+    return null;
   },
 };
-const THREE_DEG = Math.PI / 180;
 
 // ---------- Đăng nhập lần đầu (bàn làm việc, zone 5): mật khẩu đạt mọi quy định (thanh độ mạnh, quy định thật chờ HR/IT →
 // draft) rồi bật xác thực hai lớp. Mật khẩu chỉ kiểm tra trong trình duyệt: không lưu (bản lưu, debug.state chỉ có đúng /
@@ -838,7 +679,7 @@ const day_checklist = {
 };
 
 export const GAMES = {
-  install_app, well, quiz, profile_check, timeline, learning_path, compass, priorities, billiards, login, day_checklist,
+  install_app, well, quiz, profile_check, timeline, learning_path, compass, priorities, pool_shot, login, day_checklist,
   photo_checkin: { layout: "photo", start: (ctx) => photo.start(ctx, "checkin") },
   photo_id: { layout: "photo", start: (ctx) => photo.start(ctx, "id") },
 };
