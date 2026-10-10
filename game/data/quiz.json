@@ -17,7 +17,7 @@
           "options": [{ "en": "Digging for gold in the hills" }, { "en": "Building new roads for the city" }, { "en": "Farming roots and hard work, now in tech" }, { "en": "Winning a big sports trophy" }],
           "answer": 2,
           "hint": { "en": "Think about the rice fields around F-Ville." },
-          "explain": { "en": "Vietnam grew up farming the land. Cuder's pickaxe carries that hard-working spirit into technology — and the 0/1 coins at his feet show the digital world we build." }
+          "explain": { "en": "Vietnam's roots are in farming. Cuder's pickaxe carries that hard-working spirit into technology — and the 0/1 coins at his feet show the digital world we build." }
         },
         {
           "q": { "en": "According to Cuder, what is at the heart of FPT's success?" },

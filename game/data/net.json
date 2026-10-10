@@ -34,6 +34,9 @@
     "idle_kick_s": 60,
     "name_max": 20,
     "allowed_origins": ["https://thanhdo257205.github.io"],
-    "_ly_do": "max_connections: quá thì từ chối kèm lý do (mã 4001); max_msgs_per_s: mỗi kết nối, quá thì bỏ tin (gấp 3 lần thì ngắt, mã 4003); idle_kick_s: không nhận được gì (kể cả ping) chừng ấy giây thì ngắt (mã 4002); allowed_origins: trang web được kết nối (localhost / 127.0.0.1 luôn được, để thử); công cụ không phải trình duyệt (không gửi Origin) vẫn được — giới hạn trên vẫn áp."
+    "room_size": 30,
+    "max_rooms": 6,
+    "pool_turn_s": 60,
+    "_ly_do": "max_connections: mỗi phòng, quá thì từ chối kèm lý do (mã 4001); max_msgs_per_s: mỗi kết nối, quá thì bỏ tin (gấp 3 lần thì ngắt, mã 4003); idle_kick_s: không nhận được gì (kể cả ping) chừng ấy giây thì ngắt (mã 4002); allowed_origins: trang web được kết nối (localhost / 127.0.0.1 luôn được, để thử); công cụ không phải trình duyệt (không gửi Origin) vẫn được — giới hạn trên vẫn áp. room_size: phòng đủ chừng ấy kết nối thì người mới sang phòng sau (mỗi phòng một Durable Object, người khác phòng không thấy nhau); max_rooms: số phòng tối đa, phòng cuối nhận tới max_connections; pool_turn_s: bàn bi-a — tới lượt mà quá chừng ấy giây không đánh thì mất ghế (đối thủ thắng)."
   }
 }

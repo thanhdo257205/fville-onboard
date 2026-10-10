@@ -14,7 +14,7 @@
     },
     {
       "id": "innovation", "vi": "Đổi mới", "name": { "en": "Innovation" }, "active": true, "zone": "zone_04", "draft": true,
-      "how": { "en": "Set an extra learning goal of your own in the FSA room." },
+      "how": { "en": "Set an extra learning goal of your own in the FSA Room." },
       "hint": { "en": "Try setting a learning goal beyond the suggested path." }
     },
     {
