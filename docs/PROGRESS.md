@@ -805,7 +805,16 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   tới y −9,2). test:data đạt; build + smoke như CI (`--build --look intern_nam,intern_nu`) 58/58 bước (2 phút 45 giây).
   Ảnh: `renders/game/ceil_zone_05_{truoc,sau}.png`, `ceil_zone_04_sau.png`.
 
-### Tài liệu và repo
+### Gộp 2 nhánh vào `main`, deploy, sửa CI (10/10/2026)
+- `feat/zone5-seat-cap` (PR #1 → `main` 56537a3) và `fix/camera-ceiling` (PR #2 → `main` bef8792) đã gộp; `gh-pages` 0790018
+  build từ `main` bef8792 (pages build and deployment: xanh). 2 lỗi P1 (không ra được khỏi zone 5, camera xuyên trần) + lỗi
+  rơi xuyên sàn đã lên trang thật.
+- **CI không chạy từ c2439ba:** tên bước "Cài máy chủ … (test mạng: zone 4 …)" trong `.github/workflows/test.yml` có `: `
+  → YAML lỗi, GitHub báo đỏ ngay mà không có job nào (run 18–21: 2 nhánh + 2 lần gộp). Sửa: tên bước trong ngoặc kép.
+- Kiểm tra lại `main` bef8792 trên máy cloud: test:data đạt; test:pool đạt (cả `pool_rules`); build + smoke như CI
+  (`--build --look intern_nam,intern_nu`) 58/58 bước (4 phút 5 giây). Lần chạy dev 1 ngoại hình trước đó hỏng 1 lần bước
+  "bi-a 2 người · An ngồi → tập một mình" (máy Bình đã phát lại cú, `mismatch` 0, nhưng chưa về trạng thái dừng trong 20 s);
+  chạy lại thì đạt — theo dõi trên CI, lặp lại thì xem thời gian phát lại cú ở máy người xem.
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
   kỹ thuật) và tóm tắt việc đã xong. Thêm mục 6 "Ngôn ngữ và âm thanh": ngôn ngữ Anh / Việt, lồng tiếng nhân vật, nhạc

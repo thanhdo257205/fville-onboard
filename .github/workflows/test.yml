@@ -44,7 +44,7 @@ jobs:
       - name: Cài thư viện
         run: npm ci
 
-      - name: Cài máy chủ chơi nhiều người local (test mạng: zone 4 có người chơi khác, bi-a 2 người, chia phòng)
+      - name: "Cài máy chủ chơi nhiều người local (test mạng: zone 4 có người chơi khác, bi-a 2 người, chia phòng)"
         run: npm --prefix ../server ci
 
       - name: Kiểm tra dữ liệu (test:data)
