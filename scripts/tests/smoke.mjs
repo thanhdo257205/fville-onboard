@@ -281,6 +281,23 @@ async function runLook(browser, base, look) {
           const prompt = __game.prompt?.text;
           __game.interact();
           const inPool = { mode: g.mode, ...__game.pool };
+          // giữ D rồi A (xoay góc cơ, mỗi phím 1 s): người chơi đi vòng quanh bàn, chân vẫn trên sàn (lỗi cũ: +2 cm mỗi khung →
+          // bay lên ~1 m/s)
+          const turn = { yMax: -Infinity, turned: 0, moved: 0 };
+          const a0 = g.pool.angle, p0 = g.player.position.clone();
+          for (const key of ["KeyD", "KeyA"]) {
+            g.input.keys.add(key);
+            for (let i = 0; i < 60; i++) {
+              g.update(1 / 60);
+              turn.yMax = Math.max(turn.yMax, g.player.position.y);
+              turn.turned = Math.max(turn.turned, Math.abs(g.pool.angle - a0));
+              turn.moved = Math.max(turn.moved, g.player.position.distanceTo(p0));
+            }
+            g.input.keys.delete(key);
+          }
+          for (let i = 0; i < 30; i++) g.update(1 / 60);
+          turn.rise = +(turn.yMax - g.player.position.y).toFixed(3);
+          turn.turned = +turn.turned.toFixed(2); turn.moved = +turn.moved.toFixed(2);
           const before = __game.pool.cue;
           const shot = __game.pool.shoot(Math.PI / 2 + 0.01, 0.9);
           for (let i = 0; i < 2000 && g.pool.playback; i++) { g.update(1 / 20); if (i % 20 === 0) await new Promise((r) => setTimeout(r, 0)); }
@@ -296,14 +313,15 @@ async function runLook(browser, base, look) {
           const k = await __game.approach("NPC_ban_bi_a");
           __game.interact();
           const r = await __game.resolve({ maxMs: 60000 });
-          return { scene, ok: a.ok && k.ok, prompt, inPool: { mode: inPool.mode, active: inPool.active, hidden: inPool.cuesHidden }, before, res, after: { phase: after.phase, shots: after.shots, cue: after.cue }, drawn, inside, out,
+          return { scene, ok: a.ok && k.ok, prompt, inPool: { mode: inPool.mode, active: inPool.active, hidden: inPool.cuesHidden }, turn, before, res, after: { phase: after.phase, shots: after.shots, cue: after.cue }, drawn, inside, out,
             khang: { minigames: r.minigames, dialogues: r.dialogues, played: g.progress.flags.has("billiards_played"), potted: g.progress.flags.has("billiards_potted"),
               hit: g.progress.flags.has("billiards_last_hit"), pool: g.pool.active, mode: g.mode } };
         });
         await check(bi.scene.table && bi.scene.balls === 16 && bi.scene.cue && bi.scene.col && bi.ok && bi.prompt === "Play pool" && bi.inPool.mode === "pool" && bi.inPool.active && bi.inPool.hidden
+          && bi.turn.turned > 0.5 && bi.turn.moved > 0.3 && bi.turn.rise < 0.01
           && bi.res && bi.res.frames > 10 && bi.res.time > 0.3 && bi.after.phase === "aim" && bi.after.shots === 1 && (bi.after.cue.z !== bi.before.z || !bi.after.cue.on) && bi.drawn && bi.inside
           && bi.out.mode === "play" && bi.out.cuesBack,
-          `zone_05: bàn bi-a — "Play pool", phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
+          `zone_05: bàn bi-a — "Play pool", xoay cơ (đi vòng ${bi.turn.moved} m, chân cách sàn tối đa ${Math.round(bi.turn.rise * 1000)} mm), phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
         await check(bi.khang.minigames.includes("billiards") && bi.khang.played && bi.khang.potted && bi.khang.hit && !bi.khang.pool && bi.khang.mode === "play",
           "zone_05: anh Khang → Một cú bi-a trên bàn thật: bi vào lỗ, billiards_potted + billiards_played (gộp)", JSON.stringify(bi.khang));
         // đi ngược khỏi zone 5 (bàn bi-a đã dựng cây cơ) → zone 4 → zone 5: trước đây rời zone 5 báo "Couldn't open …"
@@ -396,8 +414,12 @@ async function runLook(browser, base, look) {
           const [d] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), page.click("#summary [data-a=download]")]);
           dl = { name: d.suggestedFilename(), size: statSync(await d.path()).size };
         } catch (e) { dl = { error: e.message.split("\n")[0] }; }
+        // thời gian từng khâu (phông, ảnh, vẽ, toBlob[, toDataURL]) — quá hạn thì thấy khâu đang kẹt
+        dl.game = await ev(() => __game._game.ui.summary.lastDownload ?? null).catch(() => null);
+        const took = dl.game?.ms ? Object.values(dl.game.ms).reduce((a, b) => a + b, 0) : null;
+        const how = [took != null && `${(took / 1000).toFixed(1)} s`, dl.game?.via === "toDataURL" && "toBlob không trả lời → toDataURL"].filter(Boolean).join(", ");
         await check(open && s.text.includes(ACH[lang]) && s.zone === "zone_01" && s.seen && dl.name === `fville-first-day-${slug}.png` && dl.size > 50000,
-          `màn tổng kết: thành tựu, summary_seen, ảnh thẻ ${dl.name || "?"} (${Math.round((dl.size || 0) / 1024)} KB)`, JSON.stringify({ open, zone: s.zone, seen: s.seen, dl }));
+          `màn tổng kết: thành tựu, summary_seen, ảnh thẻ ${dl.name || "?"} (${Math.round((dl.size || 0) / 1024)} KB${how ? `, ${how}` : ""})`, JSON.stringify({ open, zone: s.zone, seen: s.seen, dl }));
         await page.click("#summary [data-a=close]");
         await page.keyboard.press("Escape");
         const menu = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-act=summary]"), 5000);

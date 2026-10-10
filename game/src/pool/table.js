@@ -155,6 +155,9 @@ export class PoolTable {
     this.seat = -1;
     this.override = null;
     this.back = { pos: g.player.position.clone(), yaw: g.player.character.root.rotation.y };
+    // độ cao sàn quanh bàn = chỗ đứng vững gần nhất; placePlayer đặt người chơi theo mức này (trước đây lấy y hiện tại + 2 cm ở
+    // mỗi khung xoay cơ → giữ A/D hoặc kéo chuột thì người chơi bay lên ~1 m/s)
+    this.standY = g.player.safe?.y ?? g.player.position.y;
     if (challenge) this.startChallenge(challenge);
     else g.setMode("pool");
     this.helpers.visible = true;
@@ -773,8 +776,8 @@ export class PoolTable {
     }).sort((a, b) => a.cost - b.cost);
     const c = cands[0];
     const w = this.local(new THREE.Vector3(c.x, 0, c.z));
-    w.y = p.position.y;
-    p.body.teleport(w.clone().add(new THREE.Vector3(0, 0.02, 0)));
+    w.y = this.standY ?? p.position.y;
+    p.body.teleport(w);
     p.velocity.set(0, 0, 0);
     p.sync();
     const cw = this.local(new THREE.Vector3(cue.x, 0, cue.z));
