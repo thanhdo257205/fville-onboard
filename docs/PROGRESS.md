@@ -641,7 +641,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
-  kỹ thuật) và tóm tắt việc đã xong.
+  kỹ thuật) và tóm tắt việc đã xong. Thêm mục 6 "Ngôn ngữ và âm thanh": ngôn ngữ Anh / Việt, lồng tiếng nhân vật, nhạc
+  nền + hiệu ứng âm thanh.
 - `docs/GDD.md` (thiết kế game), `docs/dialogue_huyen.md` (lời thoại Ms. Huyền), `docs/dialogue_nga.md` (lời thoại
   Ms. Nga), `CREDITS.md`, `CLAUDE.md` (hướng dẫn
   dự án: cấu trúc, quy ước, lệnh build/chạy/deploy, quy tắc đã chốt).

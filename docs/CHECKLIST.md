@@ -76,7 +76,41 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [ ] P3 Tab Bản đồ trong app My FPT — Phụ trách: —
 - [ ] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông — Phụ trách: —
 
-## 6. Kỹ thuật và vận hành
+## 6. Ngôn ngữ và âm thanh
+
+- [ ] P2 Chức năng ngôn ngữ Anh / Việt — Phụ trách: —
+  - [ ] Chốt với nhóm: thêm tiếng Việt (sửa quy tắc "Chữ trong game là tiếng Anh" trong `CLAUDE.md`); tên riêng giữ dấu ở cả
+    hai bản (Tú, Huyền, F-Ville, Hòa Lạc)
+  - [ ] `data/i18n/vi.json` (186 chữ giao diện) + trường `"vi"` cạnh `"en"` trong data (684 chỗ: mini-game 256, lời thoại 179,
+    hướng dẫn 101, …); thiếu bản Việt thì hiện bản Anh
+  - [ ] Nút chọn ngôn ngữ ở màn tạo nhân vật và menu Esc, lưu trong cài đặt; mặc định theo ngôn ngữ trình duyệt; đổi giữa
+    chừng không mất tiến trình
+  - [ ] Chữ vẽ bằng canvas (ảnh thẻ PNG, bảng tên trên bàn) theo ngôn ngữ; font Nunito hiện đủ dấu tiếng Việt
+  - [ ] Kiểm thử: `test:data` báo khóa thiếu / thừa giữa `en` và `vi`, biến `{…}` khớp nhau; `test:smoke` chạy thêm 1 lượt
+    tiếng Việt (vd `?lang=vi`)
+  - [ ] Người Việt rà lại bản dịch (giọng văn trẻ, thân thiện; đúng thuật ngữ FPT: FSofter, FSA, …)
+- [ ] P3 Lồng tiếng nhân vật — Phụ trách: —
+  - [ ] Chốt phạm vi: chỉ câu quan trọng hay cả 143 câu thoại (lời dẫn 29, Tú 27, Ms. Huyền 20, Ms. Nga 10, Manager 10, …);
+    tiếng Anh, tiếng Việt hay cả hai
+  - [ ] Người thật (Ms. Huyền, Ms. Nga, Prajith): tự thu âm hoặc dùng giọng khác — không dùng AI bắt chước giọng người thật khi
+    chưa có đồng ý bằng văn bản
+  - [ ] Nhân vật hư cấu: thu âm, hoặc giọng tổng hợp (TTS) có giấy phép dùng; ghi nguồn vào `CREDITS.md`
+  - [ ] File `assets/voice/<ngôn ngữ>/<hội thoại>_<câu>.ogg` (OGG/Opus, mỗi câu khoảng ≤ 50 KB), tải theo zone; phát khi câu
+    hiện, dừng khi sang câu; phụ đề giữ nguyên; thiếu file thì im lặng
+  - [ ] Âm lượng giọng trong menu Esc; `test:data` báo câu thiếu file / file thừa
+- [ ] P2 Nhạc nền và hiệu ứng âm thanh — Phụ trách: —
+  - [ ] Chọn nhạc nền theo zone / thời điểm (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc
+    hoàng hôn) — nguồn CC0 hoặc có giấy phép, ghi `CREDITS.md`
+  - [ ] Hiệu ứng âm thanh: điền file cho các chỗ gọi sẵn trong `game/src/core/sound.js` (mini-game đúng / sai, nhặt hạt lúa,
+    chụp ảnh, tin nhắn điện thoại, …) + thêm cửa quẹt thẻ, xe bus, bi-a (bi chạm bi, chạm băng, vào lỗ — `physics.js` đã
+    trả các sự kiện này)
+  - [ ] Phát nhạc sau lần bấm đầu tiên (trình duyệt chặn tự phát); chuyển zone thì chuyển bài êm; nhỏ lại khi đang hội
+    thoại; tắt / mở và thanh âm lượng nhạc, hiệu ứng (và giọng) trong menu Esc, lưu trong cài đặt
+  - [ ] Dung lượng: nhạc OGG khoảng 128 kbps, mỗi bài ≤ ~1,5 MB, tải lười theo zone (không làm chậm lúc mở game); đo lại
+    theo `docs/perf_report.md`
+  - [ ] Kiểm thử: `test:smoke` chạy khi tắt âm thanh, không lỗi console; `test:data` báo file âm thanh thiếu
+
+## 7. Kỹ thuật và vận hành
 
 - [ ] P1 Thêm thành viên mới làm collaborator trên GitHub (Settings → Collaborators) — Phụ trách: —
 - [ ] P1 GitHub Actions chạy kiểm thử cả cho Pull Request (hiện chỉ chạy khi push `main`) — Phụ trách: —
