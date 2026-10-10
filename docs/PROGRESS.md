@@ -970,6 +970,19 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   trên máy CI), chạy lại thì xanh — zone_02 nặng hơn từ PR #5 (tải lần đầu ~9,5 s trên máy cloud, SwiftShader); lặp lại thì
   xem phần tải zone_02.
 
+### Máy chủ thật: bật bi-a 2 người + chia phòng (10/10/2026, máy Desktop)
+- `server/`: `npm ci` + `npx wrangler deploy` → `https://fville-net.fville-onboard.workers.dev`, version 3764cab6 (38 KiB).
+  `/status` giờ có `room_size` 30, `max_rooms` 6, `rooms` (mỗi phòng: online, zone, bàn bi-a `mode` / `seated` / `shots`); tin
+  chào WebSocket có `room` và `features: ["pool"]` (trước khi deploy: `/status` chỉ có online / zones — bản cũ, bàn chỉ tập
+  một mình).
+- Thử trên trang thật (`gh-pages` a9a3dcc, máy chủ thật): 2 trình duyệt độc lập (Playwright, 2 context không chung bộ nhớ —
+  như cửa sổ thường + ẩn danh), vào zone_05 (`?debug&start=zone_05`), "Thử An" + "Thử Bình" ngồi 2 ghế → ván 8 bi, 4 cú (cú
+  tự chọn của game; Bình vào bi nên đánh tiếp): sau mỗi cú bàn hiện ở 2 máy giống nhau và giống bàn máy chủ, phát lại 0 lần
+  lệch, bảng ghế / nhóm bi / lượt giống nhau, console sạch; rời bàn → `/status` báo ghế trống. Lúc thử có thêm 1 người thật
+  online ở zone_02.
+- Thấy lại lỗi đã ghi trong CHECKLIST P1 "đánh bi-a xong camera nâng lên, bị đèn treo của bàn che": máy người đang chờ lượt
+  (An) nhìn vào trần / đèn, chỉ thấy mép bàn.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

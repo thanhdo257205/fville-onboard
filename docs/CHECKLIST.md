@@ -166,8 +166,10 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     + máy chủ local chơi trọn một ván; vị trí bi khớp sau mỗi cú; chặn cú sai lượt; bi trong tay; ghế giải phóng khi rớt mạng;
     người xem vào giữa ván thấy đúng bàn; máy chủ cũ)
   - [x] Build, push `main` (PR #1, `main` 56537a3); [x] deploy `gh-pages` (0790018); [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
-- [ ] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
-  `/status` (sau khi bản Web xong việc trên) — Phụ trách: —
+- [x] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
+  `/status` (sau khi bản Web xong việc trên) — Phụ trách: Claude (máy Desktop) — 10/10/2026, Cloudflare version 3764cab6:
+  tin chào `features: ["pool"]`; 2 trình duyệt độc lập trên trang thật (`gh-pages` a9a3dcc) ngồi 2 ghế zone_05, 4 cú → bàn 2
+  bên = bàn máy chủ sau mọi cú, phát lại không lệch, rời bàn thì ghế trống
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
 - [ ] P3 Bi-a: chốt có thêm đánh xoáy (2D + xoáy) và phím V nhìn từ trên xuống hay không; 3D thật thì bỏ qua — Phụ trách: —
 - [ ] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: —
@@ -186,7 +188,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   (cắt bỏ trần / mái ở sàn + 2,4 m, nét tường tối), mũi tên "Bạn" theo hướng mặt, chấm Tú, dấu "!" + dòng mục tiêu (khác tầng:
   "(tầng trên / dưới)"); zone_04 mỗi tầng một ảnh; smoke mở tab ở zone 2–5
 - [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
-  Phụ trách: Claude — nhánh `feat/pool-step3`
+  Phụ trách: Claude — nhánh `feat/pool-step3`; [x] đã `wrangler deploy` (10/10/2026, version 3764cab6): `/status` có
+  `room_size` 30, `max_rooms` 6, danh sách `rooms`
 - [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —
   - [ ] Chốt với nhóm / HR: cho gõ chữ tự do hay chỉ mở rộng câu soạn sẵn (hiện có câu chat soạn sẵn ở phím T); quy tắc ứng xử
     hiện khi mở khung chat lần đầu
