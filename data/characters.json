@@ -4,7 +4,7 @@
   "_tint_ghi_chu": "TẠM (mọi vai dùng chung model): tint = { shirt, pants } màu hex đổi bằng code (game/src/characters/tint.js) để dễ phân biệt NPC: áo = điểm ảnh cam đậm trên thân + tay, quần = điểm ảnh xám sáng trên hông + chân, giữ nếp vải của texture. Bỏ trống = giữ màu gốc (người chơi giữ áo cam, quần kem). Không sửa texture/GLB. Vai dùng model riêng cũng có thể đặt tint (vd le_tan: chỉ quần, để Ms. Nga khác Ms. Huyền).",
   "accessories": {
     "cap": {
-      "label": { "en": "FPT Orange Cap" },
+      "label": { "en": "FPT Orange Cap", "vi": "Mũ lưỡi trai cam FPT" },
       "glb": "assets/accessories/cap/cap.glb",
       "opening_m": [0.181, 0.1849],
       "crown_m": 0.1132,
@@ -264,6 +264,43 @@
       "hanh_khach": "Passenger",
       "hr": "Ms. Nga",
       "app": "My FPT"
+    },
+    "vi": {
+      "player": "Bạn",
+      "tu": "Tú",
+      "thao": "Chị Huyền",
+      "tai_xe": "Tài xế",
+      "le_tan": "Chị Nga",
+      "nguoi_la": "Người lạ",
+      "mentor": "Prajith",
+      "manager": "Quản lý",
+      "dong_nghiep_1": "Lan",
+      "dong_nghiep_2": "Minh",
+      "dong_nghiep_3": "Hà",
+      "khang": "Khang",
+      "narrator": "",
+      "tai_xe_1": "Tài xế xe 1",
+      "tai_xe_3": "Tài xế xe 3",
+      "hanh_khach": "Hành khách",
+      "hr": "Chị Nga",
+      "app": "My FPT"
+    }
+  },
+  "names_ref": {
+    "_ghi_chu": "Cách người chơi gọi một vai khi nhắc trong câu (thông báo, Sổ lời khuyên: \"lời khuyên của chị Lan\"), theo ngôn ngữ — bảng tên dùng names. Thiếu vai / ngôn ngữ → dùng names. Văn phong: docs/vi_style.md.",
+    "vi": {
+      "thao": "chị Huyền",
+      "le_tan": "chị Nga",
+      "hr": "chị Nga",
+      "mentor": "anh Prajith",
+      "manager": "chị quản lý",
+      "dong_nghiep_1": "chị Lan",
+      "dong_nghiep_2": "anh Minh",
+      "dong_nghiep_3": "chị Hà",
+      "khang": "anh Khang",
+      "tai_xe": "anh tài xế",
+      "tai_xe_1": "anh tài xế xe 1",
+      "tai_xe_3": "anh tài xế xe 3"
     }
   },
   "speaker_as": {
@@ -292,28 +329,34 @@
       {
         "id": "intern_nam",
         "name": {
-          "en": "Easygoing"
+          "en": "Easygoing",
+          "vi": "Dễ gần"
         },
         "desc": {
-          "en": "Crisp shirt, easy smile — the one who says hi to everyone on the bus."
+          "en": "Crisp shirt, easy smile — the one who says hi to everyone on the bus.",
+          "vi": "Áo sơ mi phẳng phiu, nụ cười dễ mến — kiểu người lên xe là chào cả xe."
         }
       },
       {
         "id": "intern_nam_kinh",
         "name": {
-          "en": "Bookworm"
+          "en": "Bookworm",
+          "vi": "Mọt sách"
         },
         "desc": {
-          "en": "Round glasses and a teal tee — reads every sign twice, just to be sure."
+          "en": "Round glasses and a teal tee — reads every sign twice, just to be sure.",
+          "vi": "Kính tròn, áo phông xanh mòng két — biển nào cũng đọc hai lần cho chắc."
         }
       },
       {
         "id": "intern_nu",
         "name": {
-          "en": "Go-getter"
+          "en": "Go-getter",
+          "vi": "Năng nổ"
         },
         "desc": {
-          "en": "Neat bob and a light shirt — first to raise a hand when there's something new to try."
+          "en": "Neat bob and a light shirt — first to raise a hand when there's something new to try.",
+          "vi": "Tóc bob gọn gàng, áo sơ mi sáng màu — có gì mới để thử là giơ tay đầu tiên."
         }
       }
     ],
@@ -322,25 +365,29 @@
       {
         "id": "developer",
         "name": {
-          "en": "Developer"
+          "en": "Developer",
+          "vi": "Developer"
         }
       },
       {
         "id": "tester",
         "name": {
-          "en": "Tester"
+          "en": "Tester",
+          "vi": "Tester"
         }
       },
       {
         "id": "ba",
         "name": {
-          "en": "Business Analyst"
+          "en": "Business Analyst",
+          "vi": "Business Analyst"
         }
       },
       {
         "id": "designer",
         "name": {
-          "en": "Designer"
+          "en": "Designer",
+          "vi": "Designer"
         }
       }
     ],

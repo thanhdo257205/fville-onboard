@@ -4,153 +4,153 @@
     {
       "id": "hr_message", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! It's Nga from Recruitment. Today's shuttle: Bus No. 2 to Hòa Lạc, leaving this stop at 06:45. Your My FPT intern code: FV-2026. See you at F-Ville!" }, "next": "n2" },
-        "n2": { "speaker": "narrator", "text": { "en": "Find Bus No. 2 before 06:45." }, "effects": { "flags": ["hr_message_read"] }, "next": null }
+        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! It's Nga from Recruitment. Today's shuttle: Bus No. 2 to Hòa Lạc, leaving this stop at 06:45. Your My FPT intern code: FV-2026. See you at F-Ville!", "vi": "Chào buổi sáng {player}! Chị là Nga, bên Tuyển dụng đây. Hôm nay em đi xe số 2 lên Hòa Lạc nhé, xe rời điểm này lúc 06:45. Mã intern để đăng nhập My FPT: FV-2026. Hẹn gặp em ở F-Ville!" }, "next": "n2" },
+        "n2": { "speaker": "narrator", "text": { "en": "Find Bus No. 2 before 06:45.", "vi": "Tìm xe số 2 trước 06:45." }, "effects": { "flags": ["hr_message_read"] }, "next": null }
       }
     },
     {
       "id": "bien_xe_1", "start": "n1",
-      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"1\" glows on the windshield. Your message said Bus No. 2." }, "effects": { "flags": ["sign_1_read"] }, "next": null } }
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"1\" glows on the windshield. Your message said Bus No. 2.", "vi": "Trên kính lái sáng lên con số \"1\" thật to, màu vàng cam. Tin nhắn ghi là xe số 2." }, "effects": { "flags": ["sign_1_read"] }, "next": null } }
     },
     {
       "id": "bien_xe_2", "start": "n1",
-      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"2\" glows on the windshield — this is the bus to Hòa Lạc!" }, "effects": { "quest": "z0_find_bus", "hieu_biet": 3, "flags": ["sign_2_read"] }, "next": null } }
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"2\" glows on the windshield — this is the bus to Hòa Lạc!", "vi": "Trên kính lái sáng lên con số \"2\" thật to, màu vàng cam — đây là xe đi Hòa Lạc!" }, "effects": { "quest": "z0_find_bus", "hieu_biet": 3, "flags": ["sign_2_read"] }, "next": null } }
     },
     {
       "id": "bien_xe_3", "start": "n1",
-      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"3\" glows on the windshield. Your message said Bus No. 2." }, "effects": { "flags": ["sign_3_read"] }, "next": null } }
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"3\" glows on the windshield. Your message said Bus No. 2.", "vi": "Trên kính lái sáng lên con số \"3\" thật to, màu vàng cam. Tin nhắn ghi là xe số 2." }, "effects": { "flags": ["sign_3_read"] }, "next": null } }
     },
     {
       "id": "tai_xe_1_hoi", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tai_xe_1", "anim": "nod", "text": { "en": "Morning! Looking for your bus?" },
+        "n1": { "speaker": "tai_xe_1", "anim": "nod", "text": { "en": "Morning! Looking for your bus?", "vi": "Chào em! Đang tìm xe hả?" },
           "choices": [
-            { "text": { "en": "Is this the bus to Hòa Lạc?" }, "next": "n2" },
-            { "text": { "en": "(Just looking around.)" }, "next": "bye" }
+            { "text": { "en": "Is this the bus to Hòa Lạc?", "vi": "Dạ, xe này đi Hòa Lạc phải không anh?" }, "next": "n2" },
+            { "text": { "en": "(Just looking around.)", "vi": "(Chỉ đang nhìn quanh thôi.)" }, "next": "bye" }
           ] },
-        "n2": { "speaker": "tai_xe_1", "anim": "point", "text": { "en": "Hòa Lạc? Not this one — that's Bus No. 2, right behind me. Can't miss it!" }, "effects": { "flags": ["asked_driver"] }, "next": null },
-        "bye": { "speaker": "tai_xe_1", "text": { "en": "Have a good one!" }, "next": null }
+        "n2": { "speaker": "tai_xe_1", "anim": "point", "text": { "en": "Hòa Lạc? Not this one — that's Bus No. 2, right behind me. Can't miss it!", "vi": "Hòa Lạc à? Không phải xe này đâu — xe số 2 ngay phía sau anh kìa. Dễ thấy lắm!" }, "effects": { "flags": ["asked_driver"] }, "next": null },
+        "bye": { "speaker": "tai_xe_1", "text": { "en": "Have a good one!", "vi": "Chúc em ngày mới vui vẻ nhé!" }, "next": null }
       }
     },
     {
       "id": "tai_xe_3_hoi", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tai_xe_3", "anim": "nod", "text": { "en": "Morning! Looking for your bus?" },
+        "n1": { "speaker": "tai_xe_3", "anim": "nod", "text": { "en": "Morning! Looking for your bus?", "vi": "Chào em! Đang tìm xe hả?" },
           "choices": [
-            { "text": { "en": "Is this the bus to Hòa Lạc?" }, "next": "n2" },
-            { "text": { "en": "(Just looking around.)" }, "next": "bye" }
+            { "text": { "en": "Is this the bus to Hòa Lạc?", "vi": "Dạ, xe này đi Hòa Lạc phải không anh?" }, "next": "n2" },
+            { "text": { "en": "(Just looking around.)", "vi": "(Chỉ đang nhìn quanh thôi.)" }, "next": "bye" }
           ] },
-        "n2": { "speaker": "tai_xe_3", "anim": "point", "text": { "en": "Hòa Lạc? Not this one — that's Bus No. 2, just up ahead past the shelter." }, "effects": { "flags": ["asked_driver"] }, "next": null },
-        "bye": { "speaker": "tai_xe_3", "text": { "en": "Have a good one!" }, "next": null }
+        "n2": { "speaker": "tai_xe_3", "anim": "point", "text": { "en": "Hòa Lạc? Not this one — that's Bus No. 2, just up ahead past the shelter.", "vi": "Hòa Lạc à? Không phải xe này đâu — xe số 2 ở phía trước, đi quá nhà chờ một chút là thấy." }, "effects": { "flags": ["asked_driver"] }, "next": null },
+        "bye": { "speaker": "tai_xe_3", "text": { "en": "Have a good one!", "vi": "Chúc em ngày mới vui vẻ nhé!" }, "next": null }
       }
     },
     {
       "id": "tu_bat_chuyen", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Are you a new intern too? I'm Tú. I'm so nervous… I don't even know where to go once we get off the bus." },
+        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Are you a new intern too? I'm Tú. I'm so nervous… I don't even know where to go once we get off the bus.", "vi": "Cậu cũng là intern mới à? Mình là Tú. Mình hồi hộp quá… xuống xe xong còn chẳng biết đi đâu nữa." },
           "choices": [
-            { "text": { "en": "Me too — let's stick together!" }, "effects": { "ket_noi": 5 }, "next": "happy" },
-            { "text": { "en": "I'm sure someone will show us around." }, "next": "nod" }
+            { "text": { "en": "Me too — let's stick together!", "vi": "Mình cũng hồi hộp lắm — tụi mình đi cùng nhau nhé!" }, "effects": { "ket_noi": 5 }, "next": "happy" },
+            { "text": { "en": "I'm sure someone will show us around.", "vi": "Chắc sẽ có người dẫn tụi mình đi một vòng thôi." }, "next": "nod" }
           ] },
-        "happy": { "speaker": "tu", "anim": "wave", "text": { "en": "Really? Phew, I feel so much better already!" }, "next": "n2" },
-        "nod": { "speaker": "tu", "anim": "nod", "text": { "en": "Yeah… I guess you're right." }, "next": "n2" },
-        "n2": { "speaker": "tu", "text": { "en": "We're on Bus No. 2, right? Let's go find it!" }, "effects": { "quest": "z0_meet_tu", "flags": ["tu_met"] }, "next": null }
+        "happy": { "speaker": "tu", "anim": "wave", "text": { "en": "Really? Phew, I feel so much better already!", "vi": "Thật hả? Phù, mình thấy yên tâm hẳn rồi!" }, "next": "n2" },
+        "nod": { "speaker": "tu", "anim": "nod", "text": { "en": "Yeah… I guess you're right.", "vi": "Ừ… chắc cậu nói đúng." }, "next": "n2" },
+        "n2": { "speaker": "tu", "text": { "en": "We're on Bus No. 2, right? Let's go find it!", "vi": "Tụi mình đi xe số 2 đúng không? Đi tìm xe thôi!" }, "effects": { "quest": "z0_meet_tu", "flags": ["tu_met"] }, "next": null }
       }
     },
     {
       "id": "thao_bus", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z0_meet_thao"] }, "next": "after" }, { "if": { "flags": ["tu_met"] }, "next": "two" }], "next": "one" },
-        "two": { "speaker": "thao", "anim": "wave", "text": { "en": "Two new interns? Welcome aboard! I'm Huyền — I'm picking up your batch today." }, "next": "n2" },
-        "one": { "speaker": "thao", "anim": "wave", "text": { "en": "A new intern? Welcome aboard! I'm Huyền — I'm picking up your batch today." }, "next": "n2" },
-        "n2": { "speaker": "thao", "anim": "point", "text": { "en": "This is Bus No. 2, straight to Hòa Lạc. Ask me anything before we go!" }, "effects": { "quest": "z0_find_bus" }, "next": "ask" },
-        "ask": { "speaker": "thao", "text": { "en": "What would you like to know?" },
+        "two": { "speaker": "thao", "anim": "wave", "text": { "en": "Two new interns? Welcome aboard! I'm Huyền — I'm picking up your batch today.", "vi": "Hai em là intern mới hả? Chào mừng các em! Chị là Huyền, hôm nay chị đón đợt intern của các em." }, "next": "n2" },
+        "one": { "speaker": "thao", "anim": "wave", "text": { "en": "A new intern? Welcome aboard! I'm Huyền — I'm picking up your batch today.", "vi": "Em là intern mới hả? Chào mừng em! Chị là Huyền, hôm nay chị đón các bạn intern đợt này." }, "next": "n2" },
+        "n2": { "speaker": "thao", "anim": "point", "text": { "en": "This is Bus No. 2, straight to Hòa Lạc. Ask me anything before we go!", "vi": "Đây là xe số 2, chạy thẳng lên Hòa Lạc. Trước khi đi, em muốn hỏi gì cứ hỏi chị nhé!" }, "effects": { "quest": "z0_find_bus" }, "next": "ask" },
+        "ask": { "speaker": "thao", "text": { "en": "What would you like to know?", "vi": "Em muốn hỏi gì nào?" },
           "choices": [
-            { "if": { "not_flags": ["asked_thao_time"] }, "text": { "en": "What time does the bus head back?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_time"] }, "next": "a_time" },
-            { "if": { "not_flags": ["asked_thao_rules"] }, "text": { "en": "Are there any rules on the company bus?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_rules"] }, "next": "a_rules" },
-            { "if": { "not_flags": ["asked_thao_long"] }, "text": { "en": "Have you been riding this route long?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_long"] }, "next": "a_long" },
-            { "text": { "en": "That's all — thank you!" }, "next": "done" }
+            { "if": { "not_flags": ["asked_thao_time"] }, "text": { "en": "What time does the bus head back?", "vi": "Mấy giờ thì có xe về ạ?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_time"] }, "next": "a_time" },
+            { "if": { "not_flags": ["asked_thao_rules"] }, "text": { "en": "Are there any rules on the company bus?", "vi": "Đi xe công ty có quy định gì không chị?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_rules"] }, "next": "a_rules" },
+            { "if": { "not_flags": ["asked_thao_long"] }, "text": { "en": "Have you been riding this route long?", "vi": "Chị đi tuyến này lâu chưa ạ?" }, "effects": { "ket_noi": 3, "flags": ["asked_thao_long"] }, "next": "a_long" },
+            { "text": { "en": "That's all — thank you!", "vi": "Dạ hết rồi ạ — em cảm ơn chị!" }, "next": "done" }
           ] },
-        "a_time": { "speaker": "thao", "draft": true, "text": { "en": "The buses head back to the city in the evening — HR will put the exact times in your app." }, "next": "ask" },
-        "a_rules": { "speaker": "thao", "draft": true, "text": { "en": "Be at the stop a few minutes early, keep your seatbelt on, and keep the bus clean. Easy!" }, "next": "ask" },
-        "a_long": { "speaker": "thao", "anim": "think", "text": { "en": "Six years now! Little secret: the window seats near the back have the best view of the rice fields on the way in." }, "next": "ask" },
-        "done": { "speaker": "thao", "anim": "nod", "text": { "en": "Great! Hop on whenever you're ready — Bus No. 2 leaves at 06:45 sharp." }, "effects": { "quest": "z0_meet_thao", "flags": ["met_thao"] }, "next": null },
-        "after": { "speaker": "thao", "text": { "en": "Hop on, we're leaving soon!" }, "next": null }
+        "a_time": { "speaker": "thao", "draft": true, "text": { "en": "The buses head back to the city in the evening — HR will put the exact times in your app.", "vi": "Buổi tối có xe đưa mọi người về lại thành phố — giờ cụ thể bên chị sẽ gửi vào app cho em." }, "next": "ask" },
+        "a_rules": { "speaker": "thao", "draft": true, "text": { "en": "Be at the stop a few minutes early, keep your seatbelt on, and keep the bus clean. Easy!", "vi": "Ra điểm đón sớm vài phút, thắt dây an toàn suốt chuyến và giữ xe sạch sẽ. Dễ mà!" }, "next": "ask" },
+        "a_long": { "speaker": "thao", "anim": "think", "text": { "en": "Six years now! Little secret: the window seats near the back have the best view of the rice fields on the way in.", "vi": "Sáu năm rồi đấy! Chị mách nhỏ nhé: ngồi ghế cạnh cửa sổ ở cuối xe, trên đường lên ngắm đồng lúa là đẹp nhất." }, "next": "ask" },
+        "done": { "speaker": "thao", "anim": "nod", "text": { "en": "Great! Hop on whenever you're ready — Bus No. 2 leaves at 06:45 sharp.", "vi": "Tốt quá! Em sẵn sàng thì lên xe nhé — xe số 2 chạy đúng 06:45 đấy." }, "effects": { "quest": "z0_meet_thao", "flags": ["met_thao"] }, "next": null },
+        "after": { "speaker": "thao", "text": { "en": "Hop on, we're leaving soon!", "vi": "Lên xe đi em, sắp chạy rồi!" }, "next": null }
       }
     },
     {
       "id": "hanh_khach", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "hanh_khach", "text": { "en": "Oh — are you getting on too? Sorry, this bag is a bit heavy…" },
+        "n1": { "speaker": "hanh_khach", "text": { "en": "Oh — are you getting on too? Sorry, this bag is a bit heavy…", "vi": "Ơ — em cũng lên xe à? Xin lỗi nhé, cái túi này hơi nặng…" },
           "choices": [
-            { "text": { "en": "After you! Take your time." }, "effects": { "ket_noi": 3, "flags": ["passenger_first"] }, "next": "thanks" },
-            { "text": { "en": "(Squeeze past and get on first.)" }, "effects": { "flags": ["passenger_skipped"] }, "next": "meh" }
+            { "text": { "en": "After you! Take your time.", "vi": "Anh cứ lên trước đi ạ, từ từ thôi anh!" }, "effects": { "ket_noi": 3, "flags": ["passenger_first"] }, "next": "thanks" },
+            { "text": { "en": "(Squeeze past and get on first.)", "vi": "(Lách qua, lên xe trước.)" }, "effects": { "flags": ["passenger_skipped"] }, "next": "meh" }
           ] },
-        "thanks": { "speaker": "hanh_khach", "anim": "nod", "text": { "en": "Thank you, that's very kind!" }, "effects": { "flags": ["passenger_boarding"] }, "next": null },
-        "meh": { "speaker": "hanh_khach", "text": { "en": "Oh… okay then." }, "next": null }
+        "thanks": { "speaker": "hanh_khach", "anim": "nod", "text": { "en": "Thank you, that's very kind!", "vi": "Cảm ơn em nhé, em tốt bụng quá!" }, "effects": { "flags": ["passenger_boarding"] }, "next": null },
+        "meh": { "speaker": "hanh_khach", "text": { "en": "Oh… okay then.", "vi": "Ờ… ừ, vậy cũng được." }, "next": null }
       }
     },
     {
       "id": "board_remind", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["tu_met"] }, "next": "tu" }], "next": "thao" },
-        "tu": { "speaker": "tu", "anim": "point", "text": { "en": "Wait — shouldn't we say hi to the lady at the door first? She looks like she's from FPT." }, "next": null },
-        "thao": { "speaker": "thao", "anim": "wave", "text": { "en": "Hi there! Are you one of the new interns? Come say hello first!" }, "next": null }
+        "tu": { "speaker": "tu", "anim": "point", "text": { "en": "Wait — shouldn't we say hi to the lady at the door first? She looks like she's from FPT.", "vi": "Khoan — mình nên chào chị đứng ở cửa xe trước chứ nhỉ? Trông chị ấy giống người của FPT lắm." }, "next": null },
+        "thao": { "speaker": "thao", "anim": "wave", "text": { "en": "Hi there! Are you one of the new interns? Come say hello first!", "vi": "Chào em! Em là intern mới phải không? Lại đây gặp chị một chút đã nào!" }, "next": null }
       }
     },
     {
       "id": "tu_bus_ride", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["tu_met"] }, "next": "n1" }], "next": "intro" },
-        "intro": { "speaker": "tu", "text": { "en": "Hi! I'm Tú — first day too. Mind if I sit here?" }, "effects": { "flags": ["tu_met"] }, "next": "n2" },
-        "n1": { "speaker": "tu", "text": { "en": "Window seat, yes! Hòa Lạc, here we come." }, "next": "n2" },
-        "n2": { "speaker": "narrator", "text": { "en": "Tú drops {tu_his} backpack on the seat beside {tu_him} and stares out the window." }, "effects": { "flags": ["tu_balo_tren_xe"] }, "next": null }
+        "intro": { "speaker": "tu", "text": { "en": "Hi! I'm Tú — first day too. Mind if I sit here?", "vi": "Chào cậu! Mình là Tú — cũng ngày đầu đi làm. Mình ngồi đây được không?" }, "effects": { "flags": ["tu_met"] }, "next": "n2" },
+        "n1": { "speaker": "tu", "text": { "en": "Window seat, yes! Hòa Lạc, here we come.", "vi": "Được ngồi cạnh cửa sổ rồi! Hòa Lạc ơi, tụi mình tới đây!" }, "next": "n2" },
+        "n2": { "speaker": "narrator", "text": { "en": "Tú drops {tu_his} backpack on the seat beside {tu_him} and stares out the window.", "vi": "Tú đặt balo xuống ghế bên cạnh rồi đưa mắt nhìn ra ngoài cửa sổ." }, "effects": { "flags": ["tu_balo_tren_xe"] }, "next": null }
       }
     },
     {
       "id": "thao_main", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "rewards": ["app_my_fpt"] }, "next": "after" }], "next": "n1" },
-        "n1": { "speaker": "thao", "anim": "wave", "text": { "en": "Here we are, {player}! First things first: let's get the My FPT app on your phone." }, "next": "n2" },
-        "n2": { "speaker": "thao", "text": { "en": "It holds your checklist for today, your items and the badges you'll earn." },
+        "n1": { "speaker": "thao", "anim": "wave", "text": { "en": "Here we are, {player}! First things first: let's get the My FPT app on your phone.", "vi": "Tới nơi rồi, {player}! Việc đầu tiên: cài app My FPT vào điện thoại đã nhé." }, "next": "n2" },
+        "n2": { "speaker": "thao", "text": { "en": "It holds your checklist for today, your items and the badges you'll earn.", "vi": "Trong app có checklist hôm nay, túi đồ và các huy hiệu em sẽ nhận được." },
           "choices": [
-            { "text": { "en": "Let's install it!" }, "next": "order" },
-            { "text": { "en": "Badges? What kind of badges?" }, "effects": { "ket_noi": 2 }, "next": "n3" }
+            { "text": { "en": "Let's install it!", "vi": "Cài luôn thôi ạ!" }, "next": "order" },
+            { "text": { "en": "Badges? What kind of badges?", "vi": "Huy hiệu ạ? Huy hiệu gì thế chị?" }, "effects": { "ket_noi": 2 }, "next": "n3" }
           ] },
-        "n3": { "speaker": "thao", "anim": "point", "text": { "en": "You'll find out at the Cuder Statue. Some of them you earn just by being nice to people." }, "next": "n4" },
-        "n4": { "speaker": "thao", "text": { "en": "Okay, phone out!" }, "next": "order" },
-        "order": { "speaker": "thao", "anim": "point", "text": { "en": "Three steps, in this order: download My FPT, log in with the intern code from Ms. Nga's message, then turn on notifications." }, "next": "install" },
+        "n3": { "speaker": "thao", "anim": "point", "text": { "en": "You'll find out at the Cuder Statue. Some of them you earn just by being nice to people.", "vi": "Tới tượng Cuder em sẽ biết. Có huy hiệu chỉ cần em đối xử tốt với mọi người là nhận được đấy." }, "next": "n4" },
+        "n4": { "speaker": "thao", "text": { "en": "Okay, phone out!", "vi": "Rồi, lấy điện thoại ra nào!" }, "next": "order" },
+        "order": { "speaker": "thao", "anim": "point", "text": { "en": "Three steps, in this order: download My FPT, log in with the intern code from Ms. Nga's message, then turn on notifications.", "vi": "Ba bước, theo đúng thứ tự: tải My FPT, đăng nhập bằng mã intern trong tin nhắn của chị Nga, rồi bật thông báo." }, "next": "install" },
         "install": { "action": "minigame:install_app", "next": "done" },
-        "done": { "speaker": "thao", "anim": "nod", "text": { "en": "All set! Head straight to the gate. I'll go up to the office first — message me in the app if you need anything." }, "next": null },
-        "after": { "speaker": "thao", "text": { "en": "Go on through the gate. See you upstairs!" }, "next": null }
+        "done": { "speaker": "thao", "anim": "nod", "text": { "en": "All set! Head straight to the gate. I'll go up to the office first — message me in the app if you need anything.", "vi": "Xong rồi! Em đi thẳng ra cổng nhé. Chị lên văn phòng trước — cần gì cứ nhắn chị qua app." }, "next": null },
+        "after": { "speaker": "thao", "text": { "en": "Go on through the gate. See you upstairs!", "vi": "Em cứ đi qua cổng đi. Lát gặp em trên văn phòng!" }, "next": null }
       }
     },
     {
       "id": "thao_remind_app", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "thao", "text": { "en": "{player}, wait! Install the My FPT app first." }, "next": null }
+        "n1": { "speaker": "thao", "text": { "en": "{player}, wait! Install the My FPT app first.", "vi": "{player} ơi, khoan! Em cài app My FPT trước đã nhé." }, "next": null }
       }
     },
     {
       "id": "tai_xe_thanks", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["driver_thanked"] }, "next": "again" }], "next": "n1" },
-        "n1": { "speaker": "tai_xe", "anim": "nod", "text": { "en": "Mind your step. First day, huh?" },
+        "n1": { "speaker": "tai_xe", "anim": "nod", "text": { "en": "Mind your step. First day, huh?", "vi": "Xuống cẩn thận nhé. Ngày đầu đi làm hả em?" },
           "choices": [
-            { "text": { "en": "Yes! Thank you so much — drive safely!" },
+            { "text": { "en": "Yes! Thank you so much — drive safely!", "vi": "Dạ vâng! Em cảm ơn anh nhiều — anh đi đường cẩn thận ạ!" },
               "effects": { "value": "respect", "ket_noi": 3, "quest": "z1_thank_driver", "flags": ["driver_thanked"] }, "next": "thanks" },
-            { "text": { "en": "(Nod and hop off.)" }, "next": "bye" }
+            { "text": { "en": "(Nod and hop off.)", "vi": "(Gật đầu rồi bước xuống.)" }, "next": "bye" }
           ] },
-        "thanks": { "speaker": "tai_xe", "anim": "wave", "text": { "en": "Ha, a polite one! Have a great first day." }, "next": null },
-        "bye": { "speaker": "tai_xe", "text": { "en": "Off you go, then." }, "next": null },
-        "again": { "speaker": "tai_xe", "text": { "en": "Go get 'em, kid!" }, "next": null }
+        "thanks": { "speaker": "tai_xe", "anim": "wave", "text": { "en": "Ha, a polite one! Have a great first day.", "vi": "Ha, lễ phép ghê! Chúc em ngày đầu thật vui nhé." }, "next": null },
+        "bye": { "speaker": "tai_xe", "text": { "en": "Off you go, then.", "vi": "Ừ, đi đi em." }, "next": null },
+        "again": { "speaker": "tai_xe", "text": { "en": "Go get 'em, kid!", "vi": "Cố lên nhé em!" }, "next": null }
       }
     },
     {
       "id": "route_map", "start": "n1", "draft": true,
       "nodes": {
-        "n1": { "speaker": "narrator", "text": { "en": "F-Ville shuttle buses run between Hà Nội and Hòa Lạc. Morning buses arrive at 07:30." }, "next": "n2" },
-        "n2": { "speaker": "narrator", "text": { "en": "Return buses leave at 17:30 and 18:15. The times are saved to your app." },
+        "n1": { "speaker": "narrator", "text": { "en": "F-Ville shuttle buses run between Hà Nội and Hòa Lạc. Morning buses arrive at 07:30.", "vi": "Xe đưa đón F-Ville chạy giữa Hà Nội và Hòa Lạc. Chuyến sáng tới nơi lúc 07:30." }, "next": "n2" },
+        "n2": { "speaker": "narrator", "text": { "en": "Return buses leave at 17:30 and 18:15. The times are saved to your app.", "vi": "Chuyến về xuất phát lúc 17:30 và 18:15. Giờ xe đã được lưu trong app." },
           "effects": { "hieu_biet": 5, "quest": "z1_route_map", "flags": ["bus_times_saved"] }, "next": null }
       }
     },
@@ -158,7 +158,7 @@
       "id": "checkin_intro", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["checkin_intro_heard"] }, "next": "go" }], "next": "n1" },
-        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Our first photo at F-Ville! Pick a pose, then take the shot — and yes, I'm jumping in too." }, "effects": { "flags": ["checkin_intro_heard"] }, "next": "go" },
+        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Our first photo at F-Ville! Pick a pose, then take the shot — and yes, I'm jumping in too.", "vi": "Tấm ảnh đầu tiên của tụi mình ở F-Ville! Cậu chọn dáng rồi bấm chụp nhé — mình cũng chen vào chụp chung đấy." }, "effects": { "flags": ["checkin_intro_heard"] }, "next": "go" },
         "go": { "action": "minigame:checkin_photo", "next": null }
       }
     },
@@ -166,7 +166,7 @@
       "id": "well_intro", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["well_intro_heard"] }, "next": "go" }], "next": "n1" },
-        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "A real village well! Pull the rope the moment the marker is in the green zone. Three buckets — each one comes with a little story." }, "effects": { "flags": ["well_intro_heard"] }, "next": "go" },
+        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "A real village well! Pull the rope the moment the marker is in the green zone. Three buckets — each one comes with a little story.", "vi": "Giếng làng thật luôn này! Kéo dây đúng lúc vạch chạy vào vùng xanh nhé. Có ba gàu nước — gàu nào cũng kèm một câu chuyện nhỏ." }, "effects": { "flags": ["well_intro_heard"] }, "next": "go" },
         "go": { "action": "minigame:well", "next": null }
       }
     },
@@ -174,7 +174,7 @@
       "id": "cuder_intro", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["cuder_intro_heard"] }, "next": "go" }], "next": "n1" },
-        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "There's a story about the statue here. Let's read it first, then answer three questions. A wrong answer just gets a hint — no stress!" }, "effects": { "flags": ["cuder_intro_heard"] }, "next": "go" },
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "There's a story about the statue here. Let's read it first, then answer three questions. A wrong answer just gets a hint — no stress!", "vi": "Tượng này có cả một câu chuyện đấy. Mình đọc trước đã, rồi trả lời ba câu hỏi. Sai thì chỉ được gợi ý thôi — đừng lo!" }, "effects": { "flags": ["cuder_intro_heard"] }, "next": "go" },
         "go": { "action": "minigame:cuder_quiz", "next": null }
       }
     },
@@ -182,80 +182,80 @@
       "id": "timeline_intro", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["timeline_intro_heard"] }, "next": "go" }], "next": "n1" },
-        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "These cards are FPT milestones. Let's put them in order — oldest at the top — then press Check." }, "effects": { "flags": ["timeline_intro_heard"] }, "next": "go" },
+        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "These cards are FPT milestones. Let's put them in order — oldest at the top — then press Check.", "vi": "Mấy tấm thẻ này là các cột mốc của FPT. Tụi mình xếp theo thứ tự — mốc sớm nhất ở trên cùng — rồi bấm Kiểm tra nhé." }, "effects": { "flags": ["timeline_intro_heard"] }, "next": "go" },
         "go": { "action": "minigame:timeline", "next": null }
       }
     },
     {
       "id": "card_gate", "start": "tap",
       "nodes": {
-        "tap": { "speaker": "narrator", "text": { "en": "You hold your new employee card to the reader. Beep — green light! The glass doors swing open." },
-          "effects": { "quest": "z4_card_gate", "hieu_biet": 5, "banner": { "en": "First card tap!" } }, "next": "s0" },
+        "tap": { "speaker": "narrator", "text": { "en": "You hold your new employee card to the reader. Beep — green light! The glass doors swing open.", "vi": "Bạn chạm thẻ nhân viên mới vào đầu đọc. Bíp — đèn xanh! Cửa kính từ từ mở ra." },
+          "effects": { "quest": "z4_card_gate", "hieu_biet": 5, "banner": { "en": "First card tap!", "vi": "Lần quẹt thẻ đầu tiên!" } }, "next": "s0" },
         "s0": { "branch": [{ "if": { "flags": ["stranger_done"] }, "next": "tu0" }], "next": "s1" },
-        "s1": { "speaker": "nguoi_la", "anim": "wave", "text": { "en": "Excuse me! Could I come in with you? I left my card on the bus." },
+        "s1": { "speaker": "nguoi_la", "anim": "wave", "text": { "en": "Excuse me! Could I come in with you? I left my card on the bus.", "vi": "Em ơi, cho anh vào cùng em được không? Anh để quên thẻ trên xe mất rồi." },
           "choices": [
-            { "text": { "en": "Sure, come on in." }, "effects": { "flags": ["stranger_let_in", "stranger_done"] }, "next": "s_in" },
-            { "text": { "en": "Sorry, I can't let you in — reception can help you." }, "effects": { "value": "role_model", "flags": ["stranger_sent_back", "stranger_done"] }, "next": "s_back" }
+            { "text": { "en": "Sure, come on in.", "vi": "Dạ được, anh vào đi ạ." }, "effects": { "flags": ["stranger_let_in", "stranger_done"] }, "next": "s_in" },
+            { "text": { "en": "Sorry, I can't let you in — reception can help you.", "vi": "Em xin lỗi, em không cho anh vào cùng được ạ — lễ tân sẽ giúp anh." }, "effects": { "value": "role_model", "flags": ["stranger_sent_back", "stranger_done"] }, "next": "s_back" }
           ] },
-        "s_in": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Thanks — you're a star!" }, "next": "s_in2" },
-        "s_in2": { "speaker": "narrator", "text": { "en": "He slips through the gate behind you and hurries towards the stairs." },
+        "s_in": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Thanks — you're a star!", "vi": "Cảm ơn em nhé — em tốt quá!" }, "next": "s_in2" },
+        "s_in2": { "speaker": "narrator", "text": { "en": "He slips through the gate behind you and hurries towards the stairs.", "vi": "Anh ấy lách qua cửa ngay sau bạn rồi vội vã đi về phía cầu thang." },
           "effects": { "walk": { "who": "nguoi_la", "to": [1.6, 0, -4.4], "hide": true } }, "next": "s_in3" },
-        "s_in3": { "speaker": "thao", "style": "phone", "text": { "en": "Hi {player}! A quick tip from me: at the card gate, everyone taps their own card — even someone who seems friendly. Reception can always help guests get in. 🙂" }, "next": "tu0" },
-        "s_back": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Fair enough — rules are rules. I'll ask at reception. Thanks!" }, "next": "s_back2" },
-        "s_back2": { "speaker": "narrator", "text": { "en": "He heads back down the corridor towards the lobby." },
+        "s_in3": { "speaker": "thao", "style": "phone", "text": { "en": "Hi {player}! A quick tip from me: at the card gate, everyone taps their own card — even someone who seems friendly. Reception can always help guests get in. 🙂", "vi": "Chào {player}! Chị nhắc em chút nhé: ở cửa này ai cũng phải tự quẹt thẻ — kể cả người trông rất thân thiện. Khách cần vào thì đã có lễ tân lo. 🙂" }, "next": "tu0" },
+        "s_back": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Fair enough — rules are rules. I'll ask at reception. Thanks!", "vi": "Ừ, em nói đúng — quy định là quy định. Anh ra hỏi lễ tân vậy. Cảm ơn em!" }, "next": "s_back2" },
+        "s_back2": { "speaker": "narrator", "text": { "en": "He heads back down the corridor towards the lobby.", "vi": "Anh ấy quay lại hành lang, đi về phía sảnh." },
           "effects": { "walk": { "who": "nguoi_la", "to": [11.6, 0, 0.3], "hide": true } }, "next": "tu0" },
         "tu0": { "branch": [{ "if": { "flags": ["tu_card_done"] }, "next": null }], "next": "tu1" },
-        "tu1": { "speaker": "narrator", "text": { "en": "Tú taps {tu_his} card. Beep — the light flashes red." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
-        "tu2": { "speaker": "tu", "anim": "think", "text": { "en": "Huh? My card's red… Could you just let me follow you through?" },
+        "tu1": { "speaker": "narrator", "text": { "en": "Tú taps {tu_his} card. Beep — the light flashes red.", "vi": "Tú quẹt thẻ. Bíp — đèn nháy đỏ." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
+        "tu2": { "speaker": "tu", "anim": "think", "text": { "en": "Huh? My card's red… Could you just let me follow you through?", "vi": "Ủa? Thẻ mình báo đỏ… Cho mình đi theo cậu vào luôn được không?" },
           "choices": [
-            { "text": { "en": "Sure, come with me." }, "effects": { "flags": ["tu_tailgated", "tu_card_done"] }, "next": "tu_follow" },
-            { "text": { "en": "I'll message Ms. Nga in the app." }, "next": "nga1" },
-            { "text": { "en": "Maybe ask at reception?" }, "effects": { "flags": ["tu_to_reception", "tu_card_done"] }, "next": "tu_rec" }
+            { "text": { "en": "Sure, come with me.", "vi": "Được, đi cùng mình." }, "effects": { "flags": ["tu_tailgated", "tu_card_done"] }, "next": "tu_follow" },
+            { "text": { "en": "I'll message Ms. Nga in the app.", "vi": "Để mình nhắn chị Nga qua app." }, "next": "nga1" },
+            { "text": { "en": "Maybe ask at reception?", "vi": "Hay cậu thử hỏi lễ tân xem?" }, "effects": { "flags": ["tu_to_reception", "tu_card_done"] }, "next": "tu_rec" }
           ] },
-        "tu_follow": { "speaker": "tu", "anim": "nod", "text": { "en": "Thanks, {player}! Phew." }, "next": "tu_follow2" },
-        "tu_follow2": { "speaker": "thao", "style": "phone", "text": { "en": "{player}, I saw Tú come in on your card. 🙂 Even friends should each tap their own. If a card doesn't work, just message Ms. Nga in the app!" }, "next": null },
-        "nga1": { "speaker": "narrator", "text": { "en": "You open My FPT and message Ms. Nga: \"Tú's card shows red at the gate — could you help?\"" }, "next": "nga2" },
-        "nga2": { "speaker": "hr", "style": "phone", "text": { "en": "Got it! I've just activated Tú's card — try again now. Thanks for looking out for each other!" }, "next": "nga3" },
-        "nga3": { "speaker": "narrator", "text": { "en": "Tú taps again. Beep — green!" }, "effects": { "value": "teamwork", "ket_noi": 5, "flags": ["tu_card_fixed", "tu_card_done"] }, "next": "nga4" },
-        "nga4": { "speaker": "tu", "anim": "wave", "text": { "en": "It works! Thanks, {player} — you always know who to ask." }, "next": null },
-        "tu_rec": { "speaker": "tu", "anim": "nod", "text": { "en": "Okay… I'll go and ask. You go on ahead — I'll catch up!" },
-          "effects": { "walk": { "who": "tu", "to": [11.6, 0, 0.3], "return_s": 40, "return_line": { "en": "I'm back! Reception sorted my card out." }, "return_flag": "tu_back" } }, "next": null }
+        "tu_follow": { "speaker": "tu", "anim": "nod", "text": { "en": "Thanks, {player}! Phew.", "vi": "Cảm ơn cậu, {player}! Phù." }, "next": "tu_follow2" },
+        "tu_follow2": { "speaker": "thao", "style": "phone", "text": { "en": "{player}, I saw Tú come in on your card. 🙂 Even friends should each tap their own. If a card doesn't work, just message Ms. Nga in the app!", "vi": "{player} ơi, chị thấy Tú đi vào bằng thẻ của em rồi. 🙂 Thân mấy đi nữa thì mỗi người vẫn tự quẹt thẻ nhé. Thẻ không mở được thì cứ nhắn chị Nga qua app!" }, "next": null },
+        "nga1": { "speaker": "narrator", "text": { "en": "You open My FPT and message Ms. Nga: \"Tú's card shows red at the gate — could you help?\"", "vi": "Bạn mở My FPT và nhắn cho chị Nga: \"Chị ơi, thẻ của Tú bị báo đỏ ở cửa — chị giúp bạn ấy với ạ!\"" }, "next": "nga2" },
+        "nga2": { "speaker": "hr", "style": "phone", "text": { "en": "Got it! I've just activated Tú's card — try again now. Thanks for looking out for each other!", "vi": "Chị biết rồi! Chị vừa kích hoạt thẻ cho Tú, hai đứa thử lại xem. Biết để ý giúp nhau thế là tốt lắm!" }, "next": "nga3" },
+        "nga3": { "speaker": "narrator", "text": { "en": "Tú taps again. Beep — green!", "vi": "Tú quẹt lại. Bíp — đèn xanh!" }, "effects": { "value": "teamwork", "ket_noi": 5, "flags": ["tu_card_fixed", "tu_card_done"] }, "next": "nga4" },
+        "nga4": { "speaker": "tu", "anim": "wave", "text": { "en": "It works! Thanks, {player} — you always know who to ask.", "vi": "Được rồi! Cảm ơn cậu, {player} — lúc nào cậu cũng biết phải hỏi ai." }, "next": null },
+        "tu_rec": { "speaker": "tu", "anim": "nod", "text": { "en": "Okay… I'll go and ask. You go on ahead — I'll catch up!", "vi": "Ừ… để mình đi hỏi. Cậu cứ đi trước đi — mình theo sau!" },
+          "effects": { "walk": { "who": "tu", "to": [11.6, 0, 0.3], "return_s": 40, "return_line": { "en": "I'm back! Reception sorted my card out.", "vi": "Mình quay lại đây! Lễ tân sửa xong thẻ cho mình rồi." }, "return_flag": "tu_back" } }, "next": null }
       }
     },
     {
       "id": "fsa_visit", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["fsa_intro_heard"] }, "next": "go" }], "next": "n1" },
-        "n1": { "speaker": "narrator", "draft": true, "text": { "en": "A sign by the glass door reads: \"FSA — FPT Software Academy. Learning never stops here: every FSofter has a learning path, from first-week courses to certificates.\"" }, "next": "n2" },
+        "n1": { "speaker": "narrator", "draft": true, "text": { "en": "A sign by the glass door reads: \"FSA — FPT Software Academy. Learning never stops here: every FSofter has a learning path, from first-week courses to certificates.\"", "vi": "Tấm biển cạnh cửa kính ghi: \"FSA — FPT Software Academy. Ở đây, việc học không bao giờ dừng lại: FSofter nào cũng có một lộ trình học, từ các khóa học tuần đầu tới các chứng chỉ.\"" }, "next": "n2" },
         "n2": { "branch": [{ "if": { "flags": ["tu_to_reception"], "not_flags": ["tu_back"] }, "next": "n2_solo" }], "next": "n2_tu" },
-        "n2_tu": { "speaker": "tu", "anim": "point", "text": { "en": "Let's plan our first week! Put the three suggested courses on the calendar — basics first, then the ones that build on them." }, "effects": { "flags": ["fsa_intro_heard"] }, "next": "go" },
-        "n2_solo": { "speaker": "narrator", "text": { "en": "Below it, a screen invites you to plan your first week: put the three suggested courses on the calendar — basics first, then the ones that build on them." }, "effects": { "flags": ["fsa_intro_heard"] }, "next": "go" },
+        "n2_tu": { "speaker": "tu", "anim": "point", "text": { "en": "Let's plan our first week! Put the three suggested courses on the calendar — basics first, then the ones that build on them.", "vi": "Mình lên kế hoạch tuần đầu đi! Xếp ba khóa học gợi ý vào lịch nhé — khóa cơ bản trước, rồi tới các khóa học tiếp nối." }, "effects": { "flags": ["fsa_intro_heard"] }, "next": "go" },
+        "n2_solo": { "speaker": "narrator", "text": { "en": "Below it, a screen invites you to plan your first week: put the three suggested courses on the calendar — basics first, then the ones that build on them.", "vi": "Bên dưới là màn hình lên kế hoạch tuần đầu: xếp ba khóa học được gợi ý vào lịch — khóa cơ bản trước, khóa học nối tiếp sau." }, "effects": { "flags": ["fsa_intro_heard"] }, "next": "go" },
         "go": { "action": "minigame:learning_path", "next": "bye0" },
         "bye0": { "branch": [{ "if": { "flags": ["tu_said_bye"] }, "next": null }, { "if": { "flags": ["tu_to_reception"], "not_flags": ["tu_back"] }, "next": "bye_phone" }], "next": "bye1" },
-        "bye1": { "speaker": "tu", "anim": "wave", "text": { "en": "My team's on the floor above. See you after work, okay?" }, "next": "bye2" },
-        "bye2": { "speaker": "narrator", "text": { "en": "Tú waves and heads back to the stairs." },
+        "bye1": { "speaker": "tu", "anim": "wave", "text": { "en": "My team's on the floor above. See you after work, okay?", "vi": "Team của mình ở tầng trên. Tan làm gặp lại cậu nha!" }, "next": "bye2" },
+        "bye2": { "speaker": "narrator", "text": { "en": "Tú waves and heads back to the stairs.", "vi": "Tú vẫy tay rồi quay lại cầu thang." },
           "effects": { "flags": ["tu_said_bye"], "walk": { "who": "tu", "to": [[-9.4, 4.2, 2.0], [-1.5, 4.2, 1.6], [4.7, 4.2, 1.0], [4.7, 4.2, -2.0]] } }, "next": null },
-        "bye_phone": { "speaker": "tu", "style": "phone", "text": { "en": "Reception fixed my card! My team's on the floor above, so I'm heading straight up. See you after work, okay?" }, "effects": { "flags": ["tu_said_bye"] }, "next": null }
+        "bye_phone": { "speaker": "tu", "style": "phone", "text": { "en": "Reception fixed my card! My team's on the floor above, so I'm heading straight up. See you after work, okay?", "vi": "Lễ tân sửa thẻ cho mình rồi! Team của mình ở tầng trên nên mình lên thẳng luôn đây. Tan làm gặp lại nha!" }, "effects": { "flags": ["tu_said_bye"] }, "next": null }
       }
     },
     {
       "id": "fsa_remind", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["tu_back"] }, "next": "tu" }, { "if": { "not_flags": ["tu_to_reception"] }, "next": "tu" }], "next": "self" },
-        "tu": { "speaker": "tu", "anim": "point", "text": { "en": "Wait — before we go in, let's plan our first week at the FSA board!" }, "next": null },
-        "self": { "speaker": "narrator", "text": { "en": "Before you go in, plan your first week at the FSA board by the door." }, "next": null }
+        "tu": { "speaker": "tu", "anim": "point", "text": { "en": "Wait — before we go in, let's plan our first week at the FSA board!", "vi": "Khoan — trước khi vào, mình lên kế hoạch tuần đầu ở bảng FSA đã!" }, "next": null },
+        "self": { "speaker": "narrator", "text": { "en": "Before you go in, plan your first week at the FSA board by the door.", "vi": "Trước khi vào, hãy lên kế hoạch tuần đầu ở bảng FSA cạnh cửa." }, "next": null }
       }
     },
     {
       "id": "tu_remind_zone2", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Hold on, we're not done here yet: {missing}." }, "next": null }
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Hold on, we're not done here yet: {missing}.", "vi": "Khoan đã, ở đây mình chưa xong mà: {missing}." }, "next": null }
       }
     },
     {
       "id": "tu_remind_zone3", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Let's finish up here first: {missing}." }, "next": null }
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Let's finish up here first: {missing}.", "vi": "Làm cho xong ở đây trước đã nhé: {missing}." }, "next": null }
       }
     },
     {
@@ -265,168 +265,168 @@
             { "if": { "flags": ["wallet_taken"], "not_flags": ["wallet_returned"] }, "next": "w1" },
             { "if": { "quests": ["z3_card"] }, "next": "after" }
           ], "next": "n1" },
-        "n1": { "speaker": "le_tan", "anim": "wave", "text": { "en": "{player}? Welcome to F-Ville! I'm Nga from Recruitment — so nice to finally meet you in person." }, "next": "n1b" },
-        "n1b": { "speaker": "le_tan", "text": { "en": "After all our emails and calls, it's lovely to put a face to the name. Did my message get you onto Bus No. 2 all right?" },
+        "n1": { "speaker": "le_tan", "anim": "wave", "text": { "en": "{player}? Welcome to F-Ville! I'm Nga from Recruitment — so nice to finally meet you in person.", "vi": "{player} phải không? Chào mừng em đến F-Ville! Chị là Nga bên Tuyển dụng — cuối cùng cũng được gặp em ngoài đời rồi." }, "next": "n1b" },
+        "n1b": { "speaker": "le_tan", "text": { "en": "After all our emails and calls, it's lovely to put a face to the name. Did my message get you onto Bus No. 2 all right?", "vi": "Trao đổi qua bao nhiêu email với cuộc gọi, giờ mới được gặp mặt, vui quá! Sáng nay em có lên đúng xe số 2 như chị nhắn không?" },
           "choices": [
-            { "text": { "en": "Yes — Ms. Huyền was waiting right at the door!" }, "next": "n1c" },
-            { "text": { "en": "Just in time — I almost got on Bus No. 1!" }, "next": "n1d" }
+            { "text": { "en": "Yes — Ms. Huyền was waiting right at the door!", "vi": "Dạ có ạ — chị Huyền đứng đón ngay ở cửa xe!" }, "next": "n1c" },
+            { "text": { "en": "Just in time — I almost got on Bus No. 1!", "vi": "Vừa kịp ạ — suýt nữa em lên nhầm xe số 1!" }, "next": "n1d" }
           ] },
-        "n1c": { "speaker": "le_tan", "anim": "nod", "text": { "en": "That's Huyền — she never loses an intern. Oh, and look: orange suits you. We match today!" }, "next": "n2" },
-        "n1d": { "speaker": "le_tan", "text": { "en": "Ha! The number on the windshield is the one to trust. Anyway, you made it — and orange suits you. We match today!" }, "next": "n2" },
-        "n2": { "speaker": "le_tan", "text": { "en": "Now, the paperwork. One detail on this form got mixed up — can you find that line, then pick the right value for it?" }, "next": "form" },
+        "n1c": { "speaker": "le_tan", "anim": "nod", "text": { "en": "That's Huyền — she never loses an intern. Oh, and look: orange suits you. We match today!", "vi": "Đúng là chị Huyền — chưa để lạc intern nào bao giờ. À, em mặc áo cam hợp ghê. Hôm nay chị em mình mặc giống nhau rồi!" }, "next": "n2" },
+        "n1d": { "speaker": "le_tan", "text": { "en": "Ha! The number on the windshield is the one to trust. Anyway, you made it — and orange suits you. We match today!", "vi": "Ha! Cứ nhìn số trên kính lái là chắc nhất. Dù sao em cũng tới nơi rồi — mà áo cam hợp với em ghê. Hôm nay chị em mình mặc giống nhau rồi!" }, "next": "n2" },
+        "n2": { "speaker": "le_tan", "text": { "en": "Now, the paperwork. One detail on this form got mixed up — can you find that line, then pick the right value for it?", "vi": "Giờ tới phần giấy tờ. Trên tờ khai này có một thông tin bị nhầm — em tìm giúp chị dòng đó, rồi chọn lại cho đúng nhé." }, "next": "form" },
         "form": { "action": "minigame:profile_check", "next": "n3" },
-        "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card: pick an expression, then take the shot. Big smile — you'll be wearing this one every day!" }, "next": "photo" },
+        "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card: pick an expression, then take the shot. Big smile — you'll be wearing this one every day!", "vi": "Chuẩn rồi. Giờ chụp nhanh tấm ảnh làm thẻ: chọn biểu cảm rồi bấm chụp. Cười thật tươi vào — ngày nào em cũng đeo tấm thẻ này đấy!" }, "next": "photo" },
         "photo": { "action": "minigame:id_photo", "next": "n4" },
-        "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. From our first call to your first day — I'm so glad you're here!" },
+        "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. From our first call to your first day — I'm so glad you're here!", "vi": "{player}, đây là thẻ nhân viên FPT và bộ Welcome Kit của em. Từ cuộc gọi đầu tiên tới hôm nay — chị mừng lắm vì em đã về đây!" },
           "effects": { "reward": ["the_nhan_vien", "welcome_kit"], "hieu_biet": 5, "quest": "z3_card" }, "next": null },
-        "after": { "speaker": "le_tan", "text": { "en": "Your card opens the card gate down the corridor. If anything comes up today, just message me in the app!" }, "next": null },
-        "w1": { "speaker": "player", "text": { "en": "Excuse me — I found this wallet on the seats over there." }, "next": "w2" },
-        "w2": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Oh, thank you! Someone must be worried sick. I'll make sure it gets back to its owner." },
+        "after": { "speaker": "le_tan", "text": { "en": "Your card opens the card gate down the corridor. If anything comes up today, just message me in the app!", "vi": "Thẻ của em mở được cửa quẹt thẻ ở cuối hành lang. Hôm nay cần gì cứ nhắn chị qua app nhé!" }, "next": null },
+        "w1": { "speaker": "player", "text": { "en": "Excuse me — I found this wallet on the seats over there.", "vi": "Chị ơi, em nhặt được cái ví này ở dãy ghế đằng kia ạ." }, "next": "w2" },
+        "w2": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Oh, thank you! Someone must be worried sick. I'll make sure it gets back to its owner.", "vi": "Ôi, cảm ơn em! Chắc ai đó đang lo lắm. Chị sẽ gửi lại tận tay người đánh rơi." },
           "effects": { "value": "fairness", "ket_noi": 3, "quest": "z3_wallet", "flags": ["wallet_returned"], "remove_item": "vi_danh_roi" }, "next": "w3" },
         "w3": { "branch": [{ "if": { "quests": ["z3_card"] }, "next": null }], "next": "w4" },
-        "w4": { "speaker": "le_tan", "anim": "wave", "text": { "en": "And you must be {player}! I'm Nga from Recruitment — so nice to finally meet you in person." }, "next": "n1b" }
+        "w4": { "speaker": "le_tan", "anim": "wave", "text": { "en": "And you must be {player}! I'm Nga from Recruitment — so nice to finally meet you in person.", "vi": "Còn em chắc là {player} nhỉ! Chị là Nga bên Tuyển dụng — cuối cùng cũng được gặp em ngoài đời rồi." }, "next": "n1b" }
       }
     },
     {
       "id": "wallet_found", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "narrator", "text": { "en": "Someone left a wallet on the seat." },
+        "n1": { "speaker": "narrator", "text": { "en": "Someone left a wallet on the seat.", "vi": "Ai đó để quên một chiếc ví trên ghế." },
           "choices": [
-            { "text": { "en": "Take it to the reception desk." }, "effects": { "flags": ["wallet_taken"], "item": "vi_danh_roi" }, "next": "take" },
-            { "text": { "en": "Leave it where it is." }, "effects": { "flags": ["wallet_left"] }, "next": null }
+            { "text": { "en": "Take it to the reception desk.", "vi": "Mang tới quầy lễ tân." }, "effects": { "flags": ["wallet_taken"], "item": "vi_danh_roi" }, "next": "take" },
+            { "text": { "en": "Leave it where it is.", "vi": "Để nguyên ở đó." }, "effects": { "flags": ["wallet_left"] }, "next": null }
           ] },
-        "take": { "speaker": "narrator", "text": { "en": "You pick up the wallet. The reception desk is just over there." }, "next": null }
+        "take": { "speaker": "narrator", "text": { "en": "You pick up the wallet. The reception desk is just over there.", "vi": "Bạn nhặt chiếc ví lên. Quầy lễ tân ở ngay đằng kia." }, "next": null }
       }
     },
     {
       "id": "tu_lost_bag", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Wait… where's my backpack?!" }, "next": "n2" },
-        "n2": { "speaker": "tu", "text": { "en": "I think I left it on the bus! Could you help me look? The bus hasn't left yet." },
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Wait… where's my backpack?!", "vi": "Khoan… balo của mình đâu rồi?!" }, "next": "n2" },
+        "n2": { "speaker": "tu", "text": { "en": "I think I left it on the bus! Could you help me look? The bus hasn't left yet.", "vi": "Chắc mình để quên trên xe rồi! Cậu tìm giúp mình được không? Xe vẫn chưa chạy đâu." },
           "choices": [
-            { "text": { "en": "Sure — I'll check the bus!" }, "effects": { "flags": ["tu_lost_bag"] }, "next": null },
-            { "text": { "en": "Don't worry, we'll find it." }, "effects": { "flags": ["tu_lost_bag"] }, "next": null }
+            { "text": { "en": "Sure — I'll check the bus!", "vi": "Được — để mình lên xe xem!" }, "effects": { "flags": ["tu_lost_bag"] }, "next": null },
+            { "text": { "en": "Don't worry, we'll find it.", "vi": "Đừng lo, thế nào cũng tìm thấy." }, "effects": { "flags": ["tu_lost_bag"] }, "next": null }
           ] }
       }
     },
     {
       "id": "jar_look", "start": "n1",
-      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A glass jar of golden grains. You've found {grains} of the {grains_total} hidden around F-Ville." }, "next": null } }
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A glass jar of golden grains. You've found {grains} of the {grains_total} hidden around F-Ville.", "vi": "Một hũ thủy tinh đựng những hạt lúa vàng. Bạn đã tìm được {grains} trên {grains_total} hạt giấu quanh F-Ville." }, "next": null } }
     },
     {
       "id": "tu_backpack_thanks", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "My backpack! You're a lifesaver, {player}!" },
+        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "My backpack! You're a lifesaver, {player}!", "vi": "Balo của mình đây rồi! Cậu đúng là cứu tinh, {player}!" },
           "effects": { "ket_noi": 5, "quest": "z1_backpack", "flags": ["backpack_returned"], "remove_item": "balo_tu" }, "next": null }
       }
     },
     {
       "id": "z5_app_meeting", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "app", "style": "phone", "text": { "en": "📅 09:15 · Meeting with Prajith — mentor meeting room, left side of the office." }, "next": "n2" },
-        "n2": { "speaker": "mentor", "style": "phone", "text": { "en": "Hi {player}, welcome to the office! I'm Prajith, your mentor. I'm in the meeting room on the left — the door's open. See you in a minute! 🙂" }, "next": null }
+        "n1": { "speaker": "app", "style": "phone", "text": { "en": "📅 09:15 · Meeting with Prajith — mentor meeting room, left side of the office.", "vi": "📅 09:15 · Gặp anh Prajith — phòng họp mentor, bên trái văn phòng." }, "next": "n2" },
+        "n2": { "speaker": "mentor", "style": "phone", "text": { "en": "Hi {player}, welcome to the office! I'm Prajith, your mentor. I'm in the meeting room on the left — the door's open. See you in a minute! 🙂", "vi": "Chào {player}, chào mừng em tới văn phòng! Anh là Prajith, mentor của em. Anh đang ở phòng họp bên trái — cửa mở sẵn rồi. Lát gặp em nhé! 🙂" }, "next": null }
       }
     },
     {
       "id": "mentor_main", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_prajith"] }, "next": "after" }], "next": "n1" },
-        "n1": { "speaker": "mentor", "anim": "wave", "text": { "en": "There you are, {player}! Welcome to the team. I'm Prajith — I'll be your mentor during your internship." }, "next": "n2" },
-        "n2": { "speaker": "mentor", "text": { "en": "I still remember my first day here: a morning learning everyone's names, an afternoon hunting for the best coffee on this floor. You'll have both sorted by Friday!" }, "next": "n3" },
-        "n3": { "speaker": "mentor", "anim": "point", "text": { "en": "Before we plan anything, I'd like to know how you like to work. Four quick questions — there are no right or wrong answers." }, "next": "go" },
+        "n1": { "speaker": "mentor", "anim": "wave", "text": { "en": "There you are, {player}! Welcome to the team. I'm Prajith — I'll be your mentor during your internship.", "vi": "Em tới rồi, {player}! Chào mừng em vào team. Anh là Prajith — anh sẽ là mentor của em trong suốt kỳ thực tập." }, "next": "n2" },
+        "n2": { "speaker": "mentor", "text": { "en": "I still remember my first day here: a morning learning everyone's names, an afternoon hunting for the best coffee on this floor. You'll have both sorted by Friday!", "vi": "Anh vẫn nhớ ngày đầu của mình ở đây: buổi sáng lo nhớ tên mọi người, buổi chiều đi tìm chỗ có cà phê ngon nhất tầng. Đến thứ Sáu là em rành cả hai thôi!" }, "next": "n3" },
+        "n3": { "speaker": "mentor", "anim": "point", "text": { "en": "Before we plan anything, I'd like to know how you like to work. Four quick questions — there are no right or wrong answers.", "vi": "Trước khi lên kế hoạch gì, anh muốn biết em thích làm việc theo kiểu nào. Bốn câu hỏi nhanh thôi — không có đúng hay sai đâu." }, "next": "go" },
         "go": { "action": "minigame:career_compass", "next": "n4" },
-        "n4": { "speaker": "mentor", "anim": "nod", "text": { "en": "Thanks, {player} — that tells me a lot. Your Career Compass is saved in My FPT. Let's look at it together again at the end of your first month." },
+        "n4": { "speaker": "mentor", "anim": "nod", "text": { "en": "Thanks, {player} — that tells me a lot. Your Career Compass is saved in My FPT. Let's look at it together again at the end of your first month.", "vi": "Cảm ơn em, {player} — vậy là anh hiểu em hơn nhiều rồi. La bàn nghề nghiệp của em đã lưu trong My FPT. Hết tháng đầu, anh em mình cùng xem lại nhé." },
           "effects": { "ket_noi": 5, "quest": "z5_prajith" }, "next": "n5" },
-        "n5": { "speaker": "mentor", "text": { "en": "Next, the manager would like to meet you. Her room is next door — just a little further down." }, "next": null },
-        "after": { "speaker": "mentor", "text": { "en": "The manager's room is just next door. And I'm right here all day if you have any questions!" }, "next": null }
+        "n5": { "speaker": "mentor", "text": { "en": "Next, the manager would like to meet you. Her room is next door — just a little further down.", "vi": "Tiếp theo, chị quản lý muốn gặp em. Phòng chị ấy ở ngay bên cạnh — đi thêm một chút nữa thôi." }, "next": null },
+        "after": { "speaker": "mentor", "text": { "en": "The manager's room is just next door. And I'm right here all day if you have any questions!", "vi": "Phòng chị quản lý ở ngay bên cạnh. Còn anh ngồi đây cả ngày, có gì cứ hỏi anh nhé!" }, "next": null }
       }
     },
     {
       "id": "manager_wait", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "manager", "anim": "wave", "text": { "en": "Hi there — you must be our new intern! Have a chat with Prajith first; he's in the meeting room next door. I'll be right here." }, "next": null }
+        "n1": { "speaker": "manager", "anim": "wave", "text": { "en": "Hi there — you must be our new intern! Have a chat with Prajith first; he's in the meeting room next door. I'll be right here.", "vi": "Chào em — chắc em là intern mới của team mình! Em nói chuyện với anh Prajith trước nhé, anh ấy ở phòng họp bên cạnh. Chị ở đây chờ em." }, "next": null }
       }
     },
     {
       "id": "manager_main", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_manager"] }, "next": "after" }], "next": "n1" },
-        "n1": { "speaker": "manager", "anim": "wave", "text": { "en": "Hi {player}, welcome to the team! I'm really glad you're here." }, "next": "n2" },
-        "n2": { "speaker": "manager", "draft": true, "text": { "en": "Our team builds and looks after software for customers around the world. This quarter our goal is simple: ship reliable releases, and help each other learn along the way." }, "next": "n3" },
-        "n3": { "speaker": "manager", "text": { "en": "You don't need to do anything big in your first week. But I'd like to see how you'd organize your work." }, "next": "n4" },
-        "n4": { "speaker": "manager", "anim": "point", "text": { "en": "Here are five tasks for your first week. Put the most urgent at the top and the one that can wait at the bottom, then press Check." }, "next": "go" },
+        "n1": { "speaker": "manager", "anim": "wave", "text": { "en": "Hi {player}, welcome to the team! I'm really glad you're here.", "vi": "Chào {player}, chào mừng em về team! Có em về đây chị vui lắm." }, "next": "n2" },
+        "n2": { "speaker": "manager", "draft": true, "text": { "en": "Our team builds and looks after software for customers around the world. This quarter our goal is simple: ship reliable releases, and help each other learn along the way.", "vi": "Team mình phát triển và bảo trì phần mềm cho khách hàng khắp thế giới. Mục tiêu quý này đơn giản thôi: ra bản nào chắc bản đó, và vừa làm vừa giúp nhau học hỏi." }, "next": "n3" },
+        "n3": { "speaker": "manager", "text": { "en": "You don't need to do anything big in your first week. But I'd like to see how you'd organize your work.", "vi": "Tuần đầu em chưa cần làm gì to tát đâu. Nhưng chị muốn xem em sắp xếp công việc thế nào." }, "next": "n4" },
+        "n4": { "speaker": "manager", "anim": "point", "text": { "en": "Here are five tasks for your first week. Put the most urgent at the top and the one that can wait at the bottom, then press Check.", "vi": "Đây là năm việc của tuần đầu. Em xếp việc gấp nhất lên trên cùng, việc chưa gấp xuống cuối, rồi bấm Kiểm tra nhé." }, "next": "go" },
         "go": { "action": "minigame:priorities", "next": "r0" },
         "r0": { "branch": [{ "if": { "flags": ["priorities_sensible"] }, "next": "good" }], "next": "ok" },
-        "good": { "speaker": "manager", "anim": "nod", "text": { "en": "That's exactly how I'd do it: what's due today first, the nice-to-haves last. Very wise!" }, "next": "n5" },
-        "ok": { "speaker": "manager", "text": { "en": "Good effort! Just remember: anything due today comes first, and the extras can wait until you've settled in." }, "next": "n5" },
-        "n5": { "speaker": "manager", "text": { "en": "I've added your first mission to My FPT: finish the mandatory Information Security course today. Then set up your laptop at your desk." },
+        "good": { "speaker": "manager", "anim": "nod", "text": { "en": "That's exactly how I'd do it: what's due today first, the nice-to-haves last. Very wise!", "vi": "Chị cũng sẽ xếp y như vậy: việc có hạn hôm nay lên trước, việc không gấp để cuối. Rất sáng suốt!" }, "next": "n5" },
+        "ok": { "speaker": "manager", "text": { "en": "Good effort! Just remember: anything due today comes first, and the extras can wait until you've settled in.", "vi": "Cũng khá rồi đấy! Em chỉ cần nhớ: việc có hạn hôm nay làm trước, việc không gấp cứ để khi em quen dần đã." }, "next": "n5" },
+        "n5": { "speaker": "manager", "text": { "en": "I've added your first mission to My FPT: finish the mandatory Information Security course today. Then set up your laptop at your desk.", "vi": "Chị đã thêm nhiệm vụ đầu tiên vào My FPT: hôm nay hoàn thành khóa học bắt buộc về An toàn thông tin. Sau đó em về bàn cài laptop." },
           "effects": { "reward": "nhiem_vu_dau_tien", "quest": "z5_manager", "ket_noi": 3 }, "next": "n6" },
-        "n6": { "speaker": "manager", "anim": "wave", "text": { "en": "Oh — it's almost noon! The whole team is heading out for lunch. Come with us!" },
-          "effects": { "time_skip": { "card": { "en": "12:00 · The team invites you to lunch" }, "flags": ["lunch_done"] } }, "next": null },
-        "after": { "speaker": "manager", "text": { "en": "Your desk is the one near the entrance, with Lan and Minh right beside it. Settle in and say hello to everyone!" }, "next": null }
+        "n6": { "speaker": "manager", "anim": "wave", "text": { "en": "Oh — it's almost noon! The whole team is heading out for lunch. Come with us!", "vi": "Ơ — sắp trưa rồi! Cả team chuẩn bị đi ăn trưa đấy. Em đi cùng luôn cho vui!" },
+          "effects": { "time_skip": { "card": { "en": "12:00 · The team invites you to lunch", "vi": "12:00 · Cả team rủ bạn đi ăn trưa" }, "flags": ["lunch_done"] } }, "next": null },
+        "after": { "speaker": "manager", "text": { "en": "Your desk is the one near the entrance, with Lan and Minh right beside it. Settle in and say hello to everyone!", "vi": "Bàn em ở gần lối vào, ngay cạnh chị Lan và anh Minh. Em ổn định chỗ ngồi rồi đi chào mọi người nhé!" }, "next": null }
       }
     },
     {
       "id": "lan_hello", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_lan"] }, "next": "after" }], "next": "n1" },
-        "n1": { "speaker": "dong_nghiep_1", "anim": "wave", "text": { "en": "Hi! You must be {player} — I'm Lan. We sit in the same cluster, so you'll see a lot of me!" }, "next": "n2" },
-        "n2": { "speaker": "dong_nghiep_1", "text": { "en": "My first-day tip: don't be afraid to ask questions. Everyone here was new once — and we all remember how it felt." },
+        "n1": { "speaker": "dong_nghiep_1", "anim": "wave", "text": { "en": "Hi! You must be {player} — I'm Lan. We sit in the same cluster, so you'll see a lot of me!", "vi": "Chào em! Em là {player} đúng không — chị là Lan. Mình ngồi cùng cụm bàn nên em sẽ gặp chị suốt đấy!" }, "next": "n2" },
+        "n2": { "speaker": "dong_nghiep_1", "text": { "en": "My first-day tip: don't be afraid to ask questions. Everyone here was new once — and we all remember how it felt.", "vi": "Chị khuyên em thế này: đừng ngại hỏi. Ai ở đây cũng từng là người mới — và ai cũng nhớ cảm giác đó." },
           "effects": { "advice": "lan", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_lan" }, "next": null },
-        "after": { "speaker": "dong_nghiep_1", "text": { "en": "If you need anything, just lean over — I'm right here!" }, "next": null }
+        "after": { "speaker": "dong_nghiep_1", "text": { "en": "If you need anything, just lean over — I'm right here!", "vi": "Cần gì cứ quay sang hỏi chị nhé — chị ngồi ngay đây!" }, "next": null }
       }
     },
     {
       "id": "minh_hello", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_minh"] }, "next": "after" }], "next": "n1" },
-        "n1": { "speaker": "dong_nghiep_2", "anim": "wave", "text": { "en": "Hey {player}, welcome aboard! I'm Minh — two years on this team and still loving it." }, "next": "n2" },
-        "n2": { "speaker": "dong_nghiep_2", "anim": "point", "text": { "en": "My tip: write things down. New names, tools, where things live — your notes from this week will save you hours next month." },
+        "n1": { "speaker": "dong_nghiep_2", "anim": "wave", "text": { "en": "Hey {player}, welcome aboard! I'm Minh — two years on this team and still loving it.", "vi": "Chào {player}, chào mừng em! Anh là Minh — ở team này hai năm rồi mà vẫn mê lắm." }, "next": "n2" },
+        "n2": { "speaker": "dong_nghiep_2", "anim": "point", "text": { "en": "My tip: write things down. New names, tools, where things live — your notes from this week will save you hours next month.", "vi": "Lời khuyên của anh: chịu khó ghi chép. Tên mọi người, công cụ, cái gì nằm ở đâu — tuần này ghi đủ thì tháng sau đỡ mất cả mớ thời gian." },
           "effects": { "advice": "minh", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_minh" }, "next": null },
-        "after": { "speaker": "dong_nghiep_2", "text": { "en": "Ask me anything about our tools — I love that stuff." }, "next": null }
+        "after": { "speaker": "dong_nghiep_2", "text": { "en": "Ask me anything about our tools — I love that stuff.", "vi": "Có gì về công cụ của team cứ hỏi anh — anh khoái mấy thứ đó lắm." }, "next": null }
       }
     },
     {
       "id": "ha_hello", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_ha"] }, "next": "after" }], "next": "n1" },
-        "n1": { "speaker": "dong_nghiep_3", "anim": "wave", "text": { "en": "Hi, I'm Hà! So glad you're joining us, {player}." }, "next": "n2" },
-        "n2": { "speaker": "dong_nghiep_3", "anim": "nod", "text": { "en": "My tip: keep your calendar open and turn on reminders. Meetings move around a lot, and it's easy to miss one in your first week." },
+        "n1": { "speaker": "dong_nghiep_3", "anim": "wave", "text": { "en": "Hi, I'm Hà! So glad you're joining us, {player}.", "vi": "Chào em, chị là Hà! Vui quá vì em về với team mình, {player}." }, "next": "n2" },
+        "n2": { "speaker": "dong_nghiep_3", "anim": "nod", "text": { "en": "My tip: keep your calendar open and turn on reminders. Meetings move around a lot, and it's easy to miss one in your first week.", "vi": "Chị mách em nè: hay xem lịch và bật nhắc lịch. Lịch họp hay đổi lắm, tuần đầu rất dễ lỡ một buổi." },
           "effects": { "advice": "ha", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_ha" }, "next": null },
-        "after": { "speaker": "dong_nghiep_3", "text": { "en": "Good luck today — you're doing great!" }, "next": null }
+        "after": { "speaker": "dong_nghiep_3", "text": { "en": "Good luck today — you're doing great!", "vi": "Chúc em hôm nay suôn sẻ — em đang làm tốt lắm!" }, "next": null }
       }
     },
     {
       "id": "khang_main", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_khang"] }, "next": "again" }], "next": "n1" },
-        "n1": { "speaker": "khang", "anim": "wave", "text": { "en": "Hey, a new face! I'm Khang. Taking a little break?" }, "next": "n2" },
-        "n2": { "speaker": "khang", "anim": "point", "text": { "en": "Fancy a quick shot at pool? Aim, pick your power and try to sink the orange ball." },
+        "n1": { "speaker": "khang", "anim": "wave", "text": { "en": "Hey, a new face! I'm Khang. Taking a little break?", "vi": "Ơ, người mới à! Anh là Khang. Em đang nghỉ giải lao hả?" }, "next": "n2" },
+        "n2": { "speaker": "khang", "anim": "point", "text": { "en": "Fancy a quick shot at pool? Aim, pick your power and try to sink the orange ball.", "vi": "Đánh thử một cú bi-a không em? Ngắm, chọn lực rồi thử đưa bi cam vào lỗ xem." },
           "choices": [
-            { "text": { "en": "Sure, one shot!" }, "effects": { "unflags": ["billiards_last_hit"] }, "next": "play" },
-            { "text": { "en": "Maybe later." }, "next": "tip" }
+            { "text": { "en": "Sure, one shot!", "vi": "Được ạ, một cú thôi!" }, "effects": { "unflags": ["billiards_last_hit"] }, "next": "play" },
+            { "text": { "en": "Maybe later.", "vi": "Để lát nữa ạ." }, "next": "tip" }
           ] },
         "play": { "action": "minigame:billiards", "next": "res" },
         "res": { "branch": [{ "if": { "flags": ["billiards_last_hit"] }, "next": "nice" }], "next": "close" },
-        "nice": { "speaker": "khang", "anim": "cheer", "text": { "en": "In the pocket! You're a natural." }, "next": "tip" },
-        "close": { "speaker": "khang", "text": { "en": "So close! Honestly, trying is half the fun." }, "next": "tip" },
-        "tip": { "speaker": "khang", "anim": "nod", "text": { "en": "Here's my tip: take real breaks. Step away from the screen for a few minutes — good ideas often turn up over a game of pool." },
+        "nice": { "speaker": "khang", "anim": "cheer", "text": { "en": "In the pocket! You're a natural.", "vi": "Vào lỗ rồi! Em có năng khiếu đấy." }, "next": "tip" },
+        "close": { "speaker": "khang", "text": { "en": "So close! Honestly, trying is half the fun.", "vi": "Suýt vào rồi! Mà thử thôi cũng vui mà." }, "next": "tip" },
+        "tip": { "speaker": "khang", "anim": "nod", "text": { "en": "Here's my tip: take real breaks. Step away from the screen for a few minutes — good ideas often turn up over a game of pool.", "vi": "Anh mách em nhé: nghỉ giải lao cho đàng hoàng. Rời màn hình vài phút đi — nhiều ý tưởng hay lại nảy ra bên bàn bi-a đấy." },
           "effects": { "advice": "khang", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_khang" }, "next": null },
-        "again": { "speaker": "khang", "text": { "en": "The table's free — want another shot?" },
+        "again": { "speaker": "khang", "text": { "en": "The table's free — want another shot?", "vi": "Bàn đang trống — làm thêm cú nữa không?" },
           "choices": [
-            { "text": { "en": "Sure!" }, "effects": { "unflags": ["billiards_last_hit"] }, "next": "play2" },
-            { "text": { "en": "Not now, thanks." }, "next": null }
+            { "text": { "en": "Sure!", "vi": "Có ạ!" }, "effects": { "unflags": ["billiards_last_hit"] }, "next": "play2" },
+            { "text": { "en": "Not now, thanks.", "vi": "Giờ thì thôi ạ, em cảm ơn anh." }, "next": null }
           ] },
         "play2": { "action": "minigame:billiards", "next": "res2" },
         "res2": { "branch": [{ "if": { "flags": ["billiards_last_hit"] }, "next": "nice2" }], "next": "close2" },
-        "nice2": { "speaker": "khang", "anim": "cheer", "text": { "en": "Great shot!" }, "next": null },
-        "close2": { "speaker": "khang", "text": { "en": "Almost! The table will be here tomorrow too." }, "next": null }
+        "nice2": { "speaker": "khang", "anim": "cheer", "text": { "en": "Great shot!", "vi": "Cú đẹp đấy!" }, "next": null },
+        "close2": { "speaker": "khang", "text": { "en": "Almost! The table will be here tomorrow too.", "vi": "Tiếc ghê, suýt vào! Mai lại ra đánh tiếp nhé." }, "next": null }
       }
     },
     {
       "id": "desk_wait", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "narrator", "text": { "en": "A tidy desk with a laptop, a blank name plate and a gift box with an orange ribbon. Meet the manager first — she'll tell you where to start." }, "next": null }
+        "n1": { "speaker": "narrator", "text": { "en": "A tidy desk with a laptop, a blank name plate and a gift box with an orange ribbon. Meet the manager first — she'll tell you where to start.", "vi": "Bàn làm việc gọn gàng: laptop, biển tên còn trống và một hộp quà buộc ruy băng cam. Gặp chị quản lý trước đã — chị ấy sẽ chỉ bạn bắt đầu từ đâu." }, "next": null }
       }
     },
     {
@@ -434,40 +434,40 @@
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_desk"] }, "next": "after" }], "next": "t0" },
         "t0": { "branch": [{ "if": { "quests": ["z5_lan", "z5_minh", "z5_ha"] }, "next": "sit" }], "next": "team_q" },
-        "team_q": { "speaker": "narrator", "text": { "en": "Your teammates Lan, Minh and Hà sit just around the corner. Say hello before you settle in?" },
+        "team_q": { "speaker": "narrator", "text": { "en": "Your teammates Lan, Minh and Hà sit just around the corner. Say hello before you settle in?", "vi": "Lan, Minh và Hà — đồng đội của bạn — ngồi ngay gần đây. Chào mọi người trước rồi hẵng ngồi xuống?" },
           "choices": [
-            { "text": { "en": "I'll say hello first." }, "next": null },
-            { "text": { "en": "Sit down now." }, "next": "sit" }
+            { "text": { "en": "I'll say hello first.", "vi": "Đi chào mọi người trước." }, "next": null },
+            { "text": { "en": "Sit down now.", "vi": "Ngồi xuống luôn." }, "next": "sit" }
           ] },
         "sit": { "action": "sit:SPAWN_ban_lam_viec", "next": "n1" },
-        "n1": { "speaker": "narrator", "text": { "en": "Your desk! A laptop, a blank name plate — and a gift box with an orange ribbon." }, "next": "n2" },
-        "n2": { "speaker": "narrator", "draft": true, "text": { "en": "Inside the box: an FPT notebook, a water bottle and a card — \"Welcome to the team, {player}! — Lan, Minh, Hà, Khang & everyone\"." },
+        "n1": { "speaker": "narrator", "text": { "en": "Your desk! A laptop, a blank name plate — and a gift box with an orange ribbon.", "vi": "Bàn làm việc đây rồi! Một chiếc laptop, biển tên còn trống — và hộp quà buộc ruy băng cam." }, "next": "n2" },
+        "n2": { "speaker": "narrator", "draft": true, "text": { "en": "Inside the box: an FPT notebook, a water bottle and a card — \"Welcome to the team, {player}! — Lan, Minh, Hà, Khang & everyone\".", "vi": "Trong hộp có một cuốn sổ FPT, một bình nước và tấm thiệp: \"Chào mừng {player} về với team! — Lan, Minh, Hà, Khang và cả nhà\"." },
           "effects": { "reward": "qua_cua_team" }, "next": "n3" },
-        "n3": { "speaker": "narrator", "text": { "en": "Time to log in for the first time: create a strong password, then turn on two-factor authentication." }, "next": "login" },
+        "n3": { "speaker": "narrator", "text": { "en": "Time to log in for the first time: create a strong password, then turn on two-factor authentication.", "vi": "Đến lúc đăng nhập lần đầu: tạo một mật khẩu mạnh, rồi bật xác thực hai lớp." }, "next": "login" },
         "login": { "action": "minigame:login", "next": "n4" },
-        "n4": { "speaker": "narrator", "text": { "en": "The name plate on your desk now reads: {player} · Intern." }, "effects": { "flags": ["nameplate_on"] }, "next": "n5" },
-        "n5": { "speaker": "narrator", "text": { "en": "Your first-day checklist pops up in My FPT…" }, "next": "list" },
+        "n4": { "speaker": "narrator", "text": { "en": "The name plate on your desk now reads: {player} · Intern.", "vi": "Biển tên trên bàn giờ đã ghi: {player} · Intern." }, "effects": { "flags": ["nameplate_on"] }, "next": "n5" },
+        "n5": { "speaker": "narrator", "text": { "en": "Your first-day checklist pops up in My FPT…", "vi": "Checklist ngày đầu tiên hiện lên trong My FPT…" }, "next": "list" },
         "list": { "action": "minigame:day_checklist", "next": "n6" },
-        "n6": { "speaker": "narrator", "text": { "en": "You settle in and get to work. The afternoon flies by…" },
+        "n6": { "speaker": "narrator", "text": { "en": "You settle in and get to work. The afternoon flies by…", "vi": "Bạn ổn định chỗ ngồi và bắt tay vào việc. Buổi chiều trôi qua thật nhanh…" },
           "effects": { "quest": "z5_desk", "hieu_biet": 10, "finish": true }, "next": null },
-        "after": { "speaker": "narrator", "text": { "en": "Your desk, with your name on it. See you here tomorrow!" }, "next": null }
+        "after": { "speaker": "narrator", "text": { "en": "Your desk, with your name on it. See you here tomorrow!", "vi": "Bàn làm việc giờ đã có tên bạn. Mai gặp lại nhé!" }, "next": null }
       }
     },
     {
       "id": "ending_lan", "start": "n0",
       "nodes": {
-        "n0": { "speaker": "app", "style": "phone", "text": { "en": "⏰ 17:30 — that's a wrap for today!" }, "next": "n1" },
-        "n1": { "speaker": "dong_nghiep_1", "anim": "wave", "text": { "en": "17:30 already! Time to head home, {player} — see you tomorrow!" }, "next": "n2" },
-        "n2": { "speaker": "player", "text": { "en": "See you tomorrow, Lan!" }, "next": null }
+        "n0": { "speaker": "app", "style": "phone", "text": { "en": "⏰ 17:30 — that's a wrap for today!", "vi": "⏰ 17:30 — hết giờ làm hôm nay rồi!" }, "next": "n1" },
+        "n1": { "speaker": "dong_nghiep_1", "anim": "wave", "text": { "en": "17:30 already! Time to head home, {player} — see you tomorrow!", "vi": "17:30 rồi à! Về thôi {player} — mai gặp lại em nhé!" }, "next": "n2" },
+        "n2": { "speaker": "player", "text": { "en": "See you tomorrow, Lan!", "vi": "Dạ, mai gặp lại chị Lan ạ!" }, "next": null }
       }
     },
     {
       "id": "ending_tu", "start": "n0",
       "nodes": {
         "n0": { "branch": [{ "if": { "flags": ["backpack_returned", "tu_card_fixed"] }, "next": "both" }], "next": "some" },
-        "both": { "speaker": "tu", "anim": "cheer", "text": { "en": "{player}! Without you today I'd have been totally lost. Thanks for everything!" }, "next": "n2" },
-        "some": { "speaker": "tu", "anim": "wave", "text": { "en": "{player}! The first day wasn't that scary after all, was it? See you tomorrow!" }, "next": "n2" },
-        "n2": { "speaker": "tu", "anim": "point", "text": { "en": "Our bus is here — let's go home!" }, "next": null }
+        "both": { "speaker": "tu", "anim": "cheer", "text": { "en": "{player}! Without you today I'd have been totally lost. Thanks for everything!", "vi": "{player}! Hôm nay không có cậu chắc mình lạc mất rồi. Cảm ơn cậu nhiều lắm nha!" }, "next": "n2" },
+        "some": { "speaker": "tu", "anim": "wave", "text": { "en": "{player}! The first day wasn't that scary after all, was it? See you tomorrow!", "vi": "{player}! Ngày đầu hóa ra cũng không đáng sợ lắm nhỉ? Mai gặp lại nha!" }, "next": "n2" },
+        "n2": { "speaker": "tu", "anim": "point", "text": { "en": "Our bus is here — let's go home!", "vi": "Xe tới rồi — mình về thôi!" }, "next": null }
       }
     }
   ]

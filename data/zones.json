@@ -9,7 +9,7 @@
         "sun": { "color": "#ffd9a8", "intensity": 1.45, "position": [60, 26, 34] },
         "hemi": { "sky": "#f3e6d8", "ground": "#8c8072", "intensity": 1.05 } } },
     "zone_01": { "file": "zone_01_bus", "start": "SPAWN_zone_01_start",
-      "variants": [{ "if": { "flags": ["game_complete"] }, "time": { "en": "17:40" },
+      "variants": [{ "if": { "flags": ["game_complete"] }, "time": { "en": "17:40", "vi": "17:40" },
         "mood": { "_ghi_chu": "Cảnh kết 17:30 (GDD): hoàng hôn — trời cam hồng, nắng rất thấp phía tây, sương ấm ở hai đầu đường.",
           "sky": "#f3b183", "fog": [45, 150], "sun": { "color": "#ff9b5e", "intensity": 1.35, "position": [-70, 12, -25] }, "hemi": { "sky": "#f6c7a0", "ground": "#5d4a50", "intensity": 0.85 } } }],
       "events": [{ "after_s": 20, "if": { "flags": ["tu_balo_tren_xe"], "not_flags": ["tu_lost_bag", "game_complete"] }, "dialogue": "tu_lost_bag", "actor": "tu",
@@ -19,7 +19,7 @@
     "zone_04": { "file": "zone_04_corridor", "start": "SPAWN_zone_04_from_zone_03" },
     "zone_05": { "file": "zone_05_office", "start": "SPAWN_zone_05_from_zone_04",
       "on_enter": { "dialogue": "z5_app_meeting", "once_flag": "z5_meeting_notice", "_ly_do": "GDD zone 5: vào zone, app báo \"09:15 Meeting with Prajith\"." },
-      "variants": [{ "if": { "flags": ["lunch_done"] }, "time": { "en": "13:30" },
+      "variants": [{ "if": { "flags": ["lunch_done"] }, "time": { "en": "13:30", "vi": "13:30" },
         "mood": { "_ghi_chu": "Buổi chiều sau bữa trưa (GDD: màn mờ \"12:00 · The team invites you to lunch\" rồi sáng lại): nắng thấp hơn, ấm hơn.",
           "sky": "#e9d9c4", "sun": { "color": "#ffd7a3", "intensity": 1.5, "position": [-55, 30, 30] }, "hemi": { "sky": "#f4e3cf", "ground": "#86765f", "intensity": 1.0 } } }] }
   }

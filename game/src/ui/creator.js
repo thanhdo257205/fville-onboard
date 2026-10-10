@@ -6,6 +6,8 @@
 //     (cùng bộ nhớ đệm với game → vào game không tải lại). Bắt đầu chơi → dừng vòng vẽ, giải phóng renderer riêng của màn.
 //   - màn hẹp (< NARROW_PX) hoặc Detail = Faster, hoặc WebGL / GLB lỗi: 3 thẻ chân dung (radio) thay cảnh 3D.
 //   Thẻ thông tin: chân dung, tên gọi ngắn, 1 dòng mô tả, nút "Preview FPT shirt" (xem trước bộ ao_cam = texture trong GLB).
+// Nút ngôn ngữ (English / Tiếng Việt) ở góc trên: onLang(l) tải chữ mới (main.js → setLanguage), màn viết lại chữ tại chỗ
+// (phần tử có data-t / data-t-aria / data-t-ph), giữ nguyên tên đang gõ, nhân vật, vị trí đã chọn.
 // window.__creator: trạng thái cho smoke test (chế độ, nhân vật đang chọn, toạ độ trên màn hình của từng nhân vật).
 import * as THREE from "three";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
@@ -13,7 +15,7 @@ import { OutlineEffect } from "three/addons/effects/OutlineEffect.js";
 import { loadGLTF, url } from "../core/assets.js";
 import { Character } from "../characters/characters.js";
 import { tx } from "../content/content.js";
-import { t } from "../i18n.js";
+import { t, lang, LANGS } from "../i18n.js";
 
 export const NARROW_PX = 700;
 const SPACING = 0.82;          // m giữa 2 nhân vật trên bục
@@ -22,7 +24,7 @@ const DIM = 0.62;              // độ sáng người không được chọn
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
-export function characterCreator(cfg, { characters, settings = {}, initial = null } = {}) {
+export function characterCreator(cfg, { characters, settings = {}, initial = null, onLang = null } = {}) {
   const looks = (cfg.looks || []).filter((l) => characters.lookGender(l.id) && characters.model(l.id)?.glb);
   const portraitOf = (id, shirt) => {
     const m = characters.model(id);
@@ -34,32 +36,35 @@ export function characterCreator(cfg, { characters, settings = {}, initial = nul
   const el = document.createElement("div");
   el.id = "creator";
   el.innerHTML = `<form class="panel" novalidate>
-    <h2>${t("creator.title")}</h2>
+    <div class="lang-switch seg" role="group" data-t-aria="menu.language" aria-label="${esc(t("menu.language"))}">
+      ${LANGS.map((l) => `<button type="button" data-lang="${l}" lang="${l}" class="${l === lang ? "on" : ""}" aria-pressed="${l === lang}">${esc(t(`lang.${l}`))}</button>`).join("")}
+    </div>
+    <h2 data-t="creator.title">${t("creator.title")}</h2>
     <div class="look-row">
       <div class="stage" hidden>
-        <canvas tabindex="0" aria-label="${esc(t("creator.look_stage"))}"></canvas>
-        <button type="button" class="arrow prev" aria-label="${esc(t("creator.look_prev"))}">‹</button>
-        <button type="button" class="arrow next" aria-label="${esc(t("creator.look_next"))}">›</button>
-        <p class="stage-msg">${t("creator.look_loading")}</p>
-        <p class="hint" aria-hidden="true">${t("creator.look_hint")}</p>
+        <canvas tabindex="0" data-t-aria="creator.look_stage" aria-label="${esc(t("creator.look_stage"))}"></canvas>
+        <button type="button" class="arrow prev" data-t-aria="creator.look_prev" aria-label="${esc(t("creator.look_prev"))}">‹</button>
+        <button type="button" class="arrow next" data-t-aria="creator.look_next" aria-label="${esc(t("creator.look_next"))}">›</button>
+        <p class="stage-msg" data-t="creator.look_loading">${t("creator.look_loading")}</p>
+        <p class="hint" aria-hidden="true" data-t="creator.look_hint">${t("creator.look_hint")}</p>
       </div>
-      <fieldset class="cards" hidden><legend>${t("creator.look")}</legend>
+      <fieldset class="cards" hidden><legend data-t="creator.look">${t("creator.look")}</legend>
         ${looks.map((l, i) => `<label class="card"><input type="radio" name="look" value="${l.id}" ${i === sel ? "checked" : ""}>
-          <span><img alt="" src="${portraitOf(l.id, false)}"><b>${esc(tx(l.name))}</b></span></label>`).join("")}
+          <span><img alt="" src="${portraitOf(l.id, false)}"><b data-look="${l.id}">${esc(tx(l.name))}</b></span></label>`).join("")}
       </fieldset>
       <aside class="info">
         <img class="portrait" alt="">
         <div><h3 class="look-name"></h3><p class="look-desc"></p>
-        <button type="button" class="ghost shirt" aria-pressed="false">${t("creator.preview_shirt")}</button></div>
+        <button type="button" class="ghost shirt" aria-pressed="false" data-t="creator.preview_shirt">${t("creator.preview_shirt")}</button></div>
       </aside>
       <p class="sr" aria-live="polite"></p>
     </div>
-    <label class="name">${t("creator.name")}<input name="name" maxlength="${max}" autocomplete="off" placeholder="${t("creator.name_placeholder")}"></label>
-    <fieldset class="positions"><legend>${t("creator.position")}</legend>
-      ${cfg.positions.map((p, i) => `<label class="pos"><input type="radio" name="position" value="${p.id}" ${i === 0 ? "checked" : ""}><span>${tx(p.name)}</span></label>`).join("")}
+    <label class="name"><span data-t="creator.name">${t("creator.name")}</span><input name="name" maxlength="${max}" autocomplete="off" data-t-ph="creator.name_placeholder" placeholder="${esc(t("creator.name_placeholder"))}"></label>
+    <fieldset class="positions"><legend data-t="creator.position">${t("creator.position")}</legend>
+      ${cfg.positions.map((p, i) => `<label class="pos"><input type="radio" name="position" value="${p.id}" ${i === 0 ? "checked" : ""}><span data-pos="${p.id}">${tx(p.name)}</span></label>`).join("")}
     </fieldset>
     <p class="err" aria-live="polite"></p>
-    <button class="primary" type="submit">${t("creator.start")}</button></form>`;
+    <button class="primary" type="submit" data-t="creator.start">${t("creator.start")}</button></form>`;
   document.body.appendChild(el);
   const form = el.querySelector("form");
   const input = form.elements.name;
@@ -120,6 +125,23 @@ export function characterCreator(cfg, { characters, settings = {}, initial = nul
     info.shirt.setAttribute("aria-pressed", String(shirt));
     stage?.setShirt(shirt);
     showInfo(false);
+  });
+  // đổi ngôn ngữ: chữ mới tải xong (onLang) → viết lại mọi chữ của màn, giữ nguyên những gì đã chọn / đã gõ
+  const relabel = () => {
+    for (const n of el.querySelectorAll("[data-t]")) n.textContent = t(n.dataset.t);
+    for (const n of el.querySelectorAll("[data-t-aria]")) n.setAttribute("aria-label", t(n.dataset.tAria));
+    for (const n of el.querySelectorAll("[data-t-ph]")) n.placeholder = t(n.dataset.tPh);
+    for (const n of el.querySelectorAll("[data-look]")) n.textContent = tx(looks.find((l) => l.id === n.dataset.look)?.name);
+    for (const n of el.querySelectorAll("[data-pos]")) n.textContent = tx(cfg.positions.find((p) => p.id === n.dataset.pos)?.name);
+    for (const b of el.querySelectorAll("[data-lang]")) { b.textContent = t(`lang.${b.dataset.lang}`); b.classList.toggle("on", b.dataset.lang === lang); b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); }
+    form.querySelector(".err").textContent = "";
+    if (dbg.ready) msg.hidden = true;
+    showInfo(false);
+  };
+  for (const b of el.querySelectorAll("[data-lang]")) b.addEventListener("click", async () => {
+    if (b.dataset.lang === lang || !onLang) return;
+    await onLang(b.dataset.lang);
+    relabel();
   });
   setTimeout(() => input.focus(), 50);
   const bad = (name) => {

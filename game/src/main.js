@@ -5,7 +5,7 @@ import "@fontsource/nunito/800.css";
 import "./style.css";
 import * as THREE from "three";
 import { loadJSON, url } from "./core/assets.js";
-import { loadStrings, t } from "./i18n.js";
+import { loadStrings, t, lang, pickLang } from "./i18n.js";
 import { createRenderer } from "./render/renderer.js";
 import { Input } from "./core/input.js";
 import { loadSettings, saveSettings } from "./core/quality.js";
@@ -28,7 +28,10 @@ import { installDebug } from "./debug.js";
 import { buildStartState } from "./game/autoplay.js";
 
 async function boot() {
-  await loadStrings("en");
+  const params = new URLSearchParams(location.search);
+  const settings = loadSettings();
+  // ngôn ngữ: ?lang=vi|en (thử, không lưu) > đã chọn ở menu / màn tạo nhân vật > ngôn ngữ trình duyệt (vi → Tiếng Việt) > en
+  await loadStrings(pickLang({ param: params.get("lang"), saved: settings.lang, nav: navigator.languages?.length ? navigator.languages : [navigator.language] }));
   document.title = t("app.title");
   hud.loading(t("app.loading"));
   const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg] = await Promise.all([
@@ -37,7 +40,6 @@ async function boot() {
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
     loadJSON(url("data/pool.json")).catch(() => null),            // bàn bi-a zone 5 (thiếu → không có chế độ bi-a)
   ]);
-  const params = new URLSearchParams(location.search);
   const debugMode = params.has("debug");
   // tham số thử — khi phát triển, hoặc bản build mở với ?debug (smoke test chạy trên bản build):
   //   ?gender=nu|nam · ?look=intern_nam_kinh (ngoại hình, đặt luôn giới tính) · ?start=zone_05 (bản lưu mẫu)
@@ -59,7 +61,6 @@ async function boot() {
   const app = document.getElementById("app");
   const renderer = createRenderer(app);
   const input = new Input(renderer.canvas);
-  const settings = loadSettings();
   const nametags = new NameTags(app);
   const progress = new GameState(content);
   const saved = save.load();
@@ -77,7 +78,7 @@ async function boot() {
   const ui = { dialogue: new DialogueUI(), app: new MyFptApp(content, progress), minigame: new MinigameHost(content),
     summary: new Summary({ onPlayAgain: playAgain }) };
   const characters = new Characters(chars);
-  content.names = (role) => characters.displayName(role);   // tên vai cho thông báo (vd lời khuyên của Lan vào Sổ lời khuyên)
+  content.names = (role) => characters.refName(role);   // tên vai khi nhắc trong câu (vd lời khuyên của chị Lan vào Sổ lời khuyên)
   await characters.probe();                 // model chờ người thật đồng ý mà thiếu file → dùng model thay thế
   // giới tính người chơi → model (roles.player.model_by_gender; màn tạo nhân vật có mục giới tính, mặc định nam).
   // Thử: ?gender=nu (hoặc nam) — ghi vào bản lưu; hoặc __game.setGender("nu") lúc đang chơi.
@@ -126,6 +127,18 @@ async function boot() {
   const startSpawn = endAt && startZone === endAt.zone ? endAt.spawn : null;
   game.preload(startZone);
 
+  // đổi ngôn ngữ (menu Esc, màn tạo nhân vật): tải chữ mới, lưu cài đặt, viết lại chữ đang hiện — không tải lại trang, giữ
+  // nguyên tiến trình. Chữ khác (hội thoại, mini-game, app, thông báo) tự theo ngôn ngữ mới ở lần hiện sau.
+  const setLanguage = async (l) => {
+    if (l === lang) return;
+    await loadStrings(l);
+    settings.lang = lang;
+    saveSettings(settings);
+    document.title = t("app.title");
+    document.getElementById("skip").textContent = t("cutscene.skip");
+    game.onLanguage();
+  };
+
   const loop = { fps: 0 };
   const menu = new Menu({
     info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false,
@@ -139,6 +152,7 @@ async function boot() {
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
     onPlayers: (on) => { settings.players = on; saveSettings(settings); net.setShow(on); menu.draw(); },
+    onLang: async (l) => { await setLanguage(l); menu.draw(); },
     onSummary: () => { menu.hide(true); game.openSummary(); },   // chỉ hiện khi đã xong game
     onClose: () => game.setMode("play"),
     onPlayAgain: playAgain,
@@ -186,7 +200,7 @@ async function boot() {
   // người chơi mới → màn tạo nhân vật: chọn nhân vật (giới tính suy ra từ nhân vật), tên, vị trí intern
   if (!progress.created) {
     hud.loading(null);
-    const who = await characterCreator(chars.character_creation, { characters, settings, initial: progress.player.look });
+    const who = await characterCreator(chars.character_creation, { characters, settings, initial: progress.player.look, onLang: setLanguage });
     progress.player.name = who.name;
     progress.player.position = who.position;
     if (who.gender) { progress.player.gender = who.gender; characters.gender = who.gender; }

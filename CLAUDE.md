@@ -29,7 +29,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`, `desktop_computer/source/desktop_computer.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại) |
-| `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
+| `data/i18n/en.json`, `vi.json` | Mọi chữ giao diện: tiếng Anh (bản gốc) và tiếng Việt, cùng khoá. Văn phong bản Việt: `docs/vi_style.md` |
 | `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `pool/` (bi-a zone 5: `physics.js` vật lý tất định, `rules.js` luật 8 bi rút gọn + mã hoá bàn — dùng chung với máy chủ, `table.js` chế độ chơi: tập một mình / bàn chung 2 người / thử thách, `auto.js` chọn cú cho kiểm thử), `debug.js` |
 | `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + Durable Object, mỗi DO một phòng (~30 người, tự chia phòng; `wrangler.toml`, `src/index.js`), bàn bi-a chung của phòng (`src/pool.js`); bật bằng `data/net.json` → `url` (trống = tắt). Đã lên mạng: `https://fville-net.fville-onboard.workers.dev` (`/status`). Xem `docs/multiplayer.md` |
 | `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`; id vai cũng được: `compare=thao,le_tan,prajith` → kèm tint, tên vai) |
@@ -68,6 +68,7 @@ npm --prefix game run test:pool      # bi-a: 1.000 cú phá bi (không NaN / ch�
 npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới màn tổng kết, 3 ngoại hình (~4 phút; tự bật Vite dev)
 npm --prefix game run test:smoke -- --zone 5               # chỉ 1 zone (bản lưu mẫu ?start=zone_05), ~50 giây mỗi ngoại hình
 npm --prefix game run test:smoke -- --look intern_nu       # 1 ngoại hình · --build: chạy trên game/dist (sau npm run build)
+#   ngoại hình thứ 2 chơi bằng tiếng Việt (đổi ở màn tạo nhân vật + thử đổi ở menu Esc) · --lang vi|en: mọi ngoại hình 1 ngôn ngữ
 npm --prefix game run test:smoke -- --extra only           # chỉ bản lưu cũ + mạng (zone 4, bi-a 2 người, chia phòng; máy chủ local), ~35 giây
 
 # Viewer bối cảnh
@@ -104,7 +105,7 @@ tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển �
 `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
-Tham số URL để thử (khi dev, hoặc bản build mở với `?debug`): `?start=zone_05` (bản lưu mẫu "đã chơi xong các zone trước",
+Tham số URL để thử (khi dev, hoặc bản build mở với `?debug`): `?lang=vi|en` (ngôn ngữ, không lưu — dùng được mọi lúc), `?start=zone_05` (bản lưu mẫu "đã chơi xong các zone trước",
 dựng từ data: `game/src/game/autoplay.js`), `?look=intern_nam_kinh`, `?gender=nu`, `?net=ws://127.0.0.1:8787/ws`;
 `?net=off` (tắt mạng) dùng được mọi lúc.
 
@@ -129,7 +130,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 
 **Làm được khi không có Blender:**
 - Chạy game và viewer; thử game bằng `window.__game` (xem dưới).
-- Sửa code game (`game/src/`), dữ liệu và lời thoại (`data/*.json`), chữ giao diện (`data/i18n/en.json`), va chạm bổ sung
+- Sửa code game (`game/src/`), dữ liệu và lời thoại (`data/*.json`), chữ giao diện (`data/i18n/en.json`, `vi.json`), va chạm bổ sung
   (`data/collision.json`), vật do code đặt (`data/interactables.json`), vai và tên nhân vật (`data/characters.json`).
 - Sửa viewer, tài liệu (`docs/`, `CLAUDE.md`), script Python không dùng Blender.
 - Build và deploy bản web (`npm run build`, `scripts/deploy_site.py`), quét riêng tư.
@@ -143,8 +144,13 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 
 ## Quy tắc đã chốt
 
-- **Chữ trong game là tiếng Anh**, nằm hết trong `data/i18n/en.json` hoặc trường `{ "en": … }` của dữ liệu; tên riêng
-  giữ dấu tiếng Việt (Tú, Huyền, F-Ville, Hòa Lạc). Không viết chữ hiển thị cứng trong code.
+- **Chữ trong game có 2 ngôn ngữ: tiếng Anh (bản gốc) và tiếng Việt** (10/10/2026). Giao diện: `data/i18n/en.json` +
+  `vi.json` (cùng khoá); nội dung: trường `{ "en": …, "vi": … }` của dữ liệu. Thêm / sửa chữ thì viết **cả hai bản** — bản
+  Việt theo `docs/vi_style.md` (xưng hô: Tú "mình – cậu", người lớn "chị / anh – em", giao diện gọi "bạn"; giữ intern,
+  mentor, team, app, check-in; văn nói cho hội thoại, văn viết gọn cho giao diện; không dịch word-by-word); `test:data` báo
+  thiếu `vi`, lệch khoá, lệch biến `{…}`. Tên riêng giữ dấu tiếng Việt ở cả hai bản (Tú, Huyền, F-Ville, Hòa Lạc). Không
+  viết chữ hiển thị cứng trong code. Ngôn ngữ mặc định theo trình duyệt (vi → Tiếng Việt), đổi ở màn tạo nhân vật / menu
+  Esc (ngay lập tức, không mất tiến trình — `Game.onLanguage`), lưu trong cài đặt; thử: `?lang=vi|en`.
 - **Chỉ dùng đồ họa Thấp** (bản Cao có lightmap đang tạm dừng; nhân vật huyen chỉ có bản 6k). Game khoá cứng:
   `game/src/core/quality.js` → `TIERS = ["low"]` (máy card rời / cài đặt cũ "high" vẫn chạy bản Thấp, menu ẩn nút High,
   bản build không chép `assets/glb/high/`). GLB bản Cao cũ thiếu node mới (vd `SPAWN_zone_04_from_zone_03`) → từng làm kẹt

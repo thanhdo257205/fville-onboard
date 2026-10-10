@@ -7,6 +7,7 @@
 //   5. chữ giao diện t("…") viết sẵn trong code có trong data/i18n/en.json; model nhân vật mà vai dùng có GLB + chân dung
 //      (+ chân dung theo bộ đồ, texture bộ đồ của vai, tên / mô tả ngoại hình ở màn chọn nhân vật)
 //   6. Tú khác giới với người chơi; không còn he/his/him/she/her viết cứng nhắc tới Tú, biến {tu_*} thay được cho cả 2 giới
+//   7. bản tiếng Việt: mọi chữ { "en" } có "vi", vi.json cùng khoá en.json, biến {…} khớp, không sót chữ chưa dịch
 // In 1 dòng ✓/✗ cho mỗi mục; lỗi → in chi tiết, thoát mã 1.
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
@@ -216,6 +217,50 @@ for (const g of ["male", "female"]) {
 }
 const sample = outs.female.find(([w]) => w.includes("dialogues"))?.[1];
 report("đại từ của Tú", tuErrs, `${used2.length} câu dùng {tu_*}${sample ? `; nữ: "${sample.slice(0, 60)}…"` : ""}`);
+
+// 7. bản tiếng Việt (docs/vi_style.md): mỗi chữ { "en" } có "vi"; data/i18n/vi.json cùng khoá với en.json; biến {…} khớp
+// giữa 2 bản (bản vi được bỏ {tu_*} — gọi thẳng tên Tú); names.vi đủ vai; chữ vi giống hệt en mà có ≥ 2 từ tiếng Anh →
+// nghi quên dịch (trừ tên gọi / chơi chữ cố ý giữ nguyên)
+const viErrs = [];
+const vi = json["data/i18n/vi.json"];
+const KEEP_EN = new Set(["Business Analyst", "Welcome Kit", "Cute + leader", "Cube + builder", "Customer + order"]);
+const varsOf = (s) => new Set([...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).filter((v) => !TU_VARS.includes(v)));
+const sameVars = (a, b) => { const x = varsOf(a), y = varsOf(b); return x.size === y.size && [...x].every((v) => y.has(v)); };
+const enWords = (s) => s.replace(/\{\w+\}/g, "").match(/[A-Za-z]{3,}/g) || [];
+// dấu thanh kiểu cũ như tên Hòa Lạc (hòa, khóa, thủy, khỏe): vần oa / oe / uy cuối âm tiết mang dấu ở chữ sau = kiểu mới (trừ qu: quý)
+const NEW_TONE = /(?<![qQ])(?:[oO][aAeE]|[uU][yY])[̣́̀̉̃](?![\p{L}\p{M}])/u;
+const newTone = (s) => s.normalize("NFD").match(NEW_TONE)?.[0].normalize("NFC");
+const checkPair = (where, e, v) => {
+  if (typeof v !== "string") return viErrs.push(`${where}: thiếu bản vi — "${e.slice(0, 70)}"`);
+  if (e.trim() && !v.trim()) viErrs.push(`${where}: bản vi rỗng`);
+  if (!sameVars(e, v)) viErrs.push(`${where}: biến lệch — en {${[...varsOf(e)].join(", ")}} / vi {${[...varsOf(v)].join(", ")}}`);
+  if (v === e && enWords(e).length >= 2 && !KEEP_EN.has(e)) viErrs.push(`${where}: bản vi giống hệt bản en (quên dịch?) — "${e.slice(0, 70)}"`);
+  const nt = newTone(v);
+  if (nt) viErrs.push(`${where}: dấu thanh kiểu mới "${nt}" — dùng kiểu cũ như Hòa Lạc (hòa, khóa, thủy) — "${v.slice(0, 60)}"`);
+};
+let viPairs = 0;
+const viWalk = (o, where) => {
+  if (Array.isArray(o)) o.forEach((x, i) => viWalk(x, `${where}[${i}]`));
+  else if (o && typeof o === "object") {
+    if (typeof o.en === "string") { viPairs++; checkPair(where, o.en, o.vi); }
+    for (const [k, x] of Object.entries(o)) if (k !== "en" && k !== "vi") viWalk(x, `${where}.${k}`);
+  }
+};
+for (const [f, d] of Object.entries(json)) if (!f.startsWith("data/i18n/")) viWalk(d, f.replace("data/", "").replace(".json", ""));
+if (!vi) viErrs.push("thiếu data/i18n/vi.json");
+else {
+  const flat = (o, p = "", out = {}) => { for (const [k, x] of Object.entries(o)) if (!k.startsWith("_")) { if (x && typeof x === "object") flat(x, `${p}${k}.`, out); else out[`${p}${k}`] = x; } return out; };
+  const fe = flat(en), fv = flat(vi);
+  for (const k of Object.keys(fe)) { viPairs++; checkPair(`i18n ${k}`, fe[k], fv[k]); }
+  for (const k of Object.keys(fv)) if (!(k in fe)) viErrs.push(`i18n ${k}: có trong vi.json, không có trong en.json`);
+}
+for (const r of Object.keys(chars.names.en)) if (typeof chars.names.vi?.[r] !== "string") viErrs.push(`characters names.vi: thiếu tên vai ${r}`);
+for (const [l, m] of Object.entries(chars.names_ref || {})) if (!l.startsWith("_")) for (const [r, v] of Object.entries(m)) {
+  if (!(r in chars.names.en)) viErrs.push(`characters names_ref.${l}.${r}: không có vai này trong names`);
+  if (newTone(v)) viErrs.push(`characters names_ref.${l}.${r}: dấu thanh kiểu mới "${newTone(v)}"`);
+}
+for (const [r, v] of Object.entries(chars.names.vi || {})) if (newTone(v)) viErrs.push(`characters names.vi.${r}: dấu thanh kiểu mới "${newTone(v)}"`);
+report("bản tiếng Việt", viErrs, `${viPairs} cặp en / vi, ${Object.keys(chars.names.vi || {}).length} tên vai`);
 
 const ms = Math.round(performance.now() - t0);
 console.log(failed ? `✗ test:data: ${failed} mục lỗi (${ms} ms)` : `✓ test:data: đạt hết (${ms} ms)`);

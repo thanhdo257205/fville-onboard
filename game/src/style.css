@@ -135,6 +135,10 @@ button { font-family: "Nunito", sans-serif; }
 /* màn thấp (điện thoại xoay ngang ~360 px): bảng cuộn được, nút Start / Finish không bị khuất dưới mép màn hình */
 #creator .panel, #minigame .panel, .confirm .panel { max-height: calc(100dvh - 16px); overflow: auto; }
 #creator h2, #minigame h2 { margin: 0 0 14px; font-weight: 800; }
+/* nút ngôn ngữ (English / Tiếng Việt) trên đầu màn tạo nhân vật — nằm trong dòng chảy, căn phải: không đè tiêu đề ở màn hẹp */
+#creator .lang-switch { display: flex; width: max-content; margin: -6px 0 6px auto; background: #2a2e36; border-radius: 10px; padding: 3px; }
+#creator .lang-switch button { background: none; border: 0; color: var(--fg); font: 700 13px "Nunito"; padding: 5px 10px; border-radius: 8px; cursor: pointer; }
+#creator .lang-switch button.on { background: var(--orange); color: #fff; }
 #creator .panel { width: min(780px, calc(100vw - 32px)); box-sizing: border-box; }   /* tính cả padding: không tràn màn hẹp */
 #creator label.name { display: grid; gap: 6px; font-weight: 700; margin-bottom: 14px; }
 #creator input[name=name] { font: 700 17px "Nunito"; padding: 10px 12px; border-radius: 10px; border: 2px solid #343944; background: #262a31; color: var(--fg); }

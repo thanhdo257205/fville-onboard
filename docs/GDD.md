@@ -13,7 +13,7 @@ Người chơi vào vai một intern FPT Software trong ngày đầu tiên, đi 
 | Người chơi | Intern mới của FPT Software, chơi đơn |
 | Nền tảng | Trình duyệt web (Three.js), hai mức đồ họa Thấp / Cao |
 | Thời lượng | 25–30 phút, zone 0 (điểm đón, mở đầu) + 5 zone |
-| Ngôn ngữ | Tiếng Anh cho mọi chữ trong game (lời thoại, giao diện, app); tên riêng giữ dấu tiếng Việt (Tú, Huyền, F-Ville, Hòa Lạc). Lời thoại mẫu trong tài liệu này viết tiếng Việt để duyệt nội dung |
+| Ngôn ngữ | Tiếng Anh (bản gốc) và tiếng Việt cho mọi chữ trong game (lời thoại, giao diện, app) — chọn ở màn tạo nhân vật / menu Esc, mặc định theo ngôn ngữ trình duyệt; văn phong bản Việt: `docs/vi_style.md`. Tên riêng giữ dấu tiếng Việt (Tú, Huyền, F-Ville, Hòa Lạc). Lời thoại mẫu trong tài liệu này viết tiếng Việt để duyệt nội dung (bản Việt trong game đã viết lại theo xưng hô đã chốt) |
 | Mục tiêu | Intern biết trước hành trình ngày đầu, các giá trị văn hóa FPT và những người mình sẽ gặp |
 
 **Trụ cột thiết kế**

@@ -1,28 +1,28 @@
 {
   "_ghi_chu": "11 phần thưởng (GDD mục Phần thưởng) + vật mang theo tạm (carry: không phải phần thưởng, mất khi trao lại). icon: emoji hiển thị trong app. wear: mặc lên người (nhân vật đang mặc sẵn áo cam → chỉ vào Túi đồ + thông báo). draft: chờ HR.",
   "rewards": [
-    { "id": "app_my_fpt", "type": "app", "icon": "📱", "zone": "zone_01", "name": { "en": "My FPT App" }, "desc": { "en": "Your checklist, bag and badges — all in one app." } },
-    { "id": "ao_cam", "type": "outfit", "wear": true, "icon": "👕", "zone": "zone_02", "name": { "en": "FPT Orange Shirt" }, "desc": { "en": "Official F-Ville orange. You're one of us now." } },
-    { "id": "huy_hieu_dong_doi", "type": "badge", "icon": "🏅", "zone": "zone_02", "name": { "en": "Teamwork Spirit Badge" }, "desc": { "en": "Earned at the Village Well." } },
-    { "id": "huy_hieu_6_gia_tri", "type": "badge", "icon": "✨", "zone": "zone_02", "name": { "en": "Tôn Đổi Đồng Chí Gương Sáng" }, "desc": { "en": "Six slots for FPT's core values. Light them up today." }, "draft": true },
-    { "id": "anh_checkin", "type": "photo", "icon": "📷", "zone": "zone_02", "name": { "en": "Check-in Photo" }, "desc": { "en": "You, in front of the FPT SOFTWARE sign." } },
-    { "id": "the_nhan_vien", "type": "item", "icon": "🪪", "zone": "zone_03", "name": { "en": "FPT Employee Card" }, "desc": { "en": "Opens the card gates. Don't lend it to anyone." } },
-    { "id": "welcome_kit", "type": "item", "icon": "🎁", "zone": "zone_03", "name": { "en": "Welcome Kit" }, "desc": { "en": "A notebook, a pen and a few F-Ville surprises." }, "draft": true },
-    { "id": "so_tay_hoc_tap", "type": "item", "icon": "📓", "zone": "zone_04", "name": { "en": "Learning Notebook" }, "desc": { "en": "Your first-week learning plan." } },
-    { "id": "la_ban_nghe_nghiep", "type": "card", "icon": "🧭", "zone": "zone_05", "name": { "en": "Career Compass" }, "desc": { "en": "Prajith's tips for where you could grow." } },
-    { "id": "nhiem_vu_dau_tien", "type": "app_entry", "icon": "📌", "zone": "zone_05", "name": { "en": "First Mission" }, "desc": { "en": "Your first task from the manager." } },
-    { "id": "so_loi_khuyen", "type": "app_tab", "icon": "📒", "zone": "zone_05", "name": { "en": "Advice Book" }, "desc": { "en": "First-day tips from your teammates." } },
-    { "id": "qua_cua_team", "type": "item", "icon": "🎁", "zone": "zone_05", "name": { "en": "Team Welcome Gift" }, "desc": { "en": "An FPT notebook, a water bottle and a card signed by the whole team." }, "draft": true }
+    { "id": "app_my_fpt", "type": "app", "icon": "📱", "zone": "zone_01", "name": { "en": "My FPT App", "vi": "App My FPT" }, "desc": { "en": "Your checklist, bag and badges — all in one app.", "vi": "Checklist, túi đồ và huy hiệu của bạn — gói gọn trong một app." } },
+    { "id": "ao_cam", "type": "outfit", "wear": true, "icon": "👕", "zone": "zone_02", "name": { "en": "FPT Orange Shirt", "vi": "Áo Cam FPT" }, "desc": { "en": "Official F-Ville orange. You're one of us now.", "vi": "Màu cam chính hiệu của F-Ville. Giờ bạn đã là người nhà rồi." } },
+    { "id": "huy_hieu_dong_doi", "type": "badge", "icon": "🏅", "zone": "zone_02", "name": { "en": "Teamwork Spirit Badge", "vi": "Huy hiệu Tinh thần Đồng đội" }, "desc": { "en": "Earned at the Village Well.", "vi": "Nhận được ở Giếng Làng." } },
+    { "id": "huy_hieu_6_gia_tri", "type": "badge", "icon": "✨", "zone": "zone_02", "name": { "en": "Tôn Đổi Đồng Chí Gương Sáng", "vi": "Tôn Đổi Đồng Chí Gương Sáng" }, "desc": { "en": "Six slots for FPT's core values. Light them up today.", "vi": "Sáu ô cho sáu giá trị cốt lõi của FPT — thắp sáng hết trong hôm nay nhé." }, "draft": true },
+    { "id": "anh_checkin", "type": "photo", "icon": "📷", "zone": "zone_02", "name": { "en": "Check-in Photo", "vi": "Ảnh check-in" }, "desc": { "en": "You, in front of the FPT SOFTWARE sign.", "vi": "Bạn, trước tấm biển FPT SOFTWARE." } },
+    { "id": "the_nhan_vien", "type": "item", "icon": "🪪", "zone": "zone_03", "name": { "en": "FPT Employee Card", "vi": "Thẻ nhân viên FPT" }, "desc": { "en": "Opens the card gates. Don't lend it to anyone.", "vi": "Mở được các cửa quẹt thẻ. Đừng cho ai mượn nhé." } },
+    { "id": "welcome_kit", "type": "item", "icon": "🎁", "zone": "zone_03", "name": { "en": "Welcome Kit", "vi": "Welcome Kit" }, "desc": { "en": "A notebook, a pen and a few F-Ville surprises.", "vi": "Một cuốn sổ, một cây bút và vài bất ngờ nho nhỏ từ F-Ville." }, "draft": true },
+    { "id": "so_tay_hoc_tap", "type": "item", "icon": "📓", "zone": "zone_04", "name": { "en": "Learning Notebook", "vi": "Sổ tay học tập" }, "desc": { "en": "Your first-week learning plan.", "vi": "Kế hoạch học tuần đầu của bạn." } },
+    { "id": "la_ban_nghe_nghiep", "type": "card", "icon": "🧭", "zone": "zone_05", "name": { "en": "Career Compass", "vi": "La bàn nghề nghiệp" }, "desc": { "en": "Prajith's tips for where you could grow.", "vi": "Gợi ý của anh Prajith về những hướng bạn có thể phát triển." } },
+    { "id": "nhiem_vu_dau_tien", "type": "app_entry", "icon": "📌", "zone": "zone_05", "name": { "en": "First Mission", "vi": "Nhiệm vụ đầu tiên" }, "desc": { "en": "Your first task from the manager.", "vi": "Việc đầu tiên chị quản lý giao cho bạn." } },
+    { "id": "so_loi_khuyen", "type": "app_tab", "icon": "📒", "zone": "zone_05", "name": { "en": "Advice Book", "vi": "Sổ lời khuyên" }, "desc": { "en": "First-day tips from your teammates.", "vi": "Lời khuyên ngày đầu từ đồng nghiệp." } },
+    { "id": "qua_cua_team", "type": "item", "icon": "🎁", "zone": "zone_05", "name": { "en": "Team Welcome Gift", "vi": "Quà chào mừng của team" }, "desc": { "en": "An FPT notebook, a water bottle and a card signed by the whole team.", "vi": "Một cuốn sổ FPT, một bình nước và tấm thiệp có chữ ký của cả team." }, "draft": true }
   ],
   "carry": [
-    { "id": "balo_tu", "icon": "🎒", "name": { "en": "Tú's Backpack" }, "desc": { "en": "Tú left it on the bus." } },
-    { "id": "vi_danh_roi", "icon": "👛", "name": { "en": "Lost Wallet" }, "desc": { "en": "Found on a seat in the lobby." } }
+    { "id": "balo_tu", "icon": "🎒", "name": { "en": "Tú's Backpack", "vi": "Balo của Tú" }, "desc": { "en": "Tú left it on the bus.", "vi": "Tú để quên trên xe." } },
+    { "id": "vi_danh_roi", "icon": "👛", "name": { "en": "Lost Wallet", "vi": "Ví bị đánh rơi" }, "desc": { "en": "Found on a seat in the lobby.", "vi": "Nhặt được trên ghế ở sảnh." } }
   ],
   "_advice_ghi_chu": "Sổ lời khuyên (App My FPT → tab Advice, mở khi có phần thưởng so_loi_khuyen): hiệu ứng 'advice': <id> trong hội thoại zone 5 lưu lời khuyên của đồng nghiệp (from = vai trong characters.json). Lời khuyên do Claude viết cho nhân vật hư cấu (Lan, Minh, Hà, anh Khang).",
   "advice": [
-    { "id": "lan", "from": "dong_nghiep_1", "text": { "en": "Don't be afraid to ask questions. Everyone here was new once." } },
-    { "id": "minh", "from": "dong_nghiep_2", "text": { "en": "Write things down — names, tools, where things live. Your notes will save you hours." } },
-    { "id": "ha", "from": "dong_nghiep_3", "text": { "en": "Keep your calendar open and turn on reminders — meetings move around a lot." } },
-    { "id": "khang", "from": "khang", "text": { "en": "Take real breaks. Good ideas often turn up away from the screen." } }
+    { "id": "lan", "from": "dong_nghiep_1", "text": { "en": "Don't be afraid to ask questions. Everyone here was new once.", "vi": "Đừng ngại hỏi. Ai ở đây cũng từng là người mới." } },
+    { "id": "minh", "from": "dong_nghiep_2", "text": { "en": "Write things down — names, tools, where things live. Your notes will save you hours.", "vi": "Chịu khó ghi chép — tên mọi người, công cụ, cái gì nằm ở đâu. Ghi chép sẽ giúp em đỡ mất hàng giờ." } },
+    { "id": "ha", "from": "dong_nghiep_3", "text": { "en": "Keep your calendar open and turn on reminders — meetings move around a lot.", "vi": "Hay xem lịch và bật nhắc lịch — lịch họp hay đổi lắm." } },
+    { "id": "khang", "from": "khang", "text": { "en": "Take real breaks. Good ideas often turn up away from the screen.", "vi": "Nghỉ giải lao cho đàng hoàng. Ý tưởng hay thường đến khi em rời màn hình." } }
   ]
 }
