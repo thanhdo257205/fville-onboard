@@ -24,7 +24,7 @@ for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
 import bpy  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
-from lib import kit, props, street, zone  # noqa: E402
+from lib import bus, kit, props, street, trees, zone  # noqa: E402
 from lib import quality as Q  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
@@ -45,8 +45,7 @@ SHELTER = (8.0, 4.3)        # tâm mái chờ (rộng 5 m, sâu 1,8 m, mở về
 
 def door_x(n):
     """Tâm cửa khách xe số n (xe quay 180°: đầu xe hướng -X, cửa phía +Y)."""
-    hx = props.BUS_L / 2
-    return BUSES[n] - (hx - 1.325)
+    return BUSES[n] - props.BUS_DOOR_X
 
 
 def build_ground(col, rng):
@@ -100,11 +99,14 @@ def build_props(col, rng):
     street.utility_poles(b, (-62, -42, -21, 0, 21, 42, 62), SOUTH[1] - 0.5)
     obj = b.to_object("ENV_props", col)
     v = MeshBuilder()
+    kit.TREES = []                       # cây mô hình Sketchfab (lib/trees.py): ô gốc + vôi trắng vẫn dựng khối
     for x in (-29.0, -16.0, 19.5, 27.5):
         street.tree_pit(v, x, NORTH[0] + 1.3, rng, z=WALK_Z)
     for x in (-36.0, -24.0, -7.0, 11.0, 28.0, 40.0):
         street.tree_pit(v, x, SOUTH[0] + 1.4, rng, z=WALK_Z)
     v.to_object("ENV_vegetation", col, smooth_angle=80, tint="foliage")
+    trees.place(col, kit.TREES)
+    kit.TREES = None
     return obj
 
 
@@ -115,52 +117,43 @@ def build_shelter(col):
 
 
 def build_buses(cols):
-    """3 xe dùng chung một mesh (như xe đỗ ở zone_01, instance → GLB nhẹ); cánh cửa khách là object con riêng
-    để game đóng/mở; biển số tuyến là con của INT_bien_xe_N (con của xe) → chạy cùng xe.
+    """3 xe dùng chung lưới thân + lưới cánh cửa (mô hình Sketchfab, lib/bus.py — instance → GLB nhẹ); cánh cửa khách
+    là object con riêng để game đóng/mở; biển số tuyến là con của INT_bien_xe_N (con của xe) → chạy cùng xe.
     Xe số 2 đánh dấu "dynamic": không che AO/lightmap cho vật khác (xe chạy đi không để lại vệt tối)."""
-    b = MeshBuilder()
-    props.bus(b, door_open=False)
-    d = MeshBuilder()
-    props.bus_door(d)
-    door_mesh = None
-    hinge = props.bus_door_hinge()
+    body, door_me, info = bus.build_meshes(cols["ENV"], props.BUS_DOOR_X)
     out = {}
     for n, x in BUSES.items():
-        if door_mesh is None:
-            bus = b.to_object(f"xe_bus_{n}", cols["ENV"], location=(x, BUS_Y, 0), bevel=0.16)
-            door = d.to_object(f"xe_bus_{n}_cua", cols["ENV"])
-            bus_mesh, door_mesh = bus.data, door.data
-        else:
-            bus = bpy.data.objects.new(f"xe_bus_{n}", bus_mesh)
-            cols["ENV"].objects.link(bus)
-            bus.location = (x, BUS_Y, 0)
-            door = bpy.data.objects.new(f"xe_bus_{n}_cua", door_mesh)
-            cols["ENV"].objects.link(door)
-        bus.rotation_euler = (0, 0, math.radians(180))
-        door.parent = bus
-        door.location = hinge
+        o = bpy.data.objects.new(f"xe_bus_{n}", body)
+        cols["ENV"].objects.link(o)
+        o.location = (x, BUS_Y, 0)
+        o.rotation_euler = (0, 0, math.radians(180))
+        door = bpy.data.objects.new(f"xe_bus_{n}_cua", door_me)
+        cols["ENV"].objects.link(door)
+        door.parent = o
+        door.location = info["hinge"]
         door.rotation_euler = (0, 0, math.radians(props.BUS_DOOR_OPEN_DEG))
         s = MeshBuilder()
-        props.route_signs(s, n)
+        props.route_signs(s, n, info["sign_front"], info["sign_side"])
         sign = s.to_object(f"bien_xe_{n}_mesh", cols["INT"])
-        sign.parent = bus
+        sign.parent = o
         bpy.context.view_layer.update()
-        front = bus.matrix_world @ Vector((props.BUS_L / 2 + 0.05, 0, 2.98))
+        fx, fz, _ = info["sign_front"]
+        front = o.matrix_world @ Vector((fx + 0.03, 0, fz))
         it = mk.interactive(f"bien_xe_{n}", f"Biển tuyến xe số {n}", tuple(front), cols["INT"])
-        mk.parent(it, bus)
+        mk.parent(it, o)
         mk.parent(sign, it)
         if n == 2:
-            for o in (bus, door, sign):
-                o["dynamic"] = True
-        out[n] = bus
+            for x_ in (o, door, sign):
+                x_["dynamic"] = True
+        out[n] = o
     return out
 
 
 def bus_rect(cx, cy, heading):
-    """4 góc thân xe (dài 12, rộng 2,5) tại tâm (cx, cy), heading = góc hướng đầu xe (rad)."""
-    hx, hy = props.BUS_L / 2, props.BUS_W / 2
+    """4 góc thân xe (kích thước thật của mô hình, bus.body_box()) khi gốc xe ở (cx, cy), heading = hướng đầu xe (rad)."""
+    x0, x1, hy, _ = bus.body_box()
     c, s = math.cos(heading), math.sin(heading)
-    return [(cx + c * a - s * b2, cy + s * a + c * b2) for a, b2 in ((hx, hy), (-hx, hy), (-hx, -hy), (hx, -hy))]
+    return [(cx + c * a - s * b2, cy + s * a + c * b2) for a, b2 in ((x1, hy), (x0, hy), (x0, -hy), (x1, -hy))]
 
 
 def rect_gap(p, q):
@@ -222,8 +215,9 @@ def build_colliders(col):
     C = mk.collider
     C("ground", (0, 0, -0.25), (200, 80, 0.5), col)
     C("via_he_bac", (0, (NORTH[0] + NORTH[1]) / 2, WALK_Z / 2), (190, NORTH[1] - NORTH[0], WALK_Z), col)
-    for n, x in BUSES.items():
-        C(f"xe_bus_{n}", (x, BUS_Y, 1.75), (props.BUS_L, props.BUS_W, 3.5), col)
+    x0, x1, hy, h = bus.body_box()
+    for n, x in BUSES.items():        # xe quay 180°: tâm thân (local (x0 + x1) / 2) nằm ở x − tâm
+        C(f"xe_bus_{n}", (x - (x0 + x1) / 2, BUS_Y, h / 2), (x1 - x0, 2 * hy, h), col)
     sx, sy = SHELTER
     C("mai_cho_sau", (sx, sy + 0.65, 1.2), (5.0, 0.6, 2.4), col)
     C("mai_cho_hong", (sx + 2.5, sy, 1.3), (0.15, 1.8, 2.6), col)
@@ -262,6 +256,9 @@ def preview_cameras():
         ("cua_xe_2", None, (d2 + 4.0, 4.2, 1.7), (d2 - 1.0, -0.5, 1.6), 26),
         ("mai_cho", None, (SHELTER[0] + 1.5, -1.2, 1.6), (SHELTER[0] - 0.5, 5.0, 1.4), 26),
         ("ben_kia", None, (-12.5, -11.3, 2.2), (-2.0, -1.8, 1.6), 26),
+        ("xe_bus_can", None, (d2 + 3.2, 2.6, 1.6), (d2 + 0.6, -1.0, 1.7), 24),       # cận xe số 2: cửa mở, biển số
+        ("xe_bus_toan_canh", None, (8.0, 6.2, 4.2), (-6.0, -1.5, 1.6), 20),         # 3 xe đỗ + hàng cây vỉa hè
+        ("cay_via_he", None, (14.0, 2.2, 1.6), (24.0, 1.3, 4.5), 22),               # cây trong ô gốc vỉa hè bắc
     ]
 
 

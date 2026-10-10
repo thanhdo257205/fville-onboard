@@ -84,6 +84,16 @@ def planter_wall(b, p0, p1, width=0.25, height=0.45, z=0.0):
 # Cây/bụi nên dựng trong MeshBuilder riêng rồi to_object(..., smooth_angle=80, tint="foliage")
 # để tán tròn mềm và sáng dần lên trên (kiểu hoạt hình).
 LEAVES = ("leaf", "leaf_light", "leaf_dark", "leaf_yellow")
+# Cây mô hình Sketchfab (lib/trees.py): zone đặt TREES = [] trước khi dựng cây → tree() vẫn rút số ngẫu nhiên y như cũ
+# (mọi vật dựng sau giữ nguyên chỗ) và vẫn dựng gốc quét vôi, nhưng bỏ khối thân + tán, ghi {x, y, z, h} vào TREES;
+# zone gọi trees.place(…, TREES) để đặt bản sao mô hình. None = dựng cây khối như trước.
+TREES = None
+
+
+class Skip:
+    """Builder bỏ qua mọi hình (giữ đúng lượt rút rng khi thay đồ khối bằng mô hình, vd tree(), bamboo_clump())."""
+    def __getattr__(self, name):
+        return lambda *a, **k: None
 
 
 def tree(b, x, y, rng, height=None, z=0.0, detail=2, white_base=True):
@@ -97,6 +107,9 @@ def tree(b, x, y, rng, height=None, z=0.0, detail=2, white_base=True):
     wb = 0.9 if white_base else 0.0
     if wb:
         b.cylinder((x, y, z), 0.19, wb, "trunk_white", segments=7, radius_top=0.16)
+    if TREES is not None:
+        TREES.append({"x": x, "y": y, "z": z, "h": h, "detail": detail})
+        b = Skip()
     b.tube((x, y, z + wb), top, 0.16, "trunk", segments=7, radius_end=0.1)
     r = h * 0.26
     lobes = [(0.0, 0.0, 0.62, 1.0)]

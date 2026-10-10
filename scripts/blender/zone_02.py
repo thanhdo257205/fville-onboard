@@ -24,7 +24,7 @@ if HERE not in sys.path:
 for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
     del sys.modules[_m]  # nạp lại khi chạy nhiều lần trong Blender đang mở
 
-from lib import cuder, kit, props, zone  # noqa: E402
+from lib import bamboo, cuder, kit, props, trees, zone  # noqa: E402
 from lib import quality as Q  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
@@ -47,6 +47,10 @@ ISLAND = (15.7, 25.5, -1.0, 2.2)      # đảo giọt nước: tâm đầu tròn
 ISLAND_Z = 0.2
 WELL = (16.0, -1.0)
 BAMBOO = (21.5, -0.6)
+# bụi tre (mô hình Sketchfab, lib/bamboo.py): (x, y, z, cao m) — đuôi đảo giếng (như ảnh thật), 2 bên đường xe bus vào
+# (ngoài bó vỉa x 9.88 / 30.12, không chắn đường)
+BAMBOO_SPOTS = ((*BAMBOO, ISLAND_Z, 5.2), (8.0, -2.5, 0.0, 4.6), (8.3, -12.0, 0.0, 5.0), (32.0, -6.0, 0.0, 4.8))
+BAMBOO_R = {}                         # bán kính gốc thật từng bụi (build_vegetation ghi, build_colliders dùng)
 STATUE = (20.0, 62.2)
 # Tượng Cuder: mô hình Meshy (lib/cuder.py, đọc assets/props/cuder/source/cuder_meshy.glb — chỉ có trên máy làm việc).
 # Cao (bệ + tượng) = tượng dựng tay trước đây; búi tóc sau gáy (chờ xác nhận) là object riêng, False = bỏ.
@@ -151,6 +155,7 @@ def _scatter(rng, regions, n):
 
 def build_vegetation(col, rng):
     b = MeshBuilder()
+    kit.TREES = []                        # cây mô hình Sketchfab (lib/trees.py), gốc vôi trắng vẫn dựng khối
     px0, px1 = PATH_X
     # hàng cây hai bên lối gạch (thân quét vôi trắng trong ảnh — ở đây giữ thân nâu)
     for y in (17.0, 20.5, 24.0, 38.0, 41.5):
@@ -180,9 +185,14 @@ def build_vegetation(col, rng):
     kit.grass_tufts(b, (BAMBOO[0] - 1.0, BAMBOO[0] + 1.0, BAMBOO[1] - 1.0, BAMBOO[1] + 1.0), 12, rng, z=ISLAND_Z)
     kit.grass_tufts(b, (px0 - 3.5, px0 - 1.2, WALL_Y + 1.5, PAVILION[2] - 0.5), 12, rng)
     kit.grass_tufts(b, (px1 + 1.2, px1 + 3.5, WALL_Y + 1.5, PAVILION[2] - 0.5), 12, rng)
-    # bụi tre trên đảo, cạnh giếng
-    kit.bamboo_clump(b, *BAMBOO, rng, n=16, height=5.5, z=ISLAND_Z)
-    return b.to_object("ENV_vegetation", col, smooth_angle=80, tint="foliage")
+    # bụi tre: mô hình Sketchfab (lib/bamboo.py); bụi khối cũ vẫn gọi với builder bỏ hình → rng rút y như trước
+    kit.bamboo_clump(kit.Skip(), *BAMBOO, rng, n=16, height=5.5, z=ISLAND_Z)
+    veg = b.to_object("ENV_vegetation", col, smooth_angle=80, tint="foliage")
+    trees.place(col, kit.TREES)
+    kit.TREES = None
+    for k, (_, r) in enumerate(bamboo.place(col, BAMBOO_SPOTS)):
+        BAMBOO_R[k] = r
+    return veg
 
 
 def build_props(col, rng):
@@ -282,7 +292,9 @@ def build_colliders(col):
             C(f"bon_cay_{x:.0f}_{y0:.0f}", (x, (y0 + y1) / 2, 1.5), (0.8, y1 - y0, 3), col)
     # vật
     C("gieng_lang", (*WELL, 0.5), (1.5, 1.5, 1.0), col)
-    C("bui_tre", (*BAMBOO, 2), (1.6, 1.6, 4), col)
+    for k, (x, y, z, _) in enumerate(BAMBOO_SPOTS):   # gốc bụi tre (thân tre loe dần lên ngọn, gốc chỉ ~0,3 m)
+        d = 2 * (BAMBOO_R[k] + 0.25)
+        C("bui_tre" if k == 0 else f"bui_tre_{k + 1}", (x, y, z + 1.5), (d, d, 3.0), col)
     fx, fy = CUDER_FOOT["x"], CUDER_FOOT["y"]   # hộp va chạm ôm khung bao tượng mới (bệ + đống xu + người)
     C("tuong_cuder", ((fx[0] + fx[1]) / 2, (fy[0] + fy[1]) / 2, (CUDER_H + PLAZA_Z) / 2),
       (fx[1] - fx[0] + 0.04, fy[1] - fy[0] + 0.04, CUDER_H + PLAZA_Z), col)
@@ -310,6 +322,8 @@ def compare_cameras():
         ("tuong", "TuongCuDo/t_0012.0.jpg", (STATUE[0] + 0.05, STATUE[1] - 2.3, 1.45), (STATUE[0], STATUE[1] + 1.0, 1.3), 26),
         ("san", "LoiDi/t_0056.0.jpg", (8.0, 47.0, 1.4), (17.0, 74.0, 6.5), 22),
         ("loi_di", "LoiDi/t_0012.0.jpg", (9.0, 18.5, 1.3), (9.0, 30.0, 1.6), 22),
+        ("tre_gieng", None, (17.5, -7.0, 1.6), (19.5, -0.5, 2.6), 24),               # bụi tre đuôi đảo giếng + 2 bên đường
+        ("cay_canh_lang", None, (24.0, 2.0, 1.7), (14.0, 22.0, 4.0), 22),          # cây sau biển chữ + hàng cây lối gạch
     ]
 
 

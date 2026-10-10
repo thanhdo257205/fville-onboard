@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { loadGLTF, url } from "../core/assets.js";
 import { makeZoneMaterial } from "../render/renderer.js";
 import { buildCollider } from "./collision.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 const _inv = new THREE.Matrix4();
 
@@ -18,12 +19,57 @@ export function prefetchZone(file, tier) {
 export function pendingPrefetch(file, tier) { return prefetched.get(url(`assets/glb/${tier}/${file}.glb`)) ?? null; }
 const _p = new THREE.Vector3();
 
+// Bản sao dùng chung lưới (cây, bụi tre — Blender đặt custom property "batch" = tên nhóm trên từng bản sao, GLB giữ 1
+// lưới cho mọi bản sao): gộp mọi bản sao cùng nhóm thành 1 mesh mỗi chất liệu → vài lượt vẽ thay vì 2–3 lượt mỗi cây.
+// Mỗi bản sao mang số riêng (thuộc tính đỉnh plantId, từ 1) → render/seethrough.js vẫn làm mờ từng cây. Mesh gộp tên
+// "<nhóm>_<chất liệu>" (vd ENV_cay_lo_M_tree_leaf) — vẫn khớp see_through.meshes. Không đổi hình, chỉ đổi cách vẽ.
+const _m = new THREE.Matrix4();
+export function batchInstances(root) {
+  const nodes = [];
+  root.traverse((o) => { if (o.userData.batch) nodes.push(o); });
+  if (!nodes.length) return 0;
+  root.updateMatrixWorld(true);
+  const inv = root.matrixWorld.clone().invert(), groups = new Map(), counts = new Map();
+  for (const node of nodes) {
+    const key = node.userData.batch, id = (counts.get(key) || 0) + 1;
+    counts.set(key, id);
+    node.traverse((m) => {
+      if (!m.isMesh) return;
+      const k = `${key}|${m.material.uuid}`;
+      if (!groups.has(k)) groups.set(k, { key, name: `${key}_${m.material.name}`, material: m.material, geos: [] });
+      const g = m.geometry.clone().applyMatrix4(_m.multiplyMatrices(inv, m.matrixWorld));
+      g.setAttribute("plantId", new THREE.BufferAttribute(new Float32Array(g.attributes.position.count).fill(id), 1));
+      groups.get(k).geos.push(g);
+    });
+  }
+  const merged = [...groups.values()].map((g) => ({ ...g, geo: mergeGeometries(g.geos, false) }));
+  for (const g of groups.values()) for (const x of g.geos) x.dispose();
+  const bad = merged.filter((g) => !g.geo);
+  if (bad.length) {   // lưới các bản sao khác thuộc tính (không gộp được) → giữ nguyên từng bản sao, báo ra console
+    console.warn(`[zone] không gộp được ${bad.map((g) => g.name).join(", ")} — vẽ từng bản sao`);
+    for (const g of merged) g.geo?.dispose();
+    return 0;
+  }
+  const shared = new Set();
+  for (const node of nodes) { node.traverse((m) => { if (m.isMesh) shared.add(m.geometry); }); node.removeFromParent(); }
+  for (const g of shared) g.dispose();
+  for (const { key, name, material, geo } of merged) {
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.name = name;
+    mesh.userData.batchGroup = key;      // seethrough: plantId của cùng nhóm ở các mesh gộp (thân, lá) là cùng 1 cây
+    root.add(mesh);
+  }
+  root.updateMatrixWorld(true);
+  return nodes.length;
+}
+
 // overrides (data/collision.json → <zone>): { remove: [tên COL_], add: [hộp] } — chỉnh va chạm bằng code, không sửa GLB
 export async function loadZone(id, file, tier, overrides = {}) {
   const gltf = await loadGLTF(url(`assets/glb/${tier}/${file}.glb`));
   const root = gltf.scene;
   root.updateMatrixWorld(true);
-  const zone = { id, file, tier, root, nodes: new Map(), spawns: new Map(), npcs: [], ints: new Map(), triggers: [], colMeshes: [], hasLightmap: false };
+  const batched = batchInstances(root);
+  const zone = { id, file, tier, root, nodes: new Map(), spawns: new Map(), npcs: [], ints: new Map(), triggers: [], colMeshes: [], hasLightmap: false, batched };
   root.traverse((o) => {
     if (o.name) zone.nodes.set(o.name, o);
     if (o.name.startsWith("COL_")) { if (o.isMesh) zone.colMeshes.push(o); o.visible = false; return; }

@@ -17,6 +17,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục; `--glasses`: vùng kính), `render_portrait.py`, `texture_fix.py`, `char_render.py`, `char_data.py` (ghi `models.<id>` vào `data/characters.json` mà không định dạng lại cả file) |
 | `scripts/blender/lib/cuder.py`, `scripts/blender/props/cuder_preview.py` | Tượng Cuder zone 2 từ mô hình Meshy (zone_02.py gọi khi build); xem trước riêng tượng |
 | `scripts/blender/lib/pool_table.py` | Bàn bi-a zone 5 từ mô hình Sketchfab (zone_05.py gọi khi build): bỏ đèn treo, gộp texture, giảm lưới, đo mặt chơi / lỗ / bi → `data/pool.json` |
+| `scripts/blender/lib/bus.py`, `lib/trees.py`, `lib/bamboo.py` | Xe bus (zone 0–1), cây ngoài trời (zone 0–3), bụi tre (zone 2) từ mô hình Sketchfab (zone gọi khi build): xe đổi sơn trắng–đỏ, tách cánh cửa khách, đặt cửa trùng chỗ cửa cũ (`props.BUS_DOOR_X`); cây giữ chỗ / chiều cao của `kit.tree` (`kit.TREES`); tre dựng lại low-poly. Bản sao dùng chung lưới, custom property `batch` → game gộp lượt vẽ (`world/zone.js batchInstances`) |
 | `scripts/blender/lib/desktop_computer.py` | Máy tính bàn ở bàn intern zone 5 từ mô hình Sketchfab (zone_05.py gọi khi build): thu về tỉ lệ thật, texture 512, mặt màn hình tách thành `monitor_screen` (texture riêng: màn đăng nhập "My FPT" vẽ bằng code — game đổi được) |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
@@ -26,7 +27,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/characters/<id>/` | GLB nhân vật, chân dung (`<id>_portrait.png`, theo bộ đồ `<id>_portrait_<bộ>.png`), texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`, `intern_nu_tu_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
 | `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc. Trong game: `data/characters.json` → `accessories`, gắn vào xương đầu và tự ướm theo lưới nhân vật (`game/src/characters/accessories.js`), mở khoá khi xong game, bật / tắt ở menu Esc |
-| `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`, `desktop_computer/source/desktop_computer.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
+| `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`, `desktop_computer/source/desktop_computer.glb`, `bus/source/bus_jb5_low_poly.glb`, `tree/source/tree_low_poly_lowpoly.glb`, `bamboo/source/bamboo_tree.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại) |
 | `data/i18n/en.json`, `vi.json` | Mọi chữ giao diện: tiếng Anh (bản gốc) và tiếng Việt, cùng khoá. Văn phong bản Việt: `docs/vi_style.md` |
@@ -50,7 +51,9 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `CAM_` | Góc máy cảnh chuyển (extras target / fov_deg / track) |
 | `ENV_` | Hình khối bối cảnh |
 
-Đơn vị 1 = 1 m; Blender trục Z lên, glTF/three.js trục Y lên. Custom property `dynamic` = loại khỏi AO/lightmap.
+Đơn vị 1 = 1 m; Blender trục Z lên, glTF/three.js trục Y lên. Custom property `dynamic` = loại khỏi AO/lightmap;
+`batch` (trên object dùng chung lưới) = game gộp mọi bản sao cùng nhóm thành 1 lượt vẽ mỗi chất liệu, mỗi bản sao 1 cây
+để làm mờ; chất liệu có `outline = false` (hoặc lá glTF MASK → alphaTest) thì game không vẽ viền nét.
 
 ## Lệnh thường dùng
 
@@ -227,7 +230,9 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - Dựng/sửa bối cảnh: `scripts/build.py` (Blender 5.2 qua `tools/bin/blender.cmd`, `gltf-transform` CLI, Pillow, numpy);
   zone_02 cần thêm mô hình tượng Cuder gốc `assets/props/cuder/source/cuder_meshy.glb`, zone_05 cần bàn bi-a gốc
   `assets/props/pool_table/source/pool_table_traditional.glb` (Sketchfab, fizyman, CC BY 4.0) và máy tính bàn gốc
-  `assets/props/desktop_computer/source/desktop_computer.glb` (Sketchfab, Tyler P Halterman, CC BY 4.0); thiếu thì build báo lỗi.
+  `assets/props/desktop_computer/source/desktop_computer.glb` (Sketchfab, Tyler P Halterman, CC BY 4.0); zone_00–03 cần
+  cây gốc `assets/props/tree/source/tree_low_poly_lowpoly.glb`, zone_00–01 xe bus gốc `assets/props/bus/source/bus_jb5_low_poly.glb`,
+  zone_02 bụi tre gốc `assets/props/bamboo/source/bamboo_tree.glb` (Sketchfab, CC BY 4.0); thiếu thì build báo lỗi.
 - Lightmap bản Cao, ảnh so sánh với tham chiếu (cần `references/` gốc).
 - Toàn bộ pipeline nhân vật: cần `assets/characters/<id>/source/`, `mixamo/*.fbx`, `textures/`, các file `.blend`
   (không có trên repo).

@@ -1,9 +1,11 @@
 {
   "zone": "zone_02_campus",
   "quality": "low",
-  "triangles_visible": 58427,
-  "triangles_collision": 408,
+  "triangles_visible": 114787,
+  "triangles_collision": 444,
   "materials": [
+    "M_bamboo_leaf",
+    "M_bamboo_stalk",
     "M_brick_tex",
     "M_glass",
     "M_gloss",
@@ -11,9 +13,11 @@
     "M_laterite_tex",
     "M_light",
     "M_louver_tex",
-    "M_palette"
+    "M_palette",
+    "M_tree_bark",
+    "M_tree_leaf"
   ],
-  "objects": 55,
+  "objects": 114,
   "game_objects": {
     "COL_": [
       "COL_bac_them",
@@ -32,6 +36,9 @@
       "COL_bon_cay_6_14",
       "COL_bon_cay_6_36",
       "COL_bui_tre",
+      "COL_bui_tre_2",
+      "COL_bui_tre_3",
+      "COL_bui_tre_4",
       "COL_canh_sau",
       "COL_canh_trai",
       "COL_canteen_phai",

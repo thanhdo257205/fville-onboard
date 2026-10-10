@@ -1,16 +1,19 @@
 {
   "zone": "zone_01_bus",
   "quality": "low",
-  "triangles_visible": 36030,
+  "triangles_visible": 51654,
   "triangles_collision": 216,
   "materials": [
+    "M_bus_tex",
     "M_gloss",
     "M_hex_tex",
     "M_light",
     "M_louver_tex",
-    "M_palette"
+    "M_palette",
+    "M_tree_bark",
+    "M_tree_leaf"
   ],
-  "objects": 41,
+  "objects": 61,
   "game_objects": {
     "COL_": [
       "COL_ban_do",

@@ -860,6 +860,65 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   tiếng Việt, tải lại trang vẫn tiếng Việt; `--lang vi|en` ép 1 ngôn ngữ. Build + smoke như CI: 60/60 bước (2 phút 25 giây).
   Ảnh: `renders/game/vi_{summary,card,compass}.png`.
 
+### Mô hình bối cảnh Sketchfab: xe bus, cây, bụi tre (10/10/2026, nhánh `feat/env-models`)
+Ba mô hình CC BY 4.0 (file gốc chép vào `assets/props/{bus,tree,bamboo}/source/`, không commit; ghi nguồn `CREDITS.md`),
+dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.py`, `bamboo.py` (cùng cách bàn bi-a / tượng Cuder).
+- **Rà trước khi sửa — mọi chỗ game dùng xe bus:** zone_00 `xe_bus_1..3` (dùng chung lưới, xoay 180°, đầu xe −X), cánh cửa
+  con `xe_bus_N_cua` (gốc = bản lề, mở 162° quanh trục đứng), `INT_bien_xe_N` + `bien_xe_N_mesh` (biển số trên kính, con
+  của xe), xe số 2 `dynamic`, `NPC_tai_xe_1/3`, `NPC_thao_cua_xe`, `NPC_hanh_khach`, `TRIGGER_len_xe` (tâm cửa xe số 2),
+  `CAM_lenxe_1..3`, `PATH_xe_roi_tram` (bắt đầu đúng gốc `xe_bus_2`), `COL_xe_bus_1..3`; zone_01 `INT_xe_bus` →
+  `xe_bus_mesh` → `xe_bus_cua`, `ENV_xe_bus_dau_1..3`, `PATH_xe_vao_tram` (kết thúc đúng gốc `INT_xe_bus`), `NPC_tai_xe`,
+  `SPAWN_zone_01_cua_xe`, `COL_xe_bus_*`; data: `cutscenes.json` (`len_xe`: bus / door / path / arrive; `ending.bus_stop`),
+  `interactables.json` (`INT_bien_xe_1..3`, `INT_xe_bus` `at`), `quests.json`, `characters.json` (`tai_xe` near_node);
+  code: `cutscene.js` (Mover theo PATH_, `swingDoor` quay cửa quanh Y, `yAngle` đọc góc mở từ GLB), `ending.js`,
+  `guide.js` (dấu "!" trên đỉnh lưới biển số). Tên node và gốc toạ độ giữ nguyên → không phải sửa data.
+- **Xe bus** ("Bus jb5 Low Poly", seenkonkgrng): xoay đầu xe +X, dời dọc thân để **tâm cửa khách vẽ trên mô hình trùng tâm
+  cửa cũ** (`props.BUS_DOOR_X` = 4,675 m) → `TRIGGER_len_xe`, `SPAWN_`, `NPC_` ở cửa giữ nguyên. Cánh cửa cắt từ mặt hông
+  theo khung cửa vẽ trên ảnh (dày 4 cm, gốc = bản lề mép trước), chỗ cắt thành hõm tối có khung + 2 bậc. Sơn tím → trắng +
+  sọc đỏ như xe cũ (giữ đổ bóng; mép tối thành xám, không viền đỏ răng cưa), xoá chữ thương hiệu / biển số nước ngoài /
+  chú thích bản vẽ, bỏ clearcoat → `M_bus_tex` (ảnh × vertex color, toon + viền nét), WebP 1024 × 512 **58 KB**. Biển số
+  tuyến 1/2/3: bảng LED ngay trước kính lái, nghiêng 31° theo kính (đo bằng tia dò) + bảng trên cửa. Thân 1.697 + cửa 28 tam
+  giác (xe khối cũ 2.364); thân thật 11,86 × 2,58 × 3,76 m → `COL_xe_bus_*` và kiểm tra đường xe rời trạm theo kích thước
+  thật (`bus.body_box()`; hở với xe số 1: 0,33 m). Mọi xe trong zone dùng chung lưới thân + lưới cánh cửa; xe đậu zone_01 có
+  cánh cửa đóng (trước đây chỉ có hõm).
+- **Cây** ("Tree low poly lowpoly", 00amza): thay mọi cây `kit.tree` ở zone 0–3 (10 / 17 / 52 / 12 cây). `kit.TREES`: tree()
+  vẫn rút số ngẫu nhiên y như cũ (mọi vật dựng sau giữ nguyên chỗ) + giữ ô gốc, vôi trắng, chỗ đặt, chiều cao; bỏ khối thân /
+  tán, ghi chỗ đặt → `trees.place()` đặt bản sao (2 cây gốc, xoay ngẫu nhiên hạt giống riêng). Lá: alpha cắt (glTF MASK →
+  `alphaTest`), 2 mặt, pháp tuyến hướng từ tâm tán (tô toon như khối tròn), màu lá đổi về 4 tông xanh bảng màu game; mảng lá
+  cắt sát đa giác 8 cạnh bao cành lá (ảnh lá chỉ phủ 21 % ô ảnh → bớt ~44 % điểm ảnh lá phải tô); cây gần bỏ 20 %, cây xa
+  (detail 1) bỏ 45 % mảng lá. Thân + lá **không viền nét** (viền thân cây gộp tốn ~0,3 ms/khung ở zone_02). Ảnh 256² WebP
+  23 KB dùng chung.
+- **Bụi tre** ("bamboo tree", tojamerlin; 178k tam giác, 10,6 MB, cm): dựng lại low-poly theo đúng 19 thân (trụ 5 cạnh × 4
+  đoạn, đốt tre lặp theo độ cao) + 600 / 5.321 lá (thoi 2 tam giác theo hướng / bề ngang từng lá gốc) → **1.960 tam giác /
+  bụi**, cao 4,3 m (đặt 4,6–5,2 m). Atlas thân | lá 256 × 512. 4 bụi ở zone_02: đuôi đảo giếng (chỗ bụi cũ, như ảnh thật — hạt
+  lúa `z2_bui_tre` vẫn ở gốc) + 3 bụi hai bên đường xe vào (ngoài bó vỉa, không chắn đường); `COL_bui_tre*` ở gốc theo bán kính
+  gốc thật. Bụi tre khối cũ (zone_01 vẫn dùng) gọi với builder bỏ hình → rng không lệch.
+- **Game:** `world/zone.js batchInstances` gộp bản sao có custom property `batch` thành 1 mesh mỗi chất liệu (zone_02: 56 cây /
+  tre → 4 lượt vẽ), mỗi bản sao 1 số `plantId`; `render/seethrough.js`: mỗi `plantId` = 1 cây (không chia mảnh, không gộp với
+  cây tán chạm nhau), "camera trong tán" xét bằng hộp tán (mảng lá không kín); `renderer.js` + viewer: chép `alphaTest`, chất
+  liệu `outline = false` (extras) hoặc alphaTest → không viền nét. Ảnh xem trước Blender (`render.add_outlines`) cũng bỏ viền
+  các object đó.
+- **Đo FPS** (trình duyệt nhúng, GPU tích hợp AMD Radeon, khung 1024 × 768, pixelRatio 1, Detail Sharper, `__game.benchmark(120)`
+  ở SPAWN đầu zone; bản build `main` trước / sau đặt ở 2 tab, đo xen kẽ, trung vị; zone_02 đo cả 2 thứ tự tab — tab có lệch
+  ~5 %, khung trình duyệt bị ẩn nên số nhiễu ±5 %):
+
+  | Zone | ms/khung trước → sau | FPS | Draw call | Tam giác khung cuối | GLB |
+  | --- | --- | --- | --- | --- | --- |
+  | 0 | 4,35 → 4,58 | −5 % | 40 → 34 | 75,5k → 70,6k | 235 → 328 KB |
+  | 1 | 4,39 → 4,61 | −5 % | 30 → 27 | 59,3k → 51,7k | 247 → 315 KB |
+  | 2 | 3,28 / 3,41 → 3,53 / 3,80 | −9 % | 21 → 21 | 70,4k → 54,6k | 508 → 526 KB |
+  | 3 | 4,70 → 4,92 | −5 % | 20 → 20 | 62,6k → 60,3k | 334 → 361 KB |
+
+  Lần build đầu (lá đủ, viền thân cây, 1.100 lá tre) zone_02 −17 %; bớt viền + cắt / bớt lá → −9 %. Tam giác trong cả zone
+  (report): zone_02 58,4k → 114,8k (cây gộp 1 lượt vẽ, không cắt theo tầm nhìn — vẫn trong mục tiêu FPS).
+- **Kiểm tra:** check_glb 0 lỗi cả 4 zone; test:data đạt; test:smoke 3 ngoại hình zone 0 → 5 + bản lưu cũ, mạng: **79 bước
+  đạt** (thêm bước zone 0–3: cây / tre gộp lượt vẽ, mỗi bản sao 1 cây làm mờ riêng, lá alphaTest không viền, xe bus mô hình).
+  Ảnh (`renders/`): `zone_00_pickup_xe_bus_can.png` (cận xe số 2: cửa mở, biển "2"), `zone_00_pickup_xe_bus_toan_canh.png`,
+  `zone_00_pickup_cay_via_he.png`, `zone_02_campus_cay_canh_lang.png`, `zone_02_campus_tre_gieng.png`; so trong game trước /
+  sau ở đảo giếng zone_02.
+- Commit 84fcbec trên nhánh `feat/env-models` (rebase lên `main` c430b03: test:data, test:pool đạt, smoke 81 bước đạt);
+  Pull Request vào `main`, chưa deploy.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

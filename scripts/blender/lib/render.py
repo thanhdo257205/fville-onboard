@@ -93,6 +93,9 @@ def add_outlines(objects, thickness=0.025):
     for o in objects:
         if o.type != "MESH" or o.name.startswith("COL_") or not o.visible_get():
             continue
+        # chất liệu outline = False (lá cây mảng ảnh, như game: không viền) — vỏ lật phủ đen cả mảng lá → bỏ cả object
+        if any(m is not None and m.get("outline") is False for m in o.data.materials):
+            continue
         if o.data.name not in meshes:
             o.data.materials.append(mat)
             meshes.add(o.data.name)
