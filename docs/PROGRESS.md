@@ -329,6 +329,46 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - `main` 08872eb (+ e338289 PROGRESS); đã deploy `gh-pages` 0be1660 (từ `main` e338289, chơi nhiều người vẫn bật
     `wss://fville-net.fville-onboard.workers.dev/ws`).
 
+### Sửa lỗi review zone 5 + bộ kiểm thử tự động (10/10/2026)
+- **Sửa lỗi review commit 08872eb:**
+  1. Màn tổng kết không mất nữa: cờ `summary_seen` chỉ lưu khi màn tổng kết đã mở; tải game có `game_complete` → vào bến
+     xe zone_01 lúc hoàng hôn (trạng thái cuối cảnh kết, kể cả khi tải lại lúc còn ở zone_05), chưa `summary_seen` thì
+     hiện thẻ thành tựu + màn tổng kết (`Game.resumeSummary`). Xem lại bất cứ lúc nào: menu Esc → **View summary**, nút
+     đầu tab Checklist của app. `game_complete` và `summary_seen` lưu ngay (không chờ 300 ms).
+  2. Mini-game Đăng nhập: bỏ `<form>`, ô username ẩn, `autocomplete="new-password"`; ô nhập `type="text"` +
+     `autocomplete="off"` + ẩn ký tự bằng `-webkit-text-security: disc` (trình duyệt không hỗ trợ → `type="password"`
+     ngoài form); Enter qua `ctx.onKey`. Mật khẩu không lưu, không log, không gửi (debug chỉ trả đúng / sai từng quy định).
+  3. Màn mờ "12:00 · lunch": Esc không mở menu giữa chừng; cờ `lunch_done` vào bản lưu ngay khi áp hiệu ứng (trước khi mờ).
+  4. Tên file ảnh thẻ bỏ dấu đúng (NFD + xoá `\p{M}`, đ → d): "Nguyễn Thị Hà" → `fville-first-day-nguyen-thi-ha.png`.
+  5. `roundRect` có phương án dự phòng (arcTo) cho trình duyệt cũ; tạo / tải ảnh hỏng → báo ngay trong màn tổng kết.
+  6. `host.js end()`: hiệu ứng dạng danh sách (flags, quest, reward…) của kết quả trò **gộp** với `result` trong data
+     (trước đây ghi đè: bi-a mất cờ `billiards_played`).
+- **Lỗi khác tìm ra nhờ bộ kiểm thử:**
+  - Tú kêu mất balo lúc hoàng hôn sau cảnh kết nếu sáng đó rời zone_01 trước 20 giây (sự kiện zone_01 thêm
+    `not_flags: game_complete`).
+  - Bấm View summary trong menu: khoá con trỏ tới muộn sau khi màn tổng kết đã mở (con trỏ bị ẩn) → `input.js` nhả ngay
+    khoá tới muộn khi game không ở chế độ chơi; menu → tổng kết không đi qua chế độ chơi.
+  - Màn tạo nhân vật / mini-game trên màn thấp (điện thoại xoay ngang ~360 px): nút Start bị khuất dưới mép → bảng cuộn được.
+  - Code chết: khung mini-game tạm `MinigamePanel` (panels.js) dùng chữ i18n không có.
+- **Bộ kiểm thử** (`scripts/tests/`, chạy trong `game/`):
+  - `npm run test:data` (Node, không trình duyệt, ~40 ms + khởi động npm): JSON hợp lệ (16 file), `validateLinks`, node
+    GLB (94 tham chiếu, đọc khối JSON của GLB), bản lưu mẫu cho 5 zone, 126 chữ `t("…")` trong code có trong `en.json`,
+    model của các vai có GLB / chân dung / texture bộ đồ.
+  - `npm run test:smoke` (Playwright 1.56.1 = devDependency, Chromium headless, `?net=off`): tự bật Vite dev (hoặc
+    `--build` = `vite preview` trên game/dist, `--url` = server sẵn có), chơi zone 0 → 5 bằng `__game.step()` cho 3 ngoại
+    hình (intern_nam, intern_nam_kinh, intern_nu; tên có dấu). Mỗi zone 1 dòng: việc bắt buộc xong, đúng áo, sang đúng
+    zone, console sạch. Zone 5 thêm: lunch_done + Esc lúc màn mờ, Đăng nhập không form / gợi ý mật khẩu, tải lại giữa cảnh
+    kết (ngoại hình đầu), màn tổng kết + summary_seen + tải ảnh thẻ (tên file bỏ dấu), Close → menu → View summary.
+    `--zone N`: bản lưu mẫu `?start=zone_0N` (dựng từ data bằng `game/src/game/autoplay.js`, chạy nhanh hội thoại gắn với
+    đích từng việc bắt buộc).
+  - Thời gian (máy cloud, Chromium phần mềm): test:data 0,3 s; test:smoke 3 ngoại hình zone 0 → 5: 4 phút 5 giây (dev),
+    4 phút 1 giây (build), 34 bước đạt; `--zone 5` 3 ngoại hình 2 phút 29 giây (19 bước); `--zone 3` 1 ngoại hình 9 giây.
+  - Tham số thử dùng được cả trên bản build khi có `?debug`: `?start=`, `?look=`, `?gender=`, `?net=…`; `?net=off` mọi lúc.
+  - `.github/workflows/test.yml`: push main → test:data + build + test:smoke `--build --look intern_nam`; chạy tay → 3
+    ngoại hình; ảnh bước hỏng = artifact `test-results`. Không cần secret.
+  - `CLAUDE.md` → mục "Kiểm thử": sau mỗi thay đổi chạy test:data + test:smoke (hoặc `--zone N`); chỉ tự lái trình duyệt
+    khi cần xem bằng mắt, tối đa 3 ảnh.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.

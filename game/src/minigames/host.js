@@ -13,6 +13,10 @@ import { GAMES } from "./games.js";
 const IDLE_HINT_S = 8;      // không thao tác bao lâu thì hiện gợi ý bước hiện tại
 const ASSIST_AFTER = 2;     // sai bấy nhiêu lần ở một bước → làm sáng lựa chọn đúng
 const SKIP_AFTER = 3;       // sai bấy nhiêu lần ở một bước → hiện nút Skip
+// hiệu ứng dạng danh sách: kết quả trò (ctx.finish(extra)) GỘP với result trong data (vd billiards: result.flags
+// billiards_played + extra.flags billiards_potted), không ghi đè
+const LIST_EFFECTS = new Set(["flags", "unflags", "quest", "reward", "value", "advice", "item", "remove_item", "grain"]);
+const asList = (x) => (x == null ? [] : [].concat(x));
 
 export class MinigameHost {
   constructor(content) {
@@ -129,7 +133,11 @@ export class MinigameHost {
     if (ok) {
       sound.play("mg_done");
       effects = { ...(a.data.result || {}) };
-      for (const [k, v] of Object.entries(extra)) effects[k] = k === "hieu_biet" ? (effects[k] || 0) + v : v;
+      for (const [k, v] of Object.entries(extra)) {
+        if (k === "hieu_biet") effects[k] = (effects[k] || 0) + v;
+        else if (LIST_EFFECTS.has(k)) effects[k] = [...new Set([...asList(effects[k]), ...asList(v)])];
+        else effects[k] = v;
+      }
       if (skipped) delete effects.hieu_biet;          // Skip: vẫn nhận phần thưởng bắt buộc, không cộng Hiểu biết lượt này
     }
     this.last = { id: a.id, ok, skipped, mistakes: a.mistakes, effects };

@@ -1,4 +1,4 @@
-// Màn tạo nhân vật (tạm: chỉ tên + vị trí intern; ẩn giới tính, tóc, da) và khung mini-game tạm (Đợt 2).
+// Màn tạo nhân vật: tên, giới tính, vị trí intern (ẩn tóc, da: character_creation.hidden) + hộp xác nhận (Chơi lại).
 import { tx } from "../content/content.js";
 import { t } from "../i18n.js";
 
@@ -38,37 +38,6 @@ export function characterCreator(cfg) {
     });
     el.addEventListener("keydown", (e) => e.stopPropagation());   // gõ tên không điều khiển nhân vật
   });
-}
-
-// Khung mini-game tạm: tiêu đề + mô tả + "Finish for now" (áp kết quả) / "Not now". → Promise<bool>
-export class MinigamePanel {
-  constructor(content) {
-    this.c = content;
-    this.el = document.createElement("div");
-    this.el.id = "minigame";
-    this.el.hidden = true;
-    document.body.appendChild(this.el);
-    this.pending = null;
-  }
-  get open() { return !this.el.hidden; }
-  run(id) {
-    const m = this.c.minigames[id];
-    this.id = id;
-    this.el.hidden = false;
-    this.el.innerHTML = `<div class="panel"><h2>${tx(m.title)}</h2><p>${tx(m.desc)}</p><p class="muted">${t("minigame.placeholder")}</p>
-      <div class="row"><button class="ghost" data-a="0">${t("minigame.cancel")}</button><button class="primary" data-a="1">${t("minigame.finish")}</button></div></div>`;
-    return new Promise((resolve) => {
-      this.pending = resolve;
-      this.el.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => this.close(b.dataset.a === "1")));
-    });
-  }
-  close(ok) {
-    if (!this.pending) return;
-    const r = this.pending;
-    this.pending = null;
-    this.el.hidden = true;
-    r(ok);
-  }
 }
 
 // Hộp xác nhận nhỏ (Chơi lại)

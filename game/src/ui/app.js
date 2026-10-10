@@ -1,6 +1,7 @@
 // App My FPT (phím Tab): tab Checklist, Túi đồ, Huy hiệu (+ Sổ lời khuyên khi có phần thưởng so_loi_khuyen, zone 5) + 2 chỉ
 // số Hiểu biết, Kết nối; nút Help (phím H) = gợi ý của mục tiêu hiện tại (game/guide.js). Túi đồ: thẻ nhân viên, ảnh
-// check-in, La bàn nghề nghiệp (kết quả gặp Prajith), Nhiệm vụ đầu tiên (từ Manager).
+// check-in, La bàn nghề nghiệp (kết quả gặp Prajith), Nhiệm vụ đầu tiên (từ Manager). Đã xong game: nút xem lại màn tổng kết
+// đầu tab Checklist (như menu Esc → View summary).
 // Huy hiệu 6 giá trị: ô sáng khi đã thể hiện giá trị VÀ đã có huy hiệu; Đợt 2 chỉ Respect và Fairness hoạt động.
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
@@ -20,6 +21,7 @@ export class MyFptApp {
       const b = e.target.closest("[data-tab]");
       if (b) { this.tab = b.dataset.tab; this.draw(); }
       if (e.target.closest("[data-a=help]")) this.toggleHelp();
+      if (e.target.closest("[data-a=summary]")) this.game?.openSummary();   // tự đóng app, không qua chế độ chơi
     });
   }
   get open() { return !this.el.hidden; }
@@ -49,12 +51,13 @@ export class MyFptApp {
     const curCk = cur?.checklist;
     const status = this.game?.acts.status() || [];
     const curAct = this.game?.acts.current()?.act.id;
+    const done = this.game?.complete ? `<button class="ghost wide view-summary" data-a="summary">🏆 ${t("menu.view_summary")}</button>` : "";
     const item = (it) => {
       const x = this.c.checklist.find((c) => c.id === it.id);
       return `<li class="${it.done ? "done" : ""} ${it.id === curCk ? "current" : ""} ${it.locked ? "later" : ""}">
         <span class="tick">${it.done ? "✓" : it.locked ? "🔒" : ""}</span>${tx(x.title)}${it.locked ? `<em>${t("myfpt.checklist_soon")}</em>` : ""}</li>`;
     };
-    return status.map((st) => `<section class="act ${st.complete ? "complete" : ""} ${st.act.id === curAct ? "now" : ""}">
+    return done + status.map((st) => `<section class="act ${st.complete ? "complete" : ""} ${st.act.id === curAct ? "now" : ""}">
       <header><b>${t("acts.label", { n: st.act.number })} · ${tx(st.act.title)}</b><span>${t("myfpt.act_progress", { done: st.done, total: st.total })}</span></header>
       <div class="actbar"><i style="width:${(100 * st.done) / st.total}%"></i></div>
       <ol class="check">${st.items.map(item).join("")}</ol></section>`).join("");

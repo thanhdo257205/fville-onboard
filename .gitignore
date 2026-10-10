@@ -46,3 +46,6 @@ Thumbs.db
 # máy chủ (server/): trạng thái chạy thử của wrangler dev
 .wrangler/
 .dev.vars
+
+# kết quả smoke test (ảnh chụp bước hỏng) — scripts/tests/smoke.mjs
+test-results/

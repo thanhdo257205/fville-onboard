@@ -1,0 +1,55 @@
+# Kiểm thử tự động (không cần secret): mỗi lần push main → npm run test:data, npm run build, npm run test:smoke
+# (1 ngoại hình cho nhanh, chạy trên bản build, mạng tắt ?net=off — không đụng máy chủ chơi nhiều người thật).
+# Chạy tay (Actions → test → Run workflow): cả 3 ngoại hình. Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results.
+name: test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: game
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: game/package-lock.json
+
+      - name: Cài thư viện
+        run: npm ci
+
+      - name: Kiểm tra dữ liệu (test:data)
+        run: npm run test:data
+
+      - name: Build
+        run: npm run build
+
+      - name: Cài Chromium cho Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Chơi thử tự động (test:smoke)
+        run: npm run test:smoke -- --build ${{ github.event_name == 'workflow_dispatch' && '' || '--look intern_nam' }}
+
+      - name: Ảnh bước hỏng
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          if-no-files-found: ignore

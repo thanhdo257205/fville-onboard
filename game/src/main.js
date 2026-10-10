@@ -24,6 +24,7 @@ import { characterCreator, confirmBox } from "./ui/panels.js";
 import { MinigameHost } from "./minigames/host.js";
 import { hud } from "./ui/hud.js";
 import { installDebug } from "./debug.js";
+import { buildStartState } from "./game/autoplay.js";
 
 async function boot() {
   await loadStrings("en");
@@ -34,7 +35,12 @@ async function boot() {
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
   ]);
-  const debugMode = new URLSearchParams(location.search).has("debug");
+  const params = new URLSearchParams(location.search);
+  const debugMode = params.has("debug");
+  // tham số thử — khi phát triển, hoặc bản build mở với ?debug (smoke test chạy trên bản build):
+  //   ?gender=nu|nam · ?look=intern_nam_kinh (ngoại hình, đặt luôn giới tính) · ?start=zone_05 (bản lưu mẫu)
+  //   · ?net=ws://127.0.0.1:8787/ws (máy chủ chơi nhiều người local). ?net=off (tắt mạng) dùng được mọi lúc.
+  const testParams = import.meta.env.DEV || debugMode;
 
   // kiểm tra dữ liệu: tham chiếu nội bộ + mọi node nhắc tới phải có trong GLB của zone (thiếu → báo rõ tên)
   const zoneFiles = Object.fromEntries(zones.order.map((z) => [z, zones.zones[z].file]));
@@ -64,43 +70,63 @@ async function boot() {
   const characters = new Characters(chars);
   content.names = (role) => characters.displayName(role);   // tên vai cho thông báo (vd lời khuyên của Lan vào Sổ lời khuyên)
   await characters.probe();                 // model chờ người thật đồng ý mà thiếu file → dùng model thay thế
-  // giới tính người chơi → model (roles.player.model_by_gender). Màn tạo nhân vật chưa có mục này → mặc định nam.
-  // Thử khi phát triển: ?gender=nu (hoặc nam) — ghi vào bản lưu; hoặc __game.setGender("nu") lúc đang chơi.
-  const gq = new URLSearchParams(location.search).get("gender");
-  if (import.meta.env.DEV && (gq === "nam" || gq === "nu")) { progress.player.gender = gq; if (saved) save.store(progress); }
-  // ngoại hình (roles.player.looks, bản lưu player.look; màn tạo nhân vật chưa có mục này): ?look=intern_nam_kinh khi phát
-  // triển — đặt luôn giới tính theo model, ghi vào bản lưu; hoặc __game.setLook("intern_nam_kinh") lúc đang chơi
-  const lq = import.meta.env.DEV && new URLSearchParams(location.search).get("look");
+  // giới tính người chơi → model (roles.player.model_by_gender; màn tạo nhân vật có mục giới tính, mặc định nam).
+  // Thử: ?gender=nu (hoặc nam) — ghi vào bản lưu; hoặc __game.setGender("nu") lúc đang chơi.
+  const gq = testParams && params.get("gender");
+  if (gq === "nam" || gq === "nu") { progress.player.gender = gq; if (saved) save.store(progress); }
+  // ngoại hình (roles.player.looks, bản lưu player.look; màn tạo nhân vật chưa có mục này): ?look=intern_nam_kinh
+  // — đặt luôn giới tính theo model, ghi vào bản lưu; hoặc __game.setLook("intern_nam_kinh") lúc đang chơi
+  const lq = testParams && params.get("look");
   if (lq && characters.lookGender(lq)) {
     Object.assign(progress.player, { look: lq, gender: characters.lookGender(lq) });
     if (saved) save.store(progress);
   }
   characters.gender = progress.player.gender || "nam";
   characters.look = progress.player.look || null;
+  // bản lưu mẫu: ?start=zone_05 → như đã chơi xong các zone trước (game/autoplay.js → buildStartState, dựng từ data);
+  // giữ tên / vị trí / giới tính / ngoại hình, ghi đè phần còn lại của bản lưu
+  const sq = testParams && params.get("start");
+  if (sq && zoneFiles[sq]) {
+    const player = { ...progress.player }, created = progress.created;
+    progress.reset();
+    Object.assign(progress.player, player);
+    progress.created = created;
+    const { problems: sp } = buildStartState(content, zones, sq, progress);
+    if (sp.length) console.warn(`[bản lưu mẫu]\n${sp.join("\n")}`);
+    if (created) save.store(progress);
+  }
   const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes }, characters,
     input, settings, nametags, content, progress, ui });
   game.validation = { problems, nodes: nodeCheck };
-  // chơi nhiều người "thấy nhau" (data/net.json → url trống = tắt, game y như chơi một mình)
-  const netUrl = import.meta.env.DEV && new URLSearchParams(location.search).get("net");   // chỉ khi phát triển: ?net=ws://127.0.0.1:8787/ws
-  if (netUrl) netCfg.url = netUrl;
+  // chơi nhiều người "thấy nhau" (data/net.json → url trống = tắt, game y như chơi một mình). ?net=off: tắt (smoke test,
+  // không đụng máy chủ thật); ?net=ws://127.0.0.1:8787/ws: máy chủ local (tham số thử)
+  const netUrl = params.get("net");
+  if (netUrl === "off") netCfg.url = "";
+  else if (netUrl && testParams) netCfg.url = netUrl;
   const net = new Net({ game, cfg: netCfg, settings });
   game.net = net;
   const emotes = net.enabled ? new EmotePanel(net) : null;
   ui.minigame.game = game;
   ui.app.game = game;
 
-  // zone đầu + GLB nhân vật + bộ giải nén tải trong lúc người chơi điền tên (không chờ ở đây)
-  const startZone = zoneFiles[progress.zone] ? progress.zone : zones.order[0];
+  // zone đầu + GLB nhân vật + bộ giải nén tải trong lúc người chơi điền tên (không chờ ở đây).
+  // Đã xong game (cờ game_complete, kể cả khi tải lại giữa cảnh kết) → bến xe zone_01 lúc hoàng hôn, cạnh cửa xe: trạng
+  // thái cuối của cảnh kết (cutscenes.json → ending.bus_stop)
+  const endAt = progress.flags.has("game_complete") ? content.cutscenes?.ending?.bus_stop : null;
+  const startZone = endAt && zoneFiles[endAt.zone] ? endAt.zone : zoneFiles[progress.zone] ? progress.zone : zones.order[0];
+  const startSpawn = endAt && startZone === endAt.zone ? endAt.spawn : null;
   game.preload(startZone);
 
   const loop = { fps: 0 };
   const menu = new Menu({
     info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false,
-      detail: settings.detail ?? "auto", detailLevel: renderer.detail, net: net.enabled, players: settings.players !== false }),
+      detail: settings.detail ?? "auto", detailLevel: renderer.detail, net: net.enabled, players: settings.players !== false,
+      complete: game.complete }),
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
     onPlayers: (on) => { settings.players = on; saveSettings(settings); net.setShow(on); menu.draw(); },
+    onSummary: () => { menu.hide(true); game.openSummary(); },   // chỉ hiện khi đã xong game
     onClose: () => game.setMode("play"),
     onPlayAgain: playAgain,
   });
@@ -123,6 +149,7 @@ async function boot() {
   input.onUnlock = () => { if (game.mode === "play" && game.state.phase === "playing") pause(); };
   input.on("Escape", () => {
     if (game.cutscene) return game.cutscene.skip();
+    if (game.timeSkipping) return;            // màn mờ chuyển giờ (vd "12:00 · lunch"): không mở menu giữa chừng
     if (input.locked || performance.now() - input.unlockedAt < 300) return;
     if (ui.summary.open) return ui.summary.hide();
     if (ui.app.open) return game.toggleApp();
@@ -147,10 +174,11 @@ async function boot() {
     save.store(progress);
     hud.loading(t("app.loading"));
   }
-  await game.start(startZone);
+  await game.start(startZone, startSpawn);
   net.start();                              // sau "Start my first day" (người chơi cũ: khi game bắt đầu)
   addEventListener("pagehide", () => net.stop());
   if (saved) hud.toast(t("hud.welcome_back", { name: progress.player.name }));
+  game.resumeSummary();                     // đã xong game mà chưa thấy màn tổng kết (tải lại giữa cảnh kết) → mở lại
   hud.hint(t(net.enabled ? "hud.controls_net" : "hud.controls"), 10);
 
   // THREE.Timer (thay THREE.Clock đã bị bỏ): connect(document) → tab ẩn thì dt = 0, quay lại không nhảy cóc

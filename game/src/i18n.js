@@ -1,8 +1,10 @@
 // Mọi chữ hiển thị lấy từ data/i18n/<lang>.json — không viết cứng trong code.
-import { loadJSON, url } from "./core/assets.js";
+import { loadJSON, url } from "./core/fetch.js";
 
 let strings = {};
 export let lang = "en";
+// chữ đã có sẵn (Node: scripts/tests/data.mjs đọc data/i18n/en.json từ đĩa)
+export function setStrings(s, l = "en") { strings = s || {}; lang = l; }
 
 export async function loadStrings(l = "en") {
   strings = await loadJSON(url(`data/i18n/${l}.json`));

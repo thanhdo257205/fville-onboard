@@ -6,6 +6,10 @@
 import { t } from "../i18n.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+// tên file ảnh thẻ: bỏ dấu tiếng Việt (NFD rồi xoá dấu kết hợp \p{M}; đ / Đ không tách được → d), chữ thường, nối bằng "-"
+// vd "Nguyễn Thị Hà" → "nguyen-thi-ha", "Đỗ Minh" → "do-minh"
+export const fileSlug = (name) => String(name ?? "").replace(/[đĐ]/g, (c) => (c === "đ" ? "d" : "D")).normalize("NFD")
+  .replace(/\p{M}+/gu, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "intern";
 
 export class Summary {
   constructor({ onPlayAgain } = {}) {
@@ -44,6 +48,7 @@ export class Summary {
       <div class="values">${d.values.map((v) => `<span class="${v.lit ? "lit" : ""}"><b>${esc(v.name)}</b>${v.lit ? "" : `<small>${esc(v.hint)}</small>`}</span>`).join("")}</div>
       ${d.note ? `<div class="note"><b>${t("summary.prajith")}</b><p>${esc(d.note)}</p></div>` : ""}
       <ol class="acts">${d.acts.map((a) => `<li class="${a.done === a.total ? "done" : ""}">${esc(t("acts.label", { n: a.number }))} · ${esc(a.title)}<em>${a.done}/${a.total}</em></li>`).join("")}</ol>
+      <p class="dl-msg" aria-live="polite" hidden></p>
       <footer><button class="ghost" data-a="close">${t("summary.close")} <kbd>Esc</kbd></button>
         <button class="ghost" data-a="download">⬇ ${t("summary.download")}</button>
         <button class="primary" data-a="again">${t("menu.play_again")}</button></footer></div>`;
@@ -64,7 +69,18 @@ export class Summary {
     const img = (src) => new Promise((res) => { if (!src) return res(null); const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
     const [idImg, checkin] = await Promise.all([img(d.idPhoto), img(d.photo)]);
     const font = (w, s) => `${w} ${s}px Nunito, sans-serif`;
-    const round = (x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+    // roundRect: Safari < 16, Firefox < 112 chưa có → vẽ bằng arcTo
+    const round = (x, y, w, h, r) => {
+      g.beginPath();
+      if (g.roundRect) { g.roundRect(x, y, w, h, r); return; }
+      r = Math.min(r, w / 2, h / 2);
+      g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r);
+      g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r);
+      g.arcTo(x, y, x + w, y, r);
+      g.closePath();
+    };
     const wrap = (text, x, y, maxW, lh, maxLines = 6) => {
       const words = String(text).split(/\s+/);
       let line = "", n = 0;
@@ -133,19 +149,35 @@ export class Summary {
     g.textAlign = "left";
     return cv;
   }
+  // nút Download card: vẽ thẻ → PNG → tải về. Hỏng (canvas / toBlob không có, hết bộ nhớ…) → báo ngay trong màn tổng kết
   async download() {
     const d = this.data;
-    if (!d) return;
-    const cv = await this.card(d);
-    const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
-    if (!blob) return;
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `fville-first-day-${String(d.name).normalize("NFD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "intern"}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    this.lastDownload = { name: a.download, bytes: blob.size, width: cv.width, height: cv.height };
+    if (!d || this.busy) return;
+    const msg = this.el.querySelector(".dl-msg"), btn = this.el.querySelector("[data-a=download]");
+    const say = (text, kind) => { if (!msg) return; msg.hidden = !text; msg.textContent = text || ""; msg.dataset.kind = kind || ""; };
+    this.busy = true;
+    if (btn) btn.disabled = true;
+    say(t("summary.download_busy"));
+    try {
+      const cv = await this.card(d);
+      const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
+      if (!blob) throw new Error("toBlob trả null");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `fville-first-day-${fileSlug(d.name)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      this.lastDownload = { name: a.download, bytes: blob.size, width: cv.width, height: cv.height };
+      say(null);
+    } catch (e) {
+      console.warn("[ảnh thẻ] không tạo được ảnh:", e?.message || e);
+      this.lastDownload = { error: String(e?.message || e) };
+      say(t("summary.download_failed"), "error");
+    } finally {
+      this.busy = false;
+      if (btn) btn.disabled = false;
+    }
   }
 }

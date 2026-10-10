@@ -19,6 +19,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
+| `scripts/tests/` | Kiểm thử tự động: `data.mjs` (`npm run test:data`), `smoke.mjs` (`npm run test:smoke`); ảnh bước hỏng vào `test-results/` (không commit). CI: `.github/workflows/test.yml` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
 | `assets/characters/<id>/` | GLB nhân vật, chân dung, texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
@@ -59,6 +60,12 @@ python scripts/build.py zone_02 [zone_03 ...] [--tier low|high|both]
 npm --prefix game ci
 npm --prefix game run dev            # http://localhost:5180  (?debug: FPS, vị trí)
 
+# Kiểm thử (chạy sau MỖI thay đổi — xem "Kiểm thử" dưới)
+npm --prefix game run test:data      # dữ liệu: JSON, tham chiếu, node GLB, bản lưu mẫu, chữ i18n, model (~0,1 giây)
+npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới màn tổng kết, 3 ngoại hình (~4 phút; tự bật Vite dev)
+npm --prefix game run test:smoke -- --zone 5               # chỉ 1 zone (bản lưu mẫu ?start=zone_05), ~50 giây mỗi ngoại hình
+npm --prefix game run test:smoke -- --look intern_nu       # 1 ngoại hình · --build: chạy trên game/dist (sau npm run build)
+
 # Viewer bối cảnh
 python -m http.server 8765           # ở thư mục gốc, mở http://localhost:8765/viewer/
 
@@ -85,13 +92,17 @@ python scripts/deploy_site.py        # build → quét riêng tư → commit →
 python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
 ```
 
-Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug.js`): `simulate`, `walkTo`, `route`, `goto`,
+Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug.js`): `step()` (làm mục tiêu hiện tại: dịch chuyển
+tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển — smoke test dùng), `approach`, `resolve`, `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
 `acts` / `cards` (4 Act, thẻ giữa màn hình), `finish()` / `summary` (thành tựu cuối + màn tổng kết),
 `net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết),
 `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
+Tham số URL để thử (khi dev, hoặc bản build mở với `?debug`): `?start=zone_05` (bản lưu mẫu "đã chơi xong các zone trước",
+dựng từ data: `game/src/game/autoplay.js`), `?look=intern_nam_kinh`, `?gender=nu`, `?net=ws://127.0.0.1:8787/ws`;
+`?net=off` (tắt mạng) dùng được mọi lúc.
 
 ## Bắt đầu từ bản clone mới (Claude Code Web hoặc máy khác)
 
@@ -104,6 +115,7 @@ git worktree add dist gh-pages        # dist/ = bản build (nhánh gh-pages), c
 cd game && npm ci                     # tải từ registry.npmjs.org (game/.npmrc), chép bộ giải nén Draco vào public/draco
 npm run dev                           # http://localhost:5180 — đọc thẳng ../assets và ../data của repo
 npm run build                         # kiểm tra build (ra game/dist)
+npm run test:data && npm run test:smoke   # kiểm thử (máy cloud có sẵn Chromium; máy khác: npx playwright install chromium)
 cd .. && python scripts/deploy_site.py   # build → quét riêng tư → commit → push gh-pages (chỉ khi người dùng đồng ý)
 ```
 
@@ -144,6 +156,18 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   sức khỏe, gia đình, tiền bạc hay điều làm họ trông thiếu chuyên nghiệp.
 - Làm theo đợt và **dừng lại báo cáo** sau mỗi đợt; báo cáo bằng tiếng Việt.
 - File chữ tiếng Việt: sửa bằng Edit hoặc Python (UTF-8). Không dùng PowerShell `Get-Content`/`Set-Content` để ghi lại.
+
+## Kiểm thử
+
+- **Sau mỗi thay đổi** chạy `npm --prefix game run test:data` và `npm --prefix game run test:smoke` (hoặc
+  `-- --zone N` cho zone vừa sửa). Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
+  trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật.
+- Chỉ tự lái trình duyệt (Playwright tự viết, chụp ảnh) khi cần **xem bằng mắt** phần mới; tối đa 3 ảnh mỗi lần.
+- Thêm nội dung mới (quest, hội thoại, mini-game): smoke test tự chơi theo `guide.current()` + `__game.step()` — lựa chọn
+  hội thoại theo `autoplay.pickChoice` (câu có giá trị > câu dẫn tới việc đang làm > câu đầu), mini-game cần
+  `ctx.debug.solve()`. Kiểm tra riêng phần mới thì thêm vào `scripts/tests/smoke.mjs`.
+- GitHub Actions (`.github/workflows/test.yml`): mỗi lần push main chạy test:data + build + test:smoke 1 ngoại hình;
+  chạy tay (Run workflow) thì cả 3 ngoại hình. Đỏ → xem log + artifact `test-results`.
 
 ## Riêng tư và bản quyền (repo công khai)
 

@@ -128,6 +128,8 @@ button { font-family: "Nunito", sans-serif; }
 #creator, #minigame, .confirm { position: fixed; inset: 0; z-index: 7; display: grid; place-items: center; background: rgba(10, 12, 16, .6); }
 #minigame[hidden] { display: none; }
 #creator .panel, #minigame .panel, .confirm .panel { background: #1b1e24; color: var(--fg); padding: 24px 28px; border-radius: 18px; width: min(420px, calc(100vw - 32px)); box-shadow: 0 10px 40px rgba(0, 0, 0, .4); }
+/* màn thấp (điện thoại xoay ngang ~360 px): bảng cuộn được, nút Start / Finish không bị khuất dưới mép màn hình */
+#creator .panel, #minigame .panel, .confirm .panel { max-height: calc(100dvh - 16px); overflow: auto; }
 #creator h2, #minigame h2 { margin: 0 0 14px; font-weight: 800; }
 #creator label { display: grid; gap: 6px; font-weight: 700; margin-bottom: 14px; }
 #creator input[name=name] { font: 700 17px "Nunito"; padding: 10px 12px; border-radius: 10px; border: 2px solid #343944; background: #262a31; color: var(--fg); }
@@ -360,6 +362,10 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 #summary .acts li.done { color: #8fe0a8; }
 #summary .acts em { font-style: normal; color: var(--muted); }
 #summary footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
+#summary .dl-msg { margin: 12px 0 0; font-weight: 700; font-size: 13px; color: var(--muted); }
+#summary .dl-msg[data-kind="error"] { color: #ff9b85; }
+#summary footer button:disabled { opacity: .6; cursor: progress; }
+#myfpt .view-summary { width: 100%; margin: 0 0 10px; }
 #summary kbd { display: inline-block; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; }
 
 /* chơi nhiều người (game/src/net/): góc dưới phải "N online · M in this zone", bảng tên người chơi khác (viền xanh ngọc,
@@ -397,6 +403,8 @@ body.overlay-open #emotes { display: none; }
 .login .pwrow { display: flex; gap: 8px; }
 .login .pw { flex: 1; font: 700 17px "Nunito"; padding: 10px 12px; border-radius: 10px; border: 2px solid #343944; background: #262a31; color: var(--fg); }
 .login .pw:focus { outline: none; border-color: var(--orange); }
+/* ô mật khẩu là type="text" (không có form) → ẩn ký tự bằng CSS, trình duyệt không đề nghị lưu / gợi ý mật khẩu */
+.login .pw.masked { -webkit-text-security: disc; text-security: disc; }
 .login .meter { height: 8px; background: #262a31; border-radius: 999px; margin: 10px 0 4px; overflow: hidden; }
 .login .meter i { display: block; height: 100%; width: 0; background: #e5533d; transition: width .2s, background .2s; }
 .login .meter i[data-lv="2"] { background: #f0a43a; } .login .meter i[data-lv="3"] { background: #c9cf3c; } .login .meter i[data-lv="4"] { background: #2e9e5b; }

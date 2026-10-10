@@ -17,11 +17,15 @@
 //                               summaryCard() (thẻ PNG của nút Download card)
 //   __game.net                → chơi nhiều người: trạng thái kết nối, số online, người khác (vị trí, animation, bảng tên, bong bóng),
 //                               emote / câu chat đã nhận; netEmote(id) / netPhrase(id) = chọn trong bảng phím T
+//   smoke test (scripts/tests/smoke.mjs): step() = làm mục tiêu hiện tại (approach → bấm E / bước vào vùng → resolve);
+//     approach(target) = dịch chuyển tới chỗ bấm E được; resolve() = tự giải hội thoại (autoplay.pickChoice), mini-game
+//     (mgSolve), cảnh chuyển, màn mờ chuyển giờ tới khi đi lại tự do (pauseOn: dừng sớm khi mở mini-game / "time_skip")
 import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
 import { penetration } from "./world/collision.js";
 import { hud } from "./ui/hud.js";
+import { pickChoice } from "./game/autoplay.js";
 
 export function installDebug(game, loop) {
   const v3 = (v) => v && [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(3)];
@@ -111,6 +115,112 @@ export function installDebug(game, loop) {
       return api.model;
     },
     get triggers() { return game.zone.triggers.map((t) => ({ name: t.name, inside: t.inside, cfg: game.triggerCfg(t.name) || null })); },
+
+    // ---------- smoke test ----------
+    // tới chỗ làm được mục tiêu `target` (node / actor "tu" / object): vùng kích hoạt (chuyển zone, lên xe) → đứng giữa hộp,
+    // coi như vừa bước vào; điểm tương tác có vùng (area) → đứng trong vùng; còn lại → thử 8 hướng quanh đích tới khi
+    // lời nhắc E đúng là đích. → { ok, kind: "trigger" | "interact", why }
+    async approach(target) {
+      const z = game.zone;
+      if (!target) return { ok: false, why: "không có đích" };
+      const stand = (p, triggers = true) => {
+        game.player.body.teleport(p.clone().add(new THREE.Vector3(0, 0.05, 0)));
+        game.player.velocity?.set(0, 0, 0);
+        game.player.sync();
+        game.triggersOff = true;
+        api.simulate(0.4, undefined, { render: false });     // rơi xuống mặt đất, va chạm đẩy ra
+        game.triggersOff = !triggers;
+      };
+      const tr = z.triggers.find((x) => x.name === target);
+      if (tr && game.triggerCfg(target)) {
+        stand(worldPos(tr.node));
+        tr.inside = false;                                    // vừa bước vào → onTrigger
+        api.simulate(0.1, undefined, { render: false });
+        game.triggersOff = false;
+        return { ok: true, kind: "trigger" };
+      }
+      const e = game.interaction.list.find((x) => [x.item.node, x.item.actor, x.item.object].includes(target) && game.interaction.available(x));
+      if (!e) { game.triggersOff = false; return { ok: false, why: `không có điểm tương tác dùng được cho ${target}` }; }
+      const ok = () => game.interaction.current === e;
+      if (e.trigger) { stand(worldPos(e.trigger.node), false); game.triggersOff = false; if (ok()) return { ok: true, kind: "interact" }; }
+      const c = game.interaction.actorPos(e);
+      if (!c) { game.triggersOff = false; return { ok: false, why: `${target}: không có vị trí` }; }
+      for (const r of [Math.min(1.1, e.radius * 0.6), Math.min(1.6, e.radius * 0.85)]) {
+        for (let k = 0; k < 8; k++) {
+          const a = (k / 8) * Math.PI * 2;
+          stand(c.clone().add(new THREE.Vector3(Math.sin(a) * r, 0, Math.cos(a) * r)), false);
+          if (ok()) { game.triggersOff = false; return { ok: true, kind: "interact" }; }
+        }
+      }
+      game.triggersOff = false;
+      return { ok: false, why: `${target}: không đứng được chỗ nào có lời nhắc E (lời nhắc: ${game.interaction.current?.item.action ?? "không có"}, mode ${game.mode}, phase ${game.state.phase})` };
+    },
+    // tự giải mọi thứ đang mở tới khi đi lại tự do: hội thoại (lựa chọn theo autoplay.pickChoice — giá trị > việc đang làm >
+    // câu đầu), mini-game (debug solve), cảnh chuyển (chạy nhanh bằng update), màn mờ chuyển giờ. pauseOn: ["login",
+    // "time_skip", …] → dừng ngay khi mini-game / màn mờ đó bắt đầu (để kiểm tra), gọi lại resolve() để chạy tiếp.
+    async resolve({ goal = null, pauseOn = [], maxMs = 90000 } = {}) {
+      const out = { dialogues: [], choices: [], minigames: [], cutscenes: [], paused: null };
+      const t0 = performance.now(), g = goal ?? game.guide.current().quest?.id ?? null;
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const note = (arr, x) => { if (x && arr[arr.length - 1] !== x) arr.push(x); };
+      const answer = () => {
+        const d = game.ui.dialogue, w = d.waiting, a = game.runner.active;
+        if (!w) return;
+        note(out.dialogues, a?.id);
+        if (w.kind === "next") { d.next(); return; }
+        const n = game.content.dialogues.get(a?.id)?.nodes[a?.node];
+        const vis = (n?.choices || []).filter((ch) => game.progress.check(ch.if));
+        const i = pickChoice(game.content, a?.id, a?.node, vis, g);
+        out.choices.push(`${a?.id}/${a?.node}:${i}`);
+        d.choose(i);
+      };
+      let mg = null, mgAt = 0, calm = 0;
+      while (performance.now() - t0 < maxMs) {
+        if (game.cutscene) {
+          note(out.cutscenes, game.cutscene.id);
+          if (pauseOn.includes(`${game.cutscene.id}:${game.cutscene.stage}`)) return { ...out, paused: `${game.cutscene.id}:${game.cutscene.stage}` };
+          for (let k = 0; k < 20 && game.cutscene; k++) { game.update(1 / 30); answer(); }
+          game.render(1 / 30);
+          calm = 0; await sleep(0); continue;
+        }
+        if (game.timeSkipping) { if (pauseOn.includes("time_skip")) return { ...out, paused: "time_skip" }; calm = 0; await sleep(50); continue; }
+        if (game.ui.dialogue.waiting) { answer(); calm = 0; await sleep(0); continue; }
+        const a = game.ui.minigame.active;
+        if (a) {
+          if (a !== mg) {
+            mg = a; mgAt = performance.now(); note(out.minigames, a.id);
+            if (pauseOn.includes(a.id)) return { ...out, paused: a.id };
+            a.ctx.debug.solve?.();
+          } else if (performance.now() - mgAt > 4000) { mgAt = performance.now(); a.ctx.debug.solve?.(); }
+          calm = 0; await sleep(50); continue;
+        }
+        const busy = game.state.phase !== "playing" || game.runner.active || game.finishing || game.mode === "dialogue" || game.mode === "minigame" || game.mode === "cutscene";
+        if (busy) { calm = 0; game.update(1 / 30); await sleep(30); continue; }
+        if (++calm >= 3) break;                              // 3 lượt liền không còn gì mở → xong
+        game.update(1 / 30);
+        await sleep(30);
+      }
+      return { ...out, ms: Math.round(performance.now() - t0), timeout: performance.now() - t0 >= maxMs };
+    },
+    // làm mục tiêu hiện tại (guide.current): xong mọi thứ đang mở (hội thoại on_enter của zone — chờ 0,7 s sau khi vào zone,
+    // sự kiện theo giờ…), tới đích, bấm E hoặc bước vào vùng, resolve. Bị hội thoại khác chen ngang thì làm lại (3 lần).
+    async step(opts = {}) {
+      let why = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const wait = 700 - (performance.now() - (game.state.readyAt ?? 0));
+        if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+        const pre = await api.resolve({ maxMs: 30000, pauseOn: opts.pauseOn });
+        if (pre.paused) return { goal: game.guide.current().key, ok: true, zone: game.state.zone, ...pre };
+        const goal = game.guide.current();
+        if (goal.key === "complete") return { goal: goal.key, ok: true, complete: true };
+        const r = await api.approach(goal.target);
+        if (!r.ok) { why = r.why; continue; }
+        if (r.kind === "interact" && !game.interact()) { why = `bấm E không có tác dụng (mode ${game.mode})`; continue; }
+        const res = await api.resolve({ goal: goal.quest?.id, ...opts });
+        return { goal: goal.key, ok: !res.timeout, zone: game.state.zone, ...res };
+      }
+      return { goal: game.guide.current().key, ok: false, why };
+    },
     get info() { const i = game.renderer.info; return { triangles: i.triangles, calls: i.calls }; },
     get seeThrough() { return game.seeThrough.info(); },
     get talkCam() { const c = game.talkCam; return { active: c.active, goal: c.goal, t: +c.t.toFixed(2), side: c.side, lift: c.lift, pick: c.info, partner: c.partner?.role ?? (c.partner ? "tu" : null) }; },

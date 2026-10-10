@@ -359,6 +359,11 @@ trước mọi danh hiệu.
 - Lời nhắn của Prajith theo xu hướng chính ở La bàn nghề nghiệp.
 - Nút **Download card (PNG)** vẽ lại thẻ đứng 720 × 1080 bằng canvas, gồm ảnh thẻ, tên, vị trí, danh hiệu, chỉ số, 6 ô, lời nhắn Prajith, 4 Act, ảnh check-in nhỏ, ngày.
 - Nút **Play again** và **Close** (Esc).
+- Xem lại màn tổng kết bất cứ lúc nào sau khi xong game: menu Esc → **View summary**, hoặc nút đầu tab Checklist trong app
+  My FPT. Tải lại trang giữa cảnh kết (hoặc trước khi màn tổng kết kịp hiện) → vào lại bến xe zone_01 lúc hoàng hôn, thẻ
+  thành tựu rồi màn tổng kết (cờ `summary_seen` chỉ lưu khi màn tổng kết đã mở).
+- Tên file ảnh thẻ bỏ dấu tiếng Việt: "Nguyễn Thị Hà" → `fville-first-day-nguyen-thi-ha.png`; tạo ảnh hỏng → báo ngay
+  trong màn tổng kết.
 
 **Danh hiệu** (danh hiệu chính là dòng cao nhất người chơi đạt; các dòng khác đạt được hiện thành danh hiệu phụ)
 

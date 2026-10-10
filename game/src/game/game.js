@@ -78,11 +78,12 @@ export class Game {
     this.state.tier = s === "auto" ? (this.state.autoLowered ? "low" : this.detected.tier) : s;
   }
 
-  async start(zoneId = this.data.zones.order[0]) {
+  // spawn: chỗ xuất hiện khác SPAWN_ đầu zone (vd đã xong game → cửa xe bến zone_01, trạng thái cuối của cảnh kết)
+  async start(zoneId = this.data.zones.order[0], spawn = null) {
     this.player = new Player(await this.characters.create("player", this.state.tier));
     this.scene.add(this.player.character.root);
     this.updateOutfit();
-    await this.enterZone(zoneId, this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
+    await this.enterZone(zoneId, spawn ?? this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
     this.acts.start();          // thẻ "ACT n" của Act hiện tại trước, rồi tới thẻ tên zone
     hud.zoneCard(zoneId, this.zoneClock(zoneId));
     this.setMode("play");
@@ -188,6 +189,7 @@ export class Game {
     else hud.clock(this.zoneClock(zoneId) ?? t(`zones.${zoneId}.time`));
     if (fade) await hud.fade(false);
     this.state.phase = "playing";
+    this.state.readyAt = performance.now();    // __game.step chờ hội thoại on_enter (600 ms) trước khi làm việc đầu tiên
     if (!silent) setTimeout(() => this.runOnEnter(zoneId), 600);
     setTimeout(() => this.prefetchNext(zoneId), 2000);
   }
@@ -386,7 +388,9 @@ export class Game {
   applyEffects(e) {
     if (e?.banner) hud.banner(tx(e.banner));                        // chữ lớn giữa màn hình (vd "First card tap!")
     for (const w of [].concat(e?.walk || [])) this.walkActor(w);     // NPC / Tú đi chỗ khác (rồi khuất)
-    const events = this.progress.apply(e);
+    // cờ của màn mờ chuyển giờ (vd lunch_done) lưu ngay, trước khi mờ màn hình: tải lại giữa chừng vẫn đúng buổi chiều
+    // (cờ chỉ đổi ánh sáng / giờ qua applyVariant, gọi sau khi màn đã tối)
+    const events = this.progress.apply(e?.time_skip?.flags ? { ...e, flags: [...[].concat(e.flags || []), ...e.time_skip.flags] } : e);
     hud.notify(events);
     if (e?.reward) this.updateOutfit();
     this.interaction.refresh();
@@ -412,16 +416,17 @@ export class Game {
   }
 
   // màn mờ chuyển giờ (hiệu ứng time_skip: { card, flags }) — vd sau buổi gặp Manager: "12:00 · The team invites you to
-  // lunch" rồi sáng lại buổi chiều (zones.json → variants: ánh sáng + giờ theo cờ lunch_done)
+  // lunch" rồi sáng lại buổi chiều (zones.json → variants: ánh sáng + giờ theo cờ lunch_done; cờ đã lưu lúc áp hiệu ứng).
+  // Đang chạy (timeSkipping): Esc / Tab / E không làm gì (main.js, setMode "cutscene")
   async timeSkip(cfg) {
     if (this.cutscene) return;
     this.setMode("cutscene");
     this.timeSkipping = cfg;
+    this.persist(true);                       // cờ của màn mờ (vd lunch_done) đã vào bản lưu trước khi màn tối
     try {
       await hud.fade(true, 700);
       hud.card(tx(cfg.card));
       await new Promise((r) => setTimeout(r, (cfg.seconds ?? 2.6) * 1000));
-      if (cfg.flags) this.applyEffects({ flags: cfg.flags });
       this.applyVariant();
       hud.card(null);
       await hud.fade(false, 800);
@@ -441,6 +446,7 @@ export class Game {
     try {
       const flag = `achievement_${a.id}`;
       if (!this.progress.flags.has(flag)) this.applyEffects({ flags: [flag, "game_complete"] });
+      this.persist(true);                     // tải lại giữa cảnh kết → main.js mở bến xe + màn tổng kết
       const cfg = this.content.cutscenes?.ending;
       if (ending && cfg && !this.cutscene) await this.playEnding(cfg);
       hud.achievement(tx(a.label), tx(a.title));
@@ -475,11 +481,29 @@ export class Game {
     };
   }
 
+  // màn tổng kết; lần đầu mở sau khi xong game → cờ summary_seen (chưa có cờ này mà đã game_complete, vd tải lại giữa cảnh
+  // kết → main.js gọi resumeSummary). Xem lại bất cứ lúc nào sau khi xong game: menu Esc / app My FPT → View summary
   openSummary() {
-    if (this.mode === "dialogue" || this.mode === "minigame" || this.mode === "cutscene") { this._summaryTimer = setTimeout(() => this.openSummary(), 500); return; }
+    if (this.mode === "dialogue" || this.mode === "minigame" || this.mode === "cutscene" || this.state.phase !== "playing") { clearTimeout(this._summaryTimer); this._summaryTimer = setTimeout(() => this.openSummary(), 500); return; }
     if (this.ui.app.open) this.ui.app.hide();
     this.setMode("summary");
     this.ui.summary?.show(this.summaryData(), () => this.setMode("play"));
+    if (this.progress.flags.has("game_complete") && !this.progress.flags.has("summary_seen")) {
+      this.progress.flags.add("summary_seen");
+      this.persist(true);
+    }
+  }
+  get complete() { return this.progress.flags.has("game_complete"); }
+
+  // tải game khi đã xong (game_complete) mà chưa thấy màn tổng kết (tải lại giữa cảnh kết / trước khi tổng kết hiện):
+  // thẻ thành tựu cuối rồi màn tổng kết, như cuối cảnh kết
+  resumeSummary() {
+    if (!this.complete || this.progress.flags.has("summary_seen")) return false;
+    const a = this.content.achievements?.final;
+    if (a) hud.achievement(tx(a.label), tx(a.title));
+    clearTimeout(this._summaryTimer);
+    this._summaryTimer = setTimeout(() => this.openSummary(), a ? 3900 : 600);
+    return true;
   }
 
   // effects.walk = { who: vai NPC | "tu", to: node | [x, y, z] | [[x, y, z], …] (Tú: đường đi qua nhiều điểm), hide,
@@ -561,11 +585,12 @@ export class Game {
     hud.objective(q ? tx(q.title) : none ? t("hud.objective_explore", { zone: t(`zones.${z}.title`) }) : t("hud.objective_done_zone"));
   }
 
-  persist() {
+  // lưu bản lưu (gộp nhiều thay đổi liền nhau: chờ 300 ms); now = lưu ngay (trước màn mờ chuyển giờ, cảnh kết)
+  persist(now = false) {
     clearTimeout(this._save);
-    this._save = setTimeout(() => {
-      if (!save.store(this.progress) && !this._saveWarned) { this._saveWarned = true; hud.toast(t("hud.save_failed")); }
-    }, 300);
+    const store = () => { if (!save.store(this.progress) && !this._saveWarned) { this._saveWarned = true; hud.toast(t("hud.save_failed")); } };
+    if (now) store();
+    else this._save = setTimeout(store, 300);
   }
 
   speakerInfo(role) {

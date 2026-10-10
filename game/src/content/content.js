@@ -2,13 +2,17 @@
 // guidance (hướng dẫn người chơi mới: gợi ý H, câu nhắc khi đứng yên), acts (4 Act), achievements (thành tựu cuối, danh hiệu).
 // Chữ hiển thị trong nội dung là object theo mã ngôn ngữ {"en": "..."} → tx() chọn theo ngôn ngữ hiện tại.
 // Kiểm tra khi tải: mọi node mà JSON nhắc tới phải có thật trong GLB của zone đó; tham chiếu nội bộ phải khớp.
-import { loadJSON, url } from "../core/assets.js";
+import { loadJSON, url } from "../core/fetch.js";
 import { lang, t } from "../i18n.js";
 
-const FILES = ["dialogues", "quests", "interactables", "quiz", "rewards", "values", "cutscenes", "guidance", "acts", "achievements"];
+export const FILES = ["dialogues", "quests", "interactables", "quiz", "rewards", "values", "cutscenes", "guidance", "acts", "achievements"];
 
 export async function loadContent() {
-  const raw = Object.fromEntries(await Promise.all(FILES.map(async (f) => [f, await loadJSON(url(`data/${f}.json`))])));
+  return buildContent(Object.fromEntries(await Promise.all(FILES.map(async (f) => [f, await loadJSON(url(`data/${f}.json`))]))));
+}
+
+// raw: { dialogues: <data/dialogues.json>, … } — dùng chung cho game và Node (npm run test:data)
+export function buildContent(raw) {
   return {
     raw,
     dialogues: new Map(raw.dialogues.dialogues.map((d) => [d.id, d])),

@@ -716,7 +716,11 @@ const billiards = {
 const THREE_DEG = Math.PI / 180;
 
 // ---------- Đăng nhập lần đầu (bàn làm việc, zone 5): mật khẩu đạt mọi quy định (thanh độ mạnh, quy định thật chờ HR/IT →
-// draft) rồi bật xác thực hai lớp. Mật khẩu chỉ kiểm tra trong trình duyệt, không lưu, không gửi đi ----------
+// draft) rồi bật xác thực hai lớp. Mật khẩu chỉ kiểm tra trong trình duyệt: không lưu (bản lưu, debug.state chỉ có đúng /
+// sai từng quy định), không log, không gửi đi. Không dùng <form>, không ô username, không autocomplete="new-password" →
+// Chrome / Safari không đề nghị lưu hay gợi ý mật khẩu: ô nhập type="text" ẩn ký tự bằng CSS -webkit-text-security
+// (trình duyệt không có thuộc tính này → type="password" ngoài form, autocomplete="off"). Enter = ctx.onKey ----------
+const MASK_CSS = typeof CSS !== "undefined" && !!CSS.supports?.("-webkit-text-security", "disc");
 const login = {
   start(ctx) {
     const d = ctx.data;
@@ -732,15 +736,20 @@ const login = {
     const passed = (p) => d.rules.map((r) => !!tests[r.id]?.(p));
     const draw = () => {
       if (stage === "pw") {
-        ctx.body.innerHTML = `<form class="login" autocomplete="off"><input type="text" name="username" autocomplete="username" value="${esc(ctx.vars.player || "")}" hidden><div class="pwrow"><input type="password" class="pw" autocomplete="new-password" spellcheck="false"
-            placeholder="${esc(tx(d.placeholder))}" maxlength="64"><button type="button" class="ghost show">${t("minigame.show_pw")}</button></div>
+        ctx.body.innerHTML = `<div class="login"><div class="pwrow"><input type="${MASK_CSS ? "text" : "password"}" class="pw${MASK_CSS ? " masked" : ""}"
+            autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true"
+            aria-label="${esc(tx(d.placeholder))}" placeholder="${esc(tx(d.placeholder))}" maxlength="64"><button type="button" class="ghost show">${t("minigame.show_pw")}</button></div>
           <div class="meter"><i></i></div><p class="level"></p>
           <b class="rules-t">${t("minigame.rules")}</b><ul class="rules">${d.rules.map((r) => `<li data-r="${r.id}"><span class="tick"></span>${esc(tx(r.text))}</li>`).join("")}</ul>
-          <button type="submit" class="primary set">${esc(tx(d.login_btn))} ${kbd("Enter")}</button></form>`;
-        ctx.body.querySelector("form").addEventListener("submit", (e) => { e.preventDefault(); submit(); });
+          <button type="button" class="primary set">${esc(tx(d.login_btn))} ${kbd("Enter")}</button></div>`;
+        ctx.body.querySelector(".set").addEventListener("click", submit);
         const inp = ctx.body.querySelector(".pw");
         inp.addEventListener("input", update);
-        ctx.body.querySelector(".show").addEventListener("click", () => { inp.type = inp.type === "password" ? "text" : "password"; inp.focus(); });
+        // Show: bỏ / đặt lại lớp ẩn ký tự (hoặc đổi type khi không có CSS ẩn ký tự)
+        ctx.body.querySelector(".show").addEventListener("click", () => {
+          if (MASK_CSS) inp.classList.toggle("masked"); else inp.type = inp.type === "password" ? "text" : "password";
+          inp.focus();
+        });
         setTimeout(() => inp.focus(), 30);
         update();
       } else {

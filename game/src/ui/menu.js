@@ -1,11 +1,12 @@
 // Menu Esc: tạm dừng, chọn mức đồ hoạ (Tự động / Thấp / Cao), độ nét (Auto / Sharper / Faster), bật / tắt dấu chỉ
-// đường, hiện / ẩn người chơi khác (chỉ khi bật mạng, data/net.json), xem FPS, Chơi lại.
+// đường, hiện / ẩn người chơi khác (chỉ khi bật mạng, data/net.json), xem FPS, xem lại màn tổng kết (khi đã xong game),
+// Chơi lại.
 import { t } from "../i18n.js";
 
 export class Menu {
-  constructor({ onTier, onDetail, onGuide, onPlayers, onClose, onPlayAgain, info }) {
+  constructor({ onTier, onDetail, onGuide, onPlayers, onSummary, onClose, onPlayAgain, info }) {
     this.el = document.getElementById("menu");
-    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onClose, onPlayAgain, info });
+    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onSummary, onClose, onPlayAgain, info });
     this.open = false;
   }
   toggle() { this.open ? this.hide() : this.show(); }
@@ -15,14 +16,15 @@ export class Menu {
     this.draw();
     this._tick = setInterval(() => this.tick(), 500);   // chỉ cập nhật chữ (vẽ lại cả bảng thì nút bị thay giữa lúc bấm)
   }
-  hide() {
+  // silent: không gọi onClose (vd View summary: chuyển thẳng sang màn tổng kết, không qua chế độ chơi / khoá con trỏ)
+  hide(silent = false) {
     this.open = false;
     this.el.hidden = true;
     clearInterval(this._tick);
-    this.onClose?.();
+    if (!silent) this.onClose?.();
   }
   draw() {
-    const i = this.info();   // { setting, tier, gpu, fps, guide, detail, detailLevel, net, players }
+    const i = this.info();   // { setting, tier, gpu, fps, guide, detail, detailLevel, net, players, complete }
     const btn = (v) => `<button data-tier="${v}" class="${i.setting === v ? "on" : ""}">${t(`menu.${v}`)}</button>`;
     const dbtn = (v) => `<button data-detail="${v}" class="${i.detail === v ? "on" : ""}">${t(`menu.detail_${v}`)}</button>`;
     const gbtn = (on) => `<button data-guide="${on ? 1 : 0}" class="${i.guide === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
@@ -39,6 +41,7 @@ export class Menu {
         <p class="muted">${t("menu.guide_note")}</p>
         ${i.net ? `<div class="row"><span>${t("menu.players")}</span><div class="seg">${pbtn(true)}${pbtn(false)}</div></div>` : ""}
         <button class="primary" data-act="resume">${t("menu.resume")}</button>
+        ${i.complete ? `<button class="ghost wide" data-act="summary">🏆 ${t("menu.view_summary")}</button>` : ""}
         <button class="ghost wide" data-act="again">${t("menu.play_again")}</button>
       </div>`;
     this.el.querySelectorAll("[data-tier]").forEach((b) => b.addEventListener("click", () => this.onTier(b.dataset.tier)));
@@ -46,6 +49,7 @@ export class Menu {
     this.el.querySelectorAll("[data-guide]").forEach((b) => b.addEventListener("click", () => this.onGuide?.(b.dataset.guide === "1")));
     this.el.querySelectorAll("[data-players]").forEach((b) => b.addEventListener("click", () => this.onPlayers?.(b.dataset.players === "1")));
     this.el.querySelector("[data-act=resume]").addEventListener("click", () => this.hide());
+    this.el.querySelector("[data-act=summary]")?.addEventListener("click", () => { clearInterval(this._tick); this.onSummary?.(); });
     this.el.querySelector("[data-act=again]").addEventListener("click", () => { clearInterval(this._tick); this.onPlayAgain?.(); });
   }
   tick() {

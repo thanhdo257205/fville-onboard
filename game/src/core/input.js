@@ -28,7 +28,8 @@ export class Input {
     addEventListener("blur", () => this.keys.clear());
 
     document.addEventListener("pointerlockchange", () => {
-      if (this.locked) return;
+      // khoá tới muộn sau khi game đã đổi sang chế độ cần con trỏ (vd menu → View summary) → nhả ngay
+      if (this.locked) { if (!this.lookActive) { this._releasing = true; document.exitPointerLock(); } return; }
       if (this._releasing) { this._releasing = false; return; }
       this.unlockedAt = performance.now();
       this.onUnlock?.();
