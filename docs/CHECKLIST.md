@@ -181,7 +181,9 @@ thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); máy ch
     chuột (`data/i18n/en.json` + `vi.json`); trên điện thoại: kéo ngón tay để ngắm (xem mục "Chơi trên trình duyệt điện thoại")
   - [ ] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
-- [ ] P3 Tab Bản đồ trong app My FPT — Phụ trách: —
+- [x] P3 Tab Bản đồ trong app My FPT — Phụ trách: Claude — nhánh `feat/map-tab` (còn: deploy). Ảnh zone chụp từ trên xuống
+  (cắt bỏ trần / mái ở sàn + 2,4 m, nét tường tối), mũi tên "Bạn" theo hướng mặt, chấm Tú, dấu "!" + dòng mục tiêu (khác tầng:
+  "(tầng trên / dưới)"); zone_04 mỗi tầng một ảnh; smoke mở tab ở zone 2–5
 - [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
   Phụ trách: Claude — nhánh `feat/pool-step3`
 - [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —

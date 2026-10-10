@@ -428,7 +428,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
     - App My FPT với tab Checklist, Túi đồ, Huy hiệu
     - Zone 0 (điểm đón, cảnh lên xe), zone 1, 2, 3 đủ hoạt động bắt buộc; ô Tôn trọng và Chí công
     - Lưu tiến trình vào trình duyệt; hai mức đồ họa tự chọn theo máy
-2. **Đủ hành trình: zone 4, zone 5 và kết thúc** (đã làm 10/10/2026, trừ tab Bản đồ)
+2. **Đủ hành trình: zone 4, zone 5 và kết thúc** (đã làm 10/10/2026; tab Bản đồ làm sau, cùng ngày)
     - Hai tình huống ở cửa quẹt thẻ, phòng FSA, bốn cuộc gặp ở văn phòng
     - Cấu trúc 4 Act (thẻ tiêu đề Act, checklist theo Act), thành tựu cuối
     - Màn tổng kết, danh hiệu, tải ảnh thẻ

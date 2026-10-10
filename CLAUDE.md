@@ -104,7 +104,7 @@ Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug
 tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển — smoke test dùng), `approach`, `resolve`, `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
 `acts` / `cards` (4 Act, thẻ giữa màn hình), `finish()` / `summary` (thành tựu cuối + màn tổng kết),
-`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`; bàn chung: `net` (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ), `join()`, `autoShot()`, `place(x, z)`, `forceShot()`, `setFast()`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết),
+`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`; bàn chung: `net` (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ), `join()`, `autoShot()`, `place(x, z)`, `forceShot()`, `setFast()`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết), `map` (tab Bản đồ của app My FPT: khung, vị trí các dấu),
 `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.

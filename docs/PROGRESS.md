@@ -947,6 +947,25 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
 - Kiểm thử: build + smoke như CI (`--build --look intern_nam,intern_nu`) 61/61 bước (2 phút 34 giây); test:data đạt. CI chạy
   tay trên nhánh (3 ngoại hình): test:data, test:pool, build, smoke 78/78 bước (5 phút 8 giây), ảnh thẻ 0,1 s cả 3 lượt.
 
+### Tab Bản đồ trong app My FPT (10/10/2026, nhánh `feat/map-tab`)
+- GDD: "sơ đồ đơn giản của zone hiện tại, chấm vị trí người chơi và mục tiêu". Tab thứ 4 (Checklist, Túi đồ, Huy hiệu, **Bản đồ**,
+  Sổ lời khuyên — thứ tự theo GDD); 5 tab vừa một dòng (chữ 12 px, rộng theo chữ — vi "Lời khuyên").
+- `game/src/ui/map.js` → `ZoneMap`: chụp zone từ trên xuống 1 lần cho mỗi zone + tầng (khoá `zone:round(sàn / 2)`), camera trực
+  giao đặt ở sàn chỗ đứng + 2,4 m nhìn thẳng xuống — mặt phẳng gần của camera cắt bỏ trần / mái / tán cây (thử `clippingPlanes`
+  trước: mọi shader biên dịch lại, ~3,5 s trên SwiftShader); lượt 2 tô mặt sau màu tối (`overrideMaterial`, BackSide) → chỗ bị cắt
+  thành nét tường; ẩn nhân vật, dấu "!", người chơi khác, trời, sương. Đọc ảnh bất đồng bộ `readRenderTargetPixelsAsync` (đọc
+  đồng bộ làm Chrome báo "GPU stall due to ReadPixels" → smoke báo console bẩn); tab hiện "Đang vẽ bản đồ…" rồi tự vẽ lại. Ảnh
+  gấp đôi khổ hiện (không MSAA), WebP ~6–23 KB; chụp 66–154 ms trên Intel UHD 630 (1,3–4 s trên SwiftShader của CI).
+- Khung: zone trong nhà (hộp va chạm ≤ 45 m: zone 3, 4, 5) → cả hộp va chạm; ngoài trời (hộp va chạm 100–200 m: zone 0, 1, 2) →
+  các điểm SPAWN_ / NPC_ / INT_ / TRIGGER_ + lề 10 m; nới cạnh ngắn cho tỉ lệ ≤ 2,2. Ghi đè được bằng `zones.json` →
+  `<zone>.map: { bounds: [x0, z0, x1, z1], clip_m }` (hiện chưa zone nào cần).
+- Dấu: mũi tên cam "Bạn" xoay theo hướng mặt (180° − yaw), chấm xanh Tú, dấu "!" vàng = `guide.targetPos` của mục tiêu hiện tại
+  (kẹp vào mép nếu ngoài khung), dưới ảnh là dòng mục tiêu (`Game.objectiveText()`, tách từ `updateObjective`); mục tiêu khác
+  tầng (zone_04: phòng FSA tầng trên) → "(tầng trên)" / "(tầng dưới)". Chữ mới: `myfpt.tabs.map`, `map_you`, `map_up`,
+  `map_down`, `map_loading`, `map_empty` (en + vi). `__game.map`: khung, kích thước, ms chụp, vị trí các dấu.
+- Smoke (ngoại hình đầu, zone 2–5 — zone 0–1 chưa có app): mở app → bấm tab Bản đồ → ảnh tải được, dấu bạn + mục tiêu trong
+  ảnh, có dòng mục tiêu, Tab đóng app → chơi tiếp.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
@@ -1007,7 +1026,7 @@ Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLI
    Đo luôn hiệu năng trên một laptop Intel UHD/Iris Xe: mở `?debug`, gõ `__game.benchmark(120)` ở từng zone; xem
    nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
    Gửi `docs/hr_content_request.md` cho HR.
-4. Giai đoạn 2 còn lại: tab Bản đồ trong My FPT; model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng
+4. Giai đoạn 2 còn lại: ~~tab Bản đồ trong My FPT~~ (xong 10/10/2026, nhánh `feat/map-tab`); model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng
    intern_nam / intern_nu); ~~người chơi ngồi vào ghế ở bàn làm việc~~ (xong 10/10/2026); chơi thử zone 5 + cảnh kết với
    người thật (độ dài ~8 phút, mini-game bi-a có quá khó không).
 
