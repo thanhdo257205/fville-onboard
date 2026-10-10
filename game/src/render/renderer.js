@@ -8,6 +8,7 @@ import { OutlineEffect } from "three/addons/effects/OutlineEffect.js";
 const toonGradient = new THREE.DataTexture(new Uint8Array([90, 170, 255]), 3, 1, THREE.RedFormat);
 toonGradient.minFilter = toonGradient.magFilter = THREE.NearestFilter;
 toonGradient.needsUpdate = true;
+toonGradient.userData.shared = true;   // mọi chất liệu toon dùng chung: disposeTree (zone.js) không dọn
 
 export const LIGHTMAP_INTENSITY = 2.2;
 

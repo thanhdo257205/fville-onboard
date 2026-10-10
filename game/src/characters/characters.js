@@ -137,6 +137,7 @@ function attachCarry(ch, kind) {
   const handle = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.012, 4, 10, Math.PI), strap);
   handle.position.y = 0.11;
   handle.rotation.z = Math.PI;
+  body.userData.ownGeometry = handle.userData.ownGeometry = true;   // Character.dispose dọn
   g.add(body, handle);
   g.name = "carry_bag";
   ch.root.updateMatrixWorld(true);
@@ -308,5 +309,18 @@ export class Character {
 
   update(dt) { this.mixer.update(dt); }
 
-  dispose() { this.disposed = true; this.mixer.stopAllAction(); this.root.removeFromParent(); }
+  // gỡ khỏi cảnh + giải phóng GPU của riêng nhân vật này: texture ma trận xương (mỗi SkinnedMesh một DataTexture — trước đây
+  // không dọn: mỗi lần vào zone 5 đọng 7 cái), vật liệu riêng, đồ cầm tay. Geometry / texture màu dùng chung với GLB trong bộ
+  // nhớ đệm (SkeletonUtils.clone) → giữ
+  dispose() {
+    this.disposed = true;
+    this.mixer.stopAllAction();
+    this.mixer.uncacheRoot(this.mixer.getRoot());
+    this.root.removeFromParent();
+    this.root.traverse((o) => {
+      if (o.isSkinnedMesh) o.skeleton.dispose();
+      if (o.userData.ownGeometry) o.geometry.dispose();
+      if (o.isMesh) for (const m of [o.material].flat()) m?.dispose();
+    });
+  }
 }

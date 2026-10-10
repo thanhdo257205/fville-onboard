@@ -413,11 +413,25 @@ async function runLook(browser, base, look) {
         try {
           const [d] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), page.click("#summary [data-a=download]")]);
           dl = { name: d.suggestedFilename(), size: statSync(await d.path()).size };
-        } catch (e) { dl = { error: e.message.split("\n")[0] }; }
-        // thời gian từng khâu (phông, ảnh, vẽ, toBlob[, toDataURL]) — quá hạn thì thấy khâu đang kẹt
+        } catch (e) {
+          dl = { error: e.message.split("\n")[0] };
+          // trang còn chạy hẹn giờ / khung hình không (hẹn giờ phía Node: luồng chính của trang có thể đang bị chặn). Máy CI
+          // từng kẹt ở đây khi canvas thẻ còn vẽ bằng GPU: toBlob chờ GPU (phần mềm) vẽ xong hàng đợi, quá 20 s
+          const probe = (fn) => Promise.race([ev(fn), new Promise((r) => setTimeout(() => r("quá 3 s"), 3000))]).catch((x) => String(x));
+          dl.page = { vis: await ev(() => [document.visibilityState, document.hasFocus()]),
+            timer: await probe(() => new Promise((r) => { const t0 = performance.now(); setTimeout(() => r(Math.round(performance.now() - t0)), 0); })),
+            raf: await probe(() => new Promise((r) => { const t0 = performance.now(); requestAnimationFrame(() => r(Math.round(performance.now() - t0))); })) };
+        }
+        // thời gian từng khâu (phông, ảnh, vẽ, png) — quá hạn thì thấy khâu đang kẹt
         dl.game = await ev(() => __game._game.ui.summary.lastDownload ?? null).catch(() => null);
         const took = dl.game?.ms ? Object.values(dl.game.ms).reduce((a, b) => a + b, 0) : null;
-        const how = [took != null && `${(took / 1000).toFixed(1)} s`, dl.game?.via === "toDataURL" && "toBlob không trả lời → toDataURL"].filter(Boolean).join(", ");
+        // chậm (> 2 s): in từng khâu + thời gian 1 khung hình lúc đó (máy CI: lượt 2 từng mất 11,8 s, lượt 1 chỉ 1,7 s)
+        let slow = "";
+        if (took > 2000) {
+          const frame = await ev(() => new Promise((r) => { const t0 = performance.now(); let n = 0; const f = () => (++n < 10 ? requestAnimationFrame(f) : r(Math.round((performance.now() - t0) / 10))); requestAnimationFrame(f); })).catch(() => null);
+          slow = `: ${Object.entries(dl.game.ms).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}`).join(" · ")}; khung hình ${frame} ms`;
+        }
+        const how = took != null ? `${(took / 1000).toFixed(1)} s${slow}` : "";
         await check(open && s.text.includes(ACH[lang]) && s.zone === "zone_01" && s.seen && dl.name === `fville-first-day-${slug}.png` && dl.size > 50000,
           `màn tổng kết: thành tựu, summary_seen, ảnh thẻ ${dl.name || "?"} (${Math.round((dl.size || 0) / 1024)} KB${how ? `, ${how}` : ""})`, JSON.stringify({ open, zone: s.zone, seen: s.seen, dl }));
         await page.click("#summary [data-a=close]");
@@ -532,6 +546,18 @@ async function runOldSave(browser, base) {
     const con3 = problems.splice(0).filter((p) => !/không vào được zone_05|khong_co_file|Failed to load resource/.test(p));
     await check(r3 === false && shown?.buttons.length === 2 && /^Couldn't open/.test(shown.title) && logged && ok3 && !con3.length,
       `zone lỗi (GLB hỏng) → bảng lỗi "${shown?.title}" [${shown?.buttons.join(" | ")}], console.error; bấm Back → zone_04`, JSON.stringify({ r3, shown, logged, ok3, console: con3.slice(0, 5) }));
+    // bộ nhớ GPU không tăng dần khi đổi zone: zone_04 ↔ zone_05 (7 nhân vật, bàn bi-a, hạt lúa, bảng tên) 2 vòng, số geometry /
+    // texture sau vòng 2 = sau vòng 1 (vòng 1 còn nạp mô hình NPC vào bộ nhớ đệm). Trước đây mỗi vòng đọng thêm: vật do code đặt,
+    // đường ngắm bàn bi-a, texture xương của nhân vật
+    const mem = await ev(async () => {
+      const g = __game._game, r = g.renderer.three, at = () => { g.render(1 / 30); return { geo: r.info.memory.geometries, tex: r.info.memory.textures }; };
+      const round = async () => { for (const z of ["zone_05", "zone_04"]) { await __game.goto(z); for (let i = 0; i < 3; i++) g.update(1 / 30); } return at(); };
+      const start = at(), a = await round(), b = await round();
+      return { start, a, b };
+    });
+    const con4 = problems.splice(0);
+    await check(mem.b.geo === mem.a.geo && mem.b.tex === mem.a.tex && !con4.length,
+      `bộ nhớ GPU: zone_04 ↔ zone_05 2 vòng → geometry ${mem.a.geo} → ${mem.b.geo}, texture ${mem.a.tex} → ${mem.b.tex} (không tăng), console sạch`, JSON.stringify({ ...mem, console: con4.slice(0, 5) }));
   } catch (e) {
     await check(false, `lỗi script: ${e.message.split("\n")[0]}`);
   } finally {
@@ -662,7 +688,9 @@ async function runPoolNet(browser, base, srv) {
     const seq0 = (await net(A)).seq;
     await A.ev(() => __game.pool.autoShot());
     const rolled = await B.wait(() => __game.pool.rolling, 10000);
-    const synced = await Promise.all([A, B].map((p) => p.wait((q) => __game.pool.net.seq === q && !__game.pool.rolling, 20000, seq0 + 1)));
+    // máy Bình phát lại theo thời gian thực, mỗi khung tối đa 0,1 s: lần chạy đầu (Vite còn biên dịch) khung hình thấp → cú phá
+    // ~8 s có lúc quá 20 s (từng hỏng ngẫu nhiên) → chờ 40 s
+    const synced = await Promise.all([A, B].map((p) => p.wait((q) => __game.pool.net.seq === q && !__game.pool.rolling, 40000, seq0 + 1)));
     const [a1, b1] = await Promise.all([net(A), net(B)]);
     await check(solo && rolled && synced.every(Boolean) && b1.replays === 1 && b1.mismatch === 0 && same(a1.shown, b1.shown)
       && same(b1.shown, b1.server) && b1.seats.join() === "An,",

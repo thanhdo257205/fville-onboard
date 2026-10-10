@@ -59,8 +59,10 @@ jobs:
       - name: Cài Chromium cho Playwright
         run: npx playwright install --with-deps chromium
 
+      # chạy tay: cả 3 ngoại hình. Không viết `== 'workflow_dispatch' && '' || '--look …'`: chuỗi rỗng bị coi là sai → luôn ra
+      # vế sau (chạy tay từng chỉ chạy 2 ngoại hình)
       - name: Chơi thử tự động (test:smoke)
-        run: npm run test:smoke -- --build ${{ github.event_name == 'workflow_dispatch' && '' || '--look intern_nam,intern_nu' }}
+        run: npm run test:smoke -- --build ${{ github.event_name != 'workflow_dispatch' && '--look intern_nam,intern_nu' || '' }}
 
       - name: Ảnh bước hỏng
         if: failure()
