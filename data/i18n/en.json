@@ -17,7 +17,7 @@
       "time": "06:30"
     },
     "zone_01": {
-      "title": "Bus Stop",
+      "title": "F-Ville Bus Stop",
       "time": "07:30"
     },
     "zone_02": {
@@ -237,7 +237,7 @@
     "look_stage": "Characters on stage. Use the left and right arrow keys to switch, drag to turn around.",
     "look_hint": "Drag to turn · ← → to switch",
     "look_selected": "{name} selected ({n} of {total})",
-    "preview_shirt": "Preview FPT shirt"
+    "preview_shirt": "Preview FPT Orange Shirt"
   },
   "myfpt": {
     "title": "My FPT",

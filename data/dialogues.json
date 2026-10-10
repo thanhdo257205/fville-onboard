@@ -4,7 +4,7 @@
     {
       "id": "hr_message", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! It's Nga from Recruitment. Your shuttle today is Bus No. 2 to Hòa Lạc — pickup at 06:45 at this stop. Your intern code for the My FPT app: FV-2026. See you at F-Ville!" }, "next": "n2" },
+        "n1": { "speaker": "hr", "style": "phone", "draft": true, "text": { "en": "Good morning, {player}! It's Nga from Recruitment. Today's shuttle: Bus No. 2 to Hòa Lạc, leaving this stop at 06:45. Your My FPT intern code: FV-2026. See you at F-Ville!" }, "next": "n2" },
         "n2": { "speaker": "narrator", "text": { "en": "Find Bus No. 2 before 06:45." }, "effects": { "flags": ["hr_message_read"] }, "next": null }
       }
     },
@@ -14,7 +14,7 @@
     },
     {
       "id": "bien_xe_2", "start": "n1",
-      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"2\" on the windshield — this is the bus to Hòa Lạc!" }, "effects": { "quest": "z0_find_bus", "hieu_biet": 3, "flags": ["sign_2_read"] }, "next": null } }
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A big amber \"2\" glows on the windshield — this is the bus to Hòa Lạc!" }, "effects": { "quest": "z0_find_bus", "hieu_biet": 3, "flags": ["sign_2_read"] }, "next": null } }
     },
     {
       "id": "bien_xe_3", "start": "n1",
@@ -47,13 +47,13 @@
     {
       "id": "tu_bat_chuyen", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Are you an intern in this batch too? I'm Tú. I'm so nervous... I don't even know where to go after we get off the bus." },
+        "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Are you a new intern too? I'm Tú. I'm so nervous… I don't even know where to go once we get off the bus." },
           "choices": [
             { "text": { "en": "Me too — let's stick together!" }, "effects": { "ket_noi": 5 }, "next": "happy" },
             { "text": { "en": "I'm sure someone will show us around." }, "next": "nod" }
           ] },
         "happy": { "speaker": "tu", "anim": "wave", "text": { "en": "Really? Phew, I feel so much better already!" }, "next": "n2" },
-        "nod": { "speaker": "tu", "anim": "nod", "text": { "en": "Yeah... I guess you're right." }, "next": "n2" },
+        "nod": { "speaker": "tu", "anim": "nod", "text": { "en": "Yeah… I guess you're right." }, "next": "n2" },
         "n2": { "speaker": "tu", "text": { "en": "We're on Bus No. 2, right? Let's go find it!" }, "effects": { "quest": "z0_meet_tu", "flags": ["tu_met"] }, "next": null }
       }
     },
@@ -81,13 +81,13 @@
     {
       "id": "hanh_khach", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "hanh_khach", "text": { "en": "Oh — are you getting on too? Sorry, this bag is a bit heavy..." },
+        "n1": { "speaker": "hanh_khach", "text": { "en": "Oh — are you getting on too? Sorry, this bag is a bit heavy…" },
           "choices": [
             { "text": { "en": "After you! Take your time." }, "effects": { "ket_noi": 3, "flags": ["passenger_first"] }, "next": "thanks" },
             { "text": { "en": "(Squeeze past and get on first.)" }, "effects": { "flags": ["passenger_skipped"] }, "next": "meh" }
           ] },
         "thanks": { "speaker": "hanh_khach", "anim": "nod", "text": { "en": "Thank you, that's very kind!" }, "effects": { "flags": ["passenger_boarding"] }, "next": null },
-        "meh": { "speaker": "hanh_khach", "text": { "en": "Oh... okay then." }, "next": null }
+        "meh": { "speaker": "hanh_khach", "text": { "en": "Oh… okay then." }, "next": null }
       }
     },
     {
@@ -197,7 +197,7 @@
             { "text": { "en": "Sure, come on in." }, "effects": { "flags": ["stranger_let_in", "stranger_done"] }, "next": "s_in" },
             { "text": { "en": "Sorry, I can't let you in — reception can help you." }, "effects": { "value": "role_model", "flags": ["stranger_sent_back", "stranger_done"] }, "next": "s_back" }
           ] },
-        "s_in": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Thanks, you're a lifesaver!" }, "next": "s_in2" },
+        "s_in": { "speaker": "nguoi_la", "anim": "nod", "text": { "en": "Thanks — you're a star!" }, "next": "s_in2" },
         "s_in2": { "speaker": "narrator", "text": { "en": "He slips through the gate behind you and hurries towards the stairs." },
           "effects": { "walk": { "who": "nguoi_la", "to": [1.6, 0, -4.4], "hide": true } }, "next": "s_in3" },
         "s_in3": { "speaker": "thao", "style": "phone", "text": { "en": "Hi {player}! A quick tip from me: at the card gate, everyone taps their own card — even someone who seems friendly. Reception can always help guests get in. 🙂" }, "next": "tu0" },
@@ -206,19 +206,19 @@
           "effects": { "walk": { "who": "nguoi_la", "to": [11.6, 0, 0.3], "hide": true } }, "next": "tu0" },
         "tu0": { "branch": [{ "if": { "flags": ["tu_card_done"] }, "next": null }], "next": "tu1" },
         "tu1": { "speaker": "narrator", "text": { "en": "Tú taps {tu_his} card. Beep — the light flashes red." }, "effects": { "flags": ["tu_card_red"] }, "next": "tu2" },
-        "tu2": { "speaker": "tu", "anim": "think", "text": { "en": "Huh? My card's red... Could you just let me follow you through?" },
+        "tu2": { "speaker": "tu", "anim": "think", "text": { "en": "Huh? My card's red… Could you just let me follow you through?" },
           "choices": [
             { "text": { "en": "Sure, come with me." }, "effects": { "flags": ["tu_tailgated", "tu_card_done"] }, "next": "tu_follow" },
             { "text": { "en": "I'll message Ms. Nga in the app." }, "next": "nga1" },
             { "text": { "en": "Maybe ask at reception?" }, "effects": { "flags": ["tu_to_reception", "tu_card_done"] }, "next": "tu_rec" }
           ] },
         "tu_follow": { "speaker": "tu", "anim": "nod", "text": { "en": "Thanks, {player}! Phew." }, "next": "tu_follow2" },
-        "tu_follow2": { "speaker": "thao", "style": "phone", "text": { "en": "{player}, I saw Tú come in on your card. 🙂 Even friends shouldn't follow each other through the gate — if a card doesn't work, message Ms. Nga in the app and she'll sort it out." }, "next": null },
+        "tu_follow2": { "speaker": "thao", "style": "phone", "text": { "en": "{player}, I saw Tú come in on your card. 🙂 Even friends should each tap their own. If a card doesn't work, just message Ms. Nga in the app!" }, "next": null },
         "nga1": { "speaker": "narrator", "text": { "en": "You open My FPT and message Ms. Nga: \"Tú's card shows red at the gate — could you help?\"" }, "next": "nga2" },
         "nga2": { "speaker": "hr", "style": "phone", "text": { "en": "Got it! I've just activated Tú's card — try again now. Thanks for looking out for each other!" }, "next": "nga3" },
         "nga3": { "speaker": "narrator", "text": { "en": "Tú taps again. Beep — green!" }, "effects": { "value": "teamwork", "ket_noi": 5, "flags": ["tu_card_fixed", "tu_card_done"] }, "next": "nga4" },
         "nga4": { "speaker": "tu", "anim": "wave", "text": { "en": "It works! Thanks, {player} — you always know who to ask." }, "next": null },
-        "tu_rec": { "speaker": "tu", "anim": "nod", "text": { "en": "Okay... I'll go and ask. You go on ahead — I'll catch up!" },
+        "tu_rec": { "speaker": "tu", "anim": "nod", "text": { "en": "Okay… I'll go and ask. You go on ahead — I'll catch up!" },
           "effects": { "walk": { "who": "tu", "to": [11.6, 0, 0.3], "return_s": 40, "return_line": { "en": "I'm back! Reception sorted my card out." }, "return_flag": "tu_back" } }, "next": null }
       }
     },
@@ -279,7 +279,7 @@
         "photo": { "action": "minigame:id_photo", "next": "n4" },
         "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. From our first call to your first day — I'm so glad you're here!" },
           "effects": { "reward": ["the_nhan_vien", "welcome_kit"], "hieu_biet": 5, "quest": "z3_card" }, "next": null },
-        "after": { "speaker": "le_tan", "text": { "en": "Your card opens the gates upstairs. If anything comes up today, just message me in the app!" }, "next": null },
+        "after": { "speaker": "le_tan", "text": { "en": "Your card opens the card gate down the corridor. If anything comes up today, just message me in the app!" }, "next": null },
         "w1": { "speaker": "player", "text": { "en": "Excuse me — I found this wallet on the seats over there." }, "next": "w2" },
         "w2": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Oh, thank you! Someone must be worried sick. I'll make sure it gets back to its owner." },
           "effects": { "value": "fairness", "ket_noi": 3, "quest": "z3_wallet", "flags": ["wallet_returned"], "remove_item": "vi_danh_roi" }, "next": "w3" },
@@ -295,13 +295,13 @@
             { "text": { "en": "Take it to the reception desk." }, "effects": { "flags": ["wallet_taken"], "item": "vi_danh_roi" }, "next": "take" },
             { "text": { "en": "Leave it where it is." }, "effects": { "flags": ["wallet_left"] }, "next": null }
           ] },
-        "take": { "speaker": "narrator", "text": { "en": "You picked up the wallet. The reception desk is just over there." }, "next": null }
+        "take": { "speaker": "narrator", "text": { "en": "You pick up the wallet. The reception desk is just over there." }, "next": null }
       }
     },
     {
       "id": "tu_lost_bag", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Wait... where's my backpack?!" }, "next": "n2" },
+        "n1": { "speaker": "tu", "anim": "think", "text": { "en": "Wait… where's my backpack?!" }, "next": "n2" },
         "n2": { "speaker": "tu", "text": { "en": "I think I left it on the bus! Could you help me look? The bus hasn't left yet." },
           "choices": [
             { "text": { "en": "Sure — I'll check the bus!" }, "effects": { "flags": ["tu_lost_bag"] }, "next": null },
@@ -311,7 +311,7 @@
     },
     {
       "id": "jar_look", "start": "n1",
-      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A glass jar of golden grains. You've found {grains} of {grains_total} — more are hidden around F-Ville." }, "next": null } }
+      "nodes": { "n1": { "speaker": "narrator", "text": { "en": "A glass jar of golden grains. You've found {grains} of the {grains_total} hidden around F-Ville." }, "next": null } }
     },
     {
       "id": "tu_backpack_thanks", "start": "n1",
@@ -323,7 +323,7 @@
     {
       "id": "z5_app_meeting", "start": "n1",
       "nodes": {
-        "n1": { "speaker": "app", "style": "phone", "text": { "en": "📅 09:15 · Meeting with Prajith — Mentor meeting room, on the left side of the office." }, "next": "n2" },
+        "n1": { "speaker": "app", "style": "phone", "text": { "en": "📅 09:15 · Meeting with Prajith — mentor meeting room, left side of the office." }, "next": "n2" },
         "n2": { "speaker": "mentor", "style": "phone", "text": { "en": "Hi {player}, welcome to the office! I'm Prajith, your mentor. I'm in the meeting room on the left — the door's open. See you in a minute! 🙂" }, "next": null }
       }
     },
@@ -332,7 +332,7 @@
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_prajith"] }, "next": "after" }], "next": "n1" },
         "n1": { "speaker": "mentor", "anim": "wave", "text": { "en": "There you are, {player}! Welcome to the team. I'm Prajith — I'll be your mentor during your internship." }, "next": "n2" },
-        "n2": { "speaker": "mentor", "text": { "en": "I still remember my own first day here: I spent the morning learning everyone's names, and the afternoon finding the best coffee on this floor. You'll have both sorted by Friday!" }, "next": "n3" },
+        "n2": { "speaker": "mentor", "text": { "en": "I still remember my first day here: a morning learning everyone's names, an afternoon hunting for the best coffee on this floor. You'll have both sorted by Friday!" }, "next": "n3" },
         "n3": { "speaker": "mentor", "anim": "point", "text": { "en": "Before we plan anything, I'd like to know how you like to work. Four quick questions — there are no right or wrong answers." }, "next": "go" },
         "go": { "action": "minigame:career_compass", "next": "n4" },
         "n4": { "speaker": "mentor", "anim": "nod", "text": { "en": "Thanks, {player} — that tells me a lot. Your Career Compass is saved in My FPT. Let's look at it together again at the end of your first month." },
@@ -353,17 +353,17 @@
         "check": { "branch": [{ "if": { "quests": ["z5_manager"] }, "next": "after" }], "next": "n1" },
         "n1": { "speaker": "manager", "anim": "wave", "text": { "en": "Hi {player}, welcome to the team! I'm really glad you're here." }, "next": "n2" },
         "n2": { "speaker": "manager", "draft": true, "text": { "en": "Our team builds and looks after software for customers around the world. This quarter our goal is simple: ship reliable releases, and help each other learn along the way." }, "next": "n3" },
-        "n3": { "speaker": "manager", "text": { "en": "Your first week doesn't need anything big. But I'd like to see how you'd organise your work." }, "next": "n4" },
-        "n4": { "speaker": "manager", "anim": "point", "text": { "en": "Here are five tasks for your first week. Put them in order — the most urgent at the top, the one that can wait at the bottom — then press Check." }, "next": "go" },
+        "n3": { "speaker": "manager", "text": { "en": "You don't need to do anything big in your first week. But I'd like to see how you'd organize your work." }, "next": "n4" },
+        "n4": { "speaker": "manager", "anim": "point", "text": { "en": "Here are five tasks for your first week. Put the most urgent at the top and the one that can wait at the bottom, then press Check." }, "next": "go" },
         "go": { "action": "minigame:priorities", "next": "r0" },
         "r0": { "branch": [{ "if": { "flags": ["priorities_sensible"] }, "next": "good" }], "next": "ok" },
         "good": { "speaker": "manager", "anim": "nod", "text": { "en": "That's exactly how I'd do it: what's due today first, the nice-to-haves last. Very wise!" }, "next": "n5" },
         "ok": { "speaker": "manager", "text": { "en": "Good effort! Just remember: anything due today comes first, and the extras can wait until you've settled in." }, "next": "n5" },
-        "n5": { "speaker": "manager", "text": { "en": "I've added your first mission to My FPT: finish the mandatory information security course today. Then set up your laptop at your desk." },
+        "n5": { "speaker": "manager", "text": { "en": "I've added your first mission to My FPT: finish the mandatory Information Security course today. Then set up your laptop at your desk." },
           "effects": { "reward": "nhiem_vu_dau_tien", "quest": "z5_manager", "ket_noi": 3 }, "next": "n6" },
         "n6": { "speaker": "manager", "anim": "wave", "text": { "en": "Oh — it's almost noon! The whole team is heading out for lunch. Come with us!" },
           "effects": { "time_skip": { "card": { "en": "12:00 · The team invites you to lunch" }, "flags": ["lunch_done"] } }, "next": null },
-        "after": { "speaker": "manager", "text": { "en": "Your desk is the one near the entrance, with Lan and Minh right beside it. Settle in, and say hello to everyone!" }, "next": null }
+        "after": { "speaker": "manager", "text": { "en": "Your desk is the one near the entrance, with Lan and Minh right beside it. Settle in and say hello to everyone!" }, "next": null }
       }
     },
     {
@@ -390,7 +390,7 @@
       "id": "ha_hello", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_ha"] }, "next": "after" }], "next": "n1" },
-        "n1": { "speaker": "dong_nghiep_3", "anim": "wave", "text": { "en": "Hi, I'm Hà! Welcome to the team, {player}." }, "next": "n2" },
+        "n1": { "speaker": "dong_nghiep_3", "anim": "wave", "text": { "en": "Hi, I'm Hà! So glad you're joining us, {player}." }, "next": "n2" },
         "n2": { "speaker": "dong_nghiep_3", "anim": "nod", "text": { "en": "My tip: keep your calendar open and turn on reminders. Meetings move around a lot, and it's easy to miss one in your first week." },
           "effects": { "advice": "ha", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_ha" }, "next": null },
         "after": { "speaker": "dong_nghiep_3", "text": { "en": "Good luck today — you're doing great!" }, "next": null }
@@ -401,7 +401,7 @@
       "nodes": {
         "check": { "branch": [{ "if": { "quests": ["z5_khang"] }, "next": "again" }], "next": "n1" },
         "n1": { "speaker": "khang", "anim": "wave", "text": { "en": "Hey, a new face! I'm Khang. Taking a little break?" }, "next": "n2" },
-        "n2": { "speaker": "khang", "anim": "point", "text": { "en": "Fancy a single shot of billiards? Aim, pick your power, and try to sink the orange ball." },
+        "n2": { "speaker": "khang", "anim": "point", "text": { "en": "Fancy a quick shot at pool? Aim, pick your power and try to sink the orange ball." },
           "choices": [
             { "text": { "en": "Sure, one shot!" }, "effects": { "unflags": ["billiards_last_hit"] }, "next": "play" },
             { "text": { "en": "Maybe later." }, "next": "tip" }
@@ -410,7 +410,7 @@
         "res": { "branch": [{ "if": { "flags": ["billiards_last_hit"] }, "next": "nice" }], "next": "close" },
         "nice": { "speaker": "khang", "anim": "cheer", "text": { "en": "In the pocket! You're a natural." }, "next": "tip" },
         "close": { "speaker": "khang", "text": { "en": "So close! Honestly, trying is half the fun." }, "next": "tip" },
-        "tip": { "speaker": "khang", "anim": "nod", "text": { "en": "Here's my tip: take real breaks. Step away from the screen for a few minutes — good ideas often turn up over a game of billiards." },
+        "tip": { "speaker": "khang", "anim": "nod", "text": { "en": "Here's my tip: take real breaks. Step away from the screen for a few minutes — good ideas often turn up over a game of pool." },
           "effects": { "advice": "khang", "reward": "so_loi_khuyen", "ket_noi": 5, "quest": "z5_khang" }, "next": null },
         "again": { "speaker": "khang", "text": { "en": "The table's free — want another shot?" },
           "choices": [
@@ -455,7 +455,7 @@
     {
       "id": "ending_lan", "start": "n0",
       "nodes": {
-        "n0": { "speaker": "app", "style": "phone", "text": { "en": "⏰ 17:30 — that's a wrap for today! Time to head home." }, "next": "n1" },
+        "n0": { "speaker": "app", "style": "phone", "text": { "en": "⏰ 17:30 — that's a wrap for today!" }, "next": "n1" },
         "n1": { "speaker": "dong_nghiep_1", "anim": "wave", "text": { "en": "17:30 already! Time to head home, {player} — see you tomorrow!" }, "next": "n2" },
         "n2": { "speaker": "player", "text": { "en": "See you tomorrow, Lan!" }, "next": null }
       }

@@ -19,7 +19,7 @@
     "z0_find_bus": {
       "help": { "en": "Ms. Nga's message says Bus No. 2. Walk along the buses and read the big number on each windshield — press E near a sign." },
       "tu": [
-        { "en": "Bus No. 2... let's check the numbers on the windshields!" },
+        { "en": "Bus No. 2… let's check the numbers on the windshields!" },
         { "en": "Look for the big amber \"2\" on a windshield!" }
       ],
       "phone": [
@@ -38,7 +38,7 @@
       ],
       "phone": [
         { "en": "I'm right at the door of Bus No. 2 — come say hello!" },
-        { "en": "{player}, I'm the one in the orange FPT shirt by the bus door. Come on over!" }
+        { "en": "{player}, I'm the one in the FPT orange shirt by the bus door. Come on over!" }
       ]
     },
     "z0_board": {
@@ -150,7 +150,7 @@
         { "pos": [-8.8, 4.2, 1.9], "r": 1.8 }
       ],
       "_route_ly_do": "Phòng FSA ở tầng trên: dấu \"!\" dẫn lần lượt qua chân cầu thang (ngay sau cửa quẹt thẻ), chiếu nghỉ (nửa tây rồi nửa đông — đi thẳng từ đầu vế 1 tới đầu vế 2 thì vướng lan can giữa), đầu vế 2, góc tây bắc tầng trên (đi vòng giếng trời) rồi tới cửa FSA.",
-      "help": { "en": "Go through the card gate and take the stairs up one floor. The FSA Room is at the far end of the upstairs corridor — press E at its glass door." },
+      "help": { "en": "Go through the card gate and up the stairs. The FSA Room is at the far end of the upstairs corridor — press E at its glass door." },
       "tu": [
         { "en": "The FSA Room is upstairs — let's take the stairs!" },
         { "en": "Up the stairs and all the way down the corridor — that's the FSA Room." }
@@ -207,7 +207,7 @@
       ]
     },
     "z5_khang": {
-      "help": { "en": "Khang hangs out by the billiard table in the break area near the entrance. Optional — but he has good advice (and a billiard challenge)." }
+      "help": { "en": "Khang hangs out by the pool table in the break area near the entrance. It's optional — but he has good advice (and a pool challenge)." }
     }
   },
   "zone_exits": {
