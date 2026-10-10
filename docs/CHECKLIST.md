@@ -1,9 +1,9 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` a9a3dcc, build từ `main` 1a79739 — gồm PR #1
+Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` ec3a35b, build từ `main` f4d5a7b — gồm PR #1
 bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5; PR #2 camera / rơi xuyên sàn; PR #3 tiếng Việt; sửa CI + ảnh
 thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); PR #6 sửa bay lơ lửng ở bàn bi-a, rò rỉ bộ nhớ GPU; PR #7 tab
-Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình).
+Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình; PR #8 âm thanh; PR #9 màn tiêu đề).
 
 ## Cách dùng
 

@@ -288,7 +288,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   login, wrangler deploy, điền URL vào `data/net.json`, build, deploy gh-pages, kiểm tra).
 
 ### Giai đoạn 2: zone 5, cảnh kết, màn tổng kết (10/10/2026)
-- **Màn tiêu đề** (10/10/2026, nhánh `feat/title`, `game/src/ui/title.js`): mở game là thấy tiêu đề trên nền 3D thật của
+- **Màn tiêu đề** (10/10/2026, PR #9 `feat/title` → `main` f4d5a7b, deploy `gh-pages` ec3a35b; `game/src/ui/title.js`): mở game là thấy tiêu đề trên nền 3D thật của
   zone 0 lúc 06:30 — `Game.showcase` (`game/src/game/showcase.js`) dựng zone đầu như khi vào zone nhưng chưa có người chơi /
   NPC / trigger, camera trôi theo kịch bản `SHOTS.zone_00` (góc cao bên đường → thấp dọc hàng xe, qua lại), nghiêng nhẹ theo
   chuột; zone không có kịch bản (đã xong game → bến xe zone 1 hoàng hôn, `?start=zone_0X`) thì camera chơi quay quanh
