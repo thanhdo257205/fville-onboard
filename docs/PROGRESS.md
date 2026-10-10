@@ -740,6 +740,8 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   cảnh kết báo "Couldn't open F-Ville Bus Stop" (ai chơi xong zone 5 mà không tải lại trang). Bản sao bỏ userData chép;
   `disposeZone` chỉ dọn vật liệu / texture thật. CI trước chỉ chạy 1 ngoại hình — ngoại hình đó thử "tải lại giữa cảnh kết"
   nên không đi qua đường này; nay CI chạy 2 ngoại hình (ngoại hình thứ 2 chạy trọn cảnh kết).
+  Cùng lỗi làm hỏng cả việc đi từ zone 5 sang zone 4 (CHECKLIST mục 1) → smoke zone 5 thêm bước zone 5 → zone 4 → zone 5
+  sau khi chơi bi-a.
 - Kiểm thử: smoke zone 5 thêm bước "ngồi vào ghế bàn làm việc" (lúc mini-game Đăng nhập: đang sit_type, nâng lên mặt ghế,
   cách chỗ ghế đúng offset của model); `--zone 5` 2 ngoại hình 19 bước đạt (trước khi sửa: ngoại hình thứ 2 hỏng ở cảnh kết).
   Ảnh: `renders/game/seat_intern_nu.png`, `seat_intern_nam_kinh.png`.

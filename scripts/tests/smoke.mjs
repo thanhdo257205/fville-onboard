@@ -228,6 +228,17 @@ async function runLook(browser, base, look) {
           `zone_05: bàn bi-a — "Play pool", phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
         await check(bi.khang.minigames.includes("billiards") && bi.khang.played && bi.khang.potted && bi.khang.hit && !bi.khang.pool && bi.khang.mode === "play",
           "zone_05: anh Khang → Một cú bi-a trên bàn thật: bi vào lỗ, billiards_potted + billiards_played (gộp)", JSON.stringify(bi.khang));
+        // đi ngược khỏi zone 5 (bàn bi-a đã dựng cây cơ) → zone 4 → zone 5: trước đây rời zone 5 báo "Couldn't open …"
+        // (t.map?.dispose is not a function — bản sao cây cơ mang userData chép qua JSON), cả cảnh kết sang bến xe cũng hỏng
+        const back = await ev(async () => {
+          const r1 = await __game._game.enterZone("zone_04", "SPAWN_zone_04_from_zone_05", { fade: false });
+          const z1 = { ok: r1, zone: __game.zone, err: document.getElementById("loading").classList.contains("error") };
+          const r2 = await __game._game.enterZone("zone_05", "SPAWN_zone_05_from_zone_04", { fade: false });
+          return { z1, z2: { ok: r2, zone: __game.zone, err: document.getElementById("loading").classList.contains("error"), pool: !!__game.pool } };
+        });
+        const conB = problems.splice(0);
+        await check(back.z1.ok && back.z1.zone === "zone_04" && !back.z1.err && back.z2.ok && back.z2.zone === "zone_05" && !back.z2.err && back.z2.pool && !conB.length,
+          "zone_05 → zone_04 → zone_05 (sau khi chơi bi-a): rời và vào lại zone 5 được, bàn bi-a dựng lại, console sạch", JSON.stringify({ ...back, console: conB.slice(0, 5) }));
       }
       let steps = 0, stepFail = null;
       while (steps++ < 40) {

@@ -21,7 +21,8 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 
 ## 1. Trước buổi chơi thử (P1)
 
-- [ ] P1 **Lỗi: không ra được khỏi zone 5** (từ `gh-pages` 04a74b2). Đi ra cửa sang zone 4 → "Couldn't open Card Gate · FSA
+- [x] P1 **Lỗi: không ra được khỏi zone 5** (từ `gh-pages` 04a74b2; đã sửa — nhánh `feat/zone5-seat-cap`, commit "Sửa lỗi cảnh kết
+  không sang được bến xe…"; smoke thêm bước zone 5 → zone 4 → zone 5; còn: deploy lại). Đi ra cửa sang zone 4 → "Couldn't open Card Gate · FSA
   Room. t.map?.dispose is not a function"; bấm Back / vào lại → "Couldn't open Office." Cảnh kết (zone 5 → bến xe zone 1)
   cũng hỏng theo. Nguyên nhân: cây cơ của bàn bi-a là bản sao `cue_2` (`cueModel` trong `game/src/pool/table.js`) —
   `clone()` chép `userData` qua JSON nên `userData.srcMaterial` thành object thường, `map` là chuỗi id → `disposeZone`
