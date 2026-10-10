@@ -476,6 +476,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     (2 phút 55 giây)**; bản dev cũng đạt (`--extra only` 5 bước, 15 giây). Test cũ so tên ảnh chân dung bằng `…\.png$` →
     bỏ phần `?v=` trước khi so.
 - Không sửa `server/` → không cần `wrangler deploy` lại.
+- `main` efb03ed; đã deploy `gh-pages` 9dd3954 (từ `main` efb03ed; bỏ 6 GLB bản Cao 4,4 MB khỏi trang). Kiểm tra trên
+  trang thật sau deploy (cài đặt cũ High + máy chủ thật, online 2): zone_03 → cổng → zone_04 trong ~1 giây; tải lại → vào
+  thẳng zone_04, bản Thấp, URL có `?v=efb03ed-…`. Lưu ý: GitHub Pages cho trình duyệt giữ `index.html` tới 10 phút — trong
+  lúc đó tải lại thường vẫn có thể ra bản cũ (đã thấy: transferSize 0, bundle cũ); Ctrl+F5 hoặc chờ 10 phút là ra bản mới.
 
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
