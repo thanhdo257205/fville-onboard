@@ -811,10 +811,19 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   rơi xuyên sàn đã lên trang thật.
 - **CI không chạy từ c2439ba:** tên bước "Cài máy chủ … (test mạng: zone 4 …)" trong `.github/workflows/test.yml` có `: `
   → YAML lỗi, GitHub báo đỏ ngay mà không có job nào (run 18–21: 2 nhánh + 2 lần gộp). Sửa: tên bước trong ngoặc kép.
-- Kiểm tra lại `main` bef8792 trên máy cloud: test:data đạt; test:pool đạt (cả `pool_rules`); build + smoke như CI
+- Kiểm tra lại `main` bef8792 trên máy cloud: test:data đạt; test:pool đạt (cả `pool_rules`); build + smoke
   (`--build --look intern_nam,intern_nu`) 58/58 bước (4 phút 5 giây). Lần chạy dev 1 ngoại hình trước đó hỏng 1 lần bước
   "bi-a 2 người · An ngồi → tập một mình" (máy Bình đã phát lại cú, `mismatch` 0, nhưng chưa về trạng thái dừng trong 20 s);
   chạy lại thì đạt — theo dõi trên CI, lặp lại thì xem thời gian phát lại cú ở máy người xem.
+- **CI chạy lại được thì hỏng 1/58 bước: ảnh thẻ ở màn tổng kết của ngoại hình thứ 2** (lượt chạy trọn cảnh kết) — nút
+  Download kẹt ở "Preparing your card…". CI dùng Chromium *headless shell* của Playwright (máy cloud dùng Chromium đầy đủ
+  `/opt/pw-browsers/chromium-1194` → không thấy); bỏ `executablePath` thì máy cloud cũng hỏng. Đo: vẽ thẻ 3 ms nhưng
+  `canvas.toBlob` 52 s — canvas 2D mặc định nằm trên GPU, phải chờ GPU (SwiftShader) vẽ xong cảnh 3D phía sau (zone_01
+  hoàng hôn ~0,3 khung/giây; zone_01 vào thẳng 1, zone_05 7 khung/giây — do không có card đồ hoạ, không phải lỗi game).
+  Sửa: canvas ảnh thẻ trên CPU (`getContext("2d", { willReadFrequently: true })`, `game/src/ui/summary.js`) → toBlob 34 ms
+  – 1 s; cũng đỡ cho laptop yếu (GPU đang bận vẽ game). Thử lại như CI (headless shell, `--build --look
+  intern_nam,intern_nu`): 58/58 bước (4 phút 41 giây); Chromium đầy đủ `--zone 5`: 15/15. CI của PR #3 (tiếng Việt,
+  `main` ccf259f) hỏng đúng bước này; sau khi đặt bản sửa lên `main` ccf259f: 60/60 bước như CI (4 phút 43 giây).
 
 ### Ngôn ngữ Anh / Việt (10/10/2026, nhánh `feat/vietnamese`)
 - **Chốt với người dùng:** thêm tiếng Việt (bỏ quy tắc "chữ trong game là tiếng Anh" — `CLAUDE.md` đã sửa); bản Việt phải

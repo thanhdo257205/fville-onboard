@@ -64,7 +64,9 @@ export class Summary {
   async card(d = this.data) {
     const W = 720, H = 1080, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
-    const g = cv.getContext("2d");
+    // canvas trên CPU (willReadFrequently): vẽ 1 lần rồi đọc ra PNG. Canvas GPU (mặc định Chromium) phải chờ GPU vẽ xong
+    // cảnh 3D phía sau → toBlob 52 s trên SwiftShader sau cảnh kết (CI); CPU: 34 ms – 1 s
+    const g = cv.getContext("2d", { willReadFrequently: true });
     try { await Promise.all(["800 40px Nunito", "700 22px Nunito"].map((f) => document.fonts.load(f))); } catch { /* font hệ thống */ }
     const img = (src) => new Promise((res) => { if (!src) return res(null); const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
     const [idImg, checkin] = await Promise.all([img(d.idPhoto), img(d.photo)]);

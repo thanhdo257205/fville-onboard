@@ -174,6 +174,9 @@ bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5 và 
   tên một bước trong `.github/workflows/test.yml` có `: ` ("test mạng: zone 4 …") → YAML không đọc được. Sửa: đặt tên bước
   trong ngoặc kép. Sửa file workflow thì kiểm tra trước: `python3 -c "import yaml; yaml.safe_load(open('.github/workflows/test.yml'))"`
   — Phụ trách: Claude
+- [x] P1 **Lỗi: CI hỏng bước ảnh thẻ ở màn tổng kết** (ngoại hình thứ 2, sau cảnh kết: "Preparing your card…" mãi) — trên
+  Chromium headless shell `canvas.toBlob` chờ GPU 52 s. Sửa: canvas ảnh thẻ trên CPU (`willReadFrequently`,
+  `game/src/ui/summary.js`) — Phụ trách: Claude
 - [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
 - [ ] P3 Theo dõi Cloudflare: Workers & Pages → fville-net → Metrics (hạn miễn phí 100.000 lượt/ngày) — Phụ trách: —
 - [x] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
