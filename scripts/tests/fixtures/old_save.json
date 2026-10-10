@@ -1,0 +1,70 @@
+{
+ "_note": "Ban luu cu an danh cho test:smoke (loi ket zone 4, 10/10/2026). Sinh tu buildStartState(zone_04) roi chen cac muc khong con trong data.",
+ "settings": {
+  "tier": "high",
+  "detail": "auto"
+ },
+ "save": {
+  "v": 1,
+  "player": {
+   "name": "Old Save",
+   "position": "dev_cu",
+   "gender": "male",
+   "look": "intern_kinh_cu"
+  },
+  "stats": {
+   "hieu_biet": 38,
+   "ket_noi": null
+  },
+  "values": [
+   "gia_tri_cu"
+  ],
+  "rewards": [
+   "app_my_fpt",
+   "ao_cam",
+   "anh_checkin",
+   "huy_hieu_dong_doi",
+   "huy_hieu_6_gia_tri",
+   "the_nhan_vien",
+   "welcome_kit",
+   "huy_hieu_cu"
+  ],
+  "items": [
+   "the_tam_cu"
+  ],
+  "quests": [
+   "z0_find_bus",
+   "z0_meet_thao",
+   "z0_board",
+   "z1_get_app",
+   "z2_checkin",
+   "z2_well",
+   "z2_cuder",
+   "z3_card",
+   "z3_rice_room",
+   "z3_viec_cu_da_bo"
+  ],
+  "flags": [
+   "hr_message_read",
+   "sign_2_read",
+   "met_thao",
+   "tu_met",
+   "tu_balo_tren_xe",
+   "checkin_intro_heard",
+   "well_intro_heard",
+   "cuder_intro_heard",
+   "timeline_intro_heard",
+   "co_cu_khong_con"
+  ],
+  "grains": [
+   "hat_lua_cu"
+  ],
+  "photos": {},
+  "zone": "zone_04_corridor",
+  "created": true,
+  "advice": [
+   "loi_khuyen_cu"
+  ],
+  "compass": null
+ }
+}

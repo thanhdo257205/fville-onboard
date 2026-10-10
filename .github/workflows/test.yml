@@ -1,5 +1,6 @@
 # Kiểm thử tự động (không cần secret): mỗi lần push main → npm run test:data, npm run build, npm run test:smoke
-# (1 ngoại hình cho nhanh, chạy trên bản build, mạng tắt ?net=off — không đụng máy chủ chơi nhiều người thật).
+# (1 ngoại hình cho nhanh, chạy trên bản build, mạng tắt ?net=off — không đụng máy chủ chơi nhiều người thật) + 2 test thêm:
+# bản lưu cũ lệch data, vào zone 4 khi có người chơi khác (máy chủ local server/ chạy bằng wrangler dev, không cần tài khoản).
 # Chạy tay (Actions → test → Run workflow): cả 3 ngoại hình. Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results.
 name: test
 
@@ -29,10 +30,15 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: game/package-lock.json
+          cache-dependency-path: |
+            game/package-lock.json
+            server/package-lock.json
 
       - name: Cài thư viện
         run: npm ci
+
+      - name: Cài máy chủ chơi nhiều người local (cho test vào zone 4 khi có người chơi khác)
+        run: npm --prefix ../server ci
 
       - name: Kiểm tra dữ liệu (test:data)
         run: npm run test:data

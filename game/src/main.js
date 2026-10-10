@@ -62,7 +62,13 @@ async function boot() {
   const nametags = new NameTags(app);
   const progress = new GameState(content);
   const saved = save.load();
-  if (saved) progress.fromJSON(saved);
+  if (saved) {
+    progress.fromJSON(saved);
+    // bản lưu cũ lệch data (zone / quest / phần thưởng / ngoại hình… không còn) → sửa về giá trị hợp lệ gần nhất, ghi lại
+    const fixed = progress.repair({ zoneOrder: zones.order, looks: chars.roles.player.looks || {},
+      positions: (chars.character_creation?.positions || []).map((x) => x.id) });
+    if (fixed.length) { console.warn([`[bản lưu] đã sửa ${fixed.length} chỗ lệch dữ liệu`, ...fixed].join("\n")); save.store(progress); }
+  }
   const playAgain = async () => {
     if (await confirmBox(t("menu.play_again_confirm"), t("menu.yes"), t("menu.no"))) { save.clear(); location.reload(); }
   };
@@ -186,12 +192,13 @@ async function boot() {
   // THREE.Timer (thay THREE.Clock đã bị bỏ): connect(document) → tab ẩn thì dt = 0, quay lại không nhảy cóc
   const timer = new THREE.Timer();
   timer.connect(document);
-  let frames = 0, acc = 0;
+  let frames = 0, acc = 0, netErr = null;
   renderer.three.setAnimationLoop((time) => {
     timer.update(time);
     const dt = Math.min(timer.getDelta(), 0.1);
     if (!menu.open) game.update(dt);
-    net.update(dt);                         // người chơi khác vẫn đi lại khi mở menu
+    // người chơi khác vẫn đi lại khi mở menu. Lỗi phần mạng không được dừng vòng lặp game (ghi console, mỗi lỗi 1 lần)
+    try { net.update(dt); } catch (e) { if (netErr !== e.message) { netErr = e.message; console.error("[mạng]", e); } }
     if (emotes?.open && game.mode !== "play") emotes.hide();
     game.render(dt);
     hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t("hud.click_to_look") : null);

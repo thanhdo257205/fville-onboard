@@ -123,11 +123,65 @@ export class GameState {
     this.compass = o.compass || null;
     this.zone = o.zone || null;
     this.created = !!o.created;
-    // bản lưu cũ (trước khi có zone_00): đã ở zone sau → coi như xong mọi việc bắt buộc của các zone trước
-    // (trigger chuyển zone đã đòi các việc đó), vd mục checklist Xe Bus FPT giờ gồm cả việc lên xe ở zone_00
+    this.fillEarlierQuests();
+  }
+
+  // bản lưu cũ (trước khi có zone_00): đã ở zone sau → coi như xong mọi việc bắt buộc của các zone trước
+  // (trigger chuyển zone đã đòi các việc đó), vd mục checklist Xe Bus FPT giờ gồm cả việc lên xe ở zone_00
+  fillEarlierQuests() {
     const order = this.c.zoneOrder || [];
     const at = order.indexOf(this.zone);
     if (at > 0) for (const q of this.c.quests) if (q.required && order.indexOf(q.zone) >= 0 && order.indexOf(q.zone) < at) this.quests.add(q.id);
+  }
+
+  // Bản lưu cũ lệch data (zone / quest / phần thưởng / vật / ngoại hình… không còn): sửa về giá trị hợp lệ gần nhất thay vì
+  // kẹt hoặc lỗi về sau. Cờ (flags) giữ nguyên: cờ lạ không ảnh hưởng gì, cờ do code đặt không có danh sách để đối chiếu.
+  // ctx: { zoneOrder, looks: roles.player.looks, positions: [id vị trí intern] } → danh sách chỗ đã sửa (rỗng = đúng hết).
+  repair({ zoneOrder = this.c.zoneOrder || [], looks = {}, positions = [] } = {}) {
+    const c = this.c, fixed = [];
+    const keep = (name, arr, ok) => {
+      const bad = arr.filter((x) => !ok(x));
+      if (bad.length) fixed.push(`${name}: bỏ ${bad.join(", ")} (không còn trong data)`);
+      return arr.filter(ok);
+    };
+    const grainIds = new Set((c.raw?.interactables?.grains || []).map((g) => g.id));
+    this.quests = new Set(keep("quests", [...this.quests], (q) => c.questById.has(q)));
+    this.rewards = keep("rewards", this.rewards, (r) => c.rewards.has(r));
+    this.items = keep("items", this.items, (x) => c.carry.has(x));
+    this.values = new Set(keep("values", [...this.values], (v) => c.valueById.has(v)));
+    this.grains = new Set(keep("grains", [...this.grains], (g) => grainIds.has(g)));
+    this.advice = keep("advice", this.advice, (a) => c.adviceById.has(a));
+    for (const k of STATS) if (!Number.isFinite(this.stats[k])) { fixed.push(`stats.${k}: ${this.stats[k]} → 0`); this.stats[k] = 0; }
+    // zone không còn → zone xa nhất mà mọi việc bắt buộc của các zone trước đã xong (gần chỗ người chơi đã tới nhất)
+    if (this.zone != null && !zoneOrder.includes(this.zone)) {
+      let best = zoneOrder[0] ?? null;
+      for (const [i, z] of zoneOrder.entries()) {
+        const before = zoneOrder.slice(0, i);
+        if (c.quests.every((q) => !q.required || !before.includes(q.zone) || this.quests.has(q.id))) best = z;
+      }
+      fixed.push(`zone: ${this.zone} → ${best}`);
+      this.zone = best;
+    }
+    // người chơi: giới tính (khoá của roles.player.looks), ngoại hình, vị trí intern, tên
+    const p = this.player, genders = Object.keys(looks);
+    const ALIAS = { male: "nam", m: "nam", man: "nam", female: "nu", f: "nu", woman: "nu", "nữ": "nu" };
+    if (p.gender != null && genders.length && !genders.includes(p.gender)) {
+      const g = ALIAS[String(p.gender).toLowerCase()] ?? genders[0];
+      fixed.push(`player.gender: ${p.gender} → ${g}`);
+      p.gender = g;
+    }
+    if (p.look != null) {
+      const g = genders.find((x) => looks[x].includes(p.look));
+      if (!g) { fixed.push(`player.look: ${p.look} → mặc định theo giới tính`); p.look = null; }
+      else if (p.gender && p.gender !== g) { fixed.push(`player.gender: ${p.gender} → ${g} (theo ngoại hình ${p.look})`); p.gender = g; }
+    }
+    if (positions.length && p.position && !positions.includes(p.position)) {
+      fixed.push(`player.position: ${p.position} → ${positions[0]}`);
+      p.position = positions[0];
+    }
+    if (this.created && !String(p.name ?? "").trim()) { fixed.push("player.name: trống → Intern"); p.name = "Intern"; }
+    this.fillEarlierQuests();
+    return fixed;
   }
 }
 

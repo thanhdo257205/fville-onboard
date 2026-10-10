@@ -193,7 +193,9 @@ export class RemotePlayers {
       if (r.bubbleLeft > 0) { r.bubbleLeft -= dt; if (r.bubbleLeft <= 0 && r.bubble) r.bubble.visible = false; }
       const s = r.sample(delay);
       if (!r.want || !s) { if (r.ch) r.ch.root.visible = false; r.visible = false; continue; }
-      if ((!r.ch || r.rebuild) && !r.loading && !r.failed) { this.build(r); if (!r.ch) continue; }
+      // dựng model người khác chỉ khi đang chơi: lúc chuyển zone không tranh tải / biên dịch với zone (zone xong trước,
+      // người khác hiện sau)
+      if ((!r.ch || r.rebuild) && !r.loading && !r.failed && g.state.phase === "playing") { this.build(r); if (!r.ch) continue; }
       if (!r.ch) continue;
       const ch = r.ch, root = ch.root;
       // bộ đồ

@@ -2,6 +2,7 @@
 // đường, hiện / ẩn người chơi khác (chỉ khi bật mạng, data/net.json), xem FPS, xem lại màn tổng kết (khi đã xong game),
 // Chơi lại.
 import { t } from "../i18n.js";
+import { TIERS } from "../core/quality.js";
 
 export class Menu {
   constructor({ onTier, onDetail, onGuide, onPlayers, onSummary, onClose, onPlayAgain, info }) {
@@ -32,7 +33,7 @@ export class Menu {
     this.el.innerHTML = `
       <div class="panel">
         <h2>${t("menu.title")}</h2>
-        <div class="row"><span>${t("menu.graphics")}</span><div class="seg">${btn("auto")}${btn("low")}${btn("high")}</div></div>
+        <div class="row"><span>${t("menu.graphics")}</span><div class="seg">${btn("auto")}${btn("low")}${TIERS.includes("high") ? btn("high") : ""}</div></div>
         <p class="muted current">${t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu })}</p>
         <p class="muted fps">${t("menu.fps", { fps: Math.round(i.fps) })}</p>
         <div class="row"><span>${t("menu.detail")}</span><div class="seg">${dbtn("auto")}${dbtn("sharper")}${dbtn("faster")}</div></div>

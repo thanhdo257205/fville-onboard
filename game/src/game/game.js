@@ -11,7 +11,7 @@ import { TalkCamera } from "../player/talkcam.js";
 import { Player } from "../player/player.js";
 import { Npc } from "../characters/npc.js";
 import { Follower } from "../characters/follower.js";
-import { FpsMonitor, detectTier, saveSettings, DETAIL_FPS } from "../core/quality.js";
+import { FpsMonitor, detectTier, saveSettings, DETAIL_FPS, usableTier } from "../core/quality.js";
 import { hud } from "../ui/hud.js";
 import { t } from "../i18n.js";
 import { tx } from "../content/content.js";
@@ -25,6 +25,9 @@ import { Guide } from "./guide.js";
 import { Acts, earnedTitles } from "./acts.js";
 import { setTint } from "../characters/characters.js";
 import { sound } from "../core/sound.js";
+
+// chuyển zone quá chừng này chưa xong → hiện lỗi + nút Retry / Back (Game.enterZone)
+export const ZONE_TIMEOUT_MS = 20000;
 
 export class Game {
   constructor({ renderer, data, characters, input, settings, nametags, content, progress, ui }) {
@@ -75,7 +78,7 @@ export class Game {
   resolveTier() {
     const s = this.settings.tier;
     this.state.tierSource = s === "auto" ? (this.state.autoLowered ? "auto-lowered" : "auto") : "manual";
-    this.state.tier = s === "auto" ? (this.state.autoLowered ? "low" : this.detected.tier) : s;
+    this.state.tier = usableTier(s === "auto" ? (this.state.autoLowered ? "low" : this.detected.tier) : s);
   }
 
   // spawn: chỗ xuất hiện khác SPAWN_ đầu zone (vd đã xong game → cửa xe bến zone_01, trạng thái cuối của cảnh kết)
@@ -83,9 +86,9 @@ export class Game {
     this.player = new Player(await this.characters.create("player", this.state.tier));
     this.scene.add(this.player.character.root);
     this.updateOutfit();
-    await this.enterZone(zoneId, spawn ?? this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
+    const ok = await this.enterZone(zoneId, spawn ?? this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
     this.acts.start();          // thẻ "ACT n" của Act hiện tại trước, rồi tới thẻ tên zone
-    hud.zoneCard(zoneId, this.zoneClock(zoneId));
+    if (ok) hud.zoneCard(zoneId, this.zoneClock(zoneId));
     this.setMode("play");
   }
 
@@ -113,8 +116,45 @@ export class Game {
     if (next && this.zoneCfg(next)) prefetchZone(this.zoneCfg(next).file, this.state.tier);
   }
 
+  // Chuyển zone có canh giờ (mọi nơi gọi: trigger, mở game, cảnh chuyển, đổi mức đồ hoạ). Lỗi khi tải → hiện ra (bảng lỗi
+  // trên màn chờ + console.error), không nuốt; quá ZONE_TIMEOUT_MS chưa xong cũng vậy. Nút Retry (tải lại zone đó) và Back
+  // to <zone vừa rời> (mở game thẳng vào zone lỗi: zone trước theo thứ tự; zone đầu: Reload page). Xong muộn sau khi đã
+  // báo quá giờ → tự bỏ bảng lỗi. Việc mạng / người chơi khác không nằm trong đường này (remotes chỉ dựng khi đang chơi).
+  // → true nếu đã vào zone.
+  async enterZone(zoneId, spawnName, opts = {}) {
+    const from = this.state.zone && this.state.zone !== zoneId ? this.state.zone : null;
+    const token = {};
+    this.zoneLoad = token;
+    hud.zoneError(null);
+    let timer;
+    const load = this._enterZone(zoneId, spawnName, opts);
+    const late = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(t("app.zone_timeout", { s: ZONE_TIMEOUT_MS / 1000 }))), ZONE_TIMEOUT_MS);
+    });
+    // bảng lỗi cần con trỏ: nhả khoá chuột lúc báo lỗi, vào được zone thì trả lại (đang ở chế độ chơi)
+    const relook = () => { if (this.mode === "play" && !this.input.lookActive) this.input.setLook(true); };
+    try {
+      await Promise.race([load, late]);
+      relook();
+      return true;
+    } catch (e) {
+      load.then(() => { if (this.zoneLoad === token) { hud.zoneError(null); relook(); } }, () => {});   // xong muộn → bỏ bảng lỗi
+      if (this.zoneLoad !== token) return false;          // đã có lần chuyển zone khác (vd bấm Retry)
+      console.error(`[zone] không vào được ${zoneId}${spawnName ? ` (${spawnName})` : ""}:`, e);
+      this.lastZoneError = { zone: zoneId, spawn: spawnName, message: e?.message || String(e) };
+      const order = this.data.zones.order, back = from ?? order[order.indexOf(zoneId) - 1] ?? null;
+      const title = (z) => t(`zones.${z}.title`);
+      const buttons = [{ label: t("app.zone_retry"), run: () => this.enterZone(zoneId, spawnName, opts) }];
+      if (back) buttons.push({ label: t("app.zone_back", { zone: title(back) }), run: () => this.enterZone(back, `SPAWN_${back}_from_${zoneId}`, { fade: false }) });
+      else buttons.push({ label: t("app.zone_reload"), run: () => location.reload() });
+      this.input.setLook(false);
+      hud.zoneError({ title: t("app.zone_error", { zone: title(zoneId) }), detail: this.lastZoneError.message, buttons });
+      return false;
+    } finally { clearTimeout(timer); }
+  }
+
   // silent: tải sau màn tối của cảnh chuyển — không hiện màn chờ, thẻ tên zone, hội thoại vào zone
-  async enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false, zoneCard = true } = {}) {
+  async _enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false, zoneCard = true } = {}) {
     this.state.phase = "transition";
     // đang hội thoại / mini-game / mở app thì đóng lại trước khi rời zone
     if (this.runner.active) this.runner.abort();
@@ -150,8 +190,17 @@ export class Game {
       this.scene.add(this.player.character.root);
       this.updateOutfit();
     }
-    const spawn = zone.spawns.get(spawnName) ?? zone.spawns.get(this.zoneCfg(zoneId)?.start ?? "");
-    if (!spawn && !keepPose) throw new Error(`${zoneId}: thiếu ${spawnName}`);
+    // SPAWN_ cần có thiếu trong GLB (vd GLB cũ lệch data): lùi về SPAWN_ đầu zone, rồi SPAWN_ bất kỳ — báo lỗi ra console
+    // nhưng vẫn vào được zone (trước đây ném lỗi → kẹt mãi ở màn chờ)
+    const startName = this.zoneCfg(zoneId)?.start ?? "";
+    let spawn = zone.spawns.get(spawnName) ?? zone.spawns.get(startName);
+    if (!spawn && !keepPose) {
+      spawn = zone.spawns.values().next().value;
+      if (!spawn) throw new Error(`${zoneId}: GLB ${zone.file} không có SPAWN_ nào`);
+      console.error(`[zone] ${zoneId}: GLB ${zone.file} (${zone.tier}) thiếu ${[...new Set([spawnName, startName].filter(Boolean))].join(" và ")} — xuất hiện ở ${spawn.name}`);
+    } else if (spawnName && !zone.spawns.has(spawnName) && !keepPose) {
+      console.warn(`[zone] ${zoneId}: thiếu ${spawnName} — xuất hiện ở ${spawn.name}`);
+    }
     const yaw = keepPose ? 0 : spawn.userData.yaw_deg ?? 0;
     // zones.json → spawn_offset.<SPAWN_>: dời chỗ xuất hiện (toạ độ glTF, m) — vd zone_04: SPAWN_ sát tường cuối hành lang,
     // camera không lùi được ra sau lưng → xuất hiện lùi vào trong 2 m

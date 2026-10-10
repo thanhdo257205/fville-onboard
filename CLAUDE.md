@@ -66,6 +66,7 @@ npm --prefix game run test:data      # dữ liệu: JSON, tham chiếu, node GLB
 npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới màn tổng kết, 3 ngoại hình (~4 phút; tự bật Vite dev)
 npm --prefix game run test:smoke -- --zone 5               # chỉ 1 zone (bản lưu mẫu ?start=zone_05), ~50 giây mỗi ngoại hình
 npm --prefix game run test:smoke -- --look intern_nu       # 1 ngoại hình · --build: chạy trên game/dist (sau npm run build)
+npm --prefix game run test:smoke -- --extra only           # chỉ bản lưu cũ + zone 4 có người chơi khác (máy chủ local), ~15 giây
 
 # Viewer bối cảnh
 python -m http.server 8765           # ở thư mục gốc, mở http://localhost:8765/viewer/
@@ -142,7 +143,19 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 
 - **Chữ trong game là tiếng Anh**, nằm hết trong `data/i18n/en.json` hoặc trường `{ "en": … }` của dữ liệu; tên riêng
   giữ dấu tiếng Việt (Tú, Huyền, F-Ville, Hòa Lạc). Không viết chữ hiển thị cứng trong code.
-- **Chỉ dùng đồ họa Thấp** (bản Cao có lightmap đang tạm dừng; nhân vật huyen chỉ có bản 6k).
+- **Chỉ dùng đồ họa Thấp** (bản Cao có lightmap đang tạm dừng; nhân vật huyen chỉ có bản 6k). Game khoá cứng:
+  `game/src/core/quality.js` → `TIERS = ["low"]` (máy card rời / cài đặt cũ "high" vẫn chạy bản Thấp, menu ẩn nút High,
+  bản build không chép `assets/glb/high/`). GLB bản Cao cũ thiếu node mới (vd `SPAWN_zone_04_from_zone_03`) → từng làm kẹt
+  zone 4 trên trang thật (10/10/2026). Chỉ bật lại khi đã build lại đủ mọi zone bản Cao.
+- **Tải zone không bao giờ được treo im lặng:** `Game.enterZone` bọc `_enterZone` — lỗi hoặc quá 20 s (`ZONE_TIMEOUT_MS`)
+  → `console.error` + hộp lỗi trên màn tải (nút Retry, Back to <zone trước> / Reload page; `hud.zoneError`), trả `false`
+  thay vì ném lỗi. Thiếu SPAWN_ → xuất hiện ở `start` của zone hoặc SPAWN_ đầu tiên (kèm cảnh báo console). Người chơi
+  khác (mạng) chỉ dựng sau khi zone xong (`phase === "playing"`); lỗi mạng trong vòng lặp chỉ log, không dừng game.
+- **Bản lưu cũ lệch data** tự sửa khi nạp (`GameState.repair`, gọi trong `main.js`): bỏ quest / phần thưởng / vật / giá
+  trị / hạt lúa / lời khuyên không còn, zone không còn → zone xa nhất đã mở, giới tính / ngoại hình / vị trí về giá trị
+  hợp lệ; in `[bản lưu] đã sửa N chỗ` (cảnh báo console) rồi ghi lại. Thêm / đổi id trong data thì nghĩ tới bản lưu cũ.
+- **Bản build gắn mã build** vào `data/*.json` và GLB (`?v=<git hash>-<thời gian>`, `__BUILD_ID__` trong
+  `vite.config.js`, `url()` của `game/src/core/fetch.js`) → deploy mới không bị bộ nhớ đệm trình duyệt / CDN trả file cũ.
 - **Không sửa GLB bối cảnh từ code game.** Thiếu/sai đối tượng thì chỉnh bằng dữ liệu (`data/collision.json`: bỏ/thêm hộp
   va chạm; `data/scene_fixes.json`: chỉnh khi chạy, cửa mở được `doors`; `data/zones.json` → `spawn_offset`: dời chỗ
   xuất hiện; vật do code đặt trong `data/interactables.json`) và ghi vào báo cáo. Sửa bối cảnh
@@ -166,7 +179,12 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 
 - **Sau mỗi thay đổi** chạy `npm --prefix game run test:data` và `npm --prefix game run test:smoke` (hoặc
   `-- --zone N` cho zone vừa sửa). Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
-  trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật.
+  trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật — trừ test
+  "mạng + zone 4" dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
+- Sau phần chơi theo ngoại hình, smoke chạy thêm 2 test (`--extra off` bỏ, `--extra only` chỉ chạy 2 test này, ~15 giây):
+  bản lưu cũ lệch data (`scripts/tests/fixtures/old_save.json`, ẩn danh) → sửa, vào zone_04, tải lại trang, GLB hỏng →
+  bảng lỗi + bấm Back; vào zone_04 khi có bot chờ sẵn (khởi động thẳng + đi qua cổng từ zone_03, phải xong trong 20 s,
+  thấy bot). Cả hai đặt sẵn cài đặt cũ tier "high". `test:data` cũng thử `repair()` trên file đó và kiểm tra `start` của mọi zone có trong GLB bản Thấp.
 - Chỉ tự lái trình duyệt (Playwright tự viết, chụp ảnh) khi cần **xem bằng mắt** phần mới; tối đa 3 ảnh mỗi lần.
 - Thêm nội dung mới (quest, hội thoại, mini-game): smoke test tự chơi theo `guide.current()` + `__game.step()` — lựa chọn
   hội thoại theo `autoplay.pickChoice` (câu có giá trị > câu dẫn tới việc đang làm > câu đầu), mini-game cần

@@ -430,6 +430,53 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   (intern_nam, zone 0 → 5) **15 bước đạt (1 phút 17 giây)**. `main` 3bf9623; đã deploy `gh-pages` e6e73ee (từ `main`
   3bf9623, chơi nhiều người vẫn bật).
 
+### Sửa lỗi kẹt zone 4 trên trang thật (10/10/2026)
+- **Lỗi** (gh-pages e6e73ee): vào zone 4 thì đứng mãi ở màn "Heading to Card Gate · FSA Room…", tải lại (Ctrl+F5) vẫn kẹt;
+  console: `Uncaught (in promise) Error: zone_04: thiếu SPAWN_zone_04_from_zone_03 at enterZone`.
+- **Nguyên nhân** (tái hiện trên trang thật bằng trình duyệt của Claude): **không phải mạng, không phải bản lưu**.
+  - Máy có card đồ hoạ rời (NVIDIA / GeForce / RTX / Radeon RX) được `detectTier` tự chọn bản đồ hoạ **Cao**; menu Esc
+    cũng cho chọn High. GLB bản Cao (`assets/glb/high/`) đã dừng cập nhật từ 08/10 → `high/zone_04_corridor.glb` không có
+    `SPAWN_zone_04_from_zone_03` (thêm vào bản Thấp ngày 09/10, là `start` của zone_04).
+  - `_enterZone` ném lỗi; `onTrigger` gọi `enterZone` không bắt lỗi → promise lỗi bị bỏ rơi, màn tải đứng yên mãi. Bản
+    lưu đã ghi zone_04 → tải lại trang thì lúc khởi động lại lỗi y như vậy.
+  - Bộ kiểm thử chạy Chromium phần mềm (swiftshader → bản Thấp) nên không thấy.
+  - Thử trên trang thật: cài đặt High + mạng thật → kẹt; High + `?net=off` → kẹt; Auto trên máy iGPU (→ Thấp) + mạng thật →
+    vào zone 4 bình thường. Bản lưu của người dùng (`fville_save.json`) không có trên máy này → test dùng bản lưu cũ dựng
+    lại, ẩn danh.
+- **Sửa tận gốc:** bản Cao tắt hẳn trong game (`quality.js` → `TIERS = ["low"]`): cài đặt "high" cũ đọc thành Auto, máy
+  card rời chạy bản Thấp, menu ẩn nút High, bản build không chép `assets/glb/high/` (6 file, 4,4 MB bỏ khỏi gh-pages).
+- **Chống treo cho mọi lần chuyển zone:**
+  - `Game.enterZone` bọc `_enterZone`: lỗi hoặc quá **20 s** → `console.error` + hộp lỗi trên màn tải ("Couldn't open
+    <zone>." + chi tiết lỗi) với nút **Retry** và **Back to <zone trước>** (khởi động lỗi ở zone đầu: **Reload page**);
+    không ném lỗi ra ngoài nữa. Hộp lỗi nhả khoá chuột để bấm được nút; tải xong muộn sau khi đã báo quá giờ → hộp lỗi tự
+    tắt.
+  - Thiếu SPAWN_ được yêu cầu → xuất hiện ở `start` của zone, thiếu cả `start` → SPAWN_ đầu tiên (kèm lỗi console), không
+    kẹt.
+  - Mạng không chặn tải zone: người chơi khác chỉ dựng model khi zone đã xong (`phase === "playing"`); lỗi trong
+    `net.update` chỉ log 1 lần, vòng lặp game chạy tiếp.
+  - Bản lưu cũ lệch data tự sửa khi nạp (`GameState.repair`): bỏ quest / phần thưởng / vật / giá trị / hạt lúa / lời
+    khuyên không còn, chỉ số hỏng → 0, zone không còn → zone xa nhất đã mở, giới tính kiểu cũ (male / female) → nam / nu,
+    ngoại hình không còn → mặc định theo giới tính, vị trí intern không còn → vị trí đầu, tên trống → "Intern"; in cảnh
+    báo `[bản lưu] đã sửa N chỗ` và ghi lại.
+  - Bản build gắn mã build vào mọi `data/*.json` và GLB: `?v=<git hash>-<thời gian>` (`vite.config.js` → `__BUILD_ID__`,
+    `fetch.js` → `url()`), deploy mới không bị bộ nhớ đệm trả file cũ.
+- **Kiểm thử thêm:**
+  - test:smoke chạy thêm 2 test sau phần chơi theo ngoại hình (`--extra only` chỉ chạy 2 test này, ~15 giây), cả hai đặt
+    sẵn cài đặt cũ tier "high":
+    - bản lưu cũ `scripts/tests/fixtures/old_save.json` (ẩn danh: zone `zone_04_corridor`, mục không còn trong data, giới
+      tính "male", ngoại hình / vị trí cũ) → sửa 11 chỗ, vào zone_04 bản Thấp; tải lại trang → vào thẳng, không còn gì để sửa;
+      tải zone_05 với GLB hỏng → bảng lỗi + console.error, bấm chuột "Back to Card Gate · FSA Room" → về zone_04;
+    - máy chủ chơi nhiều người local (`server/`, wrangler dev trên cổng trống) + 1 bot chờ sẵn ở zone_04: khởi động thẳng
+      vào zone_04 và đi qua cổng từ zone_03 sang zone_04 (phải xong trong 20 s), thấy bot, console sạch.
+  - test:data: `repair()` trên file bản lưu cũ; `start` của mọi zone phải có trong GLB bản Thấp.
+  - Thử ngược: tạm bật lại bản Cao → cả 4 bước mới đỏ (lỗi thiếu SPAWN_). Đã thử tay màn lỗi: GLB hỏng → hộp lỗi + Back về
+    zone_03; giả lập tải treo → đúng 20 s hiện "Loading took longer than 20 seconds.", Retry → vào zone_04.
+  - CI cài thêm `npm --prefix ../server ci` để chạy test mạng.
+  - Kết quả: test:data đạt hết (8 mục, 62 ms); test:smoke `--build` 3 ngoại hình zone 0 → 5 + 2 test mới: **49 bước đạt
+    (2 phút 55 giây)**; bản dev cũng đạt (`--extra only` 5 bước, 15 giây). Test cũ so tên ảnh chân dung bằng `…\.png$` →
+    bỏ phần `?v=` trước khi so.
+- Không sửa `server/` → không cần `wrangler deploy` lại.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.

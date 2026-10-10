@@ -14,9 +14,11 @@
 //   npm run test:smoke -- --look intern_nu   1 ngoại hình (CI: --look intern_nam)
 //   npm run test:smoke -- --build            chạy trên bản build (game/dist, vite preview) — sau npm run build
 //   npm run test:smoke -- --url http://localhost:5180   server đang chạy sẵn
+//   --extra off | only: bỏ / chỉ chạy 2 test thêm — bản lưu cũ lệch data (fixtures/old_save.json) và vào zone 4 khi có người
+//     chơi khác (máy chủ local server/ + bot; chưa `npm --prefix server ci` thì bỏ qua). Cả hai đặt sẵn cài đặt cũ tier "high"
 //   --headed: mở cửa sổ trình duyệt · --verbose: in thêm chi tiết từng bước
 // In gọn: mỗi bước 1 dòng ✓/✗, cuối cùng 1 dòng tổng kết + thời gian. Ảnh chụp chỉ khi bước hỏng: test-results/ (không commit).
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { mkdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -42,6 +44,7 @@ const startZone = zoneArg == null ? order[0] : order.find((z) => z === `zone_0${
 if (!startZone) throw new Error(`--zone ${zoneArg}: không có zone này`);
 const onlyZone = zoneArg != null;
 const verbose = !!arg("verbose");
+const extra = arg("extra");
 const zoneIsLast = (z) => z === order[order.length - 1];
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
 const NAMES = { intern_nam: ["Đỗ Minh Khôi", "do-minh-khoi"], intern_nam_kinh: ["Trần Đức Anh", "tran-duc-anh"], intern_nu: ["Nguyễn Thị Hà", "nguyen-thi-ha"] };
@@ -93,19 +96,26 @@ async function startServer() {
 const results = [];   // { look, ok, name }
 let shots = 0;
 const line = (ok, text) => { console.log(`${ok ? "✓" : "✗"} ${text}`); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function runLook(browser, base, look) {
-  const pick = PICK[looks.indexOf(look) % PICK.length];
-  // màn chọn 3D cần khung ≥ 700 px; vào game rồi thu về 640 × 360 như trước (nhanh hơn trên swiftshader)
-  const ctx = await browser.newContext({ viewport: pick === "cards" ? { width: 640, height: 360 } : { width: 1000, height: 640 }, acceptDownloads: true });
-  const page = await ctx.newPage();
-  const problems = [];   // lỗi / cảnh báo console chưa báo
+// lỗi / cảnh báo console, trang lỗi, HTTP ≥ 400, request hỏng → danh sách (bước kiểm tra lấy ra bằng splice)
+function watch(page) {
+  const problems = [];
   const ignore = [/\[vite\]/, /Download the React DevTools/];
   page.on("console", (m) => { if ((m.type() === "error" || m.type() === "warning") && !ignore.some((r) => r.test(m.text()))) problems.push(`[${m.type()}] ${m.text()}`); });
   page.on("pageerror", (e) => problems.push(`[pageerror] ${e.message}`));
   page.on("response", (r) => { if (r.status() >= 400) problems.push(`[http ${r.status()}] ${r.url()}`); });
   // ERR_ABORTED = trình duyệt huỷ request khi chuyển trang (bước tải lại giữa cảnh kết), không phải lỗi game
   page.on("requestfailed", (r) => { const err = r.failure()?.errorText || ""; if (!/favicon/.test(r.url()) && !/ERR_ABORTED/.test(err)) problems.push(`[request failed] ${r.url()} ${err}`); });
+  return problems;
+}
+
+async function runLook(browser, base, look) {
+  const pick = PICK[looks.indexOf(look) % PICK.length];
+  // màn chọn 3D cần khung ≥ 700 px; vào game rồi thu về 640 × 360 như trước (nhanh hơn trên swiftshader)
+  const ctx = await browser.newContext({ viewport: pick === "cards" ? { width: 640, height: 360 } : { width: 1000, height: 640 }, acceptDownloads: true });
+  const page = await ctx.newPage();
+  const problems = watch(page);   // lỗi / cảnh báo console chưa báo
   const ev = (fn, a) => page.evaluate(fn, a);
   const [name, slug] = NAMES[look.id] || ["Test Intern", "test-intern"];
   let failed = false;
@@ -145,9 +155,10 @@ async function runLook(browser, base, look) {
     } else if (cr.mode === "cards") await page.click(`#creator .card input[value=${look.id}] + span`);
     cr.selected = await ev(() => __creator.selected);
     await page.click("#creator .info .shirt");
-    cr.shirtOn = await ev(() => [__creator.shirt, document.querySelector("#creator .shirt").getAttribute("aria-pressed"), document.querySelector("#creator .info .portrait").src.split("/").pop()]);
+    // tên file chân dung (bản build: url có ?v=<mã build> — bỏ trước khi so)
+    cr.shirtOn = await ev(() => [__creator.shirt, document.querySelector("#creator .shirt").getAttribute("aria-pressed"), document.querySelector("#creator .info .portrait").src.split("?")[0].split("/").pop()]);
     await page.click("#creator .info .shirt");
-    cr.shirtOff = await ev(() => [__creator.shirt, document.querySelector("#creator .info .portrait").src.split("/").pop()]);
+    cr.shirtOff = await ev(() => [__creator.shirt, document.querySelector("#creator .info .portrait").src.split("?")[0].split("/").pop()]);
     // ảnh chân dung (thẻ thông tin + thẻ ảnh) tải được thật — server dev trả index.html cho file không cho phép (mã 200)
     cr.imgs = await ev(async () => { const im = [...document.querySelectorAll("#creator img")]; await Promise.all(im.map((i) => i.decode().catch(() => null)));
       return im.filter((i) => !i.naturalWidth).map((i) => i.src.split("/").pop()); });
@@ -276,18 +287,190 @@ async function runLook(browser, base, look) {
   }
 }
 
+// ---------- thêm: lỗi kẹt zone 4 trên trang thật (10/10/2026) ----------
+// Trang thật kẹt mãi ở "Heading to Card Gate · FSA Room…", tải lại vẫn kẹt: cài đặt đồ hoạ High (tự chọn trên máy có card
+// rời) tải GLB bản Cao cũ thiếu SPAWN_zone_04_from_zone_03 → lỗi bị nuốt, màn tải đứng yên; bản lưu đã ở zone_04 nên lần
+// khởi động sau lỗi lại. Hai test dưới đặt sẵn cài đặt cũ tier "high" (bản Cao đã tắt → phải chạy bản Thấp).
+const INIT_ONCE = (f) => {   // nạp bản lưu + cài đặt 1 lần cho mỗi tab (tải lại trang giữ bản lưu game đã ghi)
+  if (sessionStorage.getItem("smoke.init")) return;
+  sessionStorage.setItem("smoke.init", "1");
+  localStorage.setItem("fville.settings", JSON.stringify(f.settings));
+  localStorage.setItem("fville.save.v1", JSON.stringify(f.save));
+};
+async function openPage(browser, label, init) {
+  const ctx = await browser.newContext({ viewport: { width: 640, height: 360 } });
+  if (init) await ctx.addInitScript(INIT_ONCE, init);
+  const page = await ctx.newPage();
+  const problems = watch(page);
+  const ev = (fn, a) => page.evaluate(fn, a);
+  const wait = async (fn, ms, a) => { try { await page.waitForFunction(fn, a, { timeout: ms, polling: 100 }); return true; } catch { return false; } };
+  const check = async (ok, text, extra = "") => {
+    results.push({ look: label, ok, text });
+    line(ok, `${label} · ${text}${extra && (verbose || !ok) ? ` — ${extra}` : ""}`);
+    if (!ok) {
+      mkdirSync(OUT, { recursive: true });
+      const f = join(OUT, `${label.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/\W+/g, "_")}-${++shots}.png`);
+      await page.screenshot({ path: f }).catch(() => {});
+      console.log(`    ảnh: ${f.replace(ROOT + "/", "")}`);
+    }
+    return ok;
+  };
+  return { ctx, page, problems, ev, wait, check };
+}
+// trạng thái sau khi vào zone: zone, bản đồ hoạ đang chạy, cài đặt, màn lỗi zone (Retry / Back) có hiện không
+const zoneState = () => ({ zone: __game.zone, phase: __game.state.phase, tier: __game.state.tier, setting: __game.state.setting,
+  zoneError: document.getElementById("loading").classList.contains("error") ? document.querySelector("#loading .zone-error")?.textContent : null });
+
+// (b) bản lưu cũ lệch data (scripts/tests/fixtures/old_save.json, ẩn danh): zone tên cũ, quest / phần thưởng / vật / giá trị /
+// hạt lúa / lời khuyên không còn, ngoại hình cũ, giới tính "male", vị trí cũ + cài đặt tier high → sửa 1 lần, vào zone_04;
+// tải lại trang → vào thẳng zone_04, không còn gì để sửa
+async function runOldSave(browser, base) {
+  const fx = JSON.parse(readFileSync(join(ROOT, "scripts", "tests", "fixtures", "old_save.json"), "utf8"));
+  const { ctx, page, problems, ev, wait, check } = await openPage(browser, "bản lưu cũ", { settings: fx.settings, save: fx.save });
+  const repairs = () => { const i = problems.findIndex((p) => p.includes("[bản lưu] đã sửa")); return i < 0 ? null : problems.splice(i, 1)[0]; };
+  try {
+    const t1 = Date.now();
+    await page.goto(`${base}/?debug&net=off`);
+    const ok1 = await wait(() => window.__game?.state.phase === "playing", 120000);
+    const s1 = await ev(zoneState);
+    const fixed = repairs();
+    const sv = await ev(() => JSON.parse(localStorage.getItem("fville.save.v1") || "{}"));
+    const con1 = problems.splice(0);
+    await check(ok1 && s1.zone === "zone_04" && s1.tier === "low" && !s1.zoneError && /zone: zone_04_corridor → zone_04/.test(fixed || "")
+      && sv.zone === "zone_04" && sv.player?.gender === "nam" && sv.player?.look === null && !sv.quests.includes("z3_viec_cu_da_bo") && !con1.length,
+    `nạp bản lưu cũ (tier high, zone_04_corridor, mục cũ) → sửa ${fixed?.match(/sửa (\d+)/)?.[1] ?? "?"} chỗ, vào zone_04 bản Thấp, console sạch (${Math.round((Date.now() - t1) / 1000)} s)`,
+    JSON.stringify({ ok1, ...s1, fixed, save: { zone: sv.zone, player: sv.player }, console: con1.slice(0, 5) }));
+    const t2 = Date.now();
+    await page.reload();
+    const ok2 = await wait(() => window.__game?.state.phase === "playing", 120000);
+    const s2 = await ev(zoneState);
+    const again = repairs(), con2 = problems.splice(0);
+    await check(ok2 && s2.zone === "zone_04" && s2.tier === "low" && !s2.zoneError && !again && !con2.length,
+      `tải lại trang → vào thẳng zone_04, không còn gì để sửa, console sạch (${Math.round((Date.now() - t2) / 1000)} s)`, JSON.stringify({ ok2, ...s2, again, console: con2.slice(0, 5) }));
+    // tải zone lỗi (GLB không có) → bảng lỗi trên màn chờ + console.error, không treo; bấm chuột "Back to …" → về zone_04
+    const r3 = await ev(() => __game._game.enterZone("zone_05", "SPAWN_zone_05_from_zone_04", { file: "khong_co_file" }));
+    const shown = await ev(() => { const b = document.querySelector("#loading .zone-error"); return b && !document.getElementById("loading").hidden
+      ? { title: document.querySelector("#loading .text").textContent, buttons: [...b.querySelectorAll("button")].map((x) => x.textContent) } : null; });
+    const logged = problems.some((p) => p.includes("[zone] không vào được zone_05"));
+    if (shown) await page.click("#loading .zone-error button[data-a=back]");
+    const ok3 = await wait(() => window.__game?.zone === "zone_04" && window.__game.state.phase === "playing" && document.getElementById("loading").hidden, 20000);
+    const con3 = problems.splice(0).filter((p) => !/không vào được zone_05|khong_co_file|Failed to load resource/.test(p));
+    await check(r3 === false && shown?.buttons.length === 2 && /^Couldn't open/.test(shown.title) && logged && ok3 && !con3.length,
+      `zone lỗi (GLB hỏng) → bảng lỗi "${shown?.title}" [${shown?.buttons.join(" | ")}], console.error; bấm Back → zone_04`, JSON.stringify({ r3, shown, logged, ok3, console: con3.slice(0, 5) }));
+  } catch (e) {
+    await check(false, `lỗi script: ${e.message.split("\n")[0]}`);
+  } finally {
+    await ctx.close();
+  }
+}
+
+// máy chủ chơi nhiều người local (server/, wrangler dev — không cần tài khoản Cloudflare) trên cổng trống
+async function startNetServer() {
+  const wr = join(ROOT, "server", "node_modules", "wrangler", "bin", "wrangler.js");
+  if (!existsSync(wr)) return { skip: "chưa cài máy chủ local (npm --prefix server ci)" };
+  const port = await freePort(), inspector = await freePort();
+  const win = process.platform === "win32";
+  const proc = spawn(process.execPath, [wr, "dev", "--port", String(port), "--ip", "127.0.0.1", "--inspector-port", String(inspector)],
+    { cwd: join(ROOT, "server"), env: { ...process.env, WRANGLER_SEND_METRICS: "false", CI: "1" }, stdio: ["ignore", "pipe", "pipe"], detached: !win });
+  let log = "";
+  proc.stdout.on("data", (d) => { log += d; });
+  proc.stderr.on("data", (d) => { log += d; });
+  // wrangler chạy workerd ở tiến trình con → dừng cả cây tiến trình
+  const stop = () => { try { if (win) spawnSync("taskkill", ["/pid", String(proc.pid), "/T", "/F"], { stdio: "ignore" }); else process.kill(-proc.pid, "SIGTERM"); } catch { /* đã dừng */ } };
+  for (let i = 0; i < 450; i++) {
+    try { const r = await fetch(`http://127.0.0.1:${port}/`); if ((await r.text()).includes("F-Ville net: OK")) return { url: `ws://127.0.0.1:${port}/ws`, stop }; } catch { /* chưa lên */ }
+    if (proc.exitCode != null) break;
+    await sleep(200);
+  }
+  stop();
+  return { error: `không bật được wrangler dev:\n${log.slice(-1500)}` };
+}
+
+// 1 người chơi giả (WebSocket có sẵn trong Node 22+) đứng chờ trong zone
+function startBot(url, zone) {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(url);
+    const bot = { zone, pos: [0, 0, 0] };
+    const send = (m) => { if (ws.readyState === 1) ws.send(JSON.stringify(m)); };
+    bot.moveTo = (pos) => { bot.pos = pos; send({ t: "state", zone, pos, yaw: 0, anim: "idle" }); };
+    bot.close = () => { clearInterval(bot.timer); send({ t: "leave" }); try { ws.close(1000); } catch { /* đã đóng */ } };
+    ws.onopen = () => {
+      send({ t: "join", name: "Bot Zone Four", model: "intern_nu", outfit: "ao_cam", zone });
+      bot.moveTo(bot.pos);
+      bot.timer = setInterval(() => send({ t: "ping" }), 10000);
+      resolve(bot);
+    };
+    ws.onerror = () => reject(new Error(`bot: không kết nối được ${url}`));
+  });
+}
+
+// (a) vào zone 4 khi có người chơi khác: máy chủ local + bot chờ sẵn ở zone_04; cài đặt cũ tier high. Khởi động thẳng vào
+// zone_04 (?start), rồi sang zone_03 và đi qua cổng → zone_04 lần nữa (đúng đường người chơi kẹt). Zone phải vào được
+// trong 20 s (đồng hồ của game), người chơi khác hiện sau khi zone xong
+async function runNetZone4(browser, base) {
+  const label = "mạng + zone 4";
+  const srv = await startNetServer();
+  if (srv.skip) { console.log(`– ${label}: bỏ qua — ${srv.skip}`); return; }
+  if (srv.error) { results.push({ look: label, ok: false, text: "máy chủ local" }); line(false, `${label} · ${srv.error}`); return; }
+  let bot = null, ctx = null;
+  try {
+    bot = await startBot(srv.url, "zone_04");
+    const save = { v: 1, created: true, player: { name: "Net Test", position: "developer", gender: "nam", look: "intern_nam" } };
+    const p = await openPage(browser, label, { settings: { tier: "high", detail: "auto" }, save });
+    ctx = p.ctx;
+    const { page, problems, ev, wait, check } = p;
+    const remote = async (ms) => {
+      const pos = await ev(() => __game.player.pos);
+      bot.moveTo([pos[0] + 1.5, pos[1], pos[2]]);
+      const seen = await wait(() => (__game.net?.remotes || []).some((r) => r.name === "Bot Zone Four" && r.built && r.visible), ms);
+      return { seen, net: await ev(() => { const n = __game.net; return { status: n.status, connected: n.connected, online: n.online, remotes: n.remotes.map((r) => [r.name, r.built, r.visible]) }; }) };
+    };
+    const t1 = Date.now();
+    await page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&start=zone_04`);
+    const ok1 = await wait(() => window.__game?.state.phase === "playing", 120000);
+    const s1 = await ev(zoneState), sec1 = Math.round((Date.now() - t1) / 1000);
+    const conn = await wait(() => window.__game?.net?.connected, 20000);
+    const r1 = conn ? await remote(30000) : { seen: false };
+    const con1 = problems.splice(0);
+    await check(ok1 && s1.zone === "zone_04" && s1.tier === "low" && !s1.zoneError && conn && r1.seen && !con1.length,
+      `khởi động vào zone_04 (tier high, máy chủ local, bot chờ sẵn) → bản Thấp, ${sec1} s, thấy bot, console sạch`, JSON.stringify({ ok1, ...s1, conn, ...r1, console: con1.slice(0, 5) }));
+    // sang zone_03 rồi đi qua cổng như người chơi (step: tới vùng chuyển zone)
+    await ev(() => __game.goto("zone_03"));
+    const g = await ev(() => __game._game.guide.current().key);
+    const t2 = Date.now();
+    const st = await ev(() => __game.step());
+    const ok2 = await wait(() => window.__game?.zone === "zone_04" && window.__game.state.phase === "playing", 25000);
+    const s2 = await ev(zoneState), sec2 = Math.round((Date.now() - t2) / 1000);
+    const r2 = await remote(30000);
+    const con2 = problems.splice(0);
+    await check(ok2 && s2.tier === "low" && !s2.zoneError && sec2 <= 20 && r2.seen && !con2.length,
+      `zone_03 → cổng (${g}) → zone_04 trong ${sec2} s, thấy lại bot, console sạch`, JSON.stringify({ ok2, ...s2, step: { ok: st.ok, why: st.why, goal: st.goal }, ...r2, console: con2.slice(0, 5) }));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally {
+    bot?.close();
+    await ctx?.close();
+    srv.stop();
+  }
+}
+
 const server = await startServer();
 const browser = await chromium.launch({ headless: !arg("headed"), ...(chromePath ? { executablePath: chromePath } : {}),
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
-console.log(`smoke: ${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · ${server.mode || server.base}`);
+console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng + zone 4 · "}${server.mode || server.base}`);
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
-  for (const look of looks) await runLook(browser, server.base, look);
+  if (extra !== "only") for (const look of looks) await runLook(browser, server.base, look);
+  if (extra !== "off") {
+    await runOldSave(browser, server.base);
+    await runNetZone4(browser, server.base);
+  }
 } finally {
   await browser.close();
   server.stop();
 }
 const bad = results.filter((r) => !r.ok).length;
 const sec = Math.round((Date.now() - t0) / 1000), dur = sec >= 60 ? `${Math.floor(sec / 60)} phút ${sec % 60} giây` : `${sec} giây`;
-console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${looks.length} ngoại hình (${dur})`);
+console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng + zone 4"} (${dur})`);
 process.exit(bad ? 1 : 0);

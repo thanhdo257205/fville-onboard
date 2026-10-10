@@ -6,6 +6,8 @@ import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
 import { dirname, join, extname, resolve, sep } from "node:path";
 import { createReadStream, existsSync, statSync, readdirSync, readFileSync, mkdirSync, copyFileSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { TIERS } from "./src/core/quality.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -20,7 +22,8 @@ function pendingModels() {      // JSON lỗi → build dừng (không lặng l�
 
 // chỉ các file game dùng (không .raw.glb, .fbx, .blend, ảnh nguồn…); build: bỏ cả model chờ đồng ý
 function wanted(rel, pending = new Set()) {
-  if (rel.startsWith("assets/glb/")) return rel.endsWith(".glb") && !rel.endsWith(".raw.glb");
+  // GLB zone: chỉ các mức đồ hoạ đang dùng (bản Cao tạm dừng → không chép assets/glb/high/, GLB cũ lệch data)
+  if (rel.startsWith("assets/glb/")) return TIERS.some((t) => rel.startsWith(`assets/glb/${t}/`)) && rel.endsWith(".glb") && !rel.endsWith(".raw.glb");
   if (rel.startsWith("assets/characters/")) {
     const parts = rel.split("/");             // assets/characters/<id>/<id>.glb hoặc <id>_6k.glb (bản nhẹ)
     if (pending.has(parts[2])) return false;
@@ -99,9 +102,19 @@ function sharedAssets() {
   };
 }
 
-export default defineConfig({
+// mã phiên bản bản build: commit + thời điểm build → core/fetch.js gắn ?v=<mã> vào data/*.json, GLB, ảnh nhân vật, để sau
+// mỗi lần deploy trình duyệt không dùng file cũ còn trong bộ nhớ đệm (dev: rỗng, không gắn)
+function buildId() {
+  if (process.env.FVILLE_BUILD_ID) return process.env.FVILLE_BUILD_ID;
+  let commit = "nogit";
+  try { commit = execSync("git rev-parse --short HEAD", { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); } catch { /* không có git */ }
+  return `${commit}-${Date.now().toString(36)}`;
+}
+
+export default defineConfig(({ command }) => ({
   base: "./",
   plugins: [sharedAssets()],
   server: { port: 5180, strictPort: true },
   build: { target: "es2022", chunkSizeWarningLimit: 1500 },
-});
+  define: { __BUILD_ID__: JSON.stringify(command === "build" ? buildId() : "") },
+}));

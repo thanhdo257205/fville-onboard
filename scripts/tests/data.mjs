@@ -1,8 +1,9 @@
 // npm run test:data (trong game/) — kiểm tra dữ liệu không cần trình duyệt, chạy dưới 1 giây:
 //   1. mọi data/*.json, data/i18n/*.json là JSON hợp lệ
 //   2. tham chiếu nội bộ (content.validateLinks — cùng hàm game chạy khi mở): hội thoại, quest, phần thưởng, mini-game…
-//   3. node GLB mà data nhắc tới có trong GLB bối cảnh (đọc khối JSON của assets/glb/low/*.glb)
-//   4. bản lưu mẫu ?start=zone_0X dựng được từ data cho mọi zone (game/autoplay.js → buildStartState)
+//   3. node GLB mà data nhắc tới (+ zones.json → start của mọi zone) có trong GLB bối cảnh (đọc khối JSON của assets/glb/low/*.glb)
+//   4. bản lưu mẫu ?start=zone_0X dựng được từ data cho mọi zone (game/autoplay.js → buildStartState); bản lưu cũ lệch data
+//      (scripts/tests/fixtures/old_save.json) được GameState.repair() sửa về giá trị hợp lệ, sửa lần 2 không còn gì
 //   5. chữ giao diện t("…") viết sẵn trong code có trong data/i18n/en.json; model nhân vật mà vai dùng có GLB + chân dung
 //      (+ chân dung theo bộ đồ, texture bộ đồ của vai, tên / mô tả ngoại hình ở màn chọn nhân vật)
 //   6. Tú khác giới với người chơi; không còn he/his/him/she/her viết cứng nhắc tới Tú, biến {tu_*} thay được cho cả 2 giới
@@ -58,6 +59,7 @@ for (const z of zones.order) {
 }
 const refs = nodeRefs(content).filter((r) => names[r.zone]);
 for (const r of refs) if (!names[r.zone].has(r.node)) nodeErrs.push(`${r.zone}: thiếu ${r.node} (${r.where})`);
+for (const z of zones.order) if (names[z] && zones.zones[z].start && !names[z].has(zones.zones[z].start)) nodeErrs.push(`${z}: thiếu ${zones.zones[z].start} (zones.json · start)`);
 report("node GLB", nodeErrs, `${refs.length} tham chiếu, ${Object.keys(names).length} zone`);
 
 // 4. bản lưu mẫu cho từng zone
@@ -70,6 +72,32 @@ for (const z of zones.order.slice(1)) {
   for (const q of content.quests) if (q.required && before.includes(q.zone) && !s.quests.has(q.id)) startErrs.push(`${z}: thiếu quest ${q.id}`);
 }
 report("bản lưu mẫu ?start=zone_0X", startErrs, `${zones.order.length - 1} zone`);
+
+// 4b. bản lưu cũ lệch data (scripts/tests/fixtures/old_save.json, ẩn danh) → repair() sửa về giá trị hợp lệ gần nhất,
+// sửa lần 2 không còn gì (main.js gọi repair() mỗi lần nạp bản lưu)
+const repairErrs = [];
+{
+  const old = JSON.parse(readFileSync(join(ROOT, "scripts", "tests", "fixtures", "old_save.json"), "utf8")).save;
+  const ctx = { zoneOrder: zones.order, looks: chars.roles.player.looks, positions: chars.character_creation.positions.map((x) => x.id) };
+  const s = new GameState(content);
+  s.fromJSON(old);
+  const fixed = s.repair(ctx);
+  const o = s.toJSON();
+  const expect = (ok, what) => { if (!ok) repairErrs.push(`${what} — ${JSON.stringify(o).slice(0, 200)}`); };
+  expect(o.zone === "zone_04", `zone ${old.zone} → zone_04 (đã xong zone 0–3)`);
+  expect(o.player.gender === "nam" && o.player.look === null && o.player.position === ctx.positions[0], "người chơi: male → nam, ngoại hình cũ → mặc định, vị trí cũ → vị trí đầu");
+  expect(o.stats.ket_noi === 0, "stats.ket_noi null → 0");
+  for (const [k, ok] of [["quests", (x) => content.questById.has(x)], ["rewards", (x) => content.rewards.has(x)], ["items", (x) => content.carry.has(x)],
+    ["values", (x) => content.valueById.has(x)], ["advice", (x) => content.adviceById.has(x)]]) expect(o[k].every(ok), `${k}: còn mục không có trong data`);
+  expect(o.flags.includes("co_cu_khong_con"), "flags giữ nguyên");
+  expect(fixed.length >= 9, `phải báo ≥ 9 chỗ sửa, có ${fixed.length}`);
+  const again = new GameState(content);
+  again.fromJSON(o);
+  const fixed2 = again.repair(ctx);
+  expect(!fixed2.length, `sửa lần 2 vẫn còn: ${fixed2.join("; ")}`);
+  if (!repairErrs.length) repairErrs.fixed = fixed.length;
+}
+report("bản lưu cũ lệch data (repair)", repairErrs, `${repairErrs.fixed ?? 0} chỗ sửa`);
 
 // 5a. chữ t("khoá") viết sẵn trong code
 const i18nErrs = [];

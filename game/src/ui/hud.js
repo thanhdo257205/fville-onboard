@@ -19,6 +19,32 @@ export const hud = {
     const el = $("#loading");
     el.hidden = !text;
     if (text) el.querySelector(".text").textContent = text;
+    if (!text) this.zoneError(null);
+  },
+  // lỗi chuyển zone (Game.enterZone): tiêu đề + chi tiết + nút (Retry / Back to … / Reload page) trên màn chờ.
+  // e = null → bỏ bảng lỗi. Bấm nút: bỏ bảng rồi chạy hành động (màn chờ hiện lại khi zone bắt đầu tải).
+  zoneError(e) {
+    const el = $("#loading");
+    el.querySelector(".zone-error")?.remove();
+    el.classList.toggle("error", !!e);
+    if (!e) return;
+    el.hidden = false;
+    el.querySelector(".text").textContent = e.title;
+    const box = document.createElement("div");
+    box.className = "zone-error";
+    box.setAttribute("role", "alert");
+    box.innerHTML = `<p class="detail"></p><div class="row"></div>`;
+    box.querySelector(".detail").textContent = e.detail || "";
+    e.buttons.forEach((b, i) => {
+      const btn = document.createElement("button");
+      btn.className = i === 0 ? "primary" : "ghost";
+      btn.dataset.a = i === 0 ? "retry" : "back";
+      btn.textContent = b.label;
+      btn.addEventListener("click", () => { this.zoneError(null); b.run(); });
+      box.querySelector(".row").append(btn);
+    });
+    el.append(box);
+    box.querySelector("button")?.focus();
   },
   // thẻ chữ lớn giữa màn hình (tên zone, "First card tap!", tiêu đề Act, thành tựu) xếp hàng — mỗi lúc một thẻ, không đè
   // nhau (vd quẹt thẻ lần đầu xong Act 2: "First card tap!" rồi mới tới "ACT 3"). Không chặn điều khiển.
