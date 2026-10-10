@@ -28,6 +28,12 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
   (`game/src/world/zone.js`) gọi `.dispose()` trên chuỗi khi rời zone. Sửa: xoá `srcMaterial` khỏi bản sao + `disposeZone`
   chỉ dispose texture thật; thêm vào `test:smoke` bước zone 5 → zone 4 → zone 5 (smoke hiện không đi ngược khỏi zone 5 nên
   không bắt được); build, deploy lại — Phụ trách: —
+- [ ] P1 **Lỗi: camera xuyên trần nhà khi ở trong nhà** (zone 3, 4, 5 — kéo chuột lên thì camera bay lên tận nóc, thấy cả mái
+  nhà từ trên xuống). Nguyên nhân: camera chỉ tránh hộp `COL_` mà các zone trong nhà không có `COL_` cho trần; góc ngẩng tối
+  đa 1,15 rad × khoảng cách 4,2 m → camera cao ~5 m trên đầu người chơi (trần ~3 m). Sửa: thêm hộp trần cho zone 3–5 bằng
+  `data/collision.json` (không cần Blender) hoặc cho camera tránh cả lưới hiển thị (`zone.view`, như camera hội thoại / bàn
+  bi-a), kèm giới hạn độ cao camera theo zone; thêm kiểm tra vào `test:smoke` (ngẩng hết cỡ, camera vẫn dưới trần) —
+  Phụ trách: —
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
