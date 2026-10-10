@@ -78,6 +78,18 @@ export function nodeRefs(c) {
     if (cs.office) add(cs.office.zone, cs.office.seat, `${w} · office.seat`);          // cảnh kết
     for (const k of ["spawn", "door"]) if (cs.bus_stop) add(cs.bus_stop.zone, cs.bus_stop[k], `${w} · bus_stop.${k}`, true);
   }
+  // hành động ngồi trong hội thoại (sit:<SPAWN_>) → node phải có ở zone của vật tương tác mở hội thoại đó
+  const dlgZones = new Map();
+  for (const it of c.interactables) {
+    const [k, id] = (it.action || "").split(":");
+    if (k === "dialogue") { if (!dlgZones.has(id)) dlgZones.set(id, new Set()); dlgZones.get(id).add(it.zone); }
+  }
+  for (const d of c.dialogues.values()) {
+    for (const [k, n] of Object.entries(d.nodes)) {
+      const [kind, node] = (n.action || "").split(":");
+      if (kind === "sit") for (const z of dlgZones.get(d.id) || []) add(z, node, `dialogues.json · ${d.id} · ${k} · sit`);
+    }
+  }
   return refs;
 }
 
@@ -130,6 +142,10 @@ export function validateLinks(c) {
       checkEffects(n.effects, `${where} · ${k}`);
       for (const ch of n.choices || []) checkEffects(ch.effects, `${where} · ${k} · lựa chọn`);
       checkAction(n.action, `${where} · ${k}`);
+      // node "action" của hội thoại: mini-game, ngồi vào ghế (sit:<SPAWN_>), đứng dậy (stand)
+      const kind = n.action?.split(":")[0];
+      if (kind && !["minigame", "sit", "stand"].includes(kind)) errs.push(`${where} · ${k}: hành động lạ '${n.action}'`);
+      if (kind === "sit" && !/^SPAWN_/.test(n.action.slice(4))) errs.push(`${where} · ${k}: sit cần SPAWN_ (chỗ ghế)`);
       if (n.choices && n.choices.length > 4) errs.push(`${where} · ${k}: quá 4 lựa chọn (phím 1–4)`);
     }
   }

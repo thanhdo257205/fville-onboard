@@ -25,13 +25,13 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
 | `assets/characters/<id>/` | GLB nhân vật, chân dung (`<id>_portrait.png`, theo bộ đồ `<id>_portrait_<bộ>.png`), texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`, `intern_nu_tu_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
-| `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc |
+| `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc. Trong game: `data/characters.json` → `accessories`, gắn vào xương đầu và tự ướm theo lưới nhân vật (`game/src/characters/accessories.js`), mở khoá khi xong game, bật / tắt ở menu Esc |
 | `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`, `desktop_computer/source/desktop_computer.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại) |
 | `data/i18n/en.json` | Mọi chữ giao diện (tiếng Anh) |
-| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `pool/` (bi-a zone 5: `physics.js` vật lý tất định, `table.js` chế độ chơi), `debug.js` |
-| `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + 1 Durable Object (`wrangler.toml`, `src/index.js`); bật bằng `data/net.json` → `url` (trống = tắt). Đã lên mạng: `https://fville-net.fville-onboard.workers.dev` (`/status`). Xem `docs/multiplayer.md` |
+| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `pool/` (bi-a zone 5: `physics.js` vật lý tất định, `rules.js` luật 8 bi rút gọn + mã hoá bàn — dùng chung với máy chủ, `table.js` chế độ chơi: tập một mình / bàn chung 2 người / thử thách, `auto.js` chọn cú cho kiểm thử), `debug.js` |
+| `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + Durable Object, mỗi DO một phòng (~30 người, tự chia phòng; `wrangler.toml`, `src/index.js`), bàn bi-a chung của phòng (`src/pool.js`); bật bằng `data/net.json` → `url` (trống = tắt). Đã lên mạng: `https://fville-net.fville-onboard.workers.dev` (`/status`). Xem `docs/multiplayer.md` |
 | `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`; id vai cũng được: `compare=thao,le_tan,prajith` → kèm tint, tên vai) |
 | `references/` | Chỉ có ghi chú `.md` và bảng màu trên repo; video, khung hình gốc chỉ có trên máy làm việc |
 | `dist/` | **git worktree của nhánh gh-pages** (không thuộc nhánh main) |
@@ -64,11 +64,11 @@ npm --prefix game run dev            # http://localhost:5180  (?debug: FPS, vị
 
 # Kiểm thử (chạy sau MỖI thay đổi — xem "Kiểm thử" dưới)
 npm --prefix game run test:data      # dữ liệu: JSON, tham chiếu, node GLB, bản lưu mẫu, chữ i18n, model (~0,1 giây)
-npm --prefix game run test:pool      # vật lý bi-a: 1.000 cú phá bi, không NaN / chồng bi / ra ngoài bàn, tất định (~3 giây)
+npm --prefix game run test:pool      # bi-a: 1.000 cú phá bi (không NaN / chồng bi / ra ngoài bàn, tất định) + luật 8 bi, bàn máy chủ, ván 2 người giả (~5 giây)
 npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới màn tổng kết, 3 ngoại hình (~4 phút; tự bật Vite dev)
 npm --prefix game run test:smoke -- --zone 5               # chỉ 1 zone (bản lưu mẫu ?start=zone_05), ~50 giây mỗi ngoại hình
 npm --prefix game run test:smoke -- --look intern_nu       # 1 ngoại hình · --build: chạy trên game/dist (sau npm run build)
-npm --prefix game run test:smoke -- --extra only           # chỉ bản lưu cũ + zone 4 có người chơi khác (máy chủ local), ~15 giây
+npm --prefix game run test:smoke -- --extra only           # chỉ bản lưu cũ + mạng (zone 4, bi-a 2 người, chia phòng; máy chủ local), ~35 giây
 
 # Viewer bối cảnh
 python -m http.server 8765           # ở thư mục gốc, mở http://localhost:8765/viewer/
@@ -100,7 +100,7 @@ Thử game không cần chuột/rAF: `window.__game` (xem đầu `game/src/debug
 tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển — smoke test dùng), `approach`, `resolve`, `simulate`, `walkTo`, `route`, `goto`,
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
 `acts` / `cards` (4 Act, thẻ giữa màn hình), `finish()` / `summary` (thành tựu cuối + màn tổng kết),
-`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết),
+`net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`; bàn chung: `net` (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ), `join()`, `autoShot()`, `place(x, z)`, `forceShot()`, `setFast()`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết),
 `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
@@ -180,19 +180,22 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 ## Kiểm thử
 
 - **Sau mỗi thay đổi** chạy `npm --prefix game run test:data` và `npm --prefix game run test:smoke` (hoặc
-  `-- --zone N` cho zone vừa sửa); sửa vật lý bi-a (`game/src/pool/physics.js`) thì chạy thêm `test:pool`. Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
-  trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật — trừ test
-  "mạng + zone 4" dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
-- Sau phần chơi theo ngoại hình, smoke chạy thêm 2 test (`--extra off` bỏ, `--extra only` chỉ chạy 2 test này, ~15 giây):
+  `-- --zone N` cho zone vừa sửa); sửa bi-a (`game/src/pool/physics.js`, `rules.js`, `server/src/pool.js`) thì chạy thêm `test:pool`. Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
+  trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật — trừ các test
+  mạng dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
+- Sau phần chơi theo ngoại hình, smoke chạy thêm các test (`--extra off` bỏ, `--extra only` chỉ chạy các test này, ~35 giây):
   bản lưu cũ lệch data (`scripts/tests/fixtures/old_save.json`, ẩn danh) → sửa, vào zone_04, tải lại trang, GLB hỏng →
   bảng lỗi + bấm Back; vào zone_04 khi có bot chờ sẵn (khởi động thẳng + đi qua cổng từ zone_03, phải xong trong 20 s,
-  thấy bot). Cả hai đặt sẵn cài đặt cũ tier "high". `test:data` cũng thử `repair()` trên file đó và kiểm tra `start` của mọi zone có trong GLB bản Thấp.
+  thấy bot) — cả hai đặt sẵn cài đặt cũ tier "high"; bi-a 2 người (2 trình duyệt chơi trọn một ván qua máy chủ local, chặn cú
+  sai lượt, người xem vào giữa ván, bi trong tay, rớt mạng → giải phóng ghế, máy chủ cũ → tập một mình); chia phòng (31 kết
+  nối → người thứ 31 sang phòng 2). `test:data` cũng thử `repair()` trên file đó và kiểm tra `start` của mọi zone có trong GLB bản Thấp.
 - Chỉ tự lái trình duyệt (Playwright tự viết, chụp ảnh) khi cần **xem bằng mắt** phần mới; tối đa 3 ảnh mỗi lần.
 - Thêm nội dung mới (quest, hội thoại, mini-game): smoke test tự chơi theo `guide.current()` + `__game.step()` — lựa chọn
   hội thoại theo `autoplay.pickChoice` (câu có giá trị > câu dẫn tới việc đang làm > câu đầu), mini-game cần
   `ctx.debug.solve()`. Kiểm tra riêng phần mới thì thêm vào `scripts/tests/smoke.mjs`.
-- Vật lý bi-a phải **tất định** (bước 3 chơi nhiều người cần): chỉ + − × ÷, `Math.sqrt` (và abs / min / max / floor), không
-  `Math.sin` / `cos` / `atan2` / `hypot` / `pow` trong `physics.js` — dùng `dsin` / `dcos` / `datan2` của file đó.
+- Vật lý bi-a phải **tất định** (bàn chung 2 người: người xem phát lại cú từ bàn của mình, phải khớp từng bit): chỉ + − × ÷,
+  `Math.sqrt` (và abs / min / max / floor / round), không `Math.sin` / `cos` / `atan2` / `hypot` / `pow` / `**` trong
+  `physics.js`, `rules.js` — dùng `dsin` / `dcos` / `datan2` của `physics.js`.
 - GitHub Actions (`.github/workflows/test.yml`): mỗi lần push main chạy test:data + test:pool + build + test:smoke 1 ngoại hình;
   chạy tay (Run workflow) thì cả 3 ngoại hình. Đỏ → xem log + artifact `test-results`.
 

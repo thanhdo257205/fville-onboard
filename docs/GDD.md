@@ -43,7 +43,7 @@ Hành trình chia thành 4 Act theo mạch "trở thành người F-Ville". Act 
 | Act | Tên (trong game) | Mục checklist | Zone |
 | --- | --- | --- | --- |
 | 1 | ENTER THE VILLAGE | Bus (điểm đón zone 0 + bến xe zone 1, gồm cài App My FPT), F-Ville Gate, Village Well, Cuder Statue | 0–2 |
-| 2 | BECOMING A FSOFTER | Reception, Rice Grain Room, Card Gate | 3–4 |
+| 2 | BECOMING AN FSOFTER | Reception, Rice Grain Room, Card Gate | 3–4 |
 | 3 | JOINING FSA | FSA Room, Meet Prajith, Meet Manager | 4–5 |
 | 4 | JOINING THE TEAM | Say Hello Team, Your Desk | 5 |
 

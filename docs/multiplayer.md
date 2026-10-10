@@ -1,10 +1,11 @@
 # Chơi nhiều người mức "thấy nhau"
 
-Cập nhật: 09/10/2026
+Cập nhật: 10/10/2026 (thêm chia phòng ~30 người và bi-a 2 người — xem 2 mục cuối)
 
-Mọi người chơi vào **một phòng chung** (không mã phòng, không tạo phòng). Mỗi người vẫn chơi phần của mình: nhiệm vụ,
-hội thoại, Tú, NPC đều riêng từng máy. Phần chung chỉ có việc **thấy nhau** khi ở cùng zone, kèm emote và câu chat soạn
-sẵn. Không có chat tự do.
+Không mã phòng, không tạo phòng: máy chủ tự xếp người vào phòng (mỗi phòng ~30 người, xem "Chia phòng"). Mỗi người vẫn
+chơi phần của mình: nhiệm vụ, hội thoại, Tú, NPC đều riêng từng máy. Phần chung là **thấy nhau** khi ở cùng phòng và cùng
+zone, kèm emote và câu chat soạn sẵn, và **bàn bi-a chung** ở zone 5 (2 người chơi theo lượt, người khác đứng xem). Không
+có chat tự do.
 
 `data/net.json` → `"url": ""` thì mạng tắt hẳn: không kết nối, không có góc online, không có phím T, menu không có dòng
 "Show other players". Game chạy y như bản chơi một mình. Bản trên gh-pages hiện để trống.
@@ -13,8 +14,10 @@ sẵn. Không có chat tự do.
 
 | Đường dẫn | Nội dung |
 | --- | --- |
-| `server/` | Máy chủ: Cloudflare Worker và một Durable Object tên `fville` giữ phòng chung (`src/index.js`, `wrangler.toml`). Dùng WebSocket Hibernation API |
-| `data/net.json` | URL máy chủ, nhịp gửi, độ trễ nội suy, số người hiện tối đa, danh sách emote và câu chat, giới hạn của máy chủ (mục `server`). **Máy chủ đọc file này lúc `wrangler deploy`** |
+| `server/` | Máy chủ: Cloudflare Worker và Durable Object, mỗi DO một phòng (`fville`, `fville-2`…; `src/index.js`, `wrangler.toml`). Dùng WebSocket Hibernation API |
+| `server/src/pool.js` | Bàn bi-a chung của một phòng: ghế, lượt, vị trí bi, kiểm tra cú đánh, luật (JS thuần, thử bằng Node) |
+| `game/src/pool/rules.js` | Luật 8 bi rút gọn + mã hoá bàn — dùng chung cho game và máy chủ |
+| `data/net.json` | URL máy chủ, nhịp gửi, độ trễ nội suy, số người hiện tối đa, danh sách emote và câu chat, giới hạn của máy chủ (mục `server`: cả `room_size`, `max_rooms`, `pool_turn_s`). **Máy chủ đọc file này (và `data/pool.json`) lúc `wrangler deploy`** |
 | `game/src/net/client.js` | Kết nối WebSocket: thử lại theo backoff, ping khi đứng yên, phát hiện rớt mạng |
 | `game/src/net/remotes.js` | Hiện người chơi khác: model, bộ đồ, bảng tên, animation, nội suy, bong bóng câu chat |
 | `game/src/net/net.js` | Nối vào game: gửi vị trí, emote, câu chat; góc "N online · M in this zone" |
@@ -62,15 +65,19 @@ sẵn. Không có chat tự do.
 
 | Chiều | Tin | Ghi chú |
 | --- | --- | --- |
-| client → máy chủ | `join {name, model, outfit, zone}` | Gửi lại khi đổi bộ đồ (vd vừa nhận Áo Cam FPT) |
+| client → máy chủ | `join {name, model, outfit, acc, zone}` | Gửi lại khi đổi bộ đồ (vd vừa nhận Áo Cam FPT) hoặc đội / bỏ phụ kiện (`acc`: vd `["cap"]`, tối đa 4 id) |
 | | `state {zone, pos, yaw, anim}` | Tối đa 5 lần/giây và chỉ khi có thay đổi (> 2 cm, > 2°, đổi anim hoặc zone). Đổi zone cũng bằng tin này |
 | | `emote {id}` · `phrase {id}` · `leave` | |
 | | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
-| máy chủ → client | `welcome {id, online}` | |
+| | `pool_join` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế, rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
+| | `pool_shot {seq, a, p, cue, b, k, s, d}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn |
+| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung |
 | | `zone {zone, players, online}` | Vừa vào zone: danh sách người cùng zone |
 | | `join {p}` · `state {id, pos, yaw, anim}` · `emote {id, e}` · `phrase {id, p}` · `leave {id}` | **Chỉ gửi cho người cùng zone** |
 | | `online {n}` | Số người online, gửi cho cả phòng |
 | | `error {code, msg}` | Vd phòng đầy |
+| | `pool {tb, err?}` | Bàn bi-a hiện tại (vừa vào zone của bàn cũng nhận); `err`: `full`, `turn`, `seq`, `cue`, `bad`… khi máy chủ từ chối |
+| | `pool_shot {shot, tb}` | Một cú vừa được nhận (`shot`: người đánh, góc, lực, chỗ đặt bi trắng, vị trí bi) + bàn sau cú |
 
 ## Máy chủ: giới hạn và kiểm tra đầu vào
 
@@ -81,7 +88,11 @@ sẵn. Không có chat tự do.
 - **Vị trí, hướng:** phải là số hữu hạn (|x| ≤ 5000). Zone phải đúng dạng `zone_NN`. Anim lạ đổi thành `idle`.
 - **Emote, câu chat:** id phải nằm trong danh sách của `data/net.json`, một người cách nhau ít nhất 0,8 s.
 - **Tần suất:** quá 10 tin/giây mỗi kết nối thì bỏ tin, gấp 3 lần thì ngắt (mã 4003).
-- **Số kết nối:** tối đa 60. Người thứ 61 nhận `error` "The room is full…" rồi bị đóng (mã 4001).
+- **Số kết nối:** phòng đủ `room_size` (30) thì người mới sang phòng sau; phòng cuối (`max_rooms` = 6) nhận tối đa 60, người
+  thứ 61 nhận `error` "The room is full…" rồi bị đóng (mã 4001).
+- **Bi-a:** chỉ người đang ngồi và tới lượt được đánh; cú phải đúng số thứ tự; kết quả phải hợp lệ (16 bi trong bàn, bi đã vào
+  lỗ không quay lại, danh sách bi vào lỗ khớp vị trí, bi trắng chỉ đặt được ở khu đầu bàn khi có bi trong tay). Tin
+  `pool_shot` được dài tới 1.200 ký tự (tin khác 512).
 - **Im lặng:** không gửi gì, kể cả ping, quá 60 giây thì bị ngắt (mã 4002). Việc kiểm tra chạy mỗi khi có tin tới.
 - **Origin:** chỉ nhận trang `https://thanhdo257205.github.io` (thêm trang khác vào `server.allowed_origins`); localhost
   và 127.0.0.1 luôn được, để thử. Công cụ không phải trình duyệt (không gửi Origin) vẫn vào được, nhưng các giới hạn trên
@@ -239,3 +250,67 @@ mình. Muốn dừng hẳn máy chủ: `npx wrangler delete` trong `server/`, ho
 - **Không thấy Tú và NPC của người khác:** NPC và Tú là riêng từng máy.
 - **Hibernation:** `wrangler dev` không cho Durable Object ngủ như trên Cloudflare thật, nên phần đọc lại attachment khi
   ngủ dậy chỉ thử được sau khi deploy. Ví dụ: đứng yên cả phòng hơn 10 giây rồi đi lại, mọi người vẫn thấy nhau đúng chỗ.
+
+## Chia phòng ~30 người (10/10/2026)
+
+- Mỗi phòng là một Durable Object: phòng 1 giữ tên cũ `fville` (không đổi phòng của bản đang chạy), phòng 2 trở đi
+  `fville-2`, `fville-3`… Worker luôn gửi kết nối mới vào phòng 1; phòng đã có `room_size` (30) kết nối thì DO đó chuyển
+  nguyên request WebSocket sang phòng sau (header `X-FVille-Room`). Phòng cuối (`max_rooms`, mặc định 6) nhận tới
+  `max_connections` (60) — tức tối đa ~210 người.
+- Người ở phòng khác nhau không thấy nhau và có bàn bi-a riêng. Phòng 1 vơi bớt thì người mới lại vào phòng 1.
+- Góc màn hình: phòng 1 vẫn "N online · M in this zone"; phòng 2 trở đi "Room 2 · N online · M in this zone" (N = số người
+  của phòng đó).
+- `?room=N` trên địa chỉ WebSocket (`wss://…/ws?room=2`): vào thẳng phòng N, bỏ qua giới hạn 30 (thử / kiểm thử). Game chưa
+  có nút chọn phòng.
+- `GET /status`: cộng mọi phòng (`online`, `connections`, `zones`) và liệt kê từng phòng đang có người (`rooms`, kèm trạng
+  thái bàn bi-a: `mode`, số người ngồi, số cú).
+- Chi phí: phòng 1 chưa đầy thì như cũ (1 request DO cho mỗi lần kết nối); phòng 1 đầy thì thêm 1 request cho mỗi phòng
+  phải đi qua.
+
+## Bi-a 2 người (bi-a bước 3, 10/10/2026)
+
+Bàn bi-a ở zone 5 là **bàn chung của cả phòng** khi máy chủ báo `features: ["pool"]` trong `welcome`. Máy chủ cũ (chưa
+deploy bản này) không báo → bàn chỉ cho tập một mình như bước 2.
+
+**Trong game** (`game/src/pool/table.js`):
+- "Play pool" → xin ghế. Một người ngồi: tập một mình (R: xếp lại), cú đánh vẫn phát cho người trong zone xem. Người thứ
+  hai ngồi: xếp lại bi, bắt đầu ván 8 bi, **người ngồi trước phá**. Hết ghế: đứng xem (camera bao quát bàn, A/D hoặc chuột
+  xoay); có ghế trống thì bấm **J** để ngồi.
+- Bảng góc trái: 2 ghế (tên, nhóm trơn / sọc, số bi còn lại; viền cam = người đang đánh), dòng trạng thái ("Your turn",
+  "An's turn · 42s", bi trong tay…), nút Rerack / Rematch (R), Join (J), Leave table (Esc).
+- **Đồng bộ:** người đánh tự tính cú bằng `physics.js` (tất định) rồi gửi góc, lực, chỗ đặt bi trắng + kết quả (vị trí bi
+  làm tròn 0,01 mm, bi vào lỗ theo thứ tự). Người kia và người xem phát lại đúng cú đó từ bàn của mình (cùng hoạt cảnh),
+  cuối cú chốt theo bàn máy chủ gửi về. Mọi bên (cả người đánh) lấy bàn đã làm tròn làm điểm xuất phát cú sau, nên cú phát
+  lại khớp từng bit với người đánh. Người vào zone giữa ván nhận ngay bàn hiện tại.
+- **Luật 8 bi rút gọn** (`game/src/pool/rules.js`): bàn mở tới khi có người vào bi mà bi trắng không rơi → người đó nhận
+  nhóm của bi vào đầu tiên (trơn 1–7 / sọc 9–15); vào bi nhóm mình thì đánh tiếp; bi trắng rơi → đổi lượt, đối thủ có
+  **bi trong tay**: đặt bi trắng ở khu đầu bàn (W/A/S/D hoặc kéo chuột, Space / nhấp để đặt); bi 8 cuối cùng — vào khi đã
+  hết nhóm mình (từ trước cú đó) và bi trắng không rơi thì thắng, vào sớm / kèm bi trắng rơi thì thua; bi 8 vào lúc phá →
+  đặt lại điểm chân bàn. Không phạt chạm sai bi trước.
+- **Giờ lượt:** tới lượt mà quá `pool_turn_s` (60 giây, tính từ lúc bi dừng) không đánh → mất ghế, đối thủ thắng. Máy chủ
+  kiểm tra mỗi khi có tin tới; người chờ tự gửi `pool_poke` khi hết giờ.
+- **Ghế được giải phóng** khi rời bàn (Esc), sang zone khác, mất kết nối, hoặc hết giờ lượt. Đang giữa ván → người còn lại
+  thắng, tiếp tục tập một mình.
+- **Mất kết nối khi đang ở bàn:** tập một mình tiếp với bàn đang có; vào lại bàn sau khi có mạng thì về bàn chung.
+- Thử thách "Một cú bi-a" của anh Khang luôn là bàn riêng; bàn chung vẫn cập nhật ngầm và hiện lại khi xong.
+- **Hibernation:** bàn (ghế, lượt, nhóm, vị trí bi, số cú) cất vào attachment của người đang ngồi sau mỗi lần đổi; DO ngủ
+  dậy dựng lại từ bản mới nhất, ghế của người đã đi được giải phóng.
+- Số request: mỗi cú = 1 tin gửi lên (người chờ thêm 1 `pool_poke` nếu đối thủ hết giờ) — không đáng kể so với tin vị trí.
+
+**Kiểm thử:** `npm run test:pool` (Node: luật, bàn máy chủ, một ván trọn giữa 2 người chơi giả + người xem phát lại khớp
+từng bit, ván có bi trong tay, bản chụp qua lúc ngủ); `npm run test:smoke` (máy chủ local: 2 trình duyệt chơi trọn một ván,
+chặn cú sai lượt, người xem vào giữa ván, bi trong tay, rớt mạng → giải phóng ghế, máy chủ cũ → tập một mình; chia phòng 31
+kết nối). Thử tay: `npm --prefix server run dev` + 2 cửa sổ `http://localhost:5180/?debug&net=ws://127.0.0.1:8787/ws&start=zone_05`
+(1 cửa sổ thường + 1 ẩn danh). `__game.pool.net` cho biết ghế, lượt, nhóm, số cú đã phát lại / lệch.
+
+**Bật trên máy chủ thật** (máy Desktop có `wrangler login`, sau khi nhánh này đã vào `main`):
+
+```bash
+git pull
+cd server
+npx wrangler deploy
+curl https://fville-net.fville-onboard.workers.dev/status   # có "room_size", "rooms" và "pool" là bản mới
+```
+
+Rồi deploy bản web (`python scripts/deploy_site.py`). Thứ tự không bắt buộc: bản web mới + máy chủ cũ → bàn chỉ tập một
+mình; máy chủ mới + bản web cũ → bản web cũ bỏ qua các tin `pool`.

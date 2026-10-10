@@ -1,11 +1,18 @@
-# Kiểm thử tự động (không cần secret): mỗi lần push main → npm run test:data, test:pool, npm run build, npm run test:smoke
-# (1 ngoại hình cho nhanh, chạy trên bản build, mạng tắt ?net=off — không đụng máy chủ chơi nhiều người thật) + 2 test thêm:
-# bản lưu cũ lệch data, vào zone 4 khi có người chơi khác (máy chủ local server/ chạy bằng wrangler dev, không cần tài khoản).
-# Chạy tay (Actions → test → Run workflow): cả 3 ngoại hình. Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results.
+# Kiểm thử tự động (không cần secret): mỗi lần push main và mỗi Pull Request vào main (mở, push thêm, mở lại) → npm run
+# test:data, test:pool, npm run build, npm run test:smoke (2 ngoại hình, chạy trên bản build, mạng tắt ?net=off —
+# không đụng máy chủ chơi nhiều người thật) + các test thêm: bản lưu cũ lệch data; với máy chủ local server/ (wrangler dev,
+# không cần tài khoản): vào zone 4 khi có người chơi khác, bi-a 2 người (2 trình duyệt chơi trọn một ván), chia phòng.
+# test:pool gồm cả luật 8 bi + bàn bi-a của máy chủ (scripts/tests/pool_rules.mjs).
+# Tự động chạy 2 ngoại hình: ngoại hình đầu thử tải lại giữa cảnh kết, ngoại hình thứ 2 chạy trọn cảnh kết (rời zone_05 → bến
+# xe — đường người chơi thật đi; 1 ngoại hình thì không phủ được đường này). Chạy tay (Actions → test → Run workflow): cả 3
+# ngoại hình. Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results.
+# Pull Request từ fork: GitHub chỉ cấp quyền đọc (permissions bên dưới) — workflow không cần secret nên vẫn chạy đủ.
 name: test
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -37,13 +44,13 @@ jobs:
       - name: Cài thư viện
         run: npm ci
 
-      - name: Cài máy chủ chơi nhiều người local (cho test vào zone 4 khi có người chơi khác)
+      - name: Cài máy chủ chơi nhiều người local (test mạng: zone 4 có người chơi khác, bi-a 2 người, chia phòng)
         run: npm --prefix ../server ci
 
       - name: Kiểm tra dữ liệu (test:data)
         run: npm run test:data
 
-      - name: Vật lý bi-a (test:pool — 1.000 cú phá bi, tất định)
+      - name: Bi-a (test:pool — 1.000 cú phá bi, tất định; luật 8 bi, bàn máy chủ, ván 2 người giả)
         run: npm run test:pool
 
       - name: Build
@@ -53,7 +60,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Chơi thử tự động (test:smoke)
-        run: npm run test:smoke -- --build ${{ github.event_name == 'workflow_dispatch' && '' || '--look intern_nam' }}
+        run: npm run test:smoke -- --build ${{ github.event_name == 'workflow_dispatch' && '' || '--look intern_nam,intern_nu' }}
 
       - name: Ảnh bước hỏng
         if: failure()

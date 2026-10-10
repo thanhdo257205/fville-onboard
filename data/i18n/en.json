@@ -17,7 +17,7 @@
       "time": "06:30"
     },
     "zone_01": {
-      "title": "Bus Stop",
+      "title": "F-Ville Bus Stop",
       "time": "07:30"
     },
     "zone_02": {
@@ -121,6 +121,7 @@
     "yes": "Yes, start over",
     "no": "Cancel",
     "players": "Show other players",
+    "accessories_note": "Unlocked by finishing your first day.",
     "view_summary": "View summary"
   },
   "pool": {
@@ -133,7 +134,49 @@
     "controls_challenge": "Mouse or A/D: aim (Shift: fine) · Hold click or Space: power, let go: shoot · Wheel: zoom",
     "scratch": "Scratch! The white ball goes back to the head spot.",
     "cleared": "Table cleared in {n} shots! Press R to rack them up again.",
-    "no_table": "The pool table is in the break area of the office."
+    "no_table": "The pool table is in the break area of the office.",
+    "title_match": "8-ball",
+    "rematch": "Rematch",
+    "join": "Join",
+    "controls_net": "Mouse or A/D: aim (Shift: fine) · Hold click or Space: power, let go: shoot · Wheel: zoom · R: rerack / rematch · J: take a free seat · Esc: leave the table",
+    "group_solid": "Solids",
+    "group_stripe": "Stripes",
+    "group_open": "Open table",
+    "balls_left": "{n} left",
+    "net_you": "(you)",
+    "net_free_seat": "Free seat",
+    "net_joining": "Joining the table…",
+    "net_full": "Both seats are taken. You can watch the game!",
+    "net_lost": "Connection lost. The table is yours to practice on.",
+    "net_no_reply": "The server didn't answer, so you're practicing on your own.",
+    "net_status_solo": "Practicing. When another player joins, an 8-ball game starts.",
+    "net_status_free": "A seat is free. Press J to play.",
+    "net_status_watch": "Watching.",
+    "net_status_turn": "{name}'s turn · {s}s",
+    "net_status_your_turn": "Your turn.",
+    "net_status_your_turn_s": "Your turn · {s}s left",
+    "net_status_place": "Ball in hand: move the white ball with W/A/S/D, then press Space to place it.",
+    "net_status_won": "You won! 🎉",
+    "net_status_winner": "{name} won.",
+    "net_rematch_hint": "Press R for a rematch.",
+    "net_start": "8-ball: {a} vs {b}. {who} breaks!",
+    "net_your_turn": "Your turn!",
+    "net_your_turn_in_hand": "Your turn, with ball in hand!",
+    "net_you_group": "You're on {group}.",
+    "net_group": "{name} is on {group}.",
+    "net_scratch": "Scratch! {name} gets ball in hand.",
+    "net_scratch_you": "Scratch! You get ball in hand.",
+    "net_respot8": "The 8-ball dropped on the break, so it goes back on the table.",
+    "net_win": "You sank the 8-ball. You win! 🎉",
+    "net_win_foul": "{name} fouled on the 8-ball. You win! 🎉",
+    "net_lose": "{name} sank the 8-ball and wins. Good game!",
+    "net_lose_early": "The 8-ball went in too early. {name} wins.",
+    "net_lose_scratch": "Scratch on the 8-ball. {name} wins.",
+    "net_winner": "{name} wins the game!",
+    "net_win_left": "{name} left the table. You win!",
+    "net_win_timeout": "{name} ran out of time. You win!",
+    "net_timeout_you": "You ran out of time, so your seat is free now.",
+    "net_forfeit": "{name} left the table."
   },
   "tiers": {
     "low": "Low",
@@ -195,7 +238,7 @@
     "look_stage": "Characters on stage. Use the left and right arrow keys to switch, drag to turn around.",
     "look_hint": "Drag to turn · ← → to switch",
     "look_selected": "{name} selected ({n} of {total})",
-    "preview_shirt": "Preview FPT shirt"
+    "preview_shirt": "Preview FPT Orange Shirt"
   },
   "myfpt": {
     "title": "My FPT",
@@ -227,6 +270,7 @@
   },
   "net": {
     "online": "{n} online · {m} in this zone",
+    "online_room": "Room {r} · {n} online · {m} in this zone",
     "panel_title": "Say something",
     "panel_help": "1–9: choose · T: close · keep walking anytime",
     "offline": "Can't reach other players right now — you can keep playing."

@@ -27,6 +27,7 @@ import { penetration } from "./world/collision.js";
 import { hud } from "./ui/hud.js";
 import { pickChoice } from "./game/autoplay.js";
 import { tx } from "./content/content.js";
+import { fitOf } from "./characters/accessories.js";
 
 export function installDebug(game, loop) {
   const v3 = (v) => v && [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(3)];
@@ -34,7 +35,8 @@ export function installDebug(game, loop) {
   const api = {
     get player() {
       const p = game.player;
-      return p && { pos: v3(p.position), speed: +p.speed.toFixed(2), onGround: p.body.onGround, yaw: +THREE.MathUtils.radToDeg(p.character.root.rotation.y).toFixed(1), fellOut: p.fellOut || 0 };
+      return p && { pos: v3(p.position), speed: +p.speed.toFixed(2), onGround: p.body.onGround, yaw: +THREE.MathUtils.radToDeg(p.character.root.rotation.y).toFixed(1), fellOut: p.fellOut || 0,
+        seated: p.seated?.state ?? null, sits: p.sits || 0, rootY: +p.character.root.position.y.toFixed(3) };   // ngồi ghế: sitting_down | seated | standing_up
     },
     get zone() { return game.state.zone; },
     get state() {
@@ -55,8 +57,12 @@ export function installDebug(game, loop) {
     get cards() { return { recent: hud.lastCards || [], queued: hud.cards.map((c) => c.kind) }; },
     finish() { game.finishGame(); return api.cards; },
     get net() { return game.net?.info(); },
-    // bàn bi-a zone 5 (game/src/pool/table.js): trạng thái + enter() (chơi một mình), shoot(angle, power, {instant}) →
-    // Promise kết quả khi bi dừng, leave(), rerack(), solve() (thử thách của anh Khang: đánh cú tìm được bằng vật lý)
+    // bàn bi-a zone 5 (game/src/pool/table.js): trạng thái + enter() (chơi một mình / bàn chung), shoot(angle, power, {instant})
+    // → Promise kết quả khi bi dừng, leave(), rerack(), solve() (thử thách của anh Khang: đánh cú tìm được bằng vật lý).
+    // Bàn chung (bi-a bước 3): .net (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ, số cú đã phát lại, sự kiện), join(),
+    // autoShot() (cú tự chọn cho người tới lượt), forceShot(angle, power) (gửi bất chấp lượt — máy chủ phải chặn), place(x, z)
+    // (bi trong tay: đặt bi trắng),
+    // setFast(true) (cú của người khác hiện ngay kết quả)
     get pool() {
       const p = game.pool;
       if (!p) return null;
@@ -67,6 +73,11 @@ export function installDebug(game, loop) {
         rerack: () => { p.rerack(); return p.info(); },
         solve: () => p.solve(),
         aim: () => p.aim ?? null,
+        join: () => { p.join(); return p.info(); },
+        autoShot: (opts) => p.autoShot(opts),
+        forceShot: (angle, power = 0.5) => p.forceShot(angle, power),
+        setFast: (on = true) => { p.fast = !!on; return p.fast; },
+        place: (x, z) => p.debugPlace(x, z),
       });
     },
     netEmote(id) { return game.net?.emote(id); },
@@ -109,7 +120,19 @@ export function installDebug(game, loop) {
     },
     get model() {
       const c = game.player.character, id = game.characters.modelId("player");
-      return { id, gender: game.characters.gender, look: game.characters.look, tier: c.tier, glb: game.characters.model(id).glb[c.tier], outfit: c.outfit ?? null };
+      return { id, gender: game.characters.gender, look: game.characters.look, tier: c.tier, glb: game.characters.model(id).glb[c.tier], outfit: c.outfit ?? null,
+        accessories: c.accessoryList };
+    },
+    // phụ kiện (characters.json → accessories, vd "cap"): đội / bỏ (opts.force: bỏ qua điều kiện mở khoá) → Promise
+    setAccessory(id, on = true, opts) { return game.setAccessory(id, on, opts); },
+    // phụ kiện đang đội trên người chơi: xương gắn, hộp bao (thế giới) so với xương đầu
+    accessoryInfo(id = "cap") {
+      const c = game.player.character, obj = c.accessories?.get(id);
+      if (!obj) return null;
+      c.root.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(obj), hp = obj.parent.getWorldPosition(new THREE.Vector3());
+      return { bone: obj.parent.name, top: +box.max.y.toFixed(3), bottom: +box.min.y.toFixed(3), headY: +hp.y.toFixed(3), center: v3(box.getCenter(new THREE.Vector3())),
+        root: v3(c.root.position), size: v3(box.getSize(new THREE.Vector3())), fit: fitOf(id, c.modelId)?.shape ?? null };
     },
     // đổi ngoại hình (roles.player.looks, vd "intern_nam_kinh"; null = mặc định theo giới tính): đặt luôn giới tính theo model
     async setLook(id) {
@@ -125,6 +148,7 @@ export function installDebug(game, loop) {
       game.characters.gender = g;
       game.persist();
       game.player.setCharacter(await game.characters.create("player", game.state.tier));
+      game.updateAccessories();
       game.scene.add(game.player.character.root);
       game.updateOutfit();
       // Tú khác giới với người chơi (roles.tu.model_by_gender) → dựng lại zone ngay chỗ đang đứng để Tú đổi model theo

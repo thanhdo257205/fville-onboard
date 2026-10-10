@@ -1,13 +1,13 @@
 // Menu Esc: tạm dừng, chọn mức đồ hoạ (Tự động / Thấp / Cao), độ nét (Auto / Sharper / Faster), bật / tắt dấu chỉ
-// đường, hiện / ẩn người chơi khác (chỉ khi bật mạng, data/net.json), xem FPS, xem lại màn tổng kết (khi đã xong game),
-// Chơi lại.
+// đường, hiện / ẩn người chơi khác (chỉ khi bật mạng, data/net.json), đội / bỏ phụ kiện đã mở khoá (vd mũ lưỡi trai sau khi
+// xong game — chưa có tab Wardrobe), xem FPS, xem lại màn tổng kết (khi đã xong game), Chơi lại.
 import { t } from "../i18n.js";
 import { TIERS } from "../core/quality.js";
 
 export class Menu {
-  constructor({ onTier, onDetail, onGuide, onPlayers, onSummary, onClose, onPlayAgain, info }) {
+  constructor({ onTier, onDetail, onGuide, onPlayers, onAccessory, onSummary, onClose, onPlayAgain, info }) {
     this.el = document.getElementById("menu");
-    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onSummary, onClose, onPlayAgain, info });
+    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onAccessory, onSummary, onClose, onPlayAgain, info });
     this.open = false;
   }
   toggle() { this.open ? this.hide() : this.show(); }
@@ -30,6 +30,9 @@ export class Menu {
     const dbtn = (v) => `<button data-detail="${v}" class="${i.detail === v ? "on" : ""}">${t(`menu.detail_${v}`)}</button>`;
     const gbtn = (on) => `<button data-guide="${on ? 1 : 0}" class="${i.guide === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     const pbtn = (on) => `<button data-players="${on ? 1 : 0}" class="${i.players === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
+    // phụ kiện đã mở khoá (vd mũ lưỡi trai sau khi xong game): [{ id, label, on }]
+    const abtn = (a, on) => `<button data-acc="${a.id}" data-on="${on ? 1 : 0}" class="${a.on === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
+    const accRows = (i.accessories || []).map((a) => `<div class="row"><span>${a.label}</span><div class="seg">${abtn(a, true)}${abtn(a, false)}</div></div>`).join("");
     this.el.innerHTML = `
       <div class="panel">
         <h2>${t("menu.title")}</h2>
@@ -41,6 +44,7 @@ export class Menu {
         <div class="row"><span>${t("menu.guide")}</span><div class="seg">${gbtn(true)}${gbtn(false)}</div></div>
         <p class="muted">${t("menu.guide_note")}</p>
         ${i.net ? `<div class="row"><span>${t("menu.players")}</span><div class="seg">${pbtn(true)}${pbtn(false)}</div></div>` : ""}
+        ${accRows ? `${accRows}<p class="muted">${t("menu.accessories_note")}</p>` : ""}
         <button class="primary" data-act="resume">${t("menu.resume")}</button>
         ${i.complete ? `<button class="ghost wide" data-act="summary">🏆 ${t("menu.view_summary")}</button>` : ""}
         <button class="ghost wide" data-act="again">${t("menu.play_again")}</button>
@@ -49,6 +53,7 @@ export class Menu {
     this.el.querySelectorAll("[data-detail]").forEach((b) => b.addEventListener("click", () => this.onDetail?.(b.dataset.detail)));
     this.el.querySelectorAll("[data-guide]").forEach((b) => b.addEventListener("click", () => this.onGuide?.(b.dataset.guide === "1")));
     this.el.querySelectorAll("[data-players]").forEach((b) => b.addEventListener("click", () => this.onPlayers?.(b.dataset.players === "1")));
+    this.el.querySelectorAll("[data-acc]").forEach((b) => b.addEventListener("click", () => this.onAccessory?.(b.dataset.acc, b.dataset.on === "1")));
     this.el.querySelector("[data-act=resume]").addEventListener("click", () => this.hide());
     this.el.querySelector("[data-act=summary]")?.addEventListener("click", () => { clearInterval(this._tick); this.onSummary?.(); });
     this.el.querySelector("[data-act=again]").addEventListener("click", () => { clearInterval(this._tick); this.onPlayAgain?.(); });

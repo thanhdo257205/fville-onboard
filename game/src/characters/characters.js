@@ -5,6 +5,7 @@ import * as THREE from "three";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { loadGLTF, url } from "../core/assets.js";
 import { makeCharacterMaterial } from "../render/renderer.js";
+import { loadAccessory, attachAccessory } from "./accessories.js";
 import { applyTint, setTint } from "./tint.js";
 import { lang, setTextVars, tuPronouns } from "../i18n.js";
 
@@ -40,6 +41,9 @@ export class Characters {
     return Object.entries(this.role(role)?.looks || {}).find(([, ids]) => ids.includes(id))?.[0] ?? null;
   }
   tagConfig() { return this.cfg.name_tags || {}; }
+  // phụ kiện (tủ đồ, accessories.<id>): cấu hình + danh sách id
+  accessory(id) { return this.cfg.accessories?.[id] ?? null; }
+  accessoryIds() { return Object.keys(this.cfg.accessories || {}).filter((k) => !k.startsWith("_")); }
   // người nói không có vai trong cảnh (vd "hr": tin nhắn điện thoại) → chân dung của vai speaker_as.<người nói>.
   // Model đang dùng fallback → không chân dung (không hiện mặt người khác dưới tên người này)
   portrait(role) {
@@ -148,12 +152,17 @@ export class Character {
     this.model = model;
     this.role = role;
     this.hips = null;                       // xương hông: tâm capsule va chạm của NPC
+    this.head = null;                       // xương đầu: chỗ gắn phụ kiện (mũ)
     object.traverse((o) => {
       if (o.isBone && !this.hips && /Hips$/.test(o.name)) this.hips = o;
+      if (o.isBone && !this.head && /Head$/.test(o.name)) this.head = o;
       if (!o.isMesh) return;
       o.material = makeCharacterMaterial(o.material);
       o.frustumCulled = false;              // mesh có xương: hộp bao không theo animation
     });
+    // xương đầu ở tư thế nghỉ (toạ độ gốc nhân vật), lấy trước khi animation chạy — ướm phụ kiện (accessories.js)
+    this.root.updateMatrixWorld(true);
+    this.headRest = this.head ? this.head.matrixWorld.clone() : null;
     this.mixer = new THREE.AnimationMixer(object);
     this.actions = {};
     for (const c of clips) this.actions[c.name] = this.mixer.clipAction(c);
@@ -282,7 +291,20 @@ export class Character {
     return true;
   }
 
+  // --- phụ kiện trên đầu (game/src/characters/accessories.js): bật / tắt; tải GLB lần đầu → Promise<bool> ---
+  async setAccessory(id, cfg, on) {
+    this.accessories ||= new Map();
+    if (!on || !cfg) { this.accessories.get(id)?.removeFromParent(); this.accessories.delete(id); return false; }
+    if (this.accessories.has(id)) return true;
+    const tpl = await loadAccessory(id, cfg);
+    if (this.disposed || this.accessories.has(id)) return !this.disposed;
+    const obj = attachAccessory(id, cfg, this, tpl);
+    if (obj) this.accessories.set(id, obj);
+    return !!obj;
+  }
+  get accessoryList() { return [...(this.accessories?.keys() || [])]; }
+
   update(dt) { this.mixer.update(dt); }
 
-  dispose() { this.mixer.stopAllAction(); this.root.removeFromParent(); }
+  dispose() { this.disposed = true; this.mixer.stopAllAction(); this.root.removeFromParent(); }
 }

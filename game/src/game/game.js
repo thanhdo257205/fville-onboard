@@ -44,6 +44,7 @@ export class Game {
       speakerInfo: (role) => this.speakerInfo(role),
       effects: (e) => this.applyEffects(e),
       minigame: (id) => this.runMinigame(id),
+      action: (kind, arg) => this.dialogueAction(kind, arg),
       line: (n) => this.onLine(n),
     } });
     this.scene = new THREE.Scene();
@@ -87,6 +88,7 @@ export class Game {
     this.player = new Player(await this.characters.create("player", this.state.tier));
     this.scene.add(this.player.character.root);
     this.updateOutfit();
+    this.updateAccessories();
     const ok = await this.enterZone(zoneId, spawn ?? this.data.zones.zones[zoneId].start, { fade: false, zoneCard: false });
     this.acts.start();          // thẻ "ACT n" của Act hiện tại trước, rồi tới thẻ tên zone
     if (ok) hud.zoneCard(zoneId, this.zoneClock(zoneId));
@@ -195,6 +197,7 @@ export class Game {
       this.player.setCharacter(await this.characters.create("player", this.state.tier));
       this.scene.add(this.player.character.root);
       this.updateOutfit();
+      this.updateAccessories();
     }
     // SPAWN_ cần có thiếu trong GLB (vd GLB cũ lệch data): lùi về SPAWN_ đầu zone, rồi SPAWN_ bất kỳ — báo lỗi ra console
     // nhưng vẫn vào được zone (trước đây ném lỗi → kẹt mãi ở màn chờ)
@@ -208,8 +211,8 @@ export class Game {
       console.warn(`[zone] ${zoneId}: thiếu ${spawnName} — xuất hiện ở ${spawn.name}`);
     }
     const yaw = keepPose ? 0 : spawn.userData.yaw_deg ?? 0;
-    // zones.json → spawn_offset.<SPAWN_>: dời chỗ xuất hiện (toạ độ glTF, m) — vd zone_04: SPAWN_ sát tường cuối hành lang,
-    // camera không lùi được ra sau lưng → xuất hiện lùi vào trong 2 m
+    // zones.json → spawn_offset.<SPAWN_>: dời chỗ xuất hiện (toạ độ glTF, m) mà không sửa GLB — vd SPAWN_ sát tường, camera
+    // không lùi được ra sau lưng (hiện không zone nào dùng: SPAWN_zone_04_from_zone_03 đã dời trong scripts/blender/zone_04.py)
     const spawnOff = !keepPose && this.zoneCfg(zoneId)?.spawn_offset?.[spawn.name];
     this.player.spawn(keepPose ? keepPose.pos : worldPos(spawn).add(new THREE.Vector3(...(spawnOff || [0, 0, 0]))), yaw);
     if (keepPose) this.player.character.root.rotation.y = keepPose.rot;
@@ -263,6 +266,33 @@ export class Game {
       if (o.tint) setTint(ch, wearing ? null : o.tint);
       this.characters.wearing[role] = !wearing && tex && ch.outfit === tex ? tex : null;
     }
+  }
+
+  // phụ kiện (characters.json → accessories, vd mũ lưỡi trai cam): mở khoá theo accessories.<id>.unlock (vd xong game);
+  // đang đội = bản lưu player.accessories. Chưa có tab Wardrobe → bật / tắt ở menu Esc
+  accessoryUnlocked(id) {
+    const a = this.characters.accessory(id);
+    return !!a && (!a.unlock || this.progress.check(a.unlock));
+  }
+  wornAccessories() {
+    return (this.progress.player.accessories || []).filter((id) => this.accessoryUnlocked(id) || this.debugAccessories?.has(id));
+  }
+  updateAccessories() {
+    const ch = this.player?.character;
+    if (!ch) return Promise.resolve();
+    const on = new Set(this.wornAccessories());
+    return Promise.all(this.characters.accessoryIds().map((id) => ch.setAccessory(id, this.characters.accessory(id), on.has(id))
+      .catch((e) => console.warn(`[phụ kiện] ${id}: ${e.message}`))));
+  }
+  // force: bỏ qua điều kiện mở khoá (thử khi dev / kiểm thử, không lưu điều đó)
+  setAccessory(id, on, { force = false } = {}) {
+    if (!this.characters.accessory(id) || (on && !force && !this.accessoryUnlocked(id))) return Promise.resolve(false);
+    if (force) (this.debugAccessories ||= new Set()).add(id);
+    const p = this.progress.player, cur = new Set(p.accessories || []);
+    if (on) cur.add(id); else cur.delete(id);
+    p.accessories = [...cur];
+    this.persist(true);
+    return this.updateAccessories().then(() => on);
   }
 
   // sự kiện theo giờ trong zone (zones.json → events): vd zone_01, 20 giây sau khi xuống xe Tú kêu mất balo
@@ -460,7 +490,7 @@ export class Game {
     // màn mờ chuyển giờ (vd "12:00 · The team invites you to lunch") và hoàn thành game (sau bàn làm việc zone 5):
     // chạy khi hội thoại đang mở đã đóng
     if (e?.time_skip) this.afterDialogue(() => this.timeSkip(e.time_skip));
-    if (e?.finish) this.afterDialogue(() => this.finishGame());
+    if (e?.finish) { this.finishPending = true; this.afterDialogue(() => this.finishGame()); }
     this.persist();
     return events;
   }
@@ -504,6 +534,7 @@ export class Game {
     const a = this.content.achievements?.final;
     if (!a || this.finishing) return;
     this.finishing = true;
+    this.finishPending = false;
     try {
       const flag = `achievement_${a.id}`;
       if (!this.progress.flags.has(flag)) this.applyEffects({ flags: [flag, "game_complete"] });
@@ -677,7 +708,7 @@ export class Game {
     const [kind, id] = e.item.action.split(":");
     if (kind === "dialogue") return this.runDialogue(id, { npc: this.interaction.npcFor(e), actor: e.item.actor });
     if (kind === "minigame") return this.runMinigame(id);
-    if (kind === "pool") return this.pool?.enter();          // bàn bi-a: chơi một mình (pool:play)
+    if (kind === "pool") return this.pool?.enter();          // bàn bi-a (pool:play): tập một mình / bàn chung qua máy chủ
     if (kind === "pickup") { sound.play("pickup"); return this.applyEffects({ item: id, flags: [`has_${id}`] }); }
     if (kind === "grain") { sound.play("grain"); return this.applyEffects({ grain: id }); }
     return null;
@@ -715,8 +746,25 @@ export class Game {
       if (npc) npc.release();
       if (tu) tu.endTalk();
       this.setMode("play");
+      // đang ngồi (vd bàn làm việc) → đứng dậy; sắp vào cảnh kết thì ngồi nguyên (cảnh kết đặt lại người chơi)
+      if (this.player.seated && !this.finishPending) this.player.standUp();
       this.flushAfterDialogue();
     }
+  }
+
+  // hành động trong hội thoại (node "action": "sit:<SPAWN_>" | "stand"; mini-game xử lý riêng)
+  async dialogueAction(kind, arg) {
+    if (kind === "sit") return this.sitAt(arg);
+    if (kind === "stand") return this.player.standUp();
+    console.warn(`[hội thoại] hành động lạ: ${kind}:${arg}`);
+  }
+  // người chơi ngồi vào ghế đánh dấu bằng SPAWN_ (vd SPAWN_ban_lam_viec: chỗ ghế, yaw_deg = hướng nhìn vào bàn), mặt ghế cao
+  // characters.json → roles.player.chair_height_m (trừ phần ghế đã hạ: scene_fixes → chairs)
+  async sitAt(node) {
+    const o = this.zone?.spawns.get(node);
+    if (!o) { console.warn(`[ngồi] không có ${node} trong ${this.state.zone}`); return; }
+    const h = this.characters.role("player")?.chair_height_m;
+    await this.player.sit(worldPos(o), THREE.MathUtils.degToRad(o.userData.yaw_deg ?? 0) + Math.PI, h != null ? h - (this.zone.chairDrop || 0) : null);
   }
 
   // câu của người đối thoại / người chơi → camera qua vai (tới hết hội thoại); lời dẫn (narrator) và tin nhắn điện thoại
@@ -777,7 +825,8 @@ export class Game {
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
     const drag = this.input.consumeDrag();
-    if (this.pool?.active) this.pool.update(dt, drag);      // bi-a: ngắm, nạp lực, bi lăn, camera riêng (cameraOverride)
+    // bi-a: ngắm, nạp lực, bi lăn, camera riêng (cameraOverride); không ở bàn: cú của người khác (bàn chung) vẫn lăn
+    if (this.pool) this.pool.update(dt, this.pool.active ? drag : null);
     const still = { x: 0, y: 0, run: false };
     // Tú hết chờ (vd vừa bắt chuyện ở mái chờ) → đi theo người chơi
     if (this.followerWait && this.follower?.waiting && this.progress.check(this.followerWait)) { this.follower.stopWaiting(); this.followerWait = null; }

@@ -543,6 +543,41 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 - `main` 94b7938; đã deploy `gh-pages` 5b32098 (từ `main` 8347ca1; trước deploy: test:data, test:pool đạt, test:smoke
   `--zone 5` 1 ngoại hình 10 bước đạt). Lỗi không ra được khỏi zone 5 (CHECKLIST mục 1) vẫn còn trong bản này. `docs/CHECKLIST.md` → mục 4: dòng "Máy tính bàn ở bàn intern zone 5" đã đánh dấu xong.
 
+### Bi-a bước 3: 2 người theo lượt qua máy chủ + chia phòng ~30 người (10/10/2026, nhánh `feat/pool-step3`)
+- **Luật 8 bi rút gọn** `game/src/pool/rules.js` (dùng chung game + máy chủ, tất định như physics.js): bàn mở tới khi có
+  người vào bi mà bi trắng không rơi → nhận nhóm của bi vào đầu tiên (trơn 1–7 / sọc 9–15); vào bi nhóm mình → đánh tiếp;
+  bi trắng rơi → đổi lượt + bi trong tay (đặt ở khu đầu bàn, sau vạch z = −rz/2); bi 8: hết nhóm mình từ trước cú đó + bi
+  trắng không rơi → thắng, sớm / kèm bi trắng → thua; bi 8 lúc phá → đặt lại điểm chân bàn. Không phạt chạm sai bi trước.
+  Mã hoá bàn: 16 bi × (x, z) làm tròn 0,01 mm, bi đã vào lỗ = null.
+- **Máy chủ** `server/src/pool.js` (JS thuần, thử bằng Node) + `server/src/index.js`: bàn chung của mỗi phòng — 2 ghế, lượt,
+  vị trí bi, số thứ tự cú, nhóm; một người ngồi → tập một mình (cú vẫn phát cho người xem), người thứ 2 → xếp lại bi, ván 8
+  bi, người ngồi trước phá; hết ván → R: ván mới, người thua phá. Kiểm tra cú: đúng người / lượt / số thứ tự, lực 0..1, 16
+  bi trong bàn, bi đã vào lỗ không quay lại, danh sách bi vào lỗ khớp vị trí, bi trắng chỉ đặt ở khu đầu bàn khi có bi trong
+  tay. Không chạy vật lý trên máy chủ. Giải phóng ghế: rời bàn, sang zone khác, mất kết nối, quá `pool_turn_s` (60 s) không
+  đánh (kiểm tra mỗi khi có tin tới; người chờ gửi `pool_poke`) — giữa ván thì người còn lại thắng. Bàn cất vào attachment
+  của người đang ngồi (qua lúc DO ngủ). `welcome` báo `room`, `features: ["pool"]`.
+- **Chia phòng** (`data/net.json` → `server.room_size` 30, `max_rooms` 6): mỗi phòng một Durable Object (phòng 1 giữ tên cũ
+  `fville`, rồi `fville-2`…); phòng đủ 30 kết nối thì DO chuyển nguyên request WebSocket sang phòng sau (đã thử trên
+  workerd local: 32 kết nối → 30 + 2). `?room=N` vào thẳng phòng N (thử). `/status` cộng mọi phòng + liệt kê phòng có người.
+  Góc màn hình phòng 2 trở đi: "Room 2 · N online · M in this zone".
+- **Game** `game/src/pool/table.js`: máy chủ có "pool" → bàn bi-a là bàn chung (`game.poolShared`). "Play pool" → xin ghế; hết
+  ghế → đứng xem (camera bao quát, xoay bằng A/D / chuột), J: ngồi khi có ghế trống. Người đánh tự tính cú rồi gửi góc / lực
+  / chỗ đặt bi trắng + kết quả; người kia, người xem (kể cả đang đi lại trong zone) phát lại đúng cú đó từ bàn của mình, cuối
+  cú chốt theo bàn máy chủ. Bảng góc trái: 2 ghế (tên, nhóm, số bi còn lại, viền cam = người đang đánh), dòng trạng thái +
+  đồng hồ lượt, nút Rerack / Rematch, Join, Leave; thông báo phá bi, nhận nhóm, bi trắng rơi, thắng / thua. Bi trong tay:
+  camera từ đầu bàn, W/A/S/D (hoặc kéo chuột) dời bi trắng trong khu đầu bàn, Space / nhấp để đặt. Cây cơ dựng / nằm trên
+  bàn ẩn khi có người ngồi. Mất kết nối / máy chủ không trả lời 6 s → tập một mình với bàn đang có. Máy chủ cũ (không báo
+  "pool") → như bước 2. Thử thách của anh Khang luôn là bàn riêng.
+- **Kiểm thử**: `npm run test:pool` thêm `scripts/tests/pool_rules.mjs` (11 tình huống luật, 20 tình huống bàn máy chủ, một ván
+  trọn giữa 2 người chơi giả: 14 cú, người xem phát lại khớp từng bit, chạy lại giống hệt; ván có bi trắng rơi + đặt bi trắng).
+  `test:smoke` thêm "bi-a 2 người" (máy chủ local, 3 trình duyệt: chơi trọn ván 14 cú, 26 lần phát lại khớp từng bit; chặn cú
+  sai lượt; người xem vào giữa ván; bi trong tay; R → ván mới người thua phá; rớt mạng → giải phóng ghế; máy chủ cũ) và "chia
+  phòng" (31 kết nối → người thứ 31 sang phòng 2, `?room=3`, `/status`). Các test mạng dùng chung 1 máy chủ local. Kết quả:
+  test:data, test:pool đạt; test:smoke 1 ngoại hình + phần thêm **34 bước đạt (1 phút 24 giây)**; `npm run build` được.
+  Ảnh kiểm tra (`renders/game/pool_net_{1_aim,2_watch,3_in_hand}.png`): bảng 2 ghế, lượt, bi trong tay.
+- Chưa: `wrangler deploy` máy chủ (máy Desktop, xem `docs/multiplayer.md` → "Bi-a 2 người"), deploy `gh-pages`, chơi thử 2
+  người trên trang thật (cảm giác lực đánh, tốc độ bi, độ nảy băng). Chưa có chọn phòng trong game, chưa có âm thanh bi-a.
+
 ### Nhân vật
 - **prajith** (Meshy + Mixamo, đã được duyệt dùng): bản 15k và 6k, 15 animation, dùng tạm cho mọi vai trừ chị Huyền và
   chị Nga.
@@ -668,6 +703,81 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   - Viewer: áp tint của vai (dùng chung `game/src/characters/tint.js` qua `viewer/tint.js`); `?compare=` nhận cả id vai
     (vd `?compare=thao,le_tan,prajith`: model + tint + tên hiển thị của vai).
 
+### Mũ lưỡi trai phần 2: đội trên đầu 3 intern (10/10/2026, nhánh `feat/zone5-seat-cap`)
+- `game/src/characters/accessories.js`: mũ (`assets/accessories/cap/cap.glb`) là con của xương đầu (`mixamorigHead`) → đi theo
+  mọi animation. **Tự ướm theo lưới nhân vật**, không cần số đo tay: lấy các đỉnh thuộc xương đầu (trọng số ≥ 0,5, cả tóc) ở
+  tư thế nghỉ — đỉnh ở hệ xương = boneInverse × bindMatrix × v (GLB lượng tử hoá đưa hệ số giải nén vào boneInverse), × ma
+  trận xương đầu lúc nghỉ (`Character.headRest`, lấy khi tạo nhân vật; `skeleton.pose()` làm hỏng xương gốc nên không dùng).
+  Mép trước vòng đội đầu ở tầm trán (xương đầu + 0,68 × (đỉnh đầu − xương đầu)), vòng đội đầu nghiêng 16,6° như mũ thật; tỉ
+  lệ = vòng đội đầu vừa bề ngang / bề sâu đầu + tóc từ tầm trán trở lên × 1,06, rồi phóng to tới khi vòm thật (bản đồ độ cao
+  ô 1 cm dựng từ đỉnh của GLB mũ) trùm được 97 % đỉnh đầu / tóc trên vòng đội đầu. Kết quả: intern_nam ×1,30, intern_nu
+  ×1,37 (tóc bob dày, tóc lòi ra sau gáy như mũ thật), intern_nam_kinh ×1,60. Đã thử thu 10 % cho 2 nhân vật nam (mũ trông
+  hơi to) → tóc đâm xuyên vòm sau → giữ tỉ lệ máy tính. Chỉnh tay theo model: `accessories.cap.adjust.<model>`.
+- Cấu hình `data/characters.json` → `accessories.cap` (nhãn, GLB, số đo chép từ `cap.json` — `test:data` so khớp, `fit`,
+  `adjust`, `unlock: { flags: ["game_complete"] }`). Bản lưu `player.accessories` (đang đội; `repair()` bỏ id lạ). Chưa có tab
+  Wardrobe (chờ chốt danh sách món) → xong game thì menu Esc có hàng **FPT Orange Cap: On / Off**. Bản build chép
+  `assets/accessories/<id>/<id>.glb` (không `source/`, `.json`).
+- Chơi nhiều người: `join.acc` (máy chủ nhận tối đa 4 id dạng `[a-z0-9_]`, phát lại trong `join`/`zone`) → người khác thấy
+  mũ; máy chủ cũ bỏ qua trường này (không ai thấy mũ của ai, không lỗi).
+- Dev: `__game.setAccessory("cap", true, { force: true })` (bỏ qua mở khoá), `__game.accessoryInfo("cap")` (xương, hộp bao,
+  số đo ướm), `__game.model.accessories`.
+- Kiểm thử: `test:data` mục "phụ kiện (tủ đồ)"; smoke sau màn tổng kết: menu Esc → bật mũ → gắn xương đầu, vòm cao hơn đỉnh
+  đầu 0–15 cm, lưu vào bản lưu; test "mạng + zone 4": bot đội mũ → thấy mũ trên người bot. Ảnh: `renders/game/cap_<model>_{front,side}.png`.
+
+### Người chơi ngồi vào ghế ở bàn làm việc zone 5 + sửa lỗi cảnh kết (10/10/2026, nhánh `feat/zone5-seat-cap`)
+- **Ngồi ghế** (không sửa GLB): hội thoại `desk_main` có node mới `"sit": { "action": "sit:SPAWN_ban_lam_viec" }` — chọn "Sit
+  down now." (hoặc đã chào đủ Lan, Minh, Hà) thì người chơi ngồi vào ghế bàn intern rồi mới mở quà, đăng nhập, checklist.
+  `Player.sit / standUp / leaveSeat` (`game/src/player/player.js`) theo đúng cách NPC ngồi: điểm đứng = chỗ ghế
+  (`SPAWN_ban_lam_viec`, yaw nhìn vào bàn) − `models.<id>.seat.offset_xz_m`, sit_down → sit_type, nâng dần lên mặt ghế
+  (`roles.player.chair_height_m` 0,51 − ghế đã hạ 0,067 − `seat.height_m`: nữ +7,5 cm, nam kính +10,8 cm); đang ngồi không
+  đi lại, không trọng lực. Hội thoại kết thúc giữa chừng (vd bỏ mini-game Đăng nhập) → đứng dậy (stand_up); xong bàn làm
+  việc → ngồi nguyên tới cảnh kết (cảnh kết đặt người chơi đứng cạnh bàn trong màn tối). Animation không chạy (khung ẩn) →
+  chờ tối đa 4 s, hội thoại không treo. Chơi nhiều người: đang ngồi gửi anim "sit" + vị trí đã nâng.
+  Hành động hội thoại mới (`game/src/ui/dialogue.js` → `hooks.action`): `sit:<SPAWN_>`, `stand`; `test:data` báo hành động
+  lạ, `sit` không trỏ SPAWN_, và kiểm tra SPAWN_ có trong GLB của zone mở hội thoại đó.
+- **Sửa lỗi có từ bi-a bước 2 (trang thật đang dính):** cây cơ đang chơi (`cueModel`) nhân bản `cue_2` bằng `clone()` →
+  three.js chép `userData` qua JSON → `userData.srcMaterial` thành object thường → `disposeZone` ném lỗi khi rời zone_05 →
+  cảnh kết báo "Couldn't open F-Ville Bus Stop" (ai chơi xong zone 5 mà không tải lại trang). Bản sao bỏ userData chép;
+  `disposeZone` chỉ dọn vật liệu / texture thật. CI trước chỉ chạy 1 ngoại hình — ngoại hình đó thử "tải lại giữa cảnh kết"
+  nên không đi qua đường này; nay CI chạy 2 ngoại hình (ngoại hình thứ 2 chạy trọn cảnh kết).
+  Cùng lỗi làm hỏng cả việc đi từ zone 5 sang zone 4 (CHECKLIST mục 1) → smoke zone 5 thêm bước zone 5 → zone 4 → zone 5
+  sau khi chơi bi-a.
+- Kiểm thử: smoke zone 5 thêm bước "ngồi vào ghế bàn làm việc" (lúc mini-game Đăng nhập: đang sit_type, nâng lên mặt ghế,
+  cách chỗ ghế đúng offset của model); `--zone 5` 2 ngoại hình 19 bước đạt (trước khi sửa: ngoại hình thứ 2 hỏng ở cảnh kết).
+  Ảnh: `renders/game/seat_intern_nu.png`, `seat_intern_nam_kinh.png`.
+
+### Dựng lại zone_04 (10/10/2026, nhánh `zone04/rebuild`; máy có Blender 5.2, không cần file gốc)
+- Trước khi sửa: build lại `zone_04.py` nguyên trạng → GLB **giống hệt bản đang commit từng byte** (48 node, 9.064 tam giác
+  hiện, 336 tam giác COL) → script tái tạo được, làm tiếp.
+- `scripts/blender/zone_04.py`: lan can song sắt thật ở mép tây chiếu trên (trong `ENV_cau_thang`, tay vịn cao 5,2 m, x 3,35,
+  z −3,0 … −1,6) + `COL_lan_can_chieu_tren` (trùng hộp dữ liệu cũ); `COL_tuong_bac_tren_cua` cho vách trên cửa quẹt thẻ (x 1,0–3,6,
+  cao 2,55–4,2 — tới sàn tầng trên); `SPAWN_zone_04_from_zone_03` (11; 0; 0) → (9; 0; 0). Mọi node cũ giữ nguyên chỗ.
+  GLB bản Thấp 97.224 → 99.344 byte; `check_glb` 0 lỗi. Bản Cao không dựng (đang tạm dừng).
+- Bỏ bản vá dữ liệu đã thay bằng đồ thật: `data/collision.json` → zone_04 (`camera_tren_cua_quet_the`, `lan_can_chieu_tren`),
+  `data/zones.json` → `zone_04.spawn_offset` (code đọc `spawn_offset` vẫn giữ cho zone khác).
+- Thử va chạm (so với bản cũ có bản vá: số liệu như nhau): chỗ xuất hiện đứng trên sàn, camera sau lưng; lan can: 9 điểm × 16
+  hướng × 3 s chạy trên chiếu trên → 0 lần rơi, người đi tầng trệt vẫn qua dưới; vách trên cửa: 120 mẫu camera → 0 lần
+  xuyên vách. Còn 7/120 mẫu camera bị che có từ trước (ống gió hành lang không có COL_, cánh cửa quẹt thẻ đang mở).
+- test:data đạt; smoke `--zone 4` 8 bước, `--zone 5` 15 bước đạt. Ảnh: `renders/game/z4_{1_spawn_from_zone_03,2_lan_can_chieu_tren,3_vach_tren_cua_quet_the}.jpg`.
+  Máy làm việc này đã cài `gltf-transform` 4.5.1 (toàn cục) và `tools/bin/blender.cmd` (trỏ tới Blender 5.2 cài trên máy).
+
+### Rà lời thoại, phiếu chơi thử, đề nghị HR (10/10/2026, nhánh `content/playtest-dialogue`)
+- **Lời thoại tiếng Anh** (~870 chuỗi đã đọc, 42 chuỗi sửa: dialogues 24, interactables 7, guidance 4, quests 2, i18n 2,
+  acts / quiz / values 1): mọi câu thoại ≤ 30 từ (trừ câu chuyện tượng Cuder của mentor), câu lựa chọn dài nhất 11 từ;
+  chính tả Mỹ; thống nhất "pool / pool table" (id `billiards` giữ), "FPT Orange Shirt", "FSA Room", "Information Security
+  course", dấu "…"; tên zone 1 "F-Ville Bus Stop" (khác zone 0 "City Pickup Stop"); "Becoming an FSofter"; sửa câu sai chỗ
+  ("Your card opens the gates upstairs" → cửa quẹt thẻ ở cuối hành lang), câu hũ hạt lúa khi đã nhặt đủ. Không đổi id, key,
+  `next`, điều kiện, giá trị, phần thưởng, `draft`. Các câu trích trong `dialogue_huyen.md`, `dialogue_nga.md`, GDD sửa theo.
+  Ghi chép + 10 điểm cần mentor / HR quyết: `docs/dialogue_review.md`.
+- **Phiếu chơi thử** `docs/playtest_form.md`: chuẩn bị, cấu hình máy, lời dặn đọc nguyên văn, quy tắc quan sát (không nhắc);
+  bảng theo dõi zone 0 → 5, 13 mini-game (số lần sai, Skip), lựa chọn gắn 6 giá trị, màn tổng kết; hiệu năng
+  (`benchmark`, `detailLevel` từng zone, FPS bật / tắt Show other players); 8 câu phỏng vấn; cách gộp thành GitHub Issues
+  (nhãn bug / ux / content / perf, P1–P3). Chỉ dùng mã người chơi P1, P2…
+- **`docs/hr_content_request.md`** cập nhật đủ 20 mục [DRAFT] theo game hiện tại (zone 0 → 5), câu tạm lấy đúng chữ trong
+  game, bảng đối chiếu với danh sách cuối file này; tách 3 nội dung không [DRAFT] nên để HR xác nhận (quy định quẹt thẻ, 5
+  việc tuần đầu, checklist ngày đầu).
+- Kiểm tra: test:data đạt; privacy_scan 0 phát hiện.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
@@ -687,7 +797,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `npm run build`. Hướng dẫn trong `CLAUDE.md` → "Bắt đầu từ bản clone mới".
 
 ## Đang dở
-- Mũ lưỡi trai phần 2 (gắn xương Head của từng intern): chưa làm; phần 1 (`cap.glb`) đã xong.
+- Tủ đồ: mũ lưỡi trai đã đội được (phần 2, 10/10/2026); còn tab Wardrobe + danh sách món (CHECKLIST mục "Tủ đồ").
 - Mặt nạ intern_nu: lọn tóc mảnh vắt ngang trán (vẽ trên da mặt, giữa lọn có vệt sáng trắng) đang tính là da — chỉ ảnh
   hưởng khi sau này đổi màu tóc.
 - huyen: bàn tay buông lấn vào đùi 3–5 cm ở 7 animation (talk, talk_2, nod, phone, press, wave, cheer) do dùng lại
@@ -714,8 +824,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   Blender không ghi metadata nữa; `privacy_scan.py` kiểm tra cả metadata ảnh.
 
 ## Việc tiếp theo
-0. Đưa máy chủ chơi nhiều người lên Cloudflare (máy Desktop, `docs/multiplayer.md` mục Đưa lên mạng) rồi chơi thử 2–3
-   người trên bản deploy; đo FPS trên laptop thật với `net_bots.js` (bật / tắt Show other players).
+Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLIST.md`.
+
+0. ~~Đưa máy chủ chơi nhiều người lên Cloudflare~~ — **xong 10/10/2026** (`https://fville-net.fville-onboard.workers.dev`,
+   xem "Chơi nhiều người đã lên mạng" ở trên). Còn: chơi thử 2–3 người trên bản deploy; đo FPS trên laptop thật với
+   `net_bots.js` (bật / tắt Show other players).
 1. Chơi thử hệ thống hướng dẫn với người mới thật: có ai đứng yên quá 10 s không, câu nhắc có đúng lúc không (thời gian
    chỉnh trong `data/guidance.json` → `settings`; câu chữ trong `goals`), dấu "!" có quá lộ không (tắt trong menu Esc).
 2. Chơi thử lại bản đã deploy trên máy thật: cây mờ có dễ chịu không (mức mờ `max`, thời gian `fade_s` chỉnh trong
@@ -726,13 +839,15 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
    nấc Detail tự hạ có bật không (`__game.state.detailLevel`).
    Gửi `docs/hr_content_request.md` cho HR.
 4. Giai đoạn 2 còn lại: tab Bản đồ trong My FPT; model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng
-   intern_nam / intern_nu); người chơi ngồi vào ghế ở bàn làm việc (hiện đứng trước bàn); chơi thử zone 5 + cảnh kết với
+   intern_nam / intern_nu); ~~người chơi ngồi vào ghế ở bàn làm việc~~ (xong 10/10/2026); chơi thử zone 5 + cảnh kết với
    người thật (độ dài ~8 phút, mini-game bi-a có quá khó không).
 
 ## Việc nhỏ để sau
-- zone_04 (đang chặn bằng dữ liệu, nên sửa trong `scripts/blender/zone_04.py` khi dựng lại zone): thêm lan can thật ở mép
-  tây chiếu trên (x 3,4, z −3 … −1,65) và COL_ cho vách trên cửa quẹt thẻ; dời `SPAWN_zone_04_from_zone_03` vào trong
-  ~2 m (rồi bỏ `spawn_offset` trong `zones.json`).
+- ~~zone_04: lan can thật ở mép tây chiếu trên, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03`~~ — xong
+  10/10/2026 (xem "Dựng lại zone_04" ở trên).
+- Công cụ build (thấy khi dựng lại zone_04): trên Windows `scripts/tools/check_glb.py` lỗi khi in chữ tiếng Việt (chạy với
+  `PYTHONIOENCODING=utf-8`, cũng như `privacy_scan.py`); `scripts/build.py` không báo lỗi khi `gltf-transform` hỏng / thiếu
+  (vẫn in kích thước GLB cũ) — nên kiểm tra mã thoát.
 - zone_03, cây ngoài sân (`ENV_cay_san`): một cụm khoảng 8,7 × 6,9 × 7,2 m (x 24,8–33,5; z 1,6–8,8, toạ độ glTF) bị
   `seeThrough` gộp thành 1 cây vì các tán dính nhau → khi che thì mờ cả cụm cùng lúc. Chưa cần sửa (cây ngoài vách kính,
   ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá

@@ -33,7 +33,7 @@ Ký hiệu: ✅ có · ➕ đã thêm trong lần này · — không cần trong
 
 | Node | Trạng thái | Vị trí (glTF, m) / ghi chú |
 | --- | --- | --- |
-| `SPAWN_zone_04_from_zone_03` | ➕ | (11,0; 0; 0), đầu hành lang phía đông, nhìn về phía cửa quẹt thẻ; trùng `SPAWN_zone_04_start` |
+| `SPAWN_zone_04_from_zone_03` | ➕ | (11,0; 0; 0), đầu hành lang phía đông, nhìn về phía cửa quẹt thẻ; trùng `SPAWN_zone_04_start`. **Từ 10/10/2026: (9,0; 0; 0)** (dời vào 2 m, xem cuối file) |
 | `SPAWN_zone_04_start` | ✅ | giữ lại cho `zones.json` → `start` |
 | `SPAWN_zone_04_from_zone_05` | ✅ | (−10,5; 4,2; 6,0), tầng trên, trước cửa FSA (khi quay lại từ zone 5) |
 | `INT_cua_quet_the` | ✅ | cửa kính khung đen 2 cánh + đầu đọc thẻ; `TRIGGER_cua_quet_the` |
@@ -166,3 +166,17 @@ Toạ độ dưới đây là toạ độ glTF (x, y lên, z), đúng như các 
 - Zone 4 có hai tầng, sàn trên cao 4,2 m. Cầu thang dựng bằng 2 dốc va chạm (`COL_ve_1`, `COL_ve_2`), capsule leo được.
   Chưa thử camera góc thứ ba khi quay đầu ở chiếu nghỉ (sảnh cầu thang hẹp 7 m, trần cao 7,4 m), nên kiểm tra khi làm
   zone 4.
+
+## Dựng lại zone_04 (10/10/2026): thay 3 bản vá dữ liệu bằng đồ thật trong GLB
+
+`python scripts/build.py zone_04` (bản Thấp). Script chưa sửa dựng lại ra GLB giống hệt bản đang commit (từng byte). Sau khi
+sửa `scripts/blender/zone_04.py`, GLB chỉ khác ở các chỗ dưới; mọi node cũ vẫn còn, cùng vị trí.
+
+| Thay đổi | Toạ độ glTF | Thay cho (đã bỏ) |
+| --- | --- | --- |
+| `SPAWN_zone_04_from_zone_03` dời vào 2 m | (9,0; 0; 0), vẫn nhìn về cửa quẹt thẻ; `SPAWN_zone_04_start` giữ ở (11,0; 0; 0) | `zones.json` → `zone_04.spawn_offset` |
+| `COL_tuong_bac_tren_cua`: vách trên cửa quẹt thẻ | x 1,0–3,6; cao 2,55–4,2; z −1,65 … −1,35 | `collision.json` → `zone_04.add` `camera_tren_cua_quet_the` (cao 2,55–3,65) |
+| Lan can song sắt mép tây chiếu trên (trong `ENV_cau_thang`, +156 tam giác) | x 3,35; sàn 4,2 m, tay vịn 5,2 m; z −3,0 … −1,6 | — |
+| `COL_lan_can_chieu_tren` | x 2,6–3,4; cao 2,6–6,0; z −3,0 … −1,65 (trùng hộp dữ liệu cũ) | `collision.json` → `zone_04.add` `lan_can_chieu_tren` |
+
+`data/collision.json` không còn mục `zone_04`.

@@ -44,8 +44,9 @@ export class Ending extends Cutscene {
     this.mark("alarm");
     sound.play("phone");
     await hud.fade(true, 400);
-    // người chơi đứng trước bàn (chỗ ngồi), Lan đứng phía lối đi
+    // người chơi (đang ngồi làm việc → đứng dậy trong màn tối) đứng trước bàn (chỗ ngồi), Lan đứng phía lối đi
     const p = g.player, seat = worldPos(g.zone.spawns.get(c.seat));
+    p.leaveSeat();
     p.body.teleport(seat.clone().add(V(c.player_offset || [0, 0, -0.55])).add(V([0, 0.05, 0])));
     p.velocity.set(0, 0, 0);
     p.character.enableLocomotion();

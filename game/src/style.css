@@ -491,7 +491,19 @@ body.overlay-open #emotes { display: none; }
 #pool-hud .panel { position: absolute; left: 16px; top: 64px; pointer-events: auto; display: grid; gap: 4px; padding: 10px 14px;
   border-radius: 14px; background: rgba(27, 30, 36, .88); color: var(--fg); box-shadow: 0 6px 24px rgba(0, 0, 0, .35); }
 #pool-hud .panel span { color: var(--muted); font-weight: 700; font-size: 13px; }
-#pool-hud .panel .row { display: flex; gap: 8px; margin-top: 4px; }
+#pool-hud .panel .row { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+/* bàn chung (bi-a 2 người): 2 ghế, người đang đánh viền cam, mình chữ xanh ngọc, người thắng nền vàng nhạt */
+#pool-hud .panel.net { max-width: min(320px, calc(100vw - 32px)); }
+#pool-hud .seats { display: grid; gap: 4px; margin-top: 2px; }
+#pool-hud .seat { display: grid; padding: 4px 8px; border-radius: 8px; border: 2px solid transparent; background: rgba(255, 255, 255, .05); }
+#pool-hud .seat .nm { font-weight: 800; font-size: 14px; color: var(--fg); }
+#pool-hud .seat .nm small { font-weight: 700; color: #5fd3c6; }
+#pool-hud .seat em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--muted); }
+#pool-hud .seat.turn { border-color: #f37021; }
+#pool-hud .seat.me .nm { color: #5fd3c6; }
+#pool-hud .seat.won { background: rgba(255, 210, 122, .18); }
+#pool-hud .seat.empty .nm { color: var(--muted); font-weight: 700; }
+#pool-hud .panel .status { color: #fff; font-size: 13px; line-height: 1.35; }
 #pool-hud .power { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); width: min(360px, calc(100vw - 32px));
   display: flex; align-items: center; gap: 10px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); opacity: 0; transition: opacity .2s; }
 #pool-hud .power.keep { opacity: .6; }

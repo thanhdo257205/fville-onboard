@@ -1,6 +1,6 @@
 # Lời thoại của Ms. Huyền
 
-Tài liệu tham khảo lời thoại, game "Ngày Đầu Ở F-Ville" (cập nhật 09/10/2026; nguồn: `data/dialogues.json`). Trong game, chị Huyền là FSofter lâu năm làm buddy, đón đợt intern mới ở điểm
+Tài liệu tham khảo lời thoại, game "Ngày Đầu Ở F-Ville" (cập nhật 10/10/2026; nguồn: `data/dialogues.json`, `data/guidance.json`). Trong game, chị Huyền là FSofter lâu năm làm buddy, đón đợt intern mới ở điểm
 đón xe bus trong thành phố (zone 0) và ở bến xe F-Ville (zone 1). Bảng tên trên đầu và trong hộp thoại ghi
 **Ms. Huyền**; trong câu thoại chị tự giới thiệu là **Huyền**.
 
@@ -60,7 +60,7 @@ nên tin nhắn chủ yếu hiện ở zone 0 trước khi gặp Tú.
 | Việc | Lần 1 | Lần 2 |
 | --- | --- | --- |
 | Tìm xe số 2 | Hi {player}, it's Huyền from FPT! I'm waiting by Bus No. 2 — look for the big amber "2" on the windshield. | Huyền again: Bus No. 2 is the middle one of the three buses. Read the windshield signs to be sure! |
-| Chào chị Huyền | I'm right at the door of Bus No. 2 — come say hello! | {player}, I'm the one in the orange FPT shirt by the bus door. Come on over! |
+| Chào chị Huyền | I'm right at the door of Bus No. 2 — come say hello! | {player}, I'm the one in the FPT orange shirt by the bus door. Come on over! |
 | Lên xe | Hop on whenever you're ready — the door of Bus No. 2 is open! | We leave at 06:45 sharp — step through the bus door to board! |
 | Nhận app (zone 1) | I'm just over here by the bus — come find me and we'll set up My FPT! | Don't forget the My FPT app — come see me before you head to the gate! |
 | Ra cổng (zone 1) | Head along the sidewalk to the F-Ville gate — see you upstairs! | The gate is just ahead at the end of the sidewalk! |
@@ -77,4 +77,4 @@ Chị Huyền không có mặt ở zone 4; chị nhắn qua app (khung tin nhắ
 | # | Ngữ cảnh | Câu thoại | Cử chỉ | Ghi chú |
 | --- | --- | --- | --- | --- |
 | 17 | Người chơi cho người lạ đi ké (*"Sure, come on in."*) | Hi {player}! A quick tip from me: at the card gate, everyone taps their own card — even someone who seems friendly. Reception can always help guests get in. 🙂 | | tin nhắn; từ chối thì sáng ô **Gương mẫu** (Role Model) |
-| 18 | Người chơi cho Tú đi ké (*"Sure, come with me."*) | {player}, I saw Tú come in on your card. 🙂 Even friends shouldn't follow each other through the gate — if a card doesn't work, message Ms. Nga in the app and she'll sort it out. | | tin nhắn; nhắn chị Nga thì sáng ô **Đồng đội** (Teamwork) |
+| 18 | Người chơi cho Tú đi ké (*"Sure, come with me."*) | {player}, I saw Tú come in on your card. 🙂 Even friends should each tap their own. If a card doesn't work, just message Ms. Nga in the app! | | tin nhắn; nhắn chị Nga thì sáng ô **Đồng đội** (Teamwork) |

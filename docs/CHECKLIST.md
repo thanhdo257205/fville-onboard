@@ -21,7 +21,8 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 
 ## 1. Trước buổi chơi thử (P1)
 
-- [ ] P1 **Lỗi: không ra được khỏi zone 5** (từ `gh-pages` 04a74b2). Đi ra cửa sang zone 4 → "Couldn't open Card Gate · FSA
+- [x] P1 **Lỗi: không ra được khỏi zone 5** (từ `gh-pages` 04a74b2; đã sửa — nhánh `feat/zone5-seat-cap`, commit "Sửa lỗi cảnh kết
+  không sang được bến xe…"; smoke thêm bước zone 5 → zone 4 → zone 5; còn: deploy lại). Đi ra cửa sang zone 4 → "Couldn't open Card Gate · FSA
   Room. t.map?.dispose is not a function"; bấm Back / vào lại → "Couldn't open Office." Cảnh kết (zone 5 → bến xe zone 1)
   cũng hỏng theo. Nguyên nhân: cây cơ của bàn bi-a là bản sao `cue_2` (`cueModel` trong `game/src/pool/table.js`) —
   `clone()` chép `userData` qua JSON nên `userData.srcMaterial` thành object thường, `map` là chuỗi id → `disposeZone`
@@ -37,8 +38,10 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [ ] P1 Chơi trọn 1 lượt từ đầu tới màn tổng kết trên máy thật có card NVIDIA, với cả 3 nhân vật — Phụ trách: —
 - [ ] P1 Mở game trên mạng công ty: góc màn hình hiện "N online" (mạng không chặn máy chủ) — Phụ trách: —
 - [ ] P1 Hai người mở game cùng lúc: thấy nhau, vẫy tay, câu chat soạn sẵn — Phụ trách: —
-- [ ] P1 Gửi `docs/hr_content_request.md` cho HR (20 mục [DRAFT]) — Phụ trách: —
-- [ ] P1 Chuẩn bị buổi chơi thử: 3–5 người chưa từng thấy game, ít nhất 1 laptop Intel UHD/Iris Xe, phiếu ghi nhận — Phụ trách: —
+- [ ] P1 Gửi `docs/hr_content_request.md` cho HR (20 mục [DRAFT]; file đã cập nhật đủ 20 mục theo game hiện tại, gửi thẳng
+  được — nhánh `content/playtest-dialogue`) — Phụ trách: —
+- [ ] P1 Chuẩn bị buổi chơi thử: 3–5 người chưa từng thấy game, ít nhất 1 laptop Intel UHD/Iris Xe, phiếu ghi nhận (đã có:
+  `docs/playtest_form.md` — theo dõi từng zone, mini-game, hiệu năng, phỏng vấn sau khi chơi, cách gộp thành Issues) — Phụ trách: —
 
 ## 2. Buổi chơi thử với người thật
 
@@ -55,42 +58,51 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 - [ ] P2 Hỏi mentor: tượng Cuder cầm "pickaxe" (cuốc chim) hay "hoe" (cuốc làm ruộng) — Phụ trách: —
 - [ ] P2 Hỏi mentor / HR tên tiếng Anh chính thức của 6 giá trị (Tôn Đổi Đồng Chí Gương Sáng) — Phụ trách: —
 - [ ] P2 Xin tư liệu chính thức cho Giếng Làng và Phòng Hạt Lúa (như tư liệu tượng Cuder) — Phụ trách: —
-- [ ] P2 Rà lại toàn bộ lời thoại tiếng Anh (chính tả, giọng văn, độ dài câu) — Phụ trách: —
+- [x] P2 Rà lại toàn bộ lời thoại tiếng Anh (chính tả, giọng văn, độ dài câu): 42 chuỗi, mọi câu thoại ≤ 30 từ (trừ câu
+  chuyện tượng Cuder của mentor) — Phụ trách: Claude — nhánh `content/playtest-dialogue`, chi tiết `docs/dialogue_review.md`
+- [ ] P2 Quyết các điểm trong `docs/dialogue_review.md` → "Điểm cần mentor / HR quyết": ô Respect (chữ nói nhường hành khách
+  nhưng chỉ cảm ơn bác tài mới sáng ô), danh hiệu "The Explorer" trùng xu hướng La bàn nghề nghiệp, "an FSofter", tên huy
+  hiệu Teamwork Spirit, Manager chưa có tên… — Phụ trách: —
 - [ ] P3 Xin file logo FPT chính thức từ phòng thương hiệu, thay logo tạm trên áo (prajith, huyen, nga, 3 intern) và mũ — Phụ trách: —
 
 ## 4. Nhân vật và 3D (cần máy có Blender + file gốc)
 
 - [ ] P2 Model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng intern đổi màu áo): ảnh → Meshy → Mixamo → dựng — Phụ trách: —
-- [ ] P2 Người chơi ngồi vào ghế ở bàn làm việc zone 5 (hiện đứng trước bàn) — Phụ trách: —
+- [x] P2 Người chơi ngồi vào ghế ở bàn làm việc zone 5 (code + data, không cần build lại zone) — Phụ trách: Claude — nhánh
+  `feat/zone5-seat-cap`
 - [x] P3 Máy tính bàn ở bàn intern zone 5: mô hình Sketchfab "Desktop Computer" (CC BY 4.0) thay laptop hộp; màn hình
   `monitor_screen` hiện màn đăng nhập "My FPT", game đổi texture được (`scripts/blender/lib/desktop_computer.py`) — Phụ trách:
   Thanh Do — 94b7938
 - [ ] P3 Tượng Cuder: quyết giữ / bỏ búi tóc sau gáy (`CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`); đổi bản sao tượng cũ
   nhìn qua vách kính zone 3 (`ENV_tuong_cuder_xa`) — Phụ trách: —
-- [ ] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (làm cùng tủ đồ) — Phụ trách: —
+- [x] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (tự ướm theo lưới, mở khoá khi xong game, bật / tắt ở menu Esc,
+  người khác thấy mũ) — Phụ trách: Claude — nhánh `feat/zone5-seat-cap`; tab Wardrobe vẫn chờ mục "Tủ đồ"
 - [ ] P3 Huyền, Nga: tay lún vào thân 3–6 cm ở vài động tác (tải animation Mixamo riêng nếu cần) — Phụ trách: —
 
 ## 5. Tính năng
 
-- [ ] P2 Bi-a bước 3 — chơi 2 người theo lượt qua máy chủ, người khác đứng xem (Claude Code Web) — Phụ trách: —
-  - [ ] Máy chủ (`server/`): mỗi bàn giữ 2 ghế, lượt chơi, vị trí bi, bi đã vào lỗ, số thứ tự cú, nhóm trơn/sọc; tin nhắn
-    `pool_join`, `pool_leave`, `pool_shot`, `pool_state`; chỉ người tới lượt được đánh; giải phóng ghế khi rời bàn, mất kết
-    nối hoặc 60 s không đánh; tin chào báo `features: ["pool"]`
-  - [ ] Game: người đánh tự tính cú bằng `physics.js` rồi gửi thông số + kết quả; người kia và người xem phát lại đúng cú đó,
-    cuối cú chốt theo kết quả người đánh; người vào sau nhận trạng thái bàn hiện tại
-  - [ ] Luật 8 bi rút gọn (nhóm trơn/sọc, đánh tiếp khi vào bi nhóm mình, bi trắng rơi lỗ → đối thủ đặt bi trắng ở khu đầu
-    bàn, bi 8 cuối cùng) + giao diện tên 2 người, "Your turn", thắng/thua
-  - [ ] Máy chủ bản cũ (chưa có `features: ["pool"]`) → bàn chỉ cho tập một mình
-  - [ ] Kiểm thử: 2 trình duyệt headless + máy chủ local chơi một ván; vị trí bi 2 bên khớp sau mỗi cú; chặn cú sai lượt; ghế
-    được giải phóng khi rớt mạng; người xem vào giữa ván thấy đúng bàn; thêm vào `test:smoke`
-  - [ ] Build, push `main`, deploy `gh-pages`; ghi bước bật máy chủ vào `docs/multiplayer.md`
+- [ ] P2 Bi-a bước 3 — chơi 2 người theo lượt qua máy chủ, người khác đứng xem — Phụ trách: Claude — nhánh `feat/pool-step3`
+  - [x] Máy chủ (`server/src/pool.js`): mỗi bàn giữ 2 ghế, lượt chơi, vị trí bi, bi đã vào lỗ, số thứ tự cú, nhóm trơn/sọc; tin
+    nhắn `pool_join`, `pool_leave`, `pool_shot`, `pool_rerack`, `pool_poke` / `pool` (bàn), `pool_shot` (cú + bàn); chỉ người
+    tới lượt được đánh; giải phóng ghế khi rời bàn, sang zone khác, mất kết nối hoặc 60 s không đánh; tin chào báo
+    `features: ["pool"]`; bàn qua được lúc Durable Object ngủ
+  - [x] Game: người đánh tự tính cú bằng `physics.js` rồi gửi thông số + kết quả; người kia và người xem phát lại đúng cú đó,
+    cuối cú chốt theo bàn máy chủ (= kết quả người đánh, làm tròn 0,01 mm); người vào sau nhận trạng thái bàn hiện tại
+  - [x] Luật 8 bi rút gọn (`game/src/pool/rules.js`, dùng chung với máy chủ) + giao diện 2 ghế (tên, nhóm, số bi còn lại),
+    "Your turn", đồng hồ lượt, bi trong tay (W/A/S/D), thắng/thua, R: ván mới, J: ngồi khi có ghế trống
+  - [x] Máy chủ bản cũ (chưa có `features: ["pool"]`) → bàn chỉ cho tập một mình
+  - [x] Kiểm thử: `test:pool` (luật, bàn máy chủ, một ván trọn giữa 2 người chơi giả) + `test:smoke` (2 trình duyệt headless
+    + máy chủ local chơi trọn một ván; vị trí bi khớp sau mỗi cú; chặn cú sai lượt; bi trong tay; ghế giải phóng khi rớt mạng;
+    người xem vào giữa ván thấy đúng bàn; máy chủ cũ)
+  - [ ] Build, push `main`, deploy `gh-pages` (build đã thử được; chờ PR được gộp); [x] ghi bước bật máy chủ vào `docs/multiplayer.md`
 - [ ] P2 Bi-a bước 3 — bật trên máy chủ thật: máy Desktop `git pull` rồi trong `server/` chạy `npx wrangler deploy`, kiểm tra
   `/status` (sau khi bản Web xong việc trên) — Phụ trách: —
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
 - [ ] P3 Bi-a: chốt có thêm đánh xoáy (2D + xoáy) và phím V nhìn từ trên xuống hay không; 3D thật thì bỏ qua — Phụ trách: —
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
 - [ ] P3 Tab Bản đồ trong app My FPT — Phụ trách: —
-- [ ] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông — Phụ trách: —
+- [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
+  Phụ trách: Claude — nhánh `feat/pool-step3`
 - [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —
   - [ ] Chốt với nhóm / HR: cho gõ chữ tự do hay chỉ mở rộng câu soạn sẵn (hiện có câu chat soạn sẵn ở phím T); quy tắc ứng xử
     hiện khi mở khung chat lần đầu
@@ -145,11 +157,11 @@ Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đ
 ## 7. Kỹ thuật và vận hành
 
 - [ ] P1 Thêm thành viên mới làm collaborator trên GitHub (Settings → Collaborators) — Phụ trách: —
-- [ ] P1 GitHub Actions chạy kiểm thử cả cho Pull Request (hiện chỉ chạy khi push `main`) — Phụ trách: —
-- [ ] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: —
+- [x] P1 GitHub Actions chạy kiểm thử cả cho Pull Request (`pull_request` vào `main`) — Phụ trách: Claude — nhánh `ci/pr-tests`
+- [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
 - [ ] P3 Theo dõi Cloudflare: Workers & Pages → fville-net → Metrics (hạn miễn phí 100.000 lượt/ngày) — Phụ trách: —
-- [ ] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
-  trong `scripts/blender/zone_04.py`) — Phụ trách: —
+- [x] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
+  trong `scripts/blender/zone_04.py`, build lại GLB bản Thấp, bỏ bản vá dữ liệu) — Phụ trách: Claude — nhánh `zone04/rebuild`
 - [ ] P3 zone 3: tách cụm cây ngoài sân bị gộp làm một khi làm mờ (`seeThrough`) — Phụ trách: —
 
 ## Đã xong (tóm tắt)

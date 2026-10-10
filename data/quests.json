@@ -20,7 +20,7 @@
     { "id": "z0_meet_thao", "zone": "zone_00", "checklist": "bus", "required": true, "target": "NPC_thao_cua_xe", "title": { "en": "Say hello to Ms. Huyền at Bus No. 2" } },
     { "id": "z0_board", "zone": "zone_00", "checklist": "bus", "required": true, "target": "TRIGGER_len_xe", "title": { "en": "Board Bus No. 2" } },
     { "id": "z1_get_app", "zone": "zone_01", "checklist": "bus", "required": true, "target": "NPC_dong_nghiep_don", "title": { "en": "Get the My FPT app from Ms. Huyền" } },
-    { "id": "z1_thank_driver", "zone": "zone_01", "required": false, "target": "NPC_tai_xe", "title": { "en": "Say thanks to the bus driver" } },
+    { "id": "z1_thank_driver", "zone": "zone_01", "required": false, "target": "NPC_tai_xe", "title": { "en": "Thank the bus driver" } },
     { "id": "z1_route_map", "zone": "zone_01", "required": false, "target": "INT_ban_do_tuyen_xe", "title": { "en": "Check the bus route map" } },
     { "id": "z1_backpack", "zone": "zone_01", "required": false, "target": "INT_xe_bus", "title": { "en": "Find Tú's backpack" }, "visible_if": { "flags": ["tu_lost_bag"] } },
     { "id": "z2_checkin", "zone": "zone_02", "checklist": "gate", "required": true, "target": "INT_cong_fville", "title": { "en": "Check in at the FPT SOFTWARE sign" } },
@@ -37,7 +37,7 @@
     { "id": "z5_minh", "zone": "zone_05", "checklist": "hello_team", "required": true, "target": "NPC_dong_nghiep_2", "title": { "en": "Say hello to Minh" } },
     { "id": "z5_ha", "zone": "zone_05", "checklist": "hello_team", "required": true, "target": "NPC_dong_nghiep_3", "title": { "en": "Say hello to Hà" } },
     { "id": "z5_desk", "zone": "zone_05", "checklist": "desk", "required": true, "target": "INT_ban_lam_viec", "title": { "en": "Sit at your desk" } },
-    { "id": "z5_khang", "zone": "zone_05", "required": false, "target": "NPC_ban_bi_a", "title": { "en": "Take a break with Khang at the billiard table" } }
+    { "id": "z5_khang", "zone": "zone_05", "required": false, "target": "NPC_ban_bi_a", "title": { "en": "Take a break with Khang at the pool table" } }
   ],
   "triggers": [
     { "zone": "zone_00", "node": "TRIGGER_len_xe", "cutscene": "len_xe", "requires": ["z0_meet_thao"], "blocked_dialogue": "board_remind" },

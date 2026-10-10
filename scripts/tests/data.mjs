@@ -11,7 +11,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { FILES, buildContent, validateLinks, nodeRefs } from "../../game/src/content/content.js";
+import { FILES, buildContent, validateLinks, nodeRefs, tx } from "../../game/src/content/content.js";
 import { setStrings, setTextVars, tuPronouns, fill, TU_VARS } from "../../game/src/i18n.js";
 import { GameState } from "../../game/src/game/state.js";
 import { buildStartState } from "../../game/src/game/autoplay.js";
@@ -141,6 +141,34 @@ const lookIds = Object.values(chars.roles.player.looks || {}).flat(), cc = chars
 for (const id of lookIds) { const l = cc.find((x) => x.id === id); if (!l?.name?.en || !l?.desc?.en) modelErrs.push(`character_creation.looks: thiếu tên / mô tả của ${id}`); }
 for (const l of cc) if (!lookIds.includes(l.id)) modelErrs.push(`character_creation.looks: ${l.id} không có trong roles.player.looks`);
 report("model nhân vật", modelErrs, `${used.size} model, ${cc.length} ngoại hình`);
+
+// 5c. phụ kiện (characters.json → accessories, vd mũ lưỡi trai): GLB có trên đĩa, số đo khớp <id>.json của build_cap.py,
+// điều kiện mở khoá chỉ dùng cờ / quest / phần thưởng có thật; bản lưu: player.accessories lạ → repair() bỏ
+const accErrs = [];
+const accIds = Object.keys(chars.accessories || {}).filter((k) => !k.startsWith("_"));
+for (const id of accIds) {
+  const a = chars.accessories[id], w = `accessories.${id}`;
+  if (!a.glb || !existsSync(join(ROOT, a.glb))) { accErrs.push(`${w}: thiếu GLB ${a.glb}`); continue; }
+  const mj = join(ROOT, dirname(a.glb), `${id}.json`);
+  if (existsSync(mj)) {
+    const m = JSON.parse(readFileSync(mj, "utf8"));
+    const near = (x, y) => Math.abs(x - y) < 1e-4;
+    if (!near(a.opening_m?.[0], m.opening_width_m) || !near(a.opening_m?.[1], m.opening_depth_m)) accErrs.push(`${w}.opening_m ${a.opening_m} ≠ ${id}.json (${m.opening_width_m}, ${m.opening_depth_m})`);
+    if (!near(a.crown_m, m.crown_height_m)) accErrs.push(`${w}.crown_m ${a.crown_m} ≠ ${id}.json ${m.crown_height_m}`);
+    if (!near(a.tilt_deg ?? 0, m.opening_tilt_deg ?? 0)) accErrs.push(`${w}.tilt_deg ${a.tilt_deg} ≠ ${id}.json ${m.opening_tilt_deg}`);
+  }
+  for (const q of a.unlock?.quests || []) if (!content.questById.has(q)) accErrs.push(`${w}.unlock: không có quest ${q}`);
+  for (const r of a.unlock?.rewards || []) if (!content.rewards.has(r)) accErrs.push(`${w}.unlock: không có phần thưởng ${r}`);
+  if (!tx(a.label)) accErrs.push(`${w}: thiếu label`);
+  for (const k of Object.keys(a.adjust || {})) if (!k.startsWith("_") && !chars.models[k]) accErrs.push(`${w}.adjust: không có model ${k}`);
+}
+{
+  const s = new GameState(content);
+  s.fromJSON({ v: 1, created: true, player: { name: "A", accessories: [...accIds, "mu_cu", accIds[0], 7] } });
+  const fixed = s.repair({ zoneOrder: zones.order, looks: chars.roles.player.looks, accessories: accIds });
+  if (JSON.stringify(s.player.accessories) !== JSON.stringify(accIds) || !fixed.some((f) => f.startsWith("player.accessories"))) accErrs.push(`repair player.accessories → ${JSON.stringify(s.player.accessories)}`);
+}
+report("phụ kiện (tủ đồ)", accErrs, `${accIds.join(", ") || "không có"}; số đo khớp ${accIds.map((id) => `${id}.json`).join(", ")}`);
 
 // 6. Tú: khác giới với người chơi; đại từ của Tú trong chữ là biến {tu_he}/{tu_his}/{tu_him}/{tu_himself} (+ viết hoa
 //    {Tu_he}…), không viết cứng he/his/him/she/her. "Nhắc tới Tú" = tên đứng gần nhất trước đại từ là Tú; câu dẫn

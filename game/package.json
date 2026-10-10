@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test:data": "node ../scripts/tests/data.mjs",
     "test:smoke": "node ../scripts/tests/smoke.mjs",
-    "test:pool": "node ../scripts/tests/pool_physics.mjs"
+    "test:pool": "node ../scripts/tests/pool_physics.mjs && node ../scripts/tests/pool_rules.mjs"
   },
   "dependencies": {
     "@fontsource/nunito": "^5.3.0",
