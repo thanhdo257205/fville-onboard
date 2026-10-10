@@ -1,0 +1,98 @@
+{
+  "_ghi_chu": "Hiệu ứng âm thanh (game/src/core/sound.js). Mỗi mục sounds.<id>: files = các bản (nhiều bản → chọn ngẫu nhiên, khỏi lặp nhàm); file phát: assets/sfx/<id>.mp3 (1 bản) hoặc <id>_<n>.mp3 (n từ 1). Bản lấy từ gói tải về: src = '<gói>/<đường dẫn trong zip>' (gói khai ở sources, chỉ nhận giấy phép CC0); bản tự tạo: synth = tên công thức trong scripts/blender/audio/synth.py. Dựng lại file + docs/audio_credits.md: tools/bin/blender.cmd --background --factory-startup --python scripts/blender/audio/build_sfx.py. bus: ui (giao diện, không theo vị trí) | world (trong thế giới: theo vị trí nếu có, có vang theo zone). volume 0..1 (file đã chuẩn hoá đỉnh −1 dBFS), pitch = lệch tốc độ phát ngẫu nhiên ±, rate = tốc độ phát gốc, max = số tiếng cùng lúc tối đa, zones = chỉ tải khi vào các zone này (không có = tải ở lần bấm đầu tiên). Tiếng nền theo zone + tiếng máy xe bus tạo bằng code lúc chạy (game/src/core/ambience.js), cấu hình ở zones.json → <zone>.audio.",
+  "sources": {
+    "kenney_interface-sounds": {
+      "title": "Interface Sounds (1.0)", "author": "Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/interface-sounds",
+      "download": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+      "zip_sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232", "zip_bytes": 834536,
+      "license": "CC0-1.0", "license_member": "License.txt", "retrieved": "2026-10-10"
+    },
+    "kenney_impact-sounds": {
+      "title": "Impact Sounds (1.0)", "author": "Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/impact-sounds",
+      "download": "https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip",
+      "zip_sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8", "zip_bytes": 800850,
+      "license": "CC0-1.0", "license_member": "License.txt", "retrieved": "2026-10-10"
+    },
+    "kenney_rpg-audio": {
+      "title": "RPG Audio", "author": "Kenney Vleugels (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "download": "https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip",
+      "zip_sha256": "6dbeaf8544da958d8f2adcb4a4a4b76c1ade34a05f8ab9edccd327da7375f38b", "zip_bytes": 964837,
+      "license": "CC0-1.0", "license_member": "License.txt", "retrieved": "2026-10-10"
+    },
+    "kenney_music-jingles": {
+      "title": "Music Jingles", "author": "Kenney Vleugels (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/music-jingles",
+      "download": "https://kenney.nl/media/pages/assets/music-jingles/f37e530b9e-1677590399/kenney_music-jingles.zip",
+      "zip_sha256": "b729ba57959bd58793d2c5cafa348aaf2655d354f3da35ec4729e03ec77197b8", "zip_bytes": 1239525,
+      "license": "CC0-1.0", "license_member": "License.txt", "retrieved": "2026-10-10"
+    },
+    "kenney_casino-audio": {
+      "title": "Casino Audio (1.1)", "author": "Kenney Vleugels (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/casino-audio",
+      "download": "https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip",
+      "zip_sha256": "f36250766ac5bc378c13708ddf12a23a8e54a3251f8d482c7536e51b5dbafa18", "zip_bytes": 876839,
+      "license": "CC0-1.0", "license_member": "License.txt", "retrieved": "2026-10-10"
+    }
+  },
+  "sounds": {
+    "tap":         { "bus": "ui", "volume": 0.45, "pitch": 0.04, "use": "bấm nút, chọn thẻ trong mini-game", "files": [{ "src": "kenney_interface-sounds/Audio/click_002.ogg" }] },
+    "select":      { "bus": "ui", "volume": 0.4, "pitch": 0.03, "use": "chọn câu trả lời trong hội thoại, đổi tab app My FPT", "files": [{ "src": "kenney_interface-sounds/Audio/select_002.ogg" }] },
+    "line":        { "bus": "ui", "volume": 0.22, "pitch": 0.05, "use": "sang câu thoại tiếp theo", "files": [{ "src": "kenney_interface-sounds/Audio/drop_002.ogg" }] },
+    "mg_open":     { "bus": "ui", "volume": 0.4, "use": "mở mini-game", "files": [{ "src": "kenney_interface-sounds/Audio/maximize_001.ogg" }] },
+    "mg_correct":  { "bus": "ui", "volume": 0.45, "use": "mini-game: làm đúng một bước", "files": [{ "src": "kenney_interface-sounds/Audio/confirmation_001.ogg" }] },
+    "mg_wrong":    { "bus": "ui", "volume": 0.4, "use": "mini-game: sai (kèm gợi ý)", "files": [{ "src": "kenney_interface-sounds/Audio/question_004.ogg" }] },
+    "mg_done":     { "bus": "ui", "volume": 0.45, "use": "xong mini-game", "files": [{ "src": "kenney_music-jingles/Audio/Pizzicato jingles/jingles_PIZZI02.ogg" }] },
+    "mg_skip":     { "bus": "ui", "volume": 0.35, "use": "bấm Skip mini-game", "files": [{ "src": "kenney_interface-sounds/Audio/back_002.ogg" }] },
+    "progress":    { "bus": "ui", "volume": 0.3, "use": "thanh tải khi cài app (1,1 giây)", "files": [{ "synth": "progress" }] },
+    "shutter":     { "bus": "ui", "volume": 0.5, "use": "chụp ảnh check-in / ảnh thẻ", "files": [{ "synth": "shutter" }] },
+    "bucket":      { "bus": "ui", "volume": 0.35, "use": "giếng làng: kéo được gầu nước", "files": [{ "src": "kenney_rpg-audio/Audio/metalPot2.ogg" }] },
+    "splash":      { "bus": "ui", "volume": 0.4, "use": "giếng làng: trượt vùng xanh, nước đổ", "files": [{ "synth": "splash" }] },
+    "grain":       { "bus": "ui", "volume": 0.45, "use": "nhặt hạt lúa vàng", "files": [{ "synth": "grain" }] },
+    "pickup":      { "bus": "ui", "volume": 0.55, "pitch": 0.05, "use": "nhặt đồ, nhận đồ mới vào túi", "files": [{ "src": "kenney_rpg-audio/Audio/handleSmallLeather.ogg" }] },
+    "nudge":       { "bus": "ui", "volume": 0.35, "use": "bong bóng nhắc của Tú, người chơi khác gửi emote", "files": [{ "src": "kenney_interface-sounds/Audio/pluck_002.ogg" }] },
+    "phone":       { "bus": "ui", "volume": 0.4, "use": "tin nhắn điện thoại / app (câu thoại kiểu tin nhắn, nhắc khi không có Tú, báo 17:30)", "files": [{ "synth": "phone" }] },
+    "help":        { "bus": "ui", "volume": 0.35, "use": "mở thẻ gợi ý (phím H)", "files": [{ "src": "kenney_interface-sounds/Audio/question_003.ogg" }] },
+    "app_open":    { "bus": "ui", "volume": 0.35, "use": "mở app My FPT (Tab)", "files": [{ "src": "kenney_interface-sounds/Audio/open_002.ogg" }] },
+    "app_close":   { "bus": "ui", "volume": 0.3, "use": "đóng app My FPT", "files": [{ "src": "kenney_interface-sounds/Audio/close_002.ogg" }] },
+    "menu_open":   { "bus": "ui", "volume": 0.3, "use": "mở menu Esc", "files": [{ "src": "kenney_interface-sounds/Audio/open_003.ogg" }] },
+    "menu_close":  { "bus": "ui", "volume": 0.3, "use": "đóng menu Esc", "files": [{ "src": "kenney_interface-sounds/Audio/close_003.ogg" }] },
+    "quest":       { "bus": "ui", "volume": 0.4, "use": "xong một việc (quest)", "files": [{ "src": "kenney_interface-sounds/Audio/confirmation_002.ogg" }] },
+    "checklist":   { "bus": "ui", "volume": 0.45, "use": "xong một mục checklist", "files": [{ "src": "kenney_music-jingles/Audio/Pizzicato jingles/jingles_PIZZI04.ogg" }] },
+    "value":       { "bus": "ui", "volume": 0.45, "use": "thể hiện một giá trị cốt lõi", "files": [{ "src": "kenney_music-jingles/Audio/Pizzicato jingles/jingles_PIZZI16.ogg" }] },
+    "advice":      { "bus": "ui", "volume": 0.35, "use": "lời khuyên mới vào Sổ lời khuyên", "files": [{ "src": "kenney_interface-sounds/Audio/pluck_001.ogg" }] },
+    "reward":      { "bus": "ui", "volume": 0.45, "use": "nhận phần thưởng / huy hiệu", "files": [{ "src": "kenney_music-jingles/Audio/Steel jingles/jingles_STEEL09.ogg" }] },
+    "act":         { "bus": "ui", "volume": 0.45, "use": "thẻ tiêu đề Act", "files": [{ "src": "kenney_music-jingles/Audio/Steel jingles/jingles_STEEL10.ogg" }] },
+    "achievement": { "bus": "ui", "volume": 0.5, "use": "thẻ thành tựu cuối (xong game)", "files": [{ "src": "kenney_music-jingles/Audio/Steel jingles/jingles_STEEL03.ogg" }] },
+
+    "step_concrete": { "bus": "world", "volume": 0.3, "pitch": 0.07, "max": 4, "use": "bước chân trên nền cứng (đường, vỉa hè, sàn gạch)", "files": [
+      { "src": "kenney_impact-sounds/Audio/footstep_concrete_000.ogg" }, { "src": "kenney_impact-sounds/Audio/footstep_concrete_001.ogg" },
+      { "src": "kenney_impact-sounds/Audio/footstep_concrete_002.ogg" }, { "src": "kenney_impact-sounds/Audio/footstep_concrete_003.ogg" },
+      { "src": "kenney_impact-sounds/Audio/footstep_concrete_004.ogg" }] },
+    "step_grass": { "bus": "world", "volume": 0.3, "pitch": 0.07, "max": 4, "zones": ["zone_00", "zone_01", "zone_02", "zone_03"], "use": "bước chân trên cỏ", "files": [
+      { "src": "kenney_impact-sounds/Audio/footstep_grass_000.ogg" }, { "src": "kenney_impact-sounds/Audio/footstep_grass_001.ogg" },
+      { "src": "kenney_impact-sounds/Audio/footstep_grass_002.ogg" }, { "src": "kenney_impact-sounds/Audio/footstep_grass_003.ogg" },
+      { "src": "kenney_impact-sounds/Audio/footstep_grass_004.ogg" }] },
+    "step_carpet": { "bus": "world", "volume": 0.35, "pitch": 0.07, "max": 4, "zones": ["zone_05"], "use": "bước chân trên thảm văn phòng", "files": [
+      { "src": "kenney_impact-sounds/Audio/footstep_carpet_000.ogg" }, { "src": "kenney_impact-sounds/Audio/footstep_carpet_001.ogg" },
+      { "src": "kenney_impact-sounds/Audio/footstep_carpet_003.ogg" }] },
+    "door_unlock": { "bus": "world", "volume": 0.45, "zones": ["zone_04"], "use": "khoá cửa kính nhả (cửa quẹt thẻ, cửa Phòng FSA)", "files": [{ "src": "kenney_rpg-audio/Audio/metalLatch.ogg" }] },
+    "door_swing":  { "bus": "world", "volume": 0.35, "zones": ["zone_04"], "use": "cánh cửa kính mở", "files": [{ "synth": "door_swing" }] },
+    "card_ok":     { "bus": "world", "volume": 0.4, "zones": ["zone_04"], "use": "đầu đọc thẻ: thẻ hợp lệ (đèn xanh)", "files": [{ "synth": "card_ok" }] },
+    "card_fail":   { "bus": "world", "volume": 0.4, "zones": ["zone_04"], "use": "đầu đọc thẻ: thẻ báo đỏ", "files": [{ "synth": "card_fail" }] },
+    "bus_door":    { "bus": "world", "volume": 0.45, "zones": ["zone_00", "zone_01"], "use": "cửa xe bus đóng / mở (hơi nén)", "files": [{ "synth": "bus_door" }] },
+    "bus_brake":   { "bus": "world", "volume": 0.4, "zones": ["zone_01"], "use": "xe bus dừng ở bến (xả hơi phanh)", "files": [{ "synth": "bus_brake" }] },
+    "pool_cue":    { "bus": "world", "volume": 0.5, "pitch": 0.04, "rate": 1.35, "zones": ["zone_05"], "use": "bi-a: đầu cơ chạm bi cái", "files": [
+      { "src": "kenney_impact-sounds/Audio/impactWood_light_001.ogg" }, { "src": "kenney_impact-sounds/Audio/impactWood_light_003.ogg" }] },
+    "pool_ball":   { "bus": "world", "volume": 0.6, "pitch": 0.06, "rate": 0.9, "max": 6, "zones": ["zone_05"], "use": "bi-a: bi chạm bi (âm lượng theo tốc độ va)", "files": [
+      { "src": "kenney_casino-audio/Audio/chips-collide-1.ogg" }, { "src": "kenney_casino-audio/Audio/chips-collide-2.ogg" },
+      { "src": "kenney_casino-audio/Audio/chips-collide-3.ogg" }, { "src": "kenney_casino-audio/Audio/chips-collide-4.ogg" }] },
+    "pool_rail":   { "bus": "world", "volume": 0.45, "pitch": 0.08, "rate": 1.3, "max": 4, "zones": ["zone_05"], "use": "bi-a: bi chạm băng", "files": [
+      { "src": "kenney_impact-sounds/Audio/impactSoft_medium_000.ogg" }, { "src": "kenney_impact-sounds/Audio/impactSoft_medium_002.ogg" },
+      { "src": "kenney_impact-sounds/Audio/impactSoft_medium_003.ogg" }] },
+    "pool_pocket": { "bus": "world", "volume": 0.5, "pitch": 0.05, "rate": 0.8, "zones": ["zone_05"], "use": "bi-a: bi rơi vào lỗ", "files": [
+      { "src": "kenney_impact-sounds/Audio/impactWood_medium_000.ogg" }, { "src": "kenney_impact-sounds/Audio/impactWood_medium_002.ogg" }] }
+  }
+}

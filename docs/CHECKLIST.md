@@ -256,17 +256,28 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [ ] File `assets/voice/<ngôn ngữ>/<hội thoại>_<câu>.ogg` (OGG/Opus, mỗi câu khoảng ≤ 50 KB), tải theo zone; phát khi câu
     hiện, dừng khi sang câu; phụ đề giữ nguyên; thiếu file thì im lặng
   - [ ] Âm lượng giọng trong menu Esc; `test:data` báo câu thiếu file / file thừa
-- [ ] P2 Nhạc nền và hiệu ứng âm thanh — Phụ trách: —
-  - [ ] Chọn nhạc nền theo zone / thời điểm (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc
-    hoàng hôn) — nguồn CC0 hoặc có giấy phép, ghi `CREDITS.md`
-  - [ ] Hiệu ứng âm thanh: điền file cho các chỗ gọi sẵn trong `game/src/core/sound.js` (mini-game đúng / sai, nhặt hạt lúa,
-    chụp ảnh, tin nhắn điện thoại, …) + thêm cửa quẹt thẻ, xe bus, bi-a (bi chạm bi, chạm băng, vào lỗ — `physics.js` đã
-    trả các sự kiện này)
-  - [ ] Phát nhạc sau lần bấm đầu tiên (trình duyệt chặn tự phát); chuyển zone thì chuyển bài êm; nhỏ lại khi đang hội
-    thoại; tắt / mở và thanh âm lượng nhạc, hiệu ứng (và giọng) trong menu Esc, lưu trong cài đặt
-  - [ ] Dung lượng: nhạc OGG khoảng 128 kbps, mỗi bài ≤ ~1,5 MB, tải lười theo zone (không làm chậm lúc mở game); đo lại
-    theo `docs/perf_report.md`
-  - [ ] Kiểm thử: `test:smoke` chạy khi tắt âm thanh, không lỗi console; `test:data` báo file âm thanh thiếu
+- [ ] P2 Nhạc nền và hiệu ứng âm thanh — Phụ trách: Claude (hiệu ứng + tiếng nền, nhánh `feat/sfx`); nhạc nền: —
+  - [x] Chốt (người dùng, 10/10/2026): nguồn CC0 (gói Kenney) + tự tạo bằng code; đợt này làm hiệu ứng, bi-a / cửa / xe bus,
+    bước chân + tiếng nền; nhạc nền để đợt sau
+  - [x] Hiệu ứng: 58 file MP3, 286 KB (48 từ 5 gói Kenney CC0, 10 tự tạo bằng `scripts/blender/audio/synth.py`) —
+    `data/sounds.json`; mọi chỗ gọi sẵn + hội thoại (sang câu, chọn đáp án, câu kiểu tin nhắn), app My FPT, menu Esc, quest /
+    checklist / giá trị / phần thưởng / thẻ Act / thành tựu; cửa quẹt thẻ (bíp xanh / đỏ — trường `sfx` của câu thoại, khoá
+    nhả, cánh cửa); xe bus (cửa hơi nén, phanh, tiếng máy theo tốc độ xe); bi-a (đầu cơ, bi chạm bi / băng / vào lỗ theo lực
+    va, cả khi phát lại cú của người khác); bước chân người chơi + Tú (cỏ / nền cứng / thảm)
+  - [x] Danh sách file + nguồn + bằng chứng giấy phép: `docs/audio_credits.md` (tự sinh: gói, link tải, SHA-256 zip và từng
+    file gốc, `License.txt` của từng gói chép vào `assets/sfx/licenses/`)
+  - [x] Tiếng nền theo zone tạo bằng code lúc chơi (phố sáng sớm, campus, hoàng hôn ở bến xe, sảnh, hành lang, văn phòng) +
+    tiếng vang trong nhà — `game/src/core/ambience.js`, `zones.json` → `audio`
+  - [x] Phát sau lần bấm / phím đầu tiên; đổi zone tiếng nền chuyển êm; nhỏ lại khi hội thoại / mini-game / app; menu Esc: Âm
+    thanh Bật / Tắt + thanh Hiệu ứng, Tiếng nền, lưu trong cài đặt; tab ẩn thì tạm dừng; tiếng của zone tải khi vào zone
+  - [x] Kiểm thử: `test:data` (file thiếu / thừa, chỉ nhận gói CC0, mọi file có trong `audio_credits.md`, tên trong
+    `sound.play("…")` / `sfx` / `zones.json` có thật, dung lượng); `test:smoke` (AudioContext chạy, file tải được, tiếng nền đúng
+    zone, đi bộ có tiếng bước chân, các tiếng chính đã phát qua zone 0 → 4, console sạch)
+  - [ ] Người trong team nghe thử, chỉnh âm lượng / đổi file nghe chưa hợp (chọn file theo số đo, chưa ai nghe bằng tai)
+  - [ ] Nhạc nền theo zone / thời điểm (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc hoàng hôn)
+    — nguồn CC0, khai ở `data/sounds.json` như hiệu ứng; chuyển bài êm khi đổi zone, nhỏ lại khi hội thoại, thanh âm lượng nhạc
+    (và giọng) trong menu Esc; mỗi bài ≤ ~1,5 MB (MP3 ~128 kbps — Safari cũ không đọc OGG), tải lười theo zone, đo lại theo
+    `docs/perf_report.md`
 
 ## 7. Kỹ thuật và vận hành
 

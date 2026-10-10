@@ -56,5 +56,14 @@ do người dùng cung cấp, chỉ nằm trong texture.
   không có trên repo; `scripts/blender/lib/bamboo.py` dựng lại bản low-poly (thân trụ + lá 2 tam giác) theo đúng vị trí
   thân, lá của mô hình gốc và gộp texture khi build zone.
 
+## Âm thanh
+Danh sách đầy đủ từng file, nguồn, SHA-256 và giấy phép: `docs/audio_credits.md`.
+
+- Hiệu ứng âm thanh từ các gói của Kenney (www.kenney.nl): Interface Sounds, Impact Sounds, RPG Audio, Music Jingles, Casino
+  Audio — giấy phép Creative Commons CC0 1.0 (phạm vi công cộng, không bắt buộc ghi công; bản giấy phép của từng gói:
+  `assets/sfx/licenses/`).
+- Các tiếng còn lại tự tạo cho dự án bằng code: `scripts/blender/audio/synth.py` (tin nhắn, hạt lúa, màn trập, nước, cửa,
+  đầu đọc thẻ, xe bus), tiếng nền theo zone và tiếng máy xe bus tạo lúc chơi (`game/src/core/ambience.js`).
+
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.

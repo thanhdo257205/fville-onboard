@@ -26,6 +26,10 @@ import { Acts, earnedTitles } from "./acts.js";
 import { setTint } from "../characters/characters.js";
 import { sound } from "../core/sound.js";
 import { PoolTable } from "../pool/table.js";
+import { Footsteps } from "./footsteps.js";
+
+// áp hiệu ứng (GameState.apply → events.kinds) → tiếng, theo thứ tự ưu tiên
+const EFFECT_SOUNDS = ["reward", "checklist", "value", "quest", "grain", "item", "advice"];
 
 // chuyển zone quá chừng này chưa xong → hiện lỗi + nút Retry / Back (Game.enterZone)
 export const ZONE_TIMEOUT_MS = 20000;
@@ -57,6 +61,7 @@ export class Game {
     this.seeThrough = new SeeThrough(data.sceneFixes?.see_through);   // cây che người chơi → mờ dần
     this.guide = new Guide(this, content);       // dấu "!" + mũi tên chỉ đường, nhắc khi đứng yên, gợi ý phím H
     this.acts = new Acts(this, content);         // 4 Act (data/acts.json): thẻ tiêu đề Act, checklist theo Act
+    this.footsteps = new Footsteps(this);        // tiếng bước chân người chơi + Tú
     this.zone = null;
     this.npcs = [];          // Npc (đứng/ngồi tại node)
     this.follower = null;    // Tú
@@ -101,10 +106,13 @@ export class Game {
   // hoàng hôn ở cảnh kết): ánh sáng riêng + giờ trên đồng hồ
   zoneVariant(id) { return (this.zoneCfg(id)?.variants || []).find((v) => this.progress.check(v.if)) || null; }
   zoneClock(id) { const v = this.zoneVariant(id); return v?.time ? tx(v.time) : null; }
+  // âm thanh của zone (zones.json → <zone>.audio, variants[].audio ghi đè): { ambience, steps, reverb } — core/sound.js
+  zoneAudio(id = this.state.zone) { return { ...(this.zoneCfg(id)?.audio || {}), ...(this.zoneVariant(id)?.audio || {}) }; }
   applyVariant() {
     const id = this.state.zone;
     this.applyMood(this.zoneVariant(id)?.mood ?? this.zoneCfg(id)?.mood);
     hud.clock(this.zoneClock(id) ?? t(`zones.${id}.time`));
+    sound.setZone(id, this.zoneAudio(id));
   }
 
   // tải trước trong lúc người chơi điền tên (main.js): GLB zone đầu (bộ nhớ đệm HTTP), GLB nhân vật, bộ giải nén
@@ -192,6 +200,7 @@ export class Game {
     this.lights.setLightmapMode(zone.hasLightmap);
     this.applyMood(this.zoneVariant(zoneId)?.mood ?? this.zoneCfg(zoneId)?.mood);
     this.state.zone = zoneId;
+    sound.setZone(zoneId, this.zoneAudio(zoneId));   // tiếng nền, độ vang, tải trước tiếng của zone
     // người chơi: đổi model nếu mức đồ hoạ đổi (Thấp = bản 6k, Cao = 15k)
     if (this.player.character.tier !== this.state.tier) {
       this.player.setCharacter(await this.characters.create("player", this.state.tier));
@@ -483,6 +492,9 @@ export class Game {
     // (cờ chỉ đổi ánh sáng / giờ qua applyVariant, gọi sau khi màn đã tối)
     const events = this.progress.apply(e?.time_skip?.flags ? { ...e, flags: [...[].concat(e.flags || []), ...e.time_skip.flags] } : e);
     hud.notify(events);
+    // 1 tiếng cho cả lần áp hiệu ứng, việc quan trọng nhất (vd vừa xong quest vừa nhận phần thưởng → tiếng phần thưởng)
+    const sfx = EFFECT_SOUNDS.find((k) => events.kinds?.has(k));
+    if (sfx) sound.play(sfx === "item" ? "pickup" : sfx);
     if (e?.reward) this.updateOutfit();
     this.interaction.refresh();
     this.updateObjective();
@@ -653,6 +665,8 @@ export class Game {
         d.open = true;
         if (instant) d.t = 1;
         if (d.cfg.col?.length) this.removeColliders(d.cfg.col);
+        const at = d.leaves[0]?.node.getWorldPosition(new THREE.Vector3());
+        if (!instant && at) { sound.play("door_unlock", { pos: at }); sound.play("door_swing", { pos: at }); }
       }
       if (!d.open || (d.t >= 1 && !instant)) continue;
       d.t = Math.min(1, d.t + dt / (d.cfg.seconds ?? 0.9));
@@ -710,6 +724,7 @@ export class Game {
     this.input.setLook(m === "play" || m === "pool");   // chơi: khoá + ẩn con trỏ, chuột xoay camera; còn lại: hiện con trỏ để bấm
     if (m !== "play") { hud.prompt(null); this.guide.hideMarks(); }   // dấu "!" / mũi tên chỉ hiện lúc đang đi lại
     hud.cover(m === "dialogue" || m === "minigame" || m === "app" || m === "summary");   // ẩn dòng hướng dẫn điều khiển
+    sound.duck(m === "dialogue" || m === "minigame" || m === "app" || m === "summary");   // tiếng nền nhỏ lại
   }
 
   // phím E
@@ -721,8 +736,8 @@ export class Game {
     if (kind === "dialogue") return this.runDialogue(id, { npc: this.interaction.npcFor(e), actor: e.item.actor });
     if (kind === "minigame") return this.runMinigame(id);
     if (kind === "pool") return this.pool?.enter();          // bàn bi-a (pool:play): tập một mình / bàn chung qua máy chủ
-    if (kind === "pickup") { sound.play("pickup"); return this.applyEffects({ item: id, flags: [`has_${id}`] }); }
-    if (kind === "grain") { sound.play("grain"); return this.applyEffects({ grain: id }); }
+    if (kind === "pickup") return this.applyEffects({ item: id, flags: [`has_${id}`] });   // tiếng: applyEffects (pickup)
+    if (kind === "grain") return this.applyEffects({ grain: id });
     return null;
   }
 
@@ -826,14 +841,16 @@ export class Game {
   }
 
   toggleApp() {
-    if (this.ui.app.open) { this.ui.app.hide(); this.setMode("play"); return; }
+    if (this.ui.app.open) { this.ui.app.hide(); this.setMode("play"); sound.play("app_close"); return; }
     if (this.mode !== "play") return;
     if (!this.progress.hasReward("app_my_fpt")) { hud.toast(t("hud.no_app")); return; }
     this.setMode("app");
     this.ui.app.show();
+    sound.play("app_open");
   }
 
   update(dt) {
+    this.footsteps.update(dt);   // cả lúc cảnh chuyển dắt người chơi / Tú đi
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
     const drag = this.input.consumeDrag();

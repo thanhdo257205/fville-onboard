@@ -19,6 +19,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/blender/lib/pool_table.py` | Bàn bi-a zone 5 từ mô hình Sketchfab (zone_05.py gọi khi build): bỏ đèn treo, gộp texture, giảm lưới, đo mặt chơi / lỗ / bi → `data/pool.json` |
 | `scripts/blender/lib/bus.py`, `lib/trees.py`, `lib/bamboo.py` | Xe bus (zone 0–1), cây ngoài trời (zone 0–3), bụi tre (zone 2) từ mô hình Sketchfab (zone gọi khi build): xe đổi sơn trắng–đỏ, tách cánh cửa khách, đặt cửa trùng chỗ cửa cũ (`props.BUS_DOOR_X`); cây giữ chỗ / chiều cao của `kit.tree` (`kit.TREES`); tre dựng lại low-poly. Bản sao dùng chung lưới, custom property `batch` → game gộp lượt vẽ (`world/zone.js batchInstances`) |
 | `scripts/blender/lib/desktop_computer.py` | Máy tính bàn ở bàn intern zone 5 từ mô hình Sketchfab (zone_05.py gọi khi build): thu về tỉ lệ thật, texture 512, mặt màn hình tách thành `monitor_screen` (texture riêng: màn đăng nhập "My FPT" vẽ bằng code — game đổi được) |
+| `scripts/blender/audio/build_sfx.py`, `synth.py` | Hiệu ứng âm thanh: đọc `data/sounds.json`, lấy file từ gói zip CC0 (`assets/sfx/source/`, kiểm SHA-256) hoặc tự tạo bằng công thức (`synth.py`), xuất MP3 → `assets/sfx/`, chép giấy phép → `assets/sfx/licenses/`, sinh `docs/audio_credits.md` (chạy trong Blender: cần module `aud` + numpy) |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
 | `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
@@ -28,8 +29,9 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
 | `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc. Trong game: `data/characters.json` → `accessories`, gắn vào xương đầu và tự ướm theo lưới nhân vật (`game/src/characters/accessories.js`), mở khoá khi xong game, bật / tắt ở menu Esc |
 | `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`, `desktop_computer/source/desktop_computer.glb`, `bus/source/bus_jb5_low_poly.glb`, `tree/source/tree_low_poly_lowpoly.glb`, `bamboo/source/bamboo_tree.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
+| `assets/sfx/` | Hiệu ứng âm thanh MP3 (`<id>.mp3` / `<id>_<n>.mp3` theo `data/sounds.json`), `licenses/` (giấy phép của từng gói nguồn); `source/`: gói zip gốc — chỉ có trên máy làm việc (tải lại ở link trong `data/sounds.json`) |
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
-| `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại) |
+| `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại), hiệu ứng âm thanh (`sounds.json`: nguồn + giấy phép của từng gói, mỗi tiếng → file, âm lượng) |
 | `data/i18n/en.json`, `vi.json` | Mọi chữ giao diện: tiếng Anh (bản gốc) và tiếng Việt, cùng khoá. Văn phong bản Việt: `docs/vi_style.md` |
 | `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người), `pool/` (bi-a zone 5: `physics.js` vật lý tất định, `rules.js` luật 8 bi rút gọn + mã hoá bàn — dùng chung với máy chủ, `table.js` chế độ chơi: tập một mình / bàn chung 2 người / thử thách, `auto.js` chọn cú cho kiểm thử), `debug.js` |
 | `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + Durable Object, mỗi DO một phòng (~30 người, tự chia phòng; `wrangler.toml`, `src/index.js`), bàn bi-a chung của phòng (`src/pool.js`); bật bằng `data/net.json` → `url` (trống = tắt). Đã lên mạng: `https://fville-net.fville-onboard.workers.dev` (`/status`). Xem `docs/multiplayer.md` |
@@ -87,6 +89,9 @@ tools/bin/blender.cmd --background --factory-startup --python scripts/blender/ch
 tools/bin/blender.cmd --background --factory-startup --python scripts/blender/characters/render_portrait.py -- --id <id> [--outfit dau_ngay]   # chân dung theo bộ đồ
 python scripts/tools/anim_sheet.py <id>
 
+# Hiệu ứng âm thanh (cần Blender + gói zip trong assets/sfx/source/): data/sounds.json → assets/sfx/*.mp3 + docs/audio_credits.md
+tools/bin/blender.cmd --background --factory-startup --python scripts/blender/audio/build_sfx.py [-- --only phone,grain]
+
 # Đo hiệu năng bản build với độ trễ mạng giả lập (~GitHub Pages): xem docs/perf_report.md
 python scripts/tools/slow_server.py --dir game/dist --port 8772 --delay 0.3
 
@@ -105,7 +110,8 @@ tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển �
 `talk`, `interact`, `mg` / `mgSolve` / `mgSkip`, `playCutscene`, `guide` / `help()` (dấu "!", mũi tên, các lần nhắc),
 `acts` / `cards` (4 Act, thẻ giữa màn hình), `finish()` / `summary` (thành tựu cuối + màn tổng kết),
 `net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`; bàn chung: `net` (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ), `join()`, `autoShot()`, `place(x, z)`, `forceShot()`, `setFast()`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết), `map` (tab Bản đồ của app My FPT: khung, vị trí các dấu),
-`shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
+`audio` / `sounds` (âm thanh: trạng thái AudioContext, tiếng nền của zone, số file đã tải, số lần phát theo tên, bước chân; các
+lần gọi gần nhất), `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
 Tham số URL để thử (khi dev, hoặc bản build mở với `?debug`): `?lang=vi|en` (ngôn ngữ, không lưu — dùng được mọi lúc), `?start=zone_05` (bản lưu mẫu "đã chơi xong các zone trước",
@@ -144,6 +150,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - Mọi bước của pipeline nhân vật: chuẩn bị cho Mixamo, ghép animation, giảm tam giác, dán logo, chân dung — cần
   `source/`, `mixamo/*.fbx`, `textures/`, file `.blend` (không có trên repo). GLB nhân vật trên repo chỉ để dùng.
 - Render ảnh kiểm tra bằng Blender, bảng animation.
+- Dựng lại file hiệu ứng âm thanh (`build_sfx.py`, cần gói zip gốc trong `assets/sfx/source/`). Chỉnh âm lượng / độ lệch cao
+  độ / tiếng nền thì không cần: sửa `data/sounds.json`, `zones.json` → `audio`, `game/src/core/ambience.js`.
 
 ## Quy tắc đã chốt
 
@@ -175,6 +183,12 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   va chạm; `data/scene_fixes.json`: chỉnh khi chạy, cửa mở được `doors`; `data/zones.json` → `spawn_offset`: dời chỗ
   xuất hiện; vật do code đặt trong `data/interactables.json`) và ghi vào báo cáo. Sửa bối cảnh
   thật thì sửa script Blender rồi build lại zone (cần người dùng đồng ý).
+- **Âm thanh chỉ lấy từ nguồn CC0 hoặc tự tạo bằng code** (người dùng chốt 10/10/2026; repo công khai, dùng trong tổ chức):
+  mọi file khai ở `data/sounds.json` (gói nguồn: trang, link tải, SHA-256, giấy phép `CC0-1.0`; mỗi tiếng: `src` trong zip
+  hoặc `synth`), dựng bằng `scripts/blender/audio/build_sfx.py` → file danh sách + bằng chứng giấy phép `docs/audio_credits.md`
+  (tự sinh, không sửa tay). Không dùng CC BY / NC / SA, file "free" không rõ giấy phép, tiếng lấy từ game / phim / bài hát;
+  tải gói mới phải hỏi người dùng. `test:data` chặn file trong `assets/sfx/` không có trong danh sách. Tiếng nền, tiếng máy xe
+  bus tạo bằng code lúc chơi (`game/src/core/ambience.js`); trình duyệt chỉ cho phát sau lần bấm / phím đầu tiên.
 - Nội dung chờ HR có `"draft": true` → game hiện **[DRAFT]**. Danh sách: `docs/PROGRESS.md`.
 - Vai nhân vật: id vai trong dữ liệu giữ nguyên (vd vai `thao` hiển thị là **Ms. Huyền**, model `huyen`; vai `le_tan`
   là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại). Vai `player` chọn model theo giới tính

@@ -11,6 +11,7 @@ import { hud } from "../ui/hud.js";
 import { t } from "../i18n.js";
 import { worldPos } from "../world/zone.js";
 import { sound } from "../core/sound.js";   // tiếng báo 17:30 (lời báo nằm ở đầu hội thoại ending_lan, kiểu tin nhắn app)
+// tiếng máy xe bus nổ máy chờ ở bến (cutscenes.json → ending.bus_stop.bus) từ lúc tới bến tới hết cảnh
 
 const UP = new THREE.Vector3(0, 1, 0);
 const V = (a) => new THREE.Vector3(...a);
@@ -98,6 +99,7 @@ export class Ending extends Cutscene {
     const g = this.game, z = g.zone, b = this.cfg.bus_stop, T = this.T;
     const p = g.player, tu = g.follower;
     const spawn = worldPos(z.spawns.get(b.spawn));
+    this.startEngine(z.nodes.get(b.bus));
     this.face(p.character, spawn.clone().add(V(b.tu_from)));
     this.cam = { pos: spawn.clone().add(V(b.camera_offset)), look: spawn.clone().add(V(b.camera_look || [1.5, 1.2, 0])), fov: b.camera_fov_deg || 50, track: null };
     this.look.copy(this.cam.look);
@@ -154,6 +156,7 @@ export class Ending extends Cutscene {
     const g = this.game, b = this.cfg.bus_stop;
     this.stage = "finish";
     this.tracks.clear();
+    this.stopEngine(3);
     hud.card(null);
     if (g.runner.active) g.runner.abort();
     await hud.fade(true, 400);

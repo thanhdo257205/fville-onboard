@@ -32,7 +32,7 @@
         "player_offset": [0, 0, -0.55], "colleague_offset": [1.0, 0, -1.2], "camera_offset": [-1.9, 1.6, -3.0], "camera_fov_deg": 45,
         "_ly_do": "người chơi đứng trước bàn intern (lệch SPAWN_ban_lam_viec về phía lối đi), Lan đứng chếch phía lối đi; camera đứng giữa lối đi chính nhìn cả hai" },
       "card": "cutscene.heading_home",
-      "bus_stop": { "zone": "zone_01", "spawn": "SPAWN_zone_01_cua_xe", "door": "xe_bus_cua",
+      "bus_stop": { "zone": "zone_01", "spawn": "SPAWN_zone_01_cua_xe", "door": "xe_bus_cua", "bus": "INT_xe_bus",
         "tu_from": [10, 0, -3.5], "tu_to": [1.1, 0, -0.9], "tu_speed_mps": 3.6, "door_offset": [0, 0, 0.6],
         "camera_offset": [-3.3, 1.65, -4.25], "camera_look": [1.5, 1.2, -0.5], "camera_fov_deg": 50,
         "_ly_do": "Tú chạy từ phía cổng (đông) tới cạnh người chơi ở cửa xe; camera giữa vỉa hè phía tây cửa xe (như cảnh xuống xe buổi sáng)" },

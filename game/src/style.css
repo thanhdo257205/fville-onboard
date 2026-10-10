@@ -36,6 +36,9 @@ body.overlay-open #hint { display: none; }   /* hộp thoại / mini-game / app 
 #menu .seg { display: flex; background: #2a2e36; border-radius: 10px; padding: 3px; }
 #menu .seg button { background: none; border: 0; color: var(--fg); font: 700 14px "Nunito"; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
 #menu .seg button.on { background: var(--orange); }
+#menu .row.vol { min-height: 34px; }
+#menu .row.vol input[type=range] { width: 170px; accent-color: var(--orange); cursor: pointer; }
+#menu .row.vol input[type=range]:disabled { opacity: 0.4; cursor: default; }
 #menu .muted { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
 #menu .primary { margin-top: 16px; width: 100%; background: var(--orange); color: #fff; border: 0; border-radius: 10px; padding: 10px; font: 800 15px "Nunito"; cursor: pointer; }
 

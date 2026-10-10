@@ -18,7 +18,7 @@
 //     bàn riêng (bàn chung vẫn cập nhật ngầm, hiện lại khi xong).
 // __game.pool: trạng thái + enter / shoot(angle, power) / leave / rerack / join / autoShot (smoke test).
 import * as THREE from "three";
-import { makeTable, rackState, customState, simulateShot, aimInfo, findPottingShot, respotCue, cloneState, angleTo, FRAME_STEPS, DT } from "./physics.js";
+import { makeTable, rackState, customState, simulateShot, aimInfo, findPottingShot, respotCue, cloneState, angleTo, FRAME_STEPS, DT, MAX_SPEED } from "./physics.js";
 import { packBalls, unpackBalls, canPlaceCue, placeCue, kitchen, ballsLeft, targets } from "./rules.js";
 import { pickShot } from "./auto.js";
 import { clampCamera } from "../world/collision.js";
@@ -340,8 +340,7 @@ export class PoolTable {
       this.net.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue, b: packBalls(res.finalState), k: res.pocketed,
         f: res.firstContact, s: res.cueScratch, d: +res.time.toFixed(2) });
     }
-    this.hideAim();
-    sound.play("tap");
+    this.hideAim();   // tiếng đầu cơ: lúc bi cái bắt đầu lăn (cueSound)
     return new Promise((resolve) => {
       this.playback.resolve = resolve;
       if (instant) this.finishPlayback(true);
@@ -586,7 +585,9 @@ export class PoolTable {
     const pb = this.playback, res = pb.res, r = this.table.r, y = this.table.ballY;
     pb.t += dt;
     const target = Math.min(res.frames.length - 1, Math.floor(pb.t / FRAME_S));
+    if (!pb.cued) this.cueSound(pb);
     if (target === pb.frame) return;
+    this.rollSounds(pb, target);
     const f = res.frames[target], prev = pb.prev;
     for (const e of res.events) if (e.type === "pocket" && e.frame <= target) pb.hidden.add(e.a);
     const axis = new THREE.Vector3(), q = new THREE.Quaternion();
@@ -603,6 +604,29 @@ export class PoolTable {
     pb.frame = target;
     if (target >= res.frames.length - 1) this.finishPlayback();
   }
+
+  // tiếng (data/sounds.json → pool_*): đầu cơ chạm bi cái lúc bi bắt đầu lăn (to theo tốc độ bi cái); bi chạm bi / chạm băng /
+  // vào lỗ theo sự kiện vật lý của các khung vừa qua (simulateShot → events), mỗi khung vài tiếng mạnh nhất (cú phá bi có
+  // hàng chục va chạm cùng lúc). Cả khi phát lại cú của người khác ở bàn chung — nghe theo vị trí bàn.
+  cueSound(pb) {
+    pb.cued = true;
+    const [f0, f1] = pb.res.frames;
+    const v = f1 ? Math.sqrt((f1[0] - f0[0]) ** 2 + (f1[1] - f0[1]) ** 2) / FRAME_S : 0;
+    if (v > 0) sound.play("pool_cue", { pos: this.ballPos(0), gain: Math.min(1, 0.35 + v / MAX_SPEED) });
+  }
+  rollSounds(pb, target) {
+    const ev = pb.res.events.filter((e) => e.frame > pb.frame && e.frame <= target);
+    if (!ev.length) return;
+    const top = (type, n) => ev.filter((e) => e.type === type).sort((a, b) => b.v - a.v).slice(0, n);
+    for (const e of top("ball", 3)) {
+      if (e.v < 0.03) continue;
+      const k = Math.min(1, e.v / 3);
+      sound.play("pool_ball", { pos: this.ballPos(e.a), gain: Math.min(1, (e.v / 2.5) ** 0.8), rate: 0.92 + 0.14 * k });
+    }
+    for (const e of top("rail", 2)) if (e.v >= 0.05) sound.play("pool_rail", { pos: this.ballPos(e.a), gain: Math.min(1, e.v / 2.2) });
+    for (const e of ev.filter((x) => x.type === "pocket").slice(0, 2)) sound.play("pool_pocket", { pos: this.ballPos(e.a), gain: 0.9 });
+  }
+  ballPos(i) { return this.balls?.[i]?.getWorldPosition(new THREE.Vector3()) ?? this.root?.getWorldPosition(new THREE.Vector3()) ?? null; }
 
   // ---------- vẽ: đường ngắm, bi ma, cơ, thanh lực ----------
   hideAim() { this.aimLine.visible = this.objLine.visible = this.ghost.visible = this.assistLine.visible = false; }
