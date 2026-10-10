@@ -1,6 +1,7 @@
 // HUD: màn mờ chuyển zone, thẻ tên zone, dòng mục tiêu, gợi ý phím E, gợi ý điều khiển, thông báo (xếp hàng), màn tải,
 // tin nhắn điện thoại ngắn + thẻ gợi ý phím H (game/guide.js).
 import { t } from "../i18n.js";
+import { sound } from "../core/sound.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -89,6 +90,7 @@ export const hud = {
       el.innerHTML = `<div class="num">${esc(t("acts.label", { n }))}</div><div class="title">${esc(title)}</div>`;
       el.style.setProperty("--dur", `${seconds}s`);
       this._replay(el);
+      sound.play("act");
     }, seconds * 1000 + 250);
   },
   // thành tựu (vd hoàn thành game): "ACHIEVEMENT UNLOCKED" + tên thành tựu
@@ -98,6 +100,7 @@ export const hud = {
       el.innerHTML = `<div class="label">🏆 ${esc(label)}</div><div class="title">${esc(title)}</div>`;
       el.style.setProperty("--dur", `${seconds}s`);
       this._replay(el);
+      sound.play("achievement");
     }, seconds * 1000 + 250);
   },
   objective(text) { $("#objective").textContent = text || ""; },

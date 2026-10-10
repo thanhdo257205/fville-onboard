@@ -209,6 +209,19 @@ async function runLook(browser, base, look) {
     });
     await check(fall.p0.onGround && !fall.p0.fellOut && fall.p1.onGround && fall.p1.fellOut === 1 && Math.abs(fall.p1.pos[1] - fall.p0.pos[1]) < 0.1,
       `${startZone}: đứng vững trên sàn khi vào zone (y ${fall.p0.pos[1]}); rơi xuyên sàn → về chỗ đứng gần nhất`, JSON.stringify(fall));
+    // âm thanh (core/sound.js): đã bấm / gõ phím ở màn tạo nhân vật → AudioContext chạy, đã tải tiếng chung + tiếng của zone,
+    // không file nào hỏng, tiếng nền đúng zone; đi tới 1,5 giây (đi được ≥ 1 m) → có tiếng bước chân, rồi về chỗ cũ
+    await wait(() => __game.audio.loaded >= 30 || __game.audio.state !== "running", 10000);
+    const au = await ev(() => {
+      const g = __game._game, p0 = g.player.position.clone(), a0 = __game.audio;
+      __game.simulate(1.5, { x: 0, y: 1, run: false }, { render: false });
+      const moved = Math.hypot(g.player.position.x - p0.x, g.player.position.z - p0.z), a1 = __game.audio;
+      g.player.body.teleport(p0.clone().setY(p0.y + 0.05));
+      __game.simulate(0.3, undefined, { render: false });
+      return { state: a0.state, loaded: a0.loaded, failed: a1.failed, ambience: a0.ambience, want: g.zoneAudio().ambience, moved: +moved.toFixed(2), steps: a1.steps - a0.steps };
+    });
+    await check(au.state === "running" && au.loaded >= 30 && !au.failed && au.ambience === au.want && (au.moved < 1 || au.steps > 0),
+      `${startZone}: âm thanh — AudioContext chạy, ${au.loaded} file đã tải, tiếng nền "${au.ambience}", đi ${au.moved} m → ${au.steps} tiếng bước chân`, JSON.stringify(au));
     // đổi ngôn ngữ giữa chừng (menu Esc → Language): mục tiêu, tiêu đề menu đổi ngay, tiến trình / vị trí giữ nguyên, đổi lại
     if (lang !== "en" && startZone === order[0]) {
       const q0 = QUESTS.find((q) => q.zone === startZone && q.required)?.title;
@@ -423,6 +436,14 @@ async function runLook(browser, base, look) {
       const where = st.complete ? "cảnh kết" : next ? `→ ${next}` : "";
       await check(!bad.length, `${zone}: ${required.length} việc bắt buộc, áo ${st.ao ? "ao_cam" : "dau_ngay"}, ${where}, console sạch (${Math.round((Date.now() - zt) / 1000)} s)`, bad.join("; "));
       if (zone === "zone_02" && !failed && await ev(() => __game.tu.visible)) await tuCheck("sau cổng", true);
+      // âm thanh đã phát qua zone 0 → 4 (trước cảnh kết — ngoại hình đầu tải lại trang giữa cảnh kết, bộ đếm về 0)
+      if (zone === "zone_04" && !onlyZone && !failed) {
+        const ac = await ev(() => __game.audio);
+        const need = ["act", "quest", "reward", "mg_done", "line", "select", "phone", "bus_door", "bus_brake", "card_ok", "door_unlock"];
+        const miss = need.filter((k) => !ac.counts[k]), steps = Object.entries(ac.counts).filter(([k]) => k.startsWith("step_")).reduce((a, [, v]) => a + v, 0);
+        await check(!miss.length && steps > 0 && !ac.failed && ac.state === "running",
+          `zone 0 → 4: âm thanh — ${ac.played} tiếng đã phát (${Object.keys(ac.counts).length} loại, ${steps} bước chân), không file hỏng`, JSON.stringify({ miss, failed: ac.failed, state: ac.state, counts: ac.counts }));
+      }
       if (failed || onlyZone && !st.complete) break;
       if (st.complete) {
         // ---------- màn tổng kết ----------

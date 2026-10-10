@@ -350,6 +350,8 @@ export function installDebug(game, loop) {
     mgSkip() { game.ui.minigame.skip(); return api.mg; },
     mgDebug() { return game.ui.minigame.active?.ctx.debug; },
     get sounds() { return [...soundLog.log]; },
+    // âm thanh: trạng thái AudioContext, cài đặt, tiếng nền + độ vang của zone, số file đã tải / tiếng đã phát / bỏ qua, số bước chân
+    get audio() { return { ...soundLog.info(), steps: game.footsteps.count }; },
     // CHỈ khi chạy dev: lưu ảnh vào renders/game/<name> (Vite middleware /__dev/save) — kiểm tra khi khung trình duyệt bị ẩn
     async saveImage(name, data) { const r = await fetch("/__dev/save", { method: "POST", body: JSON.stringify({ name, data }) }); return r.json(); },
     // chụp khung hình 3D hiện tại (không có HUD / bảng HTML)

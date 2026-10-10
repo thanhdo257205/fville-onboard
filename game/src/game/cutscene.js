@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { hud } from "../ui/hud.js";
 import { t } from "../i18n.js";
 import { worldPos } from "../world/zone.js";
+import { sound } from "../core/sound.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
@@ -148,8 +149,17 @@ export class Cutscene {
     });
   }
 
-  // cánh cửa xoay từ góc hiện tại tới `to` (rad) trong `sec` giây
+  // tiếng máy xe bus bám theo node xe (core/sound.js → engine: tốc độ tự tính theo quãng đường xe đi) — đã có thì đổi xe
+  startEngine(node) {
+    if (!node) return;
+    if (this.engine) { this.engine.follow(node); this.engine.setInside(false); }
+    else this.engine = sound.engine(node);
+  }
+  stopEngine(fade = 2.5) { this.engine?.stop(fade); this.engine = null; }
+
+  // cánh cửa xoay từ góc hiện tại tới `to` (rad) trong `sec` giây (cửa xe bus: tiếng xì hơi nén + "cạch")
   swingDoor(door, to, sec) {
+    sound.play("bus_door", { pos: worldPos(door) });
     const from = yAngle(door.quaternion);
     let k = 0;
     this.track((dt) => {
@@ -180,6 +190,7 @@ export class Cutscene {
     this.mark("board");
     const p = g.player, tu = g.follower;
     const door = worldPos(z.nodes.get(c.door_point)).setY(p.position.y);
+    this.startEngine(z.nodes.get(c.bus));   // xe số 2 đang nổ máy chờ khách
     this.shot(z.nodes.get(c.cams[0]));
     this.walk(p.body, p.character, () => p.sync(), door);
     if (tu) {
@@ -231,6 +242,7 @@ export class Cutscene {
     const g = this.game, c = this.cfg, a = c.arrive, T = this.T;
     this.mark("card");
     hud.card(t(c.card));
+    this.engine?.setInside(true);           // màn tối = đang ngồi trong xe: tiếng máy trầm, đều
     const loading = g.enterZone(a.zone, a.spawn, { fade: false, silent: true });
     await this.wait(T.card);
     await loading;
@@ -287,6 +299,7 @@ export class Cutscene {
     };
     this.look.copy(this.lookTarget());
     hud.fade(false, 600);
+    this.startEngine(A.bus);
     if (A.mover) {
       const v0 = a.speed_mps || 9, acc = (v0 * v0) / (2 * A.D), dur = v0 / acc, s0 = A.path.length - A.D;
       let tt = 0;
@@ -298,6 +311,7 @@ export class Cutscene {
       });
       await this.wait(dur);
       if (this.skipped) return;
+      sound.play("bus_brake", { pos: worldPos(A.bus) });
       A.mover.restore();
       this.moveRiders(A);
     }
@@ -336,6 +350,7 @@ export class Cutscene {
     const g = this.game, c = this.cfg, a = c.arrive;
     this.stage = "finish";
     this.tracks.clear();
+    this.stopEngine();
     hud.card(null);
     let dark = false;
     if (g.state.zone !== a.zone) {

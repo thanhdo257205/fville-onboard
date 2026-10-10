@@ -6,6 +6,7 @@
 import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
 import { ZoneMap } from "./map.js";
+import { sound } from "../core/sound.js";
 
 export class MyFptApp {
   constructor(content, state) {
@@ -20,8 +21,8 @@ export class MyFptApp {
     this.helpOpen = false;
     el.addEventListener("click", (e) => {
       const b = e.target.closest("[data-tab]");
-      if (b) { this.tab = b.dataset.tab; this.draw(); }
-      if (e.target.closest("[data-a=help]")) this.toggleHelp();
+      if (b) { if (b.dataset.tab !== this.tab) sound.play("select"); this.tab = b.dataset.tab; this.draw(); }
+      if (e.target.closest("[data-a=help]")) { sound.play("tap"); this.toggleHelp(); }
       if (e.target.closest("[data-a=summary]")) this.game?.openSummary();   // tự đóng app, không qua chế độ chơi
     });
   }

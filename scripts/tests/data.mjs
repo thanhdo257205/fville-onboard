@@ -8,6 +8,9 @@
 //      (+ chân dung theo bộ đồ, texture bộ đồ của vai, tên / mô tả ngoại hình ở màn chọn nhân vật)
 //   6. Tú khác giới với người chơi; không còn he/his/him/she/her viết cứng nhắc tới Tú, biến {tu_*} thay được cho cả 2 giới
 //   7. bản tiếng Việt: mọi chữ { "en" } có "vi", vi.json cùng khoá en.json, biến {…} khớp, không sót chữ chưa dịch
+//   8. âm thanh (data/sounds.json): mỗi bản có file assets/sfx/<id>[_n].mp3, không có file thừa, gói nguồn giấy phép CC0 có bản
+//      giấy phép trong assets/sfx/licenses/, mọi file có trong docs/audio_credits.md; tên trong sound.play("…") của code, "sfx"
+//      của câu thoại, zones.json → audio (tiếng nền, mặt đất) đều có thật; dung lượng trong ngân sách
 // In 1 dòng ✓/✗ cho mỗi mục; lỗi → in chi tiết, thoát mã 1.
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
@@ -16,6 +19,7 @@ import { FILES, buildContent, validateLinks, nodeRefs, tx } from "../../game/src
 import { setStrings, setTextVars, tuPronouns, fill, TU_VARS } from "../../game/src/i18n.js";
 import { GameState } from "../../game/src/game/state.js";
 import { buildStartState } from "../../game/src/game/autoplay.js";
+import { AMBIENCES } from "../../game/src/core/ambience.js";
 
 const t0 = performance.now();
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -261,6 +265,53 @@ for (const [l, m] of Object.entries(chars.names_ref || {})) if (!l.startsWith("_
 }
 for (const [r, v] of Object.entries(chars.names.vi || {})) if (newTone(v)) viErrs.push(`characters names.vi.${r}: dấu thanh kiểu mới "${newTone(v)}"`);
 report("bản tiếng Việt", viErrs, `${viPairs} cặp en / vi, ${Object.keys(chars.names.vi || {}).length} tên vai`);
+
+// 8. âm thanh
+const sfxErrs = [], SFX = join(ROOT, "assets", "sfx"), snd = D("sounds") || { sources: {}, sounds: {} };
+const LICENSES = new Set(["CC0-1.0"]), SFX_FILE_KB = 100, SFX_TOTAL_KB = 1024;
+const credits = existsSync(join(ROOT, "docs", "audio_credits.md")) ? readFileSync(join(ROOT, "docs", "audio_credits.md"), "utf8") : "";
+if (!credits) sfxErrs.push("thiếu docs/audio_credits.md (chạy scripts/blender/audio/build_sfx.py)");
+const want = new Set();
+let sfxBytes = 0;
+for (const [id, d] of Object.entries(snd.sounds)) {
+  const n = d.files?.length || 0;
+  if (!n) sfxErrs.push(`sounds.${id}: không có bản nào (files)`);
+  if (!["ui", "world"].includes(d.bus)) sfxErrs.push(`sounds.${id}: bus "${d.bus}" (ui | world)`);
+  for (const k of ["volume", "pitch"]) if (d[k] != null && !(d[k] >= 0 && d[k] <= (k === "volume" ? 1 : 0.5))) sfxErrs.push(`sounds.${id}.${k} = ${d[k]} ngoài khoảng`);
+  for (const z of d.zones || []) if (!zones.zones[z]) sfxErrs.push(`sounds.${id}.zones: không có zone ${z}`);
+  (d.files || []).forEach((f, i) => {
+    const name = n === 1 ? `${id}.mp3` : `${id}_${i + 1}.mp3`, path = join(SFX, name);
+    want.add(name);
+    if (f.src) {
+      const pack = f.src.split("/")[0], src = snd.sources[pack];
+      if (!src) sfxErrs.push(`sounds.${id}: gói "${pack}" chưa khai ở sources`);
+      else {
+        if (!LICENSES.has(src.license)) sfxErrs.push(`sources.${pack}: giấy phép ${src.license} chưa được chấp nhận (chỉ ${[...LICENSES]})`);
+        if (!/^[0-9a-f]{64}$/.test(src.zip_sha256 || "") || !src.download || !src.page) sfxErrs.push(`sources.${pack}: thiếu page / download / zip_sha256`);
+        if (!existsSync(join(SFX, "licenses", `${pack}.txt`))) sfxErrs.push(`thiếu bản giấy phép assets/sfx/licenses/${pack}.txt`);
+      }
+    } else if (!f.synth) sfxErrs.push(`sounds.${id}: bản ${i + 1} cần "src" (gói tải về) hoặc "synth" (tự tạo)`);
+    if (!existsSync(path)) { sfxErrs.push(`thiếu assets/sfx/${name} (chạy build_sfx.py)`); return; }
+    const kb = statSync(path).size / 1024;
+    sfxBytes += statSync(path).size;
+    if (kb > SFX_FILE_KB) sfxErrs.push(`assets/sfx/${name}: ${kb.toFixed(0)} KB > ${SFX_FILE_KB} KB`);
+    if (!credits.includes(`assets/sfx/${name}`)) sfxErrs.push(`assets/sfx/${name} chưa có trong docs/audio_credits.md (chạy lại build_sfx.py)`);
+  });
+}
+if (existsSync(SFX)) for (const f of readdirSync(SFX)) if (f.endsWith(".mp3") && !want.has(f)) sfxErrs.push(`assets/sfx/${f}: không có trong data/sounds.json (file thừa — không rõ nguồn / giấy phép)`);
+if (sfxBytes / 1024 > SFX_TOTAL_KB) sfxErrs.push(`tổng âm thanh ${(sfxBytes / 1024).toFixed(0)} KB > ${SFX_TOTAL_KB} KB`);
+let sfxCalls = 0;
+for (const f of walk(join(ROOT, "game", "src"))) {
+  for (const m of readFileSync(f, "utf8").matchAll(/\bsound\.play\(\s*"([a-z0-9_]+)"/g)) { sfxCalls++; if (!snd.sounds[m[1]]) sfxErrs.push(`${rel(f)}: sound.play("${m[1]}") — không có trong data/sounds.json`); }
+}
+for (const [id, d] of content.dialogues) for (const [k, n] of Object.entries(d.nodes || {})) if (n.sfx && !snd.sounds[n.sfx]) sfxErrs.push(`hội thoại ${id}/${k}: sfx "${n.sfx}" không có trong data/sounds.json`);
+for (const [z, cfg] of Object.entries(zones.zones)) for (const a of [cfg.audio, ...(cfg.variants || []).map((v) => v.audio)].filter(Boolean)) {
+  if (a.ambience && !AMBIENCES.includes(a.ambience)) sfxErrs.push(`zones.${z}.audio.ambience "${a.ambience}" (có: ${AMBIENCES.join(", ")})`);
+  if (a.steps && !snd.sounds[`step_${a.steps}`]) sfxErrs.push(`zones.${z}.audio.steps "${a.steps}": không có tiếng step_${a.steps}`);
+  if (a.steps && snd.sounds[`step_${a.steps}`]?.zones && !snd.sounds[`step_${a.steps}`].zones.includes(z)) sfxErrs.push(`zones.${z}: step_${a.steps} không tải ở zone này (sounds.json → zones)`);
+  if (a.reverb != null && !(a.reverb >= 0 && a.reverb <= 1)) sfxErrs.push(`zones.${z}.audio.reverb ngoài 0..1`);
+}
+report("âm thanh", sfxErrs, `${want.size} file, ${(sfxBytes / 1024).toFixed(0)} KB, ${Object.keys(snd.sources).length} gói CC0, ${sfxCalls} lần gọi sound.play`);
 
 const ms = Math.round(performance.now() - t0);
 console.log(failed ? `✗ test:data: ${failed} mục lỗi (${ms} ms)` : `✓ test:data: đạt hết (${ms} ms)`);

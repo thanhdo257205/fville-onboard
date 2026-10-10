@@ -123,7 +123,11 @@
     "players": "Show other players",
     "accessories_note": "Unlocked by finishing your first day.",
     "view_summary": "View summary",
-    "language": "Language"
+    "language": "Language",
+    "sound": "Sound",
+    "sfx_volume": "Effects",
+    "amb_volume": "Ambience",
+    "sound_note": "Effects: footsteps, doors, the pool table, app chimes. Ambience: birds, wind, the office hum."
   },
   "lang": {
     "en": "English",

@@ -123,7 +123,11 @@
     "players": "Hiện người chơi khác",
     "accessories_note": "Mở khóa khi xong ngày đầu tiên.",
     "view_summary": "Xem tổng kết",
-    "language": "Ngôn ngữ"
+    "language": "Ngôn ngữ",
+    "sound": "Âm thanh",
+    "sfx_volume": "Hiệu ứng",
+    "amb_volume": "Tiếng nền",
+    "sound_note": "Hiệu ứng: bước chân, cửa, bàn bi-a, tiếng báo của app. Tiếng nền: chim, gió, tiếng ồn văn phòng."
   },
   "lang": {
     "en": "English",
