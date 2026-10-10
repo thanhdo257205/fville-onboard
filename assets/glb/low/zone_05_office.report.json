@@ -1,15 +1,16 @@
 {
   "zone": "zone_05_office",
   "quality": "low",
-  "triangles_visible": 32086,
+  "triangles_visible": 43700,
   "triangles_collision": 396,
   "materials": [
     "M_ceiling_grid_tex",
     "M_gloss",
     "M_light",
-    "M_palette"
+    "M_palette",
+    "M_pool_tex"
   ],
-  "objects": 145,
+  "objects": 164,
   "game_objects": {
     "COL_": [
       "COL_ban_bi_a",

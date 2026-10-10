@@ -179,6 +179,20 @@ async function runLook(browser, base, look) {
       const zone = order[zi], next = order[zi + 1], zt = Date.now();
       const required = await ev((z) => __game._game.content.quests.filter((q) => q.zone === z && q.required).map((q) => q.id), zone);
       const ps = { zone, lunch: false, login: false, reloaded: false };
+      // zone_05: bàn bi-a (mô hình Sketchfab, node pool_table + 16 bi + cơ, COL) và mini-game Một cú bi-a của anh Khang
+      if (zone === "zone_05" && look === looks[0]) {
+        const bi = await ev(async () => {
+          const g = __game._game, t = g.zone.root.getObjectByName("pool_table");
+          const scene = { table: !!t, balls: t ? t.children.filter((c) => /^ball_\d+$/.test(c.name)).length : 0,
+            cue: !!t?.getObjectByName("cue"), col: g.zone.colMeshes.some((m) => m.name === "COL_ban_bi_a") };
+          const a = await __game.approach("NPC_ban_bi_a");
+          __game.interact();
+          const r = await __game.resolve({ maxMs: 30000 });
+          return { scene, ok: a.ok, minigames: r.minigames, played: g.progress.flags.has("billiards_played"), mode: g.mode };
+        });
+        await check(bi.scene.table && bi.scene.balls === 16 && bi.scene.cue && bi.scene.col && bi.minigames.includes("billiards") && bi.played && bi.mode === "play",
+          "zone_05: bàn bi-a (pool_table, 16 bi, cơ, COL) + anh Khang → mini-game Một cú bi-a chạy, billiards_played", JSON.stringify(bi));
+      }
       let steps = 0, stepFail = null;
       while (steps++ < 40) {
         const g = await ev(() => ({ key: __game._game.guide.current().key, zone: __game.zone }));

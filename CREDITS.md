@@ -30,6 +30,11 @@ do người dùng cung cấp, chỉ nằm trong texture.
 - Tượng Cuder ở zone 2 (`zone_02_campus.glb`, mesh `tuong_cuder_tuong` + búi tóc `tuong_cuder_tuong_buitoc`): mô hình
   tạo bằng Meshy (meshy.ai), giấy phép CC BY 4.0. File gốc không có trên repo; `scripts/blender/lib/cuder.py` làm sạch,
   giảm tam giác, thay bệ, nắn hàng số 0/1 khi build zone.
+- Bàn bi-a ở zone 5 (`zone_05_office.glb`, node `pool_table` + bi `ball_0`…`ball_15`, cơ `cue`, `cue_2`):
+  "Pool Table Traditional" by fizyman (Sketchfab), giấy phép CC BY 4.0 —
+  https://sketchfab.com/3d-models/pool-table-traditional-e0b938c0c2e74eb794a49ebde2543977
+  (link nguồn ghi trong file gốc, glTF `asset.extras.source`). File gốc không có trên repo;
+  `scripts/blender/lib/pool_table.py` bỏ đèn treo, gộp texture, giảm lưới bàn, chuyển chất liệu khi build zone.
 
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.

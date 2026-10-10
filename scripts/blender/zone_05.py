@@ -10,8 +10,10 @@ Bố cục (người chơi vào từ cửa FSA phía đông, đi về -X):
      phía nam: 6 cụm bàn (2 hàng × 3 cụm × 8 bàn); BÀN INTERN ở đầu dãy gần lối vào (x ≈ -11.9)
 Sàn zone này z = 0 (tầng trên; zone_04 đặt tầng trên ở z 4.2).
 """
+import json
 import math
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +25,7 @@ for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
 import bpy  # noqa: E402
 
 from lib import interior as it  # noqa: E402
-from lib import kit, zone  # noqa: E402
+from lib import kit, pool_table, zone  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
 
@@ -39,6 +41,13 @@ ROOM_DOOR = 2.6
 CLUSTERS_X = (-14.0, -22.2, -30.4)       # tâm các cụm bàn
 CLUSTERS_Y = (-5.0, -11.0)               # đường vách ngăn giữa 2 hàng
 DESK_W = 1.4
+# Bàn bi-a khu nghỉ: mô hình Sketchfab "Pool Table Traditional" (fizyman, CC BY 4.0) — lib/pool_table.py đọc
+# assets/props/pool_table/source/pool_table_traditional.glb (chỉ có trên máy làm việc; thiếu thì build báo lỗi). Đo mặt
+# chơi, lỗ, bi → data/pool.json (ghi lại mỗi lần build).
+POOL = (-4.0, 3.0)          # tâm bàn — cùng chỗ bàn dựng tay trước đây
+POOL_YAW = 90               # mô hình dài theo Y → xoay cho trục dài theo X (như bàn cũ)
+POOL_INFO = {}
+POOL_JSON = os.path.join(HERE, "..", "..", "data", "pool.json")
 INTERN = (CLUSTERS_X[0] + 1.5 * DESK_W, CLUSTERS_Y[0])  # bàn đầu dãy gần lối vào, hàng phía bắc (yaw 180)
 
 
@@ -95,13 +104,67 @@ def build_shell(col, rng):
 
 def build_break_area(col, rng):
     b = MeshBuilder()
-    it.pool_table(b, -4.0, 3.0)
+    it.pool_lamps(b, *POOL)
     it.cube_shelf(b, -7.6, -3.5, yaw=90)
     it.cube_shelf(b, -2.0, -5.75, cols=4, rows=3, yaw=0)
     it.tulip_set(b, -4.2, -3.0)
     for x, y in ((-1.0, 5.2), (-7.2, 5.2)):
         it.potted_palm(b, x, y, rng, h=1.4, pot="sign_white")
-    return b.to_object("ENV_khu_nghi", col)
+    env = b.to_object("ENV_khu_nghi", col)
+    _, _, info = pool_table.build(col, "pool_table", (*POOL, 0.0), yaw_deg=POOL_YAW)
+    POOL_INFO.update(info)
+    write_pool_json(info)
+    return env
+
+
+def write_pool_json(info):
+    """data/pool.json: số đo bàn bi-a theo toạ độ glTF (Y lên) — world (zone_05) và local (node pool_table)."""
+    m = info["measure"]
+    yaw = math.radians(POOL_YAW)
+    c, s = math.cos(yaw), math.sin(yaw)
+    r4 = lambda v: round(float(v), 4)  # noqa: E731
+
+    def local(p):                       # toạ độ mô hình (Blender, cục bộ bàn) → glTF cục bộ của node pool_table
+        return [r4(p[0]), r4(p[2]), r4(-p[1])]
+
+    def world(p):                       # → glTF thế giới của zone_05
+        wx, wy = POOL[0] + c * p[0] - s * p[1], POOL[1] + s * p[0] + c * p[1]
+        return [r4(wx), r4(p[2]), r4(-wy)]
+    lo, hi = m["table_bounds"]
+    nx, ny = m["nose"]["x+"], m["nose"]["y+"]
+    pockets = []
+    for p in sorted(m["pockets"], key=lambda q: (-q["center"][1], q["center"][0])):
+        x, y = p["center"]
+        end = "side" if abs(y) < 0.2 else "head" if y > 0 else "foot"
+        pockets.append({"id": f"{end}_{'left' if x < 0 else 'right'}", "local": local((x, y, m["cloth_z"])),
+                        "world": world((x, y, m["cloth_z"])), "radius": r4(p["radius"]), "radius_max": r4(p["radius_max"])})
+    play = [(-nx, -ny), (nx, -ny), (nx, ny), (-nx, ny)]
+    data = {
+        "_ghi_chu": "Bàn bi-a zone_05 — GHI LẠI mỗi lần build zone_05 (scripts/blender/lib/pool_table.py đo trên lưới gốc), "
+                    "đừng sửa tay. Đơn vị m, toạ độ glTF (Y lên). world = toạ độ zone_05; local = toạ độ cục bộ của node GLB "
+                    "pool_table (gốc = tâm bàn trên sàn, trục dài = Z cục bộ: +Z = đầu xếp bi, -Z = đầu bi trắng; X = trục "
+                    "ngắn). Bi ball_0 (trắng) … ball_15 và cơ cue (dựng cạnh bàn), cue_2 (nằm trên mặt nỉ) là con của "
+                    "pool_table, gốc = tâm vật; vị trí ban đầu = rack (local). Mặt chơi = trong mũi băng (đo ở độ cao tâm bi). "
+                    "Lỗ: miệng lỗ trên mặt nỉ — radius = bán kính tương đương diện tích, radius_max = điểm xa nhất.",
+        "source": info["source"],
+        "zone": "zone_05", "node": "pool_table",
+        "balls": [f"ball_{n}" for n in range(16)], "cues": ["cue", "cue_2"],
+        "table": {"center": world((0, 0, 0)), "yaw_deg": POOL_YAW,
+                  "size": {"length": r4(hi[1] - lo[1]), "width": r4(hi[0] - lo[0]), "height": r4(hi[2])}},
+        "cloth_height": r4(m["cloth_z"]),
+        "ball_radius": r4(m["ball_radius"]),
+        "play_area": {"length": r4(2 * ny), "width": r4(2 * nx),
+                      "local": {"x": [r4(-nx), r4(nx)], "z": [r4(-ny), r4(ny)]},
+                      "corners_world": [world((x, y, m["cloth_z"])) for x, y in play]},
+        "pockets": pockets,
+        "rack": {f"ball_{n}": {"local": local(m["balls"][n]), "world": world(m["balls"][n])} for n in range(16)},
+    }
+    text = json.dumps(data, ensure_ascii=False, indent=2)
+    # mảng không lồng (toạ độ, danh sách tên) viết trên 1 dòng
+    text = re.sub(r"\[([^\[\]{}]*)\]", lambda mm: "[" + ", ".join(x.strip() for x in mm.group(1).split(",") if x.strip()) + "]", text)
+    with open(POOL_JSON, "w", encoding="utf-8", newline="\n") as f:
+        f.write(text + "\n")
+    print(f"[bàn bi-a] ghi {os.path.normpath(POOL_JSON)}")
 
 
 def build_meeting_rooms(cols, rng):
@@ -214,7 +277,8 @@ def build_colliders(col, rooms):
     C("vp_tuong_nam", ((ox0 + ox1) / 2, oy0, H / 2), (ox1 - ox0, 0.3, H), col)
     C("vp_tuong_bac", ((ox0 + ox1) / 2, oy1, H / 2), (ox1 - ox0, 0.3, H), col)
     C("vp_tuong_tay", (ox0, (oy0 + oy1) / 2, H / 2), (0.3, oy1 - oy0, H), col)
-    C("ban_bi_a", (-4.0, 3.0, 0.45), (2.7, 1.6, 0.9), col)
+    (x0, y0, _), (x1, y1, z1) = POOL_INFO["world_bounds"]   # bàn + 2 cây cơ, đo khi dựng (lib/pool_table.py)
+    C("ban_bi_a", ((x0 + x1) / 2, (y0 + y1) / 2, z1 / 2), (x1 - x0, y1 - y0, z1), col)
     C("ke_o_vuong_1", (-7.6, -3.5, 1.0), (0.45, 1.3, 2.0), col)
     C("ke_o_vuong_2", (-2.0, -5.75, 0.8), (1.7, 0.45, 1.6), col)
     C("ban_tulip", (-4.2, -3.0, 0.4), (2.0, 2.0, 0.8), col)
@@ -249,6 +313,8 @@ def compare_cameras():
         ("ban_lam_viec", "VanPhongLamViec/t_0036.0.jpg", (INTERN[0] + 1.3, INTERN[1] + 2.2, 1.5),
          (INTERN[0], INTERN[1], 0.8), 24),
         ("bi_a", "VanPhongLamViec/t_0018.0.jpg", (-6.2, 0.2, 1.6), (-3.2, 4.0, 0.8), 22),
+        ("ban_bi_a_can", None, (POOL[0] + 1.9, POOL[1] - 1.9, 1.75), (POOL[0] + 0.2, POOL[1], 0.72), 30),
+        ("khu_nghi", None, (-0.6, -5.4, 2.5), (-4.6, 1.8, 0.6), 16),      # toàn cảnh khu nghỉ (không có ảnh thật)
         ("phong_hop", "VanPhongLamViec/t_0024.0.jpg", (-12.0, -1.0, 1.5), (-20.0, 4.5, 1.2), 22),
     ]
 

@@ -260,14 +260,8 @@ def meeting_room(b, x0, y0, x1, y1, door, h=3.0, seats=8, rng=None):
     ceiling(b, x0, y0, x1, y1, h)
 
 
-def pool_table(b, x, y):
-    b.box((x, y, 0.72), (2.6, 1.5, 0.14), "pool_wood", mat="gloss")
-    b.box((x, y, 0.58), (2.3, 1.2, 0.16), "pool_wood", mat="gloss")      # yếm bàn
-    b.box((x, y, 0.795), (2.36, 1.26, 0.02), "pool_blue")
-    for sx in (-1, 1):
-        for sy in (-1, 1):  # chân tiện thon dần + đế inox
-            b.cylinder((x + sx * 1.0, y + sy * 0.5, 0.06), 0.09, 0.44, "pool_wood", segments=8, radius_top=0.13)
-            b.cylinder((x + sx * 1.0, y + sy * 0.5, 0.0), 0.08, 0.06, "concrete_grey", segments=8, mat="gloss")
+def pool_lamps(b, x, y):
+    """3 đèn thả chao inox trên bàn bi-a (trục dài theo X). Bàn: mô hình Sketchfab, lib/pool_table.py."""
     for k in (-1, 0, 1):  # đèn thả chao inox
         b.cylinder((x + k * 0.8, y, 2.0), 0.01, 1.0, "black", segments=4)
         b.cylinder((x + k * 0.8, y, 1.75), 0.24, 0.25, "concrete_grey", segments=10, radius_top=0.06, mat="gloss")

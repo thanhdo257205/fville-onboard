@@ -1,0 +1,148 @@
+{
+  "_ghi_chu": "Bàn bi-a zone_05 — GHI LẠI mỗi lần build zone_05 (scripts/blender/lib/pool_table.py đo trên lưới gốc), đừng sửa tay. Đơn vị m, toạ độ glTF (Y lên). world = toạ độ zone_05; local = toạ độ cục bộ của node GLB pool_table (gốc = tâm bàn trên sàn, trục dài = Z cục bộ: +Z = đầu xếp bi, -Z = đầu bi trắng; X = trục ngắn). Bi ball_0 (trắng) … ball_15 và cơ cue (dựng cạnh bàn), cue_2 (nằm trên mặt nỉ) là con của pool_table, gốc = tâm vật; vị trí ban đầu = rack (local). Mặt chơi = trong mũi băng (đo ở độ cao tâm bi). Lỗ: miệng lỗ trên mặt nỉ — radius = bán kính tương đương diện tích, radius_max = điểm xa nhất.",
+  "source": {
+    "title": "Pool Table Traditional",
+    "author": "fizyman",
+    "license": "CC BY 4.0",
+    "url": "https://sketchfab.com/3d-models/pool-table-traditional-e0b938c0c2e74eb794a49ebde2543977"
+  },
+  "zone": "zone_05",
+  "node": "pool_table",
+  "balls": ["ball_0", "ball_1", "ball_2", "ball_3", "ball_4", "ball_5", "ball_6", "ball_7", "ball_8", "ball_9", "ball_10", "ball_11", "ball_12", "ball_13", "ball_14", "ball_15"],
+  "cues": ["cue", "cue_2"],
+  "table": {
+    "center": [-4.0, 0.0, -3.0],
+    "yaw_deg": 90,
+    "size": {
+      "length": 2.4912,
+      "width": 1.4067,
+      "height": 0.8153
+    }
+  },
+  "cloth_height": 0.7614,
+  "ball_radius": 0.0285,
+  "play_area": {
+    "length": 2.2535,
+    "width": 1.1337,
+    "local": {
+      "x": [-0.5669, 0.5669],
+      "z": [-1.1268, 1.1268]
+    },
+    "corners_world": [
+      [-2.8732, 0.7614, -2.4331],
+      [-2.8732, 0.7614, -3.5669],
+      [-5.1268, 0.7614, -3.5669],
+      [-5.1268, 0.7614, -2.4331]
+    ]
+  },
+  "pockets": [
+    {
+      "id": "head_right",
+      "local": [0.5753, 0.7614, -1.135],
+      "world": [-5.135, 0.7614, -3.5753],
+      "radius": 0.0579,
+      "radius_max": 0.0668
+    },
+    {
+      "id": "head_left",
+      "local": [-0.5757, 0.7614, -1.1348],
+      "world": [-5.1348, 0.7614, -2.4243],
+      "radius": 0.0579,
+      "radius_max": 0.0665
+    },
+    {
+      "id": "side_left",
+      "local": [-0.6136, 0.7614, 0.0002],
+      "world": [-3.9998, 0.7614, -2.3864],
+      "radius": 0.0575,
+      "radius_max": 0.0711
+    },
+    {
+      "id": "side_right",
+      "local": [0.6136, 0.7614, 0.0004],
+      "world": [-3.9996, 0.7614, -3.6136],
+      "radius": 0.0569,
+      "radius_max": 0.0714
+    },
+    {
+      "id": "foot_left",
+      "local": [-0.5753, 0.7614, 1.1353],
+      "world": [-2.8647, 0.7614, -2.4247],
+      "radius": 0.0579,
+      "radius_max": 0.0664
+    },
+    {
+      "id": "foot_right",
+      "local": [0.5753, 0.7614, 1.1357],
+      "world": [-2.8643, 0.7614, -3.5753],
+      "radius": 0.0577,
+      "radius_max": 0.0669
+    }
+  ],
+  "rack": {
+    "ball_0": {
+      "local": [-0.0, 0.7898, -0.6159],
+      "world": [-4.6159, 0.7898, -3.0]
+    },
+    "ball_1": {
+      "local": [-0.0, 0.79, 0.55],
+      "world": [-3.45, 0.79, -3.0]
+    },
+    "ball_2": {
+      "local": [0.0286, 0.79, 0.599],
+      "world": [-3.401, 0.79, -3.0286]
+    },
+    "ball_3": {
+      "local": [0.0572, 0.79, 0.6481],
+      "world": [-3.3519, 0.79, -3.0572]
+    },
+    "ball_4": {
+      "local": [0.0858, 0.79, 0.6971],
+      "world": [-3.3029, 0.79, -3.0858]
+    },
+    "ball_5": {
+      "local": [-0.0567, 0.79, 0.6481],
+      "world": [-3.3519, 0.79, -2.9433]
+    },
+    "ball_6": {
+      "local": [0.0286, 0.79, 0.6971],
+      "world": [-3.3029, 0.79, -3.0286]
+    },
+    "ball_7": {
+      "local": [-0.0858, 0.79, 0.6971],
+      "world": [-3.3029, 0.79, -2.9142]
+    },
+    "ball_8": {
+      "local": [0.0003, 0.79, 0.6481],
+      "world": [-3.3519, 0.79, -3.0003]
+    },
+    "ball_9": {
+      "local": [-0.0287, 0.79, 0.599],
+      "world": [-3.401, 0.79, -2.9713]
+    },
+    "ball_10": {
+      "local": [-0.0286, 0.79, 0.6971],
+      "world": [-3.3029, 0.79, -2.9714]
+    },
+    "ball_11": {
+      "local": [0.1144, 0.79, 0.7462],
+      "world": [-3.2538, 0.79, -3.1144]
+    },
+    "ball_12": {
+      "local": [-0.0, 0.79, 0.7462],
+      "world": [-3.2538, 0.79, -3.0]
+    },
+    "ball_13": {
+      "local": [-0.0572, 0.79, 0.7462],
+      "world": [-3.2538, 0.79, -2.9428]
+    },
+    "ball_14": {
+      "local": [-0.1144, 0.79, 0.7462],
+      "world": [-3.2538, 0.79, -2.8856]
+    },
+    "ball_15": {
+      "local": [0.0572, 0.79, 0.7462],
+      "world": [-3.2538, 0.79, -3.0572]
+    }
+  }
+}

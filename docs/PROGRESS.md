@@ -370,6 +370,28 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
     khi cần xem bằng mắt, tối đa 3 ảnh.
 - `main` 774fb9e; đã deploy `gh-pages` d82183d (từ `main` 774fb9e, chơi nhiều người vẫn bật).
 
+### Bàn bi-a zone 5 từ mô hình Sketchfab (10/10/2026)
+- "Pool Table Traditional" (fizyman, Sketchfab, CC BY 4.0) thay bàn dựng tay ở khu nghỉ zone_05, cùng chỗ (tâm (-4, 3)
+  Blender, trục dài theo X dưới 3 đèn thả chao inox cũ — giữ đèn). File gốc chép vào
+  `assets/props/pool_table/source/pool_table_traditional.glb` (không commit); `scripts/blender/lib/pool_table.py` dựng lại
+  mỗi lần build zone_05 (cùng cách tượng Cuder), thiếu file → build báo lỗi kèm link nguồn.
+- Xử lý: bỏ đèn treo (700 tam giác, chất liệu phát sáng); 4 chất liệu PBR (normal, metallic-roughness, transmission,
+  alpha BLEND làm mặt nỉ trong suốt) → 1 chất liệu `M_pool_tex` = atlas 1024 × 768 (bàn 768², bi 256 × 512, cơ 256²) ×
+  vertex color (AO của zone) → game đổi toon + viền nét như mọi vật; lưới túi lỗ thành đục. Atlas WebP **52 KB** (12 ảnh
+  PNG gốc ~6 MB). Giảm lưới bàn theo từng mảnh liền: **19.954 → 8.262 tam giác** (chân tiện 9.408 → 2.633, mặt nỉ + băng
+  2.324 → 1.162, thanh viền 3.296 → 1.483, nắp lỗ 2.520 → 1.386, lưới túi lỗ 2.016 → 1.208, yếm giữ 390); bi 16 × 192,
+  cơ 2 × 270 giữ nguyên. Tên: `pool_table` (gốc = tâm bàn trên sàn), con: `ball_0` (bi trắng) … `ball_15` (số theo màu
+  chuẩn, gốc = tâm bi), `cue` (dựng cạnh bàn), `cue_2` (nằm trên mặt nỉ); bi + cơ `dynamic` (không AO, sau này lăn được).
+- `data/pool.json` (build ghi lại, đừng sửa tay; toạ độ glTF world + local của `pool_table`): mặt chơi trong băng
+  **2,2535 × 1,1337 m** (bàn 8 feet), mặt nỉ cao 0,7614 m, bàn 2,491 × 1,407 × 0,815 m, bi r 2,85 cm, 6 lỗ (tâm miệng lỗ,
+  r ~5,7–5,8 cm, điểm xa nhất 6,6–7,1 cm), vị trí xếp 16 bi.
+- `COL_ban_bi_a` theo kích thước thật (2,491 × 1,47 × 0,815 m, gồm cây cơ dựng cạnh bàn; trước: 2,7 × 1,6 × 0,9),
+  `NPC_ban_bi_a` giữ chỗ cũ; lối khu nghỉ → văn phòng / phòng FSA thông. Hạt lúa `z5_ban_bi_a` (dưới mép băng) vẫn trong
+  tầm nhặt 1,4 m. zone_05: 32.086 → 43.700 tam giác, GLB **129 → 312 KB** (+183 KB). check_glb 0 lỗi.
+- Kiểm tra: test:data đạt; test:smoke `--zone 5` thêm bước bàn bi-a (node + 16 bi + cơ + COL) + anh Khang → mini-game Một
+  cú bi-a chạy, cờ billiards_played: **23 bước đạt, 3 ngoại hình (1 phút 42 giây)**. Ảnh:
+  `renders/zone_05_office_khu_nghi.png` (toàn cảnh khu nghỉ, camera mới), `zone_05_office_ban_bi_a_can.png` (cận bàn).
+
 ### Màn chọn nhân vật mới, Tú khác giới với người chơi (10/10/2026)
 - **Màn chọn nhân vật** (`game/src/ui/creator.js`, thay nút Male / Female): cảnh 3D nhỏ (renderer riêng + viền nét) với
   intern_nam, intern_nam_kinh, intern_nu đứng trên bục, mặc dau_ngay, phát idle; người đang chọn bước lên, vẫy tay, vòng
