@@ -748,6 +748,27 @@ export class PoolTable {
 
   // ---------- camera + chỗ đứng ----------
   local(v) { return this.root.localToWorld(v.clone()); }
+  // độ cao (toạ độ cục bộ của bàn) camera không được vượt khi ở trên mặt bàn: vật thấp nhất phía trên mặt chơi (zone_05: mép
+  // dưới 3 chao đèn thả ~1,75 m; không có đèn thì là trần) trừ 15 cm. Camera thấp hơn mép chao thì mọi tia nhìn xuống bàn
+  // đều đi dưới đèn — đèn không che bàn, không kéo camera vào. Đo 1 lần mỗi zone: tia thẳng đứng từ lưới điểm phủ mặt bàn
+  headroom() {
+    if (this.headroomY != null && this.headroomOf === this.zone) return this.headroomY;
+    const bt = this.zone?.view?.geometry.boundsTree, size = this.cfg.table.size, y = this.table.ballY, inv = this.root.matrixWorld.clone().invert();
+    let top = Infinity;
+    if (bt) {
+      const ray = new THREE.Ray(new THREE.Vector3(), new THREE.Vector3(0, 1, 0)), up = new THREE.Vector3(0, 1, 0).transformDirection(this.root.matrixWorld);
+      for (let x = -size.width / 2; x <= size.width / 2 + 1e-6; x += size.width / 16) {
+        for (let z = -size.length / 2; z <= size.length / 2 + 1e-6; z += size.length / 28) {
+          ray.set(this.local(new THREE.Vector3(x, y + 0.1, z)), up);
+          const hit = bt.raycastFirst(ray, THREE.DoubleSide, 0, 4);
+          if (hit) top = Math.min(top, hit.point.applyMatrix4(inv).y);
+        }
+      }
+    }
+    this.headroomOf = this.zone;
+    this.headroomY = (top === Infinity ? y + 3 : top) - 0.15;
+    return this.headroomY;
+  }
   camera(dt) {
     const cam = this.game.camera, s = this.state, cue = s.balls[0], y = this.table.ballY;
     const d = new THREE.Vector3(Math.cos(this.angle), 0, Math.sin(this.angle));
@@ -757,13 +778,15 @@ export class PoolTable {
       pos = new THREE.Vector3(cue.x * 0.4, y + 1.2, -this.table.rz - 0.65);
       look = new THREE.Vector3(cue.x * 0.6, y, -this.table.rz * 0.4);
     } else if (this.phase === "roll" || this.phase === "watch" || this.phase === "wait" || !cue.on) {
-      // bi đang lăn / đang xem: nhìn bao quát bàn từ phía camera đang đứng
-      const back = d.clone().multiplyScalar(-1.15);
-      pos = new THREE.Vector3(back.x, y + 1.55, back.z);
+      // bi đang lăn / đang xem: nhìn bao quát bàn từ phía camera đang đứng — dưới chao đèn treo (thấp hơn thì lùi xa hơn,
+      // vẫn thấy cả bàn); trước đây cao 1,55 m trên mặt bi → tia từ bi tới camera chạm chao, camera bị kéo vào sát đèn
+      const h = Math.max(0.45, Math.min(1.55, this.headroom() - y));
+      const back = d.clone().multiplyScalar(-(1.15 + (1.55 - h)));
+      pos = new THREE.Vector3(back.x, y + h, back.z);
       look = new THREE.Vector3(0, y, 0);
     } else {
       const c = new THREE.Vector3(cue.x, y, cue.z);
-      const h = 0.18 + this.camDist * 0.42;
+      const h = Math.max(0.3, Math.min(0.18 + this.camDist * 0.42, this.headroom() - y));   // lăn chuột ra xa: không lên quá chao đèn
       pos = c.clone().addScaledVector(d, -this.camDist).add(new THREE.Vector3(0, h, 0));
       look = c.clone().addScaledVector(d, 0.45).add(new THREE.Vector3(0, -0.05, 0));
     }
@@ -832,6 +855,14 @@ export class PoolTable {
     const res = simulateShot(this.table, this.shared.state, { angle, power }, { frames: false });
     n.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue: null, b: packBalls(res.finalState), k: res.pocketed, f: res.firstContact, s: res.cueScratch, d: 1 });
     return true;
+  }
+  // kiểm thử: camera so với mặt bàn — cao bao nhiêu (cục bộ), giới hạn dưới chao đèn, tia camera → tâm bàn có vướng lưới
+  // bối cảnh nào không (đèn treo, trần; bi và người do code dựng không thuộc zone.view)
+  cameraView() {
+    const cam = this.game.camera.position, bt = this.zone?.view?.geometry.boundsTree;
+    const ctr = this.local(new THREE.Vector3(0, this.table.ballY, 0)), dir = ctr.clone().sub(cam), len = dir.length();
+    const hit = bt && len > 0.1 ? bt.raycastFirst(new THREE.Ray(cam.clone(), dir.normalize()), THREE.DoubleSide, 0, len - 0.05) : null;
+    return { y: +this.root.worldToLocal(cam.clone()).y.toFixed(3), headroom: +this.headroom().toFixed(3), blocked: hit ? +hit.distance.toFixed(2) : null };
   }
   info() {
     const s = this.state, tb = this.tb;
