@@ -327,6 +327,51 @@ export function installDebug(game, loop) {
     },
     get info() { const i = game.renderer.info; return { triangles: i.triangles, calls: i.calls }; },
     get seeThrough() { return game.seeThrough.info(); },
+    // bầu trời + phông nền (render/sky.js): số tam giác, tâm, màu đỉnh / chân trời, đang tắt mây (nấc Detail thấp)
+    get sky() { return { ...game.sky.info(), fog: game.scene.fog && [game.scene.fog.near, game.scene.fog.far] }; },
+    // đứng ở mỗi SPAWN_ của zone (mắt 1,7 m), nhìn ngang 8 hướng (ngẩng 4°), vẽ khung nhỏ 160 × 90 hai lần: cả cảnh và chỉ trời +
+    // phông nền (render/sky.js) → điểm ảnh giống nhau ở 2 lần = chỗ nhìn thấy trời / phông nền (không bị nhà, xe, cây che). Trên
+    // các điểm đó ở nửa trên khung: share = tỉ lệ thuộc màu phổ biến nhất (làm tròn 16 mức mỗi kênh) — trời một màu phẳng ≈ 1;
+    // sky = tỉ lệ điểm nhìn thấy trời trong nửa trên (ít quá → hướng bị che, không xét)
+    // đọc điểm ảnh bất đồng bộ (như bản đồ app, ui/map.js): đọc đồng bộ làm trình duyệt in cảnh báo "GPU stall due to ReadPixels"
+    async skyCheck({ w = 160, h = 90, dirs = 8, pitch = 4 } = {}) {
+      const r = game.renderer.three, rt = new THREE.WebGLRenderTarget(w, h);
+      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      const cam = new THREE.PerspectiveCamera(60, w / h, 0.1, 600), all = new Uint8Array(w * h * 4), bare = new Uint8Array(w * h * 4), out = [];
+      const keep = r.getRenderTarget(), scene = game.scene;
+      const shot = async (buf) => { r.setRenderTarget(rt); r.render(scene, cam); r.setRenderTarget(keep); await r.readRenderTargetPixelsAsync(rt, 0, 0, w, h, buf); };
+      try {
+        for (const [name, o] of game.zone.spawns) {
+          const p = worldPos(o).add(new THREE.Vector3(0, 1.7, 0));
+          for (let k = 0; k < dirs; k++) {
+            const yaw = (k / dirs) * Math.PI * 2, pr = THREE.MathUtils.degToRad(pitch);
+            cam.position.copy(p);
+            cam.lookAt(p.x + Math.sin(yaw) * Math.cos(pr), p.y + Math.sin(pr), p.z + Math.cos(yaw) * Math.cos(pr));
+            cam.updateMatrixWorld();
+            game.sky.update(cam, 0);
+            await shot(all);
+            const hidden = scene.children.filter((c) => c.visible && c !== game.sky.root && !c.isLight);
+            for (const c of hidden) c.visible = false;
+            game.sky.update(cam, 0);             // vòng lặp game có thể đã vẽ khung chính trong lúc chờ đọc → đặt lại vòm theo camera đo
+            r.setRenderTarget(rt); r.render(scene, cam); r.setRenderTarget(keep);
+            for (const c of hidden) c.visible = true;
+            await r.readRenderTargetPixelsAsync(rt, 0, 0, w, h, bare);
+            const bins = new Map();
+            let n = 0;
+            for (let y = Math.floor(h / 2); y < h; y++) for (let x = 0; x < w; x++) {     // hàng dưới cùng trước → nửa trên khung = y ≥ h/2
+              const i = (y * w + x) * 4;
+              if (all[i] !== bare[i] || all[i + 1] !== bare[i + 1] || all[i + 2] !== bare[i + 2]) continue;
+              n++;
+              const key = (all[i] >> 4) << 8 | (all[i + 1] >> 4) << 4 | (all[i + 2] >> 4);
+              bins.set(key, (bins.get(key) || 0) + 1);
+            }
+            const top = bins.size ? Math.max(...bins.values()) : 0;
+            out.push({ spawn: name, dir: k, sky: +(n / (w * h / 2)).toFixed(3), share: n ? +(top / n).toFixed(3) : null, colors: bins.size });
+          }
+        }
+      } finally { r.setRenderTarget(keep); rt.dispose(); game.sky.update(game.camera, 0); }
+      return out;
+    },
     gaps(opts) {
       const from = [game.player.position];
       game.zone.root.traverse((o) => { if (/^(SPAWN|NPC|INT)_/.test(o.name)) from.push(o.getWorldPosition(new THREE.Vector3())); });

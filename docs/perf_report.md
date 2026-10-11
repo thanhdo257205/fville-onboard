@@ -289,3 +289,24 @@ Chrome. Tôi không đổi cài đặt hệ thống này. Với số đo trên t
    Máy hiện tại (Ryzen 9 + Vega 8) mạnh hơn mục tiêu, nên con số ở đây là mức trần.
 5. **Ghi chú cho người chơi** (trang hướng dẫn hoặc FAQ nội bộ): game chạy tốt trên GPU tích hợp. Nếu laptop có card rời
    và vẫn giật, đặt Chrome sang "High performance" trong cài đặt đồ họa của Windows.
+
+## Bầu trời + phông nền xa (11/10/2026, nhánh `feat/sky-backdrop`)
+
+Thêm mỗi khung: vòm trời (shader 2 màu, vẽ sau vật đục, chỉ tô điểm ảnh còn trống), vành mặt đất xa, 4 vòng phông nền (hàng
+cây, dãy nhà khu Công nghệ cao, đồi, núi Ba Vì), mây — 1.959 tam giác, 5 lệnh vẽ; sương bật ở mọi zone (trước chỉ zone 0 và 2
+variant). Điện thoại / nấc Detail thấp nhất: tắt mây + dãy nhà (còn 3 lệnh vẽ).
+
+Đo trên máy cloud **không có GPU** (Chromium + SwiftShader vẽ bằng CPU, 960 × 540, nấc Detail thấp nhất,
+`__game.benchmark(90)`, ms / khung, 2 lượt): trước = tắt trời + phông nền + sương, sau = bật.
+
+| Zone | Trước (ms) | Sau (ms) |
+| --- | --- | --- |
+| zone_00 | 149 / 142 | 162 / 164 |
+| zone_01 | 227 / 217 | 254 / 255 |
+| zone_02 | 251 / 226 | 277 / 259 |
+| zone_05 | 94 / 87 | 117 / 106 |
+
+SwiftShader tô điểm ảnh bằng CPU nên mọi lượt tô thêm đều đắt (+10–20 %, số đo dao động ±10 %); trên GPU thật vài lệnh vẽ và ~2.000
+tam giác không đáng kể. **Còn đo lại trên laptop Intel** (`?debug` → `__game.benchmark(120)` ở zone 0–2, so với bản trước ở
+gh-pages cũ) — việc của người dùng, ghi kết quả vào đây.
+

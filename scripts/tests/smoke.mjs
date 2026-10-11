@@ -315,6 +315,17 @@ async function runLook(browser, base, look) {
           `${zone}: ${v.batched} cây / bụi tre gộp thành ${v.merged.length} mesh, mỗi bản sao 1 cây (làm mờ riêng), lá alphaTest không viền${zone < "zone_02" ? ", xe bus mô hình" : ""}`,
           JSON.stringify(v));
       }
+      // bầu trời + phông nền xa (render/sky.js, data/backdrop.json): zone ngoài trời 0–2, đứng ở mọi SPAWN_ nhìn ngang 8 hướng →
+      // phần nhìn thấy trời / phông nền ở nửa trên khung không còn là một màu phẳng (màu phổ biến nhất ≤ 80 %; trời phẳng cũ = 100 %);
+      // sương màu chân trời; tổng tam giác trong giới hạn
+      if (["zone_00", "zone_01", "zone_02"].includes(zone) && look === looks[0]) {
+        const sk = await ev(async () => ({ info: __game.sky, views: await __game.skyCheck() }));
+        const open = sk.views.filter((v) => v.sky >= 0.15), flat = open.filter((v) => v.share > 0.8);
+        const tris = sk.info.core + sk.info.extra + sk.info.clouds + sk.info.ground;
+        await check(open.length > 0 && !flat.length && sk.info.fog && tris <= 5000,
+          `${zone}: bầu trời chuyển màu + phông nền xa — ${open.length}/${sk.views.length} hướng nhìn thấy trời, màu phổ biến nhất ≤ ${Math.max(...open.map((v) => v.share))} (trời phẳng = 1), sương ${sk.info.fog?.join("–")} m, ${tris} tam giác`,
+          JSON.stringify({ info: sk.info, flat, open: open.map((v) => [v.spawn, v.dir, v.share]) }));
+      }
       // zone_05: bàn bi-a (mô hình Sketchfab, node pool_table + 16 bi + cơ, COL): chơi một mình (lời nhắc "Play pool", đánh
       // bằng __game.pool.shoot, bi lăn rồi dừng, rời bàn) và mini-game Một cú bi-a của anh Khang trên bàn thật (thử thách)
       if (zone === "zone_05" && look === looks[0]) {
@@ -1564,10 +1575,10 @@ async function runMobile(browser, base) {
     await touchThrough(P, stats, 30000);
     const ui = await ev(() => ({ touch: __game.touch, body: document.body.classList.contains("touch"), detail: __game._game.renderer.detail,
       pr: __game._game.renderer.three.getPixelRatio(), prompt: getComputedStyle(document.getElementById("prompt")).display, lock: document.getElementById("lockhint").textContent,
-      hint: document.getElementById("hint").textContent, pinch: navigator.maxTouchPoints }));
-    await check(ui.body && ui.touch.on && ui.touch.phone && ui.detail === 2 && ui.pr <= 1 && ui.prompt === "none" && !ui.lock && ui.hint === I18N.en.hud.controls_touch
+      hint: document.getElementById("hint").textContent, pinch: navigator.maxTouchPoints, sky: __game.sky }));
+    await check(ui.body && ui.touch.on && ui.touch.phone && ui.detail === 2 && ui.pr <= 1 && ui.sky.low && ui.prompt === "none" && !ui.lock && ui.hint === I18N.en.hud.controls_touch
       && ui.touch.buttons.menu && ui.touch.buttons.help && ui.touch.zone.w > 200,
-      `giao diện cảm ứng tự bật: cần điều khiển, nút Help / Menu, nấc Detail thấp (pixelRatio ${ui.pr}), dòng hướng dẫn bản cảm ứng, không gợi ý phím E / "Click to look"`,
+      `giao diện cảm ứng tự bật: cần điều khiển, nút Help / Menu, nấc Detail thấp (pixelRatio ${ui.pr}, tắt mây + dãy nhà xa), dòng hướng dẫn bản cảm ứng, không gợi ý phím E / "Click to look"`,
       JSON.stringify(ui));
     // 2. cần điều khiển: đẩy hết cỡ lên trên 1,2 s → chạy tới; vuốt nửa phải → camera xoay; chụm / mở 2 ngón → camera xa / gần
     // (tin nhắn đầu zone tới sau vài giây → chạm qua hết rồi đợi yên 1,5 s mới thử)

@@ -44,13 +44,14 @@ async function boot() {
   await loadStrings(pickLang({ param: params.get("lang"), saved: settings.lang, nav: navigator.languages?.length ? navigator.languages : [navigator.language] }));
   document.title = t("app.title");
   hud.loading(t("app.loading"));
-  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds, chatCfg] = await Promise.all([
+  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds, chatCfg, backdrop] = await Promise.all([
     loadJSON(url("data/zones.json")), loadJSON(url("data/characters.json")),
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
     loadJSON(url("data/pool.json")).catch(() => null),            // bàn bi-a zone 5 (thiếu → không có chế độ bi-a)
     loadJSON(url("data/sounds.json")).catch(() => null),          // hiệu ứng âm thanh (thiếu → game im lặng)
     loadJSON(url("data/chat.json")).catch(() => ({})),            // nhắn tin: giới hạn (máy chủ lọc từ — thiếu file vẫn chat được)
+    loadJSON(url("data/backdrop.json")).catch(() => null),        // bầu trời + phông nền xa (thiếu → trời mặc định, không phông nền)
   ]);
   // âm thanh: AudioContext chỉ tạo được sau lần bấm / phím đầu tiên (trình duyệt chặn tự phát) — core/sound.js
   sound.configure(sounds);
@@ -122,7 +123,7 @@ async function boot() {
     if (sp.length) console.warn(`[bản lưu mẫu]\n${sp.join("\n")}`);
     if (created) save.store(progress);
   }
-  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes, pool: poolCfg }, characters,
+  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes, pool: poolCfg, backdrop }, characters,
     input, settings, nametags, content, progress, ui });
   game.validation = { problems, nodes: nodeCheck };
   // chơi nhiều người "thấy nhau" (data/net.json → url trống = tắt, game y như chơi một mình). ?net=off: tắt (smoke test,
