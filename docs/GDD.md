@@ -169,6 +169,7 @@ thanh trạng thái giả, xoay ngang ẩn thêm 2 thanh chỉ số để còn c
 | Menu, cài đặt, mức đồ họa | Esc |
 | Bỏ qua cảnh chuyển | Nút Skip hoặc Esc |
 | Emote, câu chat soạn sẵn (chỉ khi bật chơi nhiều người) | T, rồi 1–9 |
+| Nhắn tin tự do (khi máy chủ có chat): mở / gửi, đóng | Enter, Esc |
 
 ## Chơi nhiều người (mức "thấy nhau")
 
@@ -178,8 +179,9 @@ Mọi người chơi vào một phòng chung, không mã phòng. Mỗi người 
 - Kết nối sau khi bấm "Start my first day". Mất mạng thì vẫn chơi một mình bình thường, game tự vào lại khi có mạng.
 - Người khác có model và bộ đồ của họ (Áo Cam FPT khi đã nhận), bảng tên viền xanh ngọc (NPC viền cam), đi / chạy / đứng mượt. Chỉ hiện 10 người gần nhất cùng zone, không va chạm.
 - Góc dưới phải: "N online · M in this zone".
-- Phím T: 3 emote (Wave, Nod, Cheer) và 6 câu chat soạn sẵn ("Hi!", "Good luck!", "Follow me!", "Thank you!", "See you at lunch!", "Welcome to F-Ville!") hiện thành bong bóng trên đầu. Không có chat tự do.
-- Menu Esc: "Show other players: On / Off".
+- Phím T: 3 emote (Wave, Nod, Cheer) và 6 câu chat soạn sẵn ("Hi!", "Good luck!", "Follow me!", "Thank you!", "See you at lunch!", "Welcome to F-Ville!") hiện thành bong bóng trên đầu.
+- Nhắn tin tự do (Enter): 3 tab Zone (người cùng zone, kèm bong bóng trên đầu) / All (cả phòng) / Private (nhắn riêng: bấm bảng tên hoặc chọn người); tối đa 120 ký tự, chống spam, từ thô tục và link bị che ở máy chủ (`data/chat.json`); bấm tên để mute; thẻ quy tắc ứng xử lần đầu; tắt hẳn trong menu Esc. Máy chủ không lưu lịch sử.
+- Menu Esc: "Show other players: On / Off", "Chat: On / Off".
 - Người khác không ảnh hưởng nhiệm vụ: dấu "!", gợi ý E, camera hội thoại vẫn như chơi một mình. Đang hội thoại thì ẩn người đứng sát; đang mini-game thì ẩn hết.
 
 ## Zone 0 · Điểm đón xe bus (06:30, khoảng 2 phút)
@@ -467,7 +469,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
 
 **Cắt được nếu thiếu thời gian**, theo thứ tự cắt trước: Đừng ngủ gật, Một cú bi-a, cảnh hoàng hôn, hạt lúa vàng. Tú là phần đắt nhất nhưng cũng giữ mạch cảm xúc; nếu phải bỏ Tú, chuyển tình huống thẻ báo đỏ sang một intern khác do code đặt tạm ở cửa.
 
-**Ngoài phạm vi:** chơi nhiều người đầy đủ (chat tự do, làm nhiệm vụ cùng nhau, phòng riêng — hiện chỉ có mức "thấy nhau"), điều khiển cảm ứng trên điện thoại, lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
+**Ngoài phạm vi:** chơi nhiều người đầy đủ (làm nhiệm vụ cùng nhau, phòng riêng — hiện có mức "thấy nhau", bi-a 2 người, nhắn tin), điều khiển cảm ứng trên điện thoại, lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
 
 ## Phụ lục: dữ liệu JSON cho Claude Code
 
@@ -485,6 +487,7 @@ Toàn bộ nội dung game nằm trong các file JSON ở thư mục `data/`, đ
 | `data/cutscenes.json` | Cảnh chuyển (cảnh lên xe zone 0 → zone 1): đối tượng, góc máy, thời lượng từng nhịp |
 | `data/characters.json` | Vai, model, tên hiển thị, màu áo/quần tạm cho các NPC còn dùng chung model |
 | `data/net.json` | Chơi nhiều người: URL máy chủ (trống = tắt), nhịp gửi, emote và câu chat soạn sẵn, giới hạn của máy chủ |
+| `data/chat.json` | Nhắn tin tự do: độ dài tối đa, chống spam, số tin giữ lại, bộ lọc từ (máy chủ đọc lúc deploy) |
 | `data/i18n/en.json` | Chữ giao diện tiếng Anh (thêm ngôn ngữ khác bằng file cùng cấu trúc) |
 
 **Hiệu ứng** dùng chung cho lựa chọn hội thoại và mini-game: `hieu_biet`, `ket_noi` (số cộng thêm), `value` (id giá trị), `reward` (id phần thưởng), `flags` (cờ đánh dấu sự kiện), `quest` (id việc vừa xong). Chữ hiển thị là object theo mã ngôn ngữ, ví dụ `{ "en": "..." }`. Nội dung chờ HR có `"draft": true` (game hiện `[DRAFT]`); bản phát hành báo lỗi nếu còn mục nào như vậy.

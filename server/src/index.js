@@ -7,19 +7,23 @@
 // sao) — KHÔNG ghi gì xuống storage.
 // Tin nhắn (JSON gọn):
 //   client → máy chủ: join {name, model, outfit, acc, zone} (gửi lại = cập nhật tên / model / bộ đồ / phụ kiện) · state {zone, pos, yaw, anim}
-//                      · emote {id} · phrase {id} · leave · ping (tự trả lời)
+//                      · emote {id} · phrase {id} · chat {ch: "zone" | "all" | "dm", to?, text} · leave · ping (tự trả lời)
 //                      · bi-a (chỉ ở zone của bàn, data/pool.json): pool_join {r, cf} (r: 2 = máy khách hiểu luật chuẩn, cf: 1 =
 //                        gửi sự kiện cú) · pool_leave · pool_shot {seq, a, p, cue, call, b, k, s, d, f, r, rb, kp} · pool_choice {c:
 //                        "rerack" | "play"} (sau cú phá không hợp lệ) · pool_rerack · pool_poke (người chờ báo hết giờ lượt)
 //   máy chủ → client: welcome {id, online, room, features} · zone {zone, players, online} (vừa vào zone: ai đang ở đó) ·
 //                      join {p} · state {id, pos, yaw, anim} · emote {id, e} · phrase {id, p} · leave {id} · online {n} ·
 //                      error {code, msg} · pool {tb, err?} (bàn bi-a; vừa vào zone của bàn cũng nhận) · pool_shot {shot, tb}
-// Chỉ phát tin cho người CÙNG zone (riêng số người online gửi cho cả phòng). Danh sách emote / câu chat và giới hạn lấy từ
-// data/net.json, bàn bi-a từ data/pool.json (đóng gói lúc wrangler deploy).
+//                      · chat {ch, id, name, text, zone?, to?, toName?} (cả người gửi cũng nhận — bản đã lọc) · chat_err {code}
+// Chỉ phát tin cho người CÙNG zone (riêng số người online và chat kênh "all" gửi cho cả phòng; chat "dm" chỉ tới 1 người).
+// Danh sách emote / câu chat và giới hạn lấy từ data/net.json, nhắn tin + bộ lọc từ từ data/chat.json, bàn bi-a từ
+// data/pool.json (đóng gói lúc wrangler deploy). Chat: không lưu lịch sử, lọc từ thô tục + link ở đây trước khi phát.
 import { DurableObject } from "cloudflare:workers";
 import net from "../../data/net.json";
 import poolCfg from "../../data/pool.json";
+import chatCfg from "../../data/chat.json";
 import { PoolRoom } from "./pool.js";
+import { makeFilter, cleanText } from "../../game/src/net/chatfilter.js";
 
 const S = net.server || {};
 const MAX_CONN = S.max_connections ?? 60;
@@ -39,11 +43,19 @@ const ROOM_SIZE = S.room_size ?? 30;
 const MAX_ROOMS = Math.max(1, S.max_rooms ?? 6);
 const TURN_MS = (S.pool_turn_s ?? 60) * 1000;
 const POOL_ZONE = poolCfg.zone;
+// nhắn tin tự do (data/chat.json): độ dài tối đa, chống spam (dồn tối đa CHAT_BURST tin, hồi CHAT_RATE tin / giây), bộ lọc từ
+const CHAT_MAX = chatCfg.max_len ?? 120;
+const CHAT_RATE = chatCfg.rate_per_s ?? 1;
+const CHAT_BURST = chatCfg.burst ?? 5;
+const CHANNELS = new Set(["zone", "all", "dm"]);
+const FILTER = makeFilter(chatCfg);
 // máy khách thấy "pool" mới chơi bi-a 2 người qua máy chủ (máy chủ cũ: bàn chỉ tập một mình); "pool_rules2" = luật chuẩn 8 bi;
 // "pool_facts" = máy chủ không chạy vật lý, dùng kết quả + sự kiện cú máy khách gửi (để kiểm tra bản đang chạy; máy khách không
 // dựa vào). Biến POOL_RULES = "1" trong wrangler → chạy như máy chủ cũ: luật rút gọn, chỉ báo "pool" — để thử máy khách mới
 const poolRules = (env) => (String(env?.POOL_RULES ?? "2") === "1" ? 1 : 2);
-const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts"] : ["pool"]);
+// "chat" = có nhắn tin tự do (máy chủ cũ: chỉ có câu chat soạn sẵn). POOL_RULES = "1" giả trọn máy chủ bản cũ: chỉ "pool"
+// (máy chủ vẫn nhận tin chat, nhưng máy khách thấy không có "chat" nên không hiện khung chat)
+const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts", "chat"] : ["pool"]);
 // phòng 1 giữ tên DO cũ "fville" (không đổi phòng của bản đã chạy)
 const roomName = (n) => (n <= 1 ? "fville" : `fville-${n}`);
 // request WebSocket kèm số phòng (header) — chuyển nguyên request sang DO khác vẫn giữ nâng cấp WebSocket
@@ -127,7 +139,7 @@ export class FVilleRoom extends DurableObject {
     }
     this.ctx.acceptWebSocket(server);
     const a = { id: crypto.randomUUID().slice(0, 8), room, joined: false, left: false, name: "", model: "", outfit: "", zone: null,
-      pos: null, yaw: 0, anim: "idle", shown: false, last: Date.now(), rw: 0, rn: 0, cool: 0 };
+      pos: null, yaw: 0, anim: "idle", shown: false, last: Date.now(), rw: 0, rn: 0, cool: 0, ct: CHAT_BURST, cts: 0 };
     this.save(server, a);
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -137,13 +149,13 @@ export class FVilleRoom extends DurableObject {
     let a = this.mem.get(ws);
     if (!a) {
       a = ws.deserializeAttachment() || null;
-      if (a) { a.rw = 0; a.rn = 0; a.cool = 0; this.mem.set(ws, a); }
+      if (a) { a.rw = 0; a.rn = 0; a.cool = 0; a.ct = CHAT_BURST; a.cts = 0; this.mem.set(ws, a); }
     }
     return a;
   }
   save(ws, a) {
     this.mem.set(ws, a);
-    const { rw, rn, cool, ...keep } = a;        // bộ đếm tần suất chỉ cần trong bộ nhớ
+    const { rw, rn, cool, ct, cts, ...keep } = a;        // bộ đếm tần suất (cả chống spam chat) chỉ cần trong bộ nhớ
     try { ws.serializeAttachment(keep); } catch { /* kết nối đã đóng */ }
   }
   players() {
@@ -274,6 +286,7 @@ export class FVilleRoom extends DurableObject {
         this.toZone(a.zone, m.t === "emote" ? { t: "emote", id: a.id, e: m.id } : { t: "phrase", id: a.id, p: m.id }, ws);
         return;
       }
+      case "chat": return this.onChat(ws, a, m, now);
       case "leave": this.drop(ws, a, 1000, "bye"); return;
       case "ping": this.send(ws, { t: "pong" }); return;
       default: return;
@@ -281,7 +294,7 @@ export class FVilleRoom extends DurableObject {
   }
 
   onJoin(ws, a, m) {
-    const name = cleanName(m.name);
+    const name = FILTER.clean(cleanName(m.name)).text;     // tên tự đặt cũng qua bộ lọc từ
     if (!name || !ZONE_RE.test(m.zone)) { this.send(ws, { t: "error", code: "bad_join", msg: "Invalid name or zone." }); return; }
     a.name = name;
     a.model = typeof m.model === "string" && ID_RE.test(m.model) ? m.model : "";
@@ -301,6 +314,32 @@ export class FVilleRoom extends DurableObject {
     if (m.zone !== a.zone) { this.leaveZone(ws, a); a.zone = m.zone; a.pos = null; this.enterZone(ws, a); }
     else if (a.shown) this.toZone(a.zone, { t: "join", p: pub(a) }, ws);
     this.save(ws, a);
+  }
+
+  // nhắn tin: zone = người cùng zone, all = cả phòng, dm = 1 người (id phiên, cùng phòng). Người gửi cũng nhận lại bản đã lọc
+  // (thấy đúng như người khác thấy). Lỗi → chat_err {code}: empty | long | rate | nobody
+  onChat(ws, a, m, now) {
+    if (!a.joined || !CHANNELS.has(m.ch)) return;
+    const raw = cleanText(m.text);
+    if (!raw) { this.send(ws, { t: "chat_err", code: "empty" }); return; }
+    if ([...raw].length > CHAT_MAX) { this.send(ws, { t: "chat_err", code: "long" }); return; }
+    a.ct = Math.min(CHAT_BURST, (a.ct ?? CHAT_BURST) + ((now - (a.cts || now)) / 1000) * CHAT_RATE);
+    a.cts = now;
+    if (a.ct < 1) { this.send(ws, { t: "chat_err", code: "rate" }); return; }
+    let target = null;
+    if (m.ch === "dm") {
+      target = m.to !== a.id && typeof m.to === "string" ? this.players().find(([, b]) => b.id === m.to) : null;
+      if (!target) { this.send(ws, { t: "chat_err", code: "nobody" }); return; }
+    }
+    a.ct -= 1;
+    const msg = { t: "chat", ch: m.ch, id: a.id, name: a.name, text: FILTER.clean(raw).text };
+    if (m.ch === "zone") this.toZone(a.zone, { ...msg, zone: a.zone });
+    else if (m.ch === "all") this.toAll(msg);
+    else {
+      const out = JSON.stringify({ ...msg, to: target[1].id, toName: target[1].name });
+      this.send(target[0], out);
+      this.send(ws, out);
+    }
   }
 
   onState(ws, a, m) {

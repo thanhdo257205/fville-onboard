@@ -422,3 +422,59 @@ npx wrangler tail --format json        # 3. chơi thử 1 ván 2 người: cú p
 Lùi lại: `npx wrangler rollback` về e150c939 (bản web mới vẫn chạy với nó — bảng trên).
 
 **Đã deploy (11/10/2026):** bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms.
+
+## Nhắn tin tự do + bộ lọc từ (11/10/2026)
+
+Người dùng chốt: cho gõ chữ tự do (không chỉ câu soạn sẵn), kèm bộ lọc từ. Câu soạn sẵn ở phím T vẫn giữ.
+
+- **Cấu hình:** `data/chat.json` — `max_len` 120 ký tự, chống spam `burst` 5 tin dồn + hồi `rate_per_s` 1 tin / giây,
+  `history` 50 tin mỗi kênh (chỉ ở máy khách trong lượt chơi, không vào bản lưu), `bubble_s` 6 giây bong bóng; `filter`: danh
+  sách từ. Máy chủ đọc file này lúc `wrangler deploy` → sửa danh sách từ thì phải deploy lại máy chủ.
+- **Giao thức:** máy khách gửi `{ t: "chat", ch: "zone" | "all" | "dm", to?, text }`; máy chủ phát
+  `{ t: "chat", ch, id, name, text, zone? }` (bản **đã lọc**) — `zone`: người cùng zone, `all`: cả phòng (mọi zone), `dm`: đúng
+  1 người (id phiên, cùng phòng). Người gửi cũng nhận lại bản đã lọc (thấy đúng như người khác thấy). Lỗi:
+  `{ t: "chat_err", code: "empty" | "long" | "rate" | "nobody" }` (tin quá dài bị từ chối, không cắt). Tin chào thêm
+  `features: [..., "chat"]`; máy chủ bản cũ không có `"chat"` → game không hiện khung chat (vẫn có câu soạn sẵn). Máy chủ
+  **không lưu lịch sử** — người vào sau không thấy tin cũ.
+- **Bộ lọc** (`game/src/net/chatfilter.js`, dùng chung máy chủ + `test:data`): lọc theo từng từ (không lọc chuỗi con →
+  "class", "assistant" không bị che). `exact`: so nguyên dấu tiếng Việt (bỏ dấu sẽ trùng từ thường: "cặc" / "các", "lồn" /
+  "lớn"); `plain`: so sau khi bỏ dấu, đổi chữ số / ký hiệu giống chữ (0 → o, 4 → a, @ → a…), gộp chữ lặp ("fuuuck"); `*` cuối
+  = tiền tố; cụm nhiều từ ("đụ má"); chữ cái tách rời ("f u c k") ghép lại rồi so; `allow`: từ không bao giờ che. Đường link
+  (http://, www., tên miền .com / .vn …) → `[link]`. Tên tự đặt của người chơi cũng qua bộ lọc. Mất ~0,06 ms / tin 120 ký tự
+  (Node). Không lọc được mọi cách viết lách — người chơi còn có mute và tắt chat.
+- **Trong game** (`game/src/ui/chat.js`): góc trái dưới.
+  - Đóng: vài tin mới nhất (mờ sau ~12 s) + "N tin mới — nhấn Enter để đọc".
+  - **Enter** mở (khi đang đi lại / ở bàn bi-a, không trong hội thoại): nhân vật đứng yên, hiện con trỏ, gõ chữ không điều
+    khiển nhân vật. Enter gửi, Enter khi ô trống / **Esc** đóng.
+  - 3 tab **Zone / All / Private** kèm số tin chưa đọc; tin Zone hiện thêm bong bóng trên đầu người gửi (ẩn theo "Show other
+    players"). Private: chọn người trong danh sách, hoặc bấm tên trong tin / bảng tên người chơi (bảng tên bấm được khi khung
+    chat mở).
+  - Bấm tên → nhắn riêng / tắt nhận tin (mute, theo phiên) / bật lại. Lần đầu mở: thẻ quy tắc ứng xử.
+  - Menu Esc: "Chat: On / Off" (lưu cài đặt; tắt thì không hiện khung, không nhận tin).
+  - Mọi chữ người khác gửi hiện bằng `textContent` (không chèn HTML).
+- **Thử:** `__game.chat` (trạng thái, `open()`, `close()`, `send(text)`, `chat(ch, text, to)`, `rulesOk()`), `__game.net.chat`
+  (kênh, mute, lỗi). Smoke (`--extra only`, máy chủ local): 2 trình duyệt + 1 bot WebSocket — tin zone chỉ tới người cùng
+  zone (+ bong bóng), all tới cả phòng, từ thô tục / link bị che, dm chỉ tới đúng người, bấm bảng tên → Private, chặn tin
+  dài / gửi nhanh, tên tự đặt bị lọc, mute, tắt chat ở menu Esc, máy chủ không có `"chat"` → không có khung chat.
+
+**Số request Cloudflare.** Mỗi tin chat = 1 tin WebSocket gửi lên (tính như tin vị trí: 20 tin = 1 request); tin máy chủ phát
+ra không tính. CPU máy chủ mỗi tin: lọc ~0,06 ms + gửi tới tối đa ~30 người cùng phòng.
+
+| Trường hợp | Tin nhận / giờ | Request / giờ |
+| --- | --- | --- |
+| 21 người, mỗi người 1 tin / phút | 1.260 | **~63** (tin vị trí cùng lúc: ~11.800) |
+| 21 người, mỗi người 1 tin / 10 giây (chat rất sôi nổi) | 7.560 | ~380 |
+| Xấu nhất: cả 21 người gửi sát giới hạn (1 tin / giây) | 75.600 | ~3.800 |
+
+→ Chat thêm không đáng kể so với tin vị trí; hạn 100.000 request / ngày gần như không đổi (trước: ~8,5 giờ chơi 21 người /
+ngày; chat bình thường vẫn ~8,4 giờ).
+
+**Deploy: bản web trước, máy chủ sau.** Bản web mới chạy được với máy chủ đang chạy (chưa có `"chat"` → khung chat ẩn, mọi
+thứ khác như cũ); máy chủ mới chạy được với bản web cũ (bản cũ bỏ qua `features` lạ, không gửi `chat`).
+
+```bash
+git pull
+python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trước)
+cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "chat"
+npx wrangler tail --format json        # 3. 2 cửa sổ nhắn thử: mọi outcome ok, CPU ~0–1 ms
+```

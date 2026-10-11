@@ -1,6 +1,6 @@
 # Tiến độ — Ngày Đầu Ở F-Ville
 
-Cập nhật: 10/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
+Cập nhật: 11/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
 `/viewer/`).
 
 Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và push nhánh `main`.
@@ -1153,6 +1153,24 @@ Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms 
   - Thử tay (không commit): bản web mới + mã máy chủ đang chạy (`main` fe49f63 qua `wrangler dev`) chơi trọn ván 15 cú, không
     lỗi từ máy chủ, phát lại khớp → deploy web trước an toàn.
 - Kết quả: test:data, test:pool đạt; `test:smoke -- --zone 5` 71/71 (3 ngoại hình + bản lưu cũ + mạng, cả máy chủ giả bản cũ).
+
+### Nhắn tin tự do giữa người chơi + bộ lọc từ (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l`)
+
+Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2 "Nhắn tin giữa người chơi"). Chi tiết: `docs/multiplayer.md` →
+"Nhắn tin tự do + bộ lọc từ". **Chưa bật trên máy chủ thật** — cần `npx wrangler deploy` ở máy Desktop (người dùng tự làm,
+bản web trước, máy chủ sau; bản web mới với máy chủ đang chạy: khung chat ẩn, mọi thứ khác như cũ).
+- `data/chat.json`: 120 ký tự, 5 tin dồn + 1 tin / giây, 50 tin mỗi kênh (máy khách), bong bóng 6 s, bộ lọc (`exact` giữ dấu
+  tiếng Việt, `plain` bỏ dấu + leet + gộp chữ lặp, cụm nhiều từ, chữ tách rời, `allow`, che link).
+- `game/src/net/chatfilter.js`: bộ lọc theo từng từ, dùng chung máy chủ + `test:data` (~0,06 ms / tin).
+- `server/src/index.js`: tin `chat` kênh zone / all / dm, lọc trước khi phát (cả bản người gửi nhận lại), lọc tên tự đặt,
+  `chat_err` (empty / long / rate / nobody), không lưu lịch sử; tin chào thêm `"chat"` (máy chủ giả bản cũ `POOL_RULES=1`: chỉ
+  `"pool"`).
+- Game: `game/src/ui/chat.js` (khung chat góc trái dưới: Enter mở / gửi, Esc đóng, 3 tab Zone / All / Private + số tin chưa đọc,
+  bấm tên / bảng tên → nhắn riêng / mute, thẻ quy tắc lần đầu), `net.js` (kênh, mute, chống spam phía máy khách, bong bóng tin
+  zone), `remotes.js` (bảng tên bấm được khi khung chat mở), menu Esc "Chat: On / Off", `__game.chat`; chữ `chat.*` en + vi.
+- Số request Cloudflare: 21 người × 1 tin / phút ≈ 63 request / giờ (tin vị trí ~11.800) — không đáng kể.
+- Kiểm thử: `test:data` 17 câu mẫu của bộ lọc; smoke nhóm "nhắn tin" (2 trình duyệt + bot WebSocket, máy chủ local, 7 bước);
+  máy chủ giả bản cũ → không có khung chat. `--extra only` 34/34.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →

@@ -24,6 +24,7 @@ import { DialogueUI } from "./ui/dialogue.js";
 import { MyFptApp } from "./ui/app.js";
 import { Summary } from "./ui/summary.js";
 import { EmotePanel } from "./ui/emotes.js";
+import { ChatPanel } from "./ui/chat.js";
 import { Net } from "./net/net.js";
 import { confirmBox } from "./ui/panels.js";
 import { characterCreator } from "./ui/creator.js";
@@ -41,12 +42,13 @@ async function boot() {
   await loadStrings(pickLang({ param: params.get("lang"), saved: settings.lang, nav: navigator.languages?.length ? navigator.languages : [navigator.language] }));
   document.title = t("app.title");
   hud.loading(t("app.loading"));
-  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds] = await Promise.all([
+  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds, chatCfg] = await Promise.all([
     loadJSON(url("data/zones.json")), loadJSON(url("data/characters.json")),
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
     loadJSON(url("data/pool.json")).catch(() => null),            // bàn bi-a zone 5 (thiếu → không có chế độ bi-a)
     loadJSON(url("data/sounds.json")).catch(() => null),          // hiệu ứng âm thanh (thiếu → game im lặng)
+    loadJSON(url("data/chat.json")).catch(() => ({})),            // nhắn tin: giới hạn (máy chủ lọc từ — thiếu file vẫn chat được)
   ]);
   // âm thanh: AudioContext chỉ tạo được sau lần bấm / phím đầu tiên (trình duyệt chặn tự phát) — core/sound.js
   sound.configure(sounds);
@@ -126,9 +128,12 @@ async function boot() {
   const netUrl = params.get("net");
   if (netUrl === "off") netCfg.url = "";
   else if (netUrl && testParams) netCfg.url = netUrl;
-  const net = new Net({ game, cfg: netCfg, settings });
+  const net = new Net({ game, cfg: { ...netCfg, chat: chatCfg }, settings });
   game.net = net;
   const emotes = net.enabled ? new EmotePanel(net) : null;
+  // nhắn tin tự do (máy chủ báo features "chat"; Enter mở, menu Esc → Chat bật / tắt)
+  const chat = net.enabled ? new ChatPanel({ net, game, settings, save: () => saveSettings(settings) }) : null;
+  game.chat = chat;
   ui.minigame.game = game;
   ui.app.game = game;
 
@@ -156,6 +161,7 @@ async function boot() {
   const menu = new Menu({
     info: () => ({ setting: settings.tier, tier: game.state.tier, gpu: game.gpu, fps: loop.fps, guide: settings.guide !== false,
       detail: settings.detail ?? "auto", detailLevel: renderer.detail, net: net.enabled, players: settings.players !== false,
+      chat: settings.chat !== false,
       sound: { ...SOUND_DEFAULTS, ...settings.sound },
       complete: game.complete,
       // phụ kiện đã mở khoá (tủ đồ — chưa có tab Wardrobe): bật / tắt ở đây
@@ -166,6 +172,7 @@ async function boot() {
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
     onPlayers: (on) => { settings.players = on; saveSettings(settings); net.setShow(on); menu.draw(); },
+    onChat: (on) => { settings.chat = on; saveSettings(settings); if (!on) chat?.close(false); chat?.draw(); menu.draw(); },
     onLang: async (l) => { await setLanguage(l); menu.draw(); },
     // âm thanh: bật / tắt, âm lượng hiệu ứng / tiếng nền (kéo thanh: đổi ngay, thả tay mới lưu)
     onSound: (patch, { redraw = false, store = true } = {}) => {
@@ -181,10 +188,16 @@ async function boot() {
 
   let title = null;   // màn tiêu đề (ui/title.js, mở ở dưới): đang hiện thì Esc không mở menu
   // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn (bảng emote đang mở: 1–9 chọn emote / câu chat) · Tab app
-  // · H gợi ý · T emote + câu chat (chỉ khi bật mạng) · Esc đóng / menu
+  // · H gợi ý · T emote + câu chat (chỉ khi bật mạng) · Enter mở khung chat (máy chủ có "chat", không đang hội thoại) · Esc
+  // đóng / menu
   input.on("KeyE", () => game.interact());
   input.on("KeyH", () => game.help());
-  for (const k of ["Space", "Enter", "NumpadEnter"]) input.on(k, () => ui.dialogue.next());
+  input.on("Space", () => ui.dialogue.next());
+  for (const k of ["Enter", "NumpadEnter"]) input.on(k, () => {
+    const free = !ui.dialogue.open && (game.mode === "play" || game.mode === "pool") && game.state.phase === "playing";
+    if (free && chat?.open()) return;
+    ui.dialogue.next();
+  });
   const digit = (i) => () => { if (emotes?.open) emotes.pick(i - 1); else if (i <= 4) ui.dialogue.choose(i - 1); };
   for (let i = 1; i <= 9; i++) { input.on(`Digit${i}`, digit(i)); input.on(`Numpad${i}`, digit(i)); }
   if (emotes) input.on("KeyT", () => {
@@ -206,6 +219,7 @@ async function boot() {
   input.on("KeyC", () => { if (game.pool?.active) game.pool.cycleCall(); });      // luật chuẩn: đổi lỗ gọi cho bi 8
   input.on("Escape", () => {
     if (title?.open) return;
+    if (chat?.isOpen) return chat.close();
     if (game.cutscene) return game.cutscene.skip();
     if (game.timeSkipping) return;            // màn mờ chuyển giờ (vd "12:00 · lunch"): không mở menu giữa chừng
     if (game.mode === "pool") return game.pool?.leave();
@@ -235,6 +249,7 @@ async function boot() {
     // người chơi khác vẫn đi lại khi mở menu. Lỗi phần mạng không được dừng vòng lặp game (ghi console, mỗi lỗi 1 lần)
     try { net.update(dt); } catch (e) { if (netErr !== e.message) { netErr = e.message; console.error("[mạng]", e); } }
     if (emotes?.open && game.mode !== "play") emotes.hide();
+    chat?.update();
     game.render(dt);
     sound.update(dt, game.camera);            // tai nghe ở camera, tiếng nền, tiếng máy xe bus
     hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t(game.pool?.active ? "pool.click_to_aim" : "hud.click_to_look") : null);

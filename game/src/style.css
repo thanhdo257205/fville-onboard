@@ -619,3 +619,45 @@ body.overlay-open #emotes { display: none; }
 @media (max-width: 700px) { #title .hero { left: 20px; bottom: 40px; gap: 10px; } #title .lang-switch { top: 14px; right: 18px; gap: 14px; }
   #title .eyebrow { font-size: 11px; letter-spacing: .14em; } #title h1 .main { font-size: clamp(56px, 17vw, 80px); } #title .actions .primary { padding: 14px 22px; } }
 @media (prefers-reduced-motion: reduce) { #title .hero > * { animation: none; } #title .hero { transition: none; } }
+
+/* khung chat (game/src/ui/chat.js): góc trái dưới — đóng: vài tin mới nhất mờ dần; mở: tab Zone / All / Private, ô gõ */
+#chat { position: absolute; left: 16px; bottom: 60px; width: min(380px, calc(100vw - 32px)); pointer-events: none; font: 600 13px/1.35 "Nunito", sans-serif; }
+#chat .peek p { margin: 3px 0 0; padding: 3px 9px; border-radius: 8px; background: rgba(18, 20, 24, .6); color: #fff; width: fit-content; max-width: 100%;
+  overflow-wrap: anywhere; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+#chat .peek p.sys { color: #ffd27a; }
+#chat .peek small, #chat .log small { color: var(--muted); }
+#chat .box { display: none; pointer-events: auto; margin-top: 6px; padding: 8px 10px 6px; border-radius: 12px; background: rgba(27, 30, 36, .94);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .35); color: var(--fg); }
+#chat.open .box { display: block; }
+#chat.open .peek { display: none; }
+#chat .tabs { display: flex; gap: 6px; margin-bottom: 6px; }
+#chat .tabs button { flex: 1; border: 0; border-radius: 999px; padding: 4px 8px; background: rgba(255, 255, 255, .08); color: var(--fg); font: 800 12px "Nunito"; cursor: pointer; }
+#chat .tabs button.on { background: #f37021; color: #fff; }
+#chat .tabs i { font-style: normal; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: #e5484d; color: #fff; }
+#chat .tabs i:empty { display: none; }
+#chat .dmbar { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+#chat .dmbar[hidden] { display: none; }
+#chat .dmbar select { flex: 1; min-width: 0; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .2); background: #1c1f25; color: var(--fg); padding: 3px 6px; font: 700 12px "Nunito"; }
+#chat .rules { margin-bottom: 6px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 210, 122, .12); border-left: 3px solid #ffd27a; }
+#chat .rules b { color: #ffd27a; }
+#chat .rules p { margin: 4px 0 6px; font-weight: 700; }
+#chat .rules button { border: 0; border-radius: 999px; padding: 3px 12px; background: #ffd27a; color: #1d1f23; font: 800 12px "Nunito"; cursor: pointer; }
+#chat .log { height: 170px; overflow-y: auto; padding-right: 4px; }
+#chat .log p { margin: 2px 0; overflow-wrap: anywhere; }
+#chat .log p.sys { color: var(--muted); font-style: italic; }
+#chat b[data-who] { cursor: pointer; text-decoration: underline dotted; }
+#chat p.ch-zone b { color: #7fd3ff; }
+#chat p.ch-all b { color: #ffd27a; }
+#chat p.ch-dm b { color: #c79bff; }
+#chat p.mine b { color: #5fd3c6; }
+#chat form { display: flex; gap: 6px; margin-top: 6px; }
+#chat input { flex: 1; min-width: 0; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .25); background: #14161a; color: #fff; padding: 6px 9px; font: 700 13px "Nunito"; }
+#chat form button { border: 0; border-radius: 8px; padding: 0 12px; background: #f37021; color: #fff; font: 800 12px "Nunito"; cursor: pointer; }
+#chat .err { display: block; min-height: 0; color: #ff9b8a; font-weight: 800; }
+#chat .err:empty { display: none; }
+#chat .help { display: block; color: var(--muted); margin-top: 2px; }
+#chat .who { position: absolute; pointer-events: auto; display: grid; gap: 4px; padding: 8px; border-radius: 10px; background: #23262d; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
+#chat .who[hidden] { display: none; }
+#chat .who b { color: #fff; }
+#chat .who button { border: 0; border-radius: 8px; padding: 4px 10px; background: rgba(255, 255, 255, .1); color: var(--fg); font: 700 12px "Nunito"; cursor: pointer; text-align: left; }
+body.chat-open .nametag.player-tag { pointer-events: auto; cursor: pointer; }

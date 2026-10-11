@@ -111,11 +111,11 @@ export class RemotePlayers {
     r.emoting = ch.current;
     act.then(() => { if (r.ch === ch && ch.current === r.emoting) { r.emoting = null; ch.enableLocomotion(); } });
   }
-  say(id, text) {
+  say(id, text, seconds = null) {
     const r = this.list.get(id);
     if (!r || !text) return;
     r.sayText = text;
-    r.bubbleLeft = this.cfg.bubble_s ?? 4;
+    r.bubbleLeft = seconds ?? this.cfg.bubble_s ?? 4;
     if (r.bubble) this.showBubble(r);
   }
   showBubble(r) {
@@ -154,6 +154,8 @@ export class RemotePlayers {
       ch.enableLocomotion();
       ch.root.visible = false;
       r.nameTag = tag("nametag player-tag", r.name, [0.5, 0.5]);
+      // khung chat đang mở (body.chat-open → bảng tên bấm được): bấm tên → nhắn riêng (../ui/chat.js)
+      r.nameTag.element.addEventListener("click", () => this.g.chat?.dmFromTag(r.id, r.name));
       r.nameTag.position.set(0, m.height_m + (this.g.nametags.above ?? 0.28), 0);
       r.bubble = tag("speech", null, [0.5, 1]);
       r.bubble.element.innerHTML = "<span></span>";
