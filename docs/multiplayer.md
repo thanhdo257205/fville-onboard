@@ -420,3 +420,5 @@ npx wrangler tail --format json        # 3. chơi thử 1 ván 2 người: cú p
 ```
 
 Lùi lại: `npx wrangler rollback` về e150c939 (bản web mới vẫn chạy với nó — bảng trên).
+
+**Đã deploy (11/10/2026):** bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms.

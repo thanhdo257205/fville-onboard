@@ -252,14 +252,15 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [x] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
     trong tay toàn bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi; ván 2 người giả chơi trọn; smoke bi-a 2 người với luật
     mới — 6fff4f4 (+ smoke với máy chủ giả bản cũ)
-- [ ] P2 Bi-a: máy chủ không chạy vật lý — máy khách tính cú (cú phá trên máy chủ e150c939 tốn 11–20 ms CPU, quá mốc 10 ms gói
+- [x] P2 Bi-a: máy chủ không chạy vật lý — máy khách tính cú (cú phá trên máy chủ e150c939 tốn 11–20 ms CPU, quá mốc 10 ms gói
   Free) — Phụ trách: Claude — nhánh `claude/lucid-hamilton-t2xq2l`
   - [x] Cú đánh gửi kèm sự kiện cú (`rules.js` → `wireFacts`), máy chủ kiểm tra hợp lý (`factsFromWire`) rồi áp luật chuẩn;
     xin ghế kèm `cf: 1`, tin chào thêm `"pool_facts"`; máy chủ ~0,09 ms mỗi cú (Node) — b8e81e7
   - [x] Kiểm thử: sự kiện cú bịa → chặn, bản web luật chuẩn đầu → `version`, ván trọn khớp từng bit, smoke 71/71; bản web mới
     chơi được với máy chủ đang chạy (e150c939) — b8e81e7
-  - [ ] Deploy: bản web trước (`python scripts/deploy_site.py`), rồi `npx wrangler deploy` ở máy Desktop; tin chào có
+  - [x] Deploy: bản web trước (`python scripts/deploy_site.py`), rồi `npx wrangler deploy` ở máy Desktop; tin chào có
     `"pool_facts"`; `wrangler tail` khi chơi thử: cú phá ~0 ms CPU (xem `docs/multiplayer.md` mục cuối)
+    — 11/10/2026: bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms
 - [x] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: Claude — nhánh `feat/pool-mouse-aim` — 2e53a25
   - Hiện trạng: chuột chỉ xoay cơ khi con trỏ đang bị khoá (Pointer Lock, `game/src/core/input.js`: không khoá thì bỏ qua di
     chuột và kéo chuột). Khoá không được (vừa bấm Esc, trình duyệt từ chối) thì chuột không làm gì; bấm chuột để khoá lại thì

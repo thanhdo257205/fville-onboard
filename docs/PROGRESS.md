@@ -1137,7 +1137,7 @@ Tập một mình và thử thách của anh Khang giữ luật cũ. **Máy ch�
 ### Bi-a: máy khách tính cú, máy chủ không chạy vật lý (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` b8e81e7)
 
 Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms gói Free) → người dùng chốt: tính toán để ở máy khách.
-**Chưa deploy** — thứ tự: bản web trước, máy chủ sau (`docs/multiplayer.md` mục cuối).
+**Đã deploy (11/10/2026):** bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms.
 - `game/src/pool/rules.js`: `wireFacts(res)` (máy khách: sự kiện cú → `f`, `r`, `rb`, `kp` của `pool_shot`) và
   `factsFromWire(table, before, k, m)` (máy chủ: kiểm tra hợp lý → dữ kiện cho `applyShotV2`, không hợp lý → null).
 - `server/src/pool.js`: luật chuẩn dùng kết quả máy khách gửi (`result()` dùng chung với luật cũ) + sự kiện cú; không còn import
