@@ -95,14 +95,14 @@
       ]
     },
     "z2_cuder": {
-      "help": { "en": "Follow the path to the Cuder Statue in the rice field, then press E to read its story and answer three questions.", "vi": "Đi theo con đường tới tượng Cuder giữa ruộng lúa, rồi nhấn E để đọc câu chuyện và trả lời ba câu hỏi." },
+      "help": { "en": "Follow the path to the Cuder Statue in its U of corn beds, then press E to read its story and answer three questions.", "vi": "Đi theo con đường tới tượng Cuder giữa luống ngô chữ U, rồi nhấn E để đọc câu chuyện và trả lời ba câu hỏi." },
       "tu": [
         { "en": "Let's go see the Cuder Statue — it's further along the path.", "vi": "Mình ra xem tượng Cuder đi — thêm một đoạn nữa là tới." },
-        { "en": "The Cuder Statue is in the rice field up ahead — come on!", "vi": "Tượng Cuder ở giữa ruộng lúa phía trước — đi nào!" }
+        { "en": "The Cuder Statue is in the corn beds up ahead — come on!", "vi": "Tượng Cuder ở giữa luống ngô phía trước — đi nào!" }
       ],
       "phone": [
         { "en": "Stop by the Cuder Statue on your way — read its story and earn a badge!", "vi": "Trên đường đi, em ghé tượng Cuder nhé — đọc câu chuyện và nhận một huy hiệu!" },
-        { "en": "The Cuder Statue stands in the rice field along the path. Don't skip it!", "vi": "Tượng Cuder đứng giữa ruộng lúa bên đường. Đừng bỏ qua nhé!" }
+        { "en": "The Cuder Statue stands among the corn beds along the path. Don't skip it!", "vi": "Tượng Cuder đứng giữa luống ngô bên đường. Đừng bỏ qua nhé!" }
       ]
     },
     "z3_card": {
