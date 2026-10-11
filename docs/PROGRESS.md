@@ -1546,7 +1546,7 @@ trồng quanh tượng Cuder theo luống chữ U, tượng ở giữa.
   tượng: 127 FPS, 49,8k tam giác, 16 lượt vẽ. **Đã deploy** gh-pages 667cddf (từ main 0e31d0f).
 - Sau đó (người dùng yêu cầu): bỏ dải ruộng đất nâu sau tượng (x 2–24, y 64–68, `DIRT` cũ) — chỉ giữ đất của luống chữ U; đáy
   chữ U thành luống riêng (x 17–23, y 64–65,2) nối liền 2 cánh, viền gạch chạy theo đường bao chữ U. Build lại zone_02; test:data,
-  smoke `--zone 2` 13/13.
+  smoke `--zone 2` 13/13. **Đã deploy** gh-pages bf620d1 (từ main 57c7a7b).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
