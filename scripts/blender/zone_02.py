@@ -24,7 +24,7 @@ if HERE not in sys.path:
 for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
     del sys.modules[_m]  # nạp lại khi chạy nhiều lần trong Blender đang mở
 
-from lib import bamboo, cuder, kit, props, trees, zone  # noqa: E402
+from lib import bamboo, corn, cuder, kit, props, trees, zone  # noqa: E402
 from lib import quality as Q  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
@@ -57,7 +57,15 @@ STATUE = (20.0, 62.2)
 CUDER_H = 2.384
 CUDER_KEEP_BUN = True
 CUDER_FOOT = {}                       # khung bao xy của tượng (build_interactives ghi, build_colliders dùng)
-DIRT = (2.0, 24.0, 64.0, 68.0)
+# Luống ngô chữ U quanh tượng Cuder (cây: mô hình Sketchfab, lib/corn.py — người dùng yêu cầu 12/10/2026): 1 luống đất viền gạch
+# hình chữ U (2 cánh 2 bên tượng + đáy sau tượng), miệng quay về nam (phía người chơi đi tới, camera sau lưng — không che tượng).
+# Tượng x 19,6..20,4 → mỗi bên chừa 1,6 m tới mép luống. Dải ruộng đất nâu sau tượng (x 2..24, y 64..68) đã bỏ — chỉ giữ đất
+# của luống chữ U (người dùng chốt 12/10/2026).
+CORN_ARMS = ((17.0, 18.0), (22.0, 23.0))   # x 2 cánh (luống rộng 1 m)
+CORN_Y = (59.0, 64.0)                     # cánh: y đầu miệng chữ U → mép trong của đáy
+CORN_BACK = (17.0, 23.0, 64.0, 65.2)      # đáy: x0, x1, y0, y1
+CORN_BED_Z = PLAZA_Z + 0.16               # mặt đất luống (cao hơn sân gạch)
+CORN_H = 2.1                              # m — cao trung bình cây ngô (± 8 %)
 STAIRS = dict(x0=18.0, y0=69.5, width=10.0, n=5, rise=0.16, run=0.5)
 LOBBY_Z = PLAZA_Z + STAIRS["n"] * STAIRS["rise"]  # cao độ sàn sảnh (zone_03 khớp vào)
 
@@ -100,11 +108,16 @@ def build_ground(col):
     kit.brick_paving(pb, px0, PAVILION[3], px1, PLAZA[2], PLAZA_Z)
     kit.brick_paving(pb, PLAZA[0], PLAZA[2], PLAZA[1], PLAZA[3], PLAZA_Z)
     paving = pb.to_object("ENV_paving", col)
-    # ruộng đã gặt: nền đất có viền gạch
-    dx0, dx1, dy0, dy1 = DIRT
-    kit.slab_rect(b, dx0, dy0, dx1, dy1, 0, PLAZA_Z + 0.04, "dirt")
-    for p0, p1 in (((dx0, dy0), (dx1, dy0)), ((dx1, dy0), (dx1, dy1)), ((dx1, dy1), (dx0, dy1)), ((dx0, dy1), (dx0, dy0))):
-        kit.seg_box(b, p0, p1, 0.12, 0, PLAZA_Z + 0.08, "brick_dark")
+    # luống ngô chữ U: 2 cánh + đáy (đất), viền gạch chạy theo đường bao chữ U
+    cy0, cy1 = CORN_Y
+    bx0, bx1, by0, by1 = CORN_BACK
+    for ax0, ax1 in CORN_ARMS:
+        kit.slab_rect(b, ax0, cy0, ax1, cy1, 0, CORN_BED_Z, "dirt")
+    kit.slab_rect(b, bx0, by0, bx1, by1, 0, CORN_BED_Z, "dirt")
+    (lx0, lx1), (rx0_, rx1_) = CORN_ARMS
+    outline = [(lx1, cy0), (lx0, cy0), (lx0, by1), (rx1_, by1), (rx1_, cy0), (rx0_, cy0), (rx0_, by0), (lx1, by0), (lx1, cy0)]
+    for p0, p1 in zip(outline[:-1], outline[1:]):
+        kit.seg_box(b, p0, p1, 0.12, 0, CORN_BED_Z + 0.05, "brick_dark")
     return b.to_object("ENV_ground", col, tint="ground"), paving
 
 
@@ -192,7 +205,24 @@ def build_vegetation(col, rng):
     kit.TREES = None
     for k, (_, r) in enumerate(bamboo.place(col, BAMBOO_SPOTS)):
         BAMBOO_R[k] = r
+    corn.place(col, corn_spots(), CORN_H)
     return veg
+
+
+def corn_spots():
+    """Chỗ trồng ngô: mỗi cánh 1 hàng so le (± 0,17 m) dọc luống, đáy 1 hàng so le. → [(x, y, z)]"""
+    out = []
+    cy0, cy1 = CORN_Y
+    n = 9
+    for ax0, ax1 in CORN_ARMS:
+        cx = (ax0 + ax1) / 2
+        for i in range(n):
+            out.append((cx + (0.17 if i % 2 else -0.17), cy0 + 0.35 + i * (cy1 - cy0 - 0.7) / (n - 1), CORN_BED_Z))
+    bx0, bx1, by0, by1 = CORN_BACK
+    m = 10
+    for i in range(m):
+        out.append((bx0 + 0.45 + i * (bx1 - bx0 - 0.9) / (m - 1), (by0 + by1) / 2 + (0.15 if i % 2 else -0.15), CORN_BED_Z))
+    return out
 
 
 def build_props(col, rng):
@@ -295,6 +325,11 @@ def build_colliders(col):
     for k, (x, y, z, _) in enumerate(BAMBOO_SPOTS):   # gốc bụi tre (thân tre loe dần lên ngọn, gốc chỉ ~0,3 m)
         d = 2 * (BAMBOO_R[k] + 0.25)
         C("bui_tre" if k == 0 else f"bui_tre_{k + 1}", (x, y, z + 1.5), (d, d, 3.0), col)
+    cy0, cy1 = CORN_Y                           # luống ngô chữ U (thấp: không chặn camera ở tầm mắt)
+    for k, (ax0, ax1) in enumerate(CORN_ARMS):
+        C(f"luong_ngo_{'tay' if k == 0 else 'dong'}", ((ax0 + ax1) / 2, (cy0 + cy1) / 2, 0.6), (ax1 - ax0 + 0.1, cy1 - cy0, 1.2), col)
+    bx0, bx1, by0, by1 = CORN_BACK
+    C("luong_ngo_sau", ((bx0 + bx1) / 2, (by0 + by1) / 2, 0.6), (bx1 - bx0 + 0.1, by1 - by0, 1.2), col)
     fx, fy = CUDER_FOOT["x"], CUDER_FOOT["y"]   # hộp va chạm ôm khung bao tượng mới (bệ + đống xu + người)
     C("tuong_cuder", ((fx[0] + fx[1]) / 2, (fy[0] + fy[1]) / 2, (CUDER_H + PLAZA_Z) / 2),
       (fx[1] - fx[0] + 0.04, fy[1] - fy[0] + 0.04, CUDER_H + PLAZA_Z), col)

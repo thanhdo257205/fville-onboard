@@ -32,7 +32,7 @@ Người chơi vào vai một intern FPT Software trong ngày đầu tiên, đi 
 | Zone 2 | 07:40 | Cổng F-Ville, Giếng Làng, Tượng Cuder | Áo Cam FPT, huy hiệu Tinh thần Đồng đội, huy hiệu Tôn Đổi Đồng Chí Gương Sáng |
 | Zone 3 | 08:00 | Sảnh Lễ Tân, Phòng Hạt Lúa | Thẻ nhân viên FPT, Welcome Kit |
 | Zone 4 | 08:30 | Cửa Quẹt Thẻ, Cửa Phòng FSA | Sổ tay học tập (đề xuất) |
-| Zone 5 | 09:00–17:30 | Gặp Prajith, Gặp Manager, Say Hello Team, Ngồi vào bàn làm việc | La bàn nghề nghiệp, Sổ lời khuyên (đề xuất) |
+| Zone 5 | 09:00–17:30 | Gặp mentor (chị Nga), Gặp quản lý (Prajith), Say Hello Team, Ngồi vào bàn làm việc | La bàn nghề nghiệp, Sổ lời khuyên (đề xuất) |
 
 **Cấu trúc 4 Act** (`data/acts.json`)
 
@@ -44,7 +44,7 @@ Hành trình chia thành 4 Act theo mạch "trở thành người F-Ville". Act 
 | --- | --- | --- | --- |
 | 1 | ENTER THE VILLAGE | Bus (điểm đón zone 0 + bến xe zone 1, gồm cài App My FPT), F-Ville Gate, Village Well, Cuder Statue | 0–2 |
 | 2 | BECOMING AN FSOFTER | Reception, Rice Grain Room, Card Gate | 3–4 |
-| 3 | JOINING FSA | FSA Room, Meet Prajith, Meet Manager | 4–5 |
+| 3 | JOINING FSA | FSA Room, Meet your mentor (Ms. Nga), Meet the manager (Prajith) | 4–5 |
 | 4 | JOINING THE TEAM | Say Hello Team, Your Desk | 5 |
 
 - **Thẻ tiêu đề Act** (khoảng 2 giây, không chặn điều khiển): "ACT n" và tên Act hiện giữa màn hình khi bắt đầu game (Act
@@ -71,9 +71,9 @@ Người chơi bắt chuyến xe bus sớm lên Hòa Lạc ở một điểm đ�
 | Bác tài | Tài xế xe bus FPT | Zone 1 | `NPC_tai_xe` |
 | Bác tài xe số 1, xe số 3 | Tài xế hai tuyến khác, chỉ đường sang xe số 2 | Zone 0 | `NPC_tai_xe_1`, `NPC_tai_xe_3` |
 | Hành khách mang túi | Người lên xe số 2 cùng lúc với người chơi | Zone 0 | `NPC_hanh_khach` |
-| Chị Nga (Ms. Nga) | Tuyển dụng (Recruitment): người đã liên lạc với người chơi suốt quá trình tuyển, gửi tin nhắn hẹn xe ở zone 0; ở quầy lễ tân zone 3 lần đầu gặp người chơi trực tiếp, phát thẻ nhân viên và Welcome Kit. Người thật, đã đồng ý dùng hình; model riêng `nga` (áo polo cam có logo FPT, quần đổi sang xanh than bằng code để khác chị Huyền). Id vai trong dữ liệu vẫn là `le_tan`; tin nhắn điện thoại dùng người nói `hr` | Zone 0 (tin nhắn), zone 3 | `NPC_le_tan` |
-| Prajith | Mentor, định hướng nghề nghiệp | Zone 5, phòng họp mentor | `NPC_mentor` |
-| Manager | Quản lý team, giao nhiệm vụ đầu tiên | Zone 5, phòng họp manager | `NPC_manager` |
+| Chị Nga (Ms. Nga) | Tuyển dụng (Recruitment): người đã liên lạc với người chơi suốt quá trình tuyển, gửi tin nhắn hẹn xe ở zone 0 (người nói `hr`) và nhắn nhắc ở zone 3–5; ở zone 5 là **mentor** của intern (gặp trực tiếp lần đầu ở phòng họp mentor), định hướng nghề nghiệp. Người thật, đã đồng ý dùng hình; model riêng `nga` (áo polo cam có logo FPT, quần đổi sang xanh than bằng code để khác chị Huyền). Id vai trong dữ liệu: `mentor` (người dùng chốt 12/10/2026 — trước đó chị ở quầy lễ tân zone 3, mentor là Prajith) | Zone 0–4 (tin nhắn), zone 5 | `NPC_mentor` |
+| Lễ tân | Chị lễ tân ở quầy sảnh zone 3 (nhân vật hư cấu, không tên riêng): phát thẻ nhân viên và Welcome Kit, nhận lại ví bị đánh rơi. Model riêng `tiep_tan_nu` (sơ mi trắng, quần đen). Id vai `le_tan` | Zone 3 | `NPC_le_tan` |
+| Prajith | **Quản lý team** (manager): nói mục tiêu của team, giao nhiệm vụ đầu tiên. Người thật, model `prajith` thật. Id vai `manager` (trước 12/10/2026 là mentor) | Zone 5, phòng họp manager | `NPC_manager` |
 | Lan, Minh, Hà (tên tạm) | Đồng nghiệp trong team | Zone 5, khu team | `NPC_dong_nghiep_1..3` |
 | Anh Khang (tên tạm) | Đồng nghiệp ở khu nghỉ | Zone 5, bàn bi-a | `NPC_ban_bi_a` |
 
@@ -103,7 +103,7 @@ Người chơi tạo nhân vật trên một màn hình duy nhất trước khi 
 | Kính | Không, gọng tròn, gọng vuông | |
 | Túi | Balo, túi đeo chéo, túi tote | Hiện trên lưng hoặc vai suốt game |
 | Tên hiển thị | Nhập tự do, tối đa 16 ký tự | In lên thẻ nhân viên; lọc từ ngữ không phù hợp |
-| Vị trí intern | Developer, Tester, BA, Designer | Đổi một số lời thoại với Prajith và nhiệm vụ của Manager |
+| Vị trí intern | Developer, Tester, BA, Designer | Đổi một số lời thoại với mentor (chị Nga) và nhiệm vụ của quản lý (Prajith) |
 
 **Đã làm (10/10/2026):** màn tạo nhân vật có chọn nhân vật, tên và vị trí intern. Chọn nhân vật: cảnh 3D nhỏ với 3 nhân vật làm sẵn đứng trên bục (`intern_nam`, `intern_nam_kinh` đeo kính, `intern_nu`), mặc bộ đồ ngày đầu; nhân vật đang chọn bước lên, vẫy tay, có vòng sáng dưới chân. Đổi bằng cách bấm vào nhân vật, phím ←/→ hoặc nút mũi tên; kéo để xoay 360°. Thẻ thông tin bên cạnh: chân dung, tên gọi ngắn, một dòng mô tả và nút xem trước Áo Cam FPT. Màn hình hẹp hoặc độ nét "Faster": 3 thẻ chân dung thay cảnh 3D. Giới tính suy ra từ nhân vật đã chọn. Tóc, da, túi riêng lẻ chưa có.
 
@@ -147,11 +147,11 @@ thanh trạng thái giả, xoay ngang ẩn thêm 2 thanh chỉ số để còn c
 | Giá trị | Ô sáng khi người chơi | Zone |
 | --- | --- | --- |
 | Tôn trọng | Cảm ơn bác tài và nhường lối cho người xuống xe sau | 1 |
-| Chí công | Mang chiếc ví nhặt được đến trả chị Nga ở quầy lễ tân thay vì để lại | 3 |
+| Chí công | Mang chiếc ví nhặt được đến trả ở quầy lễ tân thay vì để lại | 3 |
 | Đồng đội | Nhắn chị Nga qua App My FPT giúp Tú khi thẻ của Tú báo đỏ | 4 |
 | Gương mẫu | Không cho người lạ đi ké qua cửa quẹt thẻ, chỉ đường cho họ về lễ tân | 4 |
 | Đổi mới | Tự đặt thêm một mục tiêu học tập ngoài lộ trình gợi ý ở phòng FSA | 4 |
-| Sáng suốt | Sắp xếp thứ tự ưu tiên công việc hợp lý khi gặp Manager | 5 |
+| Sáng suốt | Sắp xếp thứ tự ưu tiên công việc hợp lý khi gặp quản lý (Prajith) | 5 |
 
 **Thời gian:** đồng hồ góc màn hình bắt đầu ở 06:30 (zone 0) và chỉ nhảy khi người chơi xong một mốc, không đếm ngược. Người chơi không bao giờ bị "trễ giờ".
 
@@ -308,12 +308,12 @@ Người chơi nhận thẻ nhân viên, thứ mở được mọi cánh cửa p
 
 | Đối tượng | Hoạt động | Kết quả |
 | --- | --- | --- |
-| `NPC_le_tan` (chị Nga), `INT_quay_le_tan` | Mini-game **Kiểm tra hồ sơ**: phiếu thông tin điền sẵn có 1 chỗ sai (ví dụ sai tên team), người chơi tìm và sửa. Sau đó **chụp ảnh thẻ**: camera chân dung, chọn 1 trong 3 biểu cảm | **Thẻ nhân viên FPT** (in tên, vị trí, ảnh vừa chụp) và **Welcome Kit** *[HR: Welcome Kit thật gồm những gì]*; Hiểu biết +5 |
-| Chiếc ví đánh rơi (code đặt cạnh đôn lục giác, không có trong GLB) | Nhặt ví, rồi chọn: mang đến quầy lễ tân trả chị Nga, hoặc để lại chỗ cũ | Trả ví: ô **Chí công**, Kết nối +3 |
+| `NPC_le_tan` (chị lễ tân), `INT_quay_le_tan` | Mini-game **Kiểm tra hồ sơ**: phiếu thông tin điền sẵn có 1 chỗ sai (ví dụ sai tên team), người chơi tìm và sửa. Sau đó **chụp ảnh thẻ**: camera chân dung, chọn 1 trong 3 biểu cảm | **Thẻ nhân viên FPT** (in tên, vị trí, ảnh vừa chụp) và **Welcome Kit** *[HR: Welcome Kit thật gồm những gì]*; Hiểu biết +5 |
+| Chiếc ví đánh rơi (code đặt cạnh đôn lục giác, không có trong GLB) | Nhặt ví, rồi chọn: mang đến quầy lễ tân trả, hoặc để lại chỗ cũ | Trả ví: ô **Chí công**, Kết nối +3 |
 | `INT_hat_lua` | Đọc về các cá nhân, tập thể xuất sắc. Mini-game **Dòng thời gian**: kéo 5 mốc thành tựu vào đúng thứ tự năm *[HR cung cấp 5 mốc]* | Hiểu biết +10; hũ thủy tinh hiện số hạt lúa vàng đã nhặt |
 | Hạt lúa vàng × 2 | Sau chậu cọ cạnh quầy; góc sàn dưới chân cầu thang trang trí, cạnh lối vào Phòng Hạt Lúa (thành cầu thang kín nên hạt đặt trên chiếu nghỉ không nhìn thấy từ sàn) | |
 
-**Chị Nga ở quầy (mẫu):** chị tự giới thiệu là người tuyển dụng đã liên lạc với người chơi, vui vì lần đầu gặp trực tiếp, hỏi tin nhắn hẹn xe có giúp người chơi lên đúng xe không, rồi: "Giờ tới giấy tờ nhé. Em kiểm tra giúp chị thông tin trên phiếu này, có gì sai thì sửa luôn." Toàn bộ lời thoại: `docs/dialogue_nga.md`.
+**Chị lễ tân ở quầy (mẫu):** chị chào người chơi, nói chị Nga bên Tuyển dụng đã dặn đón, hỏi sáng nay có lên đúng xe số 2 không, rồi: "Giờ tới phần giấy tờ. Trên tờ khai này có một thông tin bị nhầm — em tìm giúp chị dòng đó." (đổi 12/10/2026: trước đó chị Nga đứng quầy; chị Nga giờ là mentor ở zone 5 — lời thoại của chị: `docs/dialogue_nga.md`).
 
 **Chuyển zone:** nhận thẻ và Phòng Hạt Lúa là bắt buộc; chiếc ví là tùy chọn. Đi về phía hành lang, người chơi xuất hiện ở `SPAWN_zone_04_from_zone_03`.
 
@@ -353,8 +353,8 @@ Zone 5 nén cả ngày làm việc thành bốn cuộc gặp, kết thúc khi ng
 
 | Đối tượng | Hoạt động | Kết quả |
 | --- | --- | --- |
-| `NPC_mentor` trong `INT_phong_hop_mentor` (Prajith) | **Gặp Prajith:** 4 câu hỏi định hướng nghề nghiệp, không có đáp án đúng sai (ví dụ: "Em thích gỡ một lỗi khó hay dựng một tính năng mới?") | **La bàn nghề nghiệp** (đề xuất): một thẻ gợi ý hướng phát triển theo vị trí intern và câu trả lời; Kết nối +5 |
-| `NPC_manager` trong `INT_phong_hop_manager` | **Gặp Manager:** nghe mục tiêu của team *[team cung cấp, hoặc dùng bản chung]*, rồi mini-game **Sắp xếp ưu tiên**: kéo 5 thẻ việc tuần đầu theo thứ tự | **Nhiệm vụ đầu tiên** ghi vào app; xếp hợp lý: ô **Sáng suốt** |
+| `NPC_mentor` trong `INT_phong_hop_mentor` (chị Nga) | **Gặp mentor (chị Nga):** 4 câu hỏi định hướng nghề nghiệp, không có đáp án đúng sai (ví dụ: "Em thích gỡ một lỗi khó hay dựng một tính năng mới?") | **La bàn nghề nghiệp** (đề xuất): một thẻ gợi ý hướng phát triển theo vị trí intern và câu trả lời; Kết nối +5 |
+| `NPC_manager` trong `INT_phong_hop_manager` (Prajith) | **Gặp quản lý (Prajith):** nghe mục tiêu của team *[team cung cấp, hoặc dùng bản chung]*, rồi mini-game **Sắp xếp ưu tiên**: kéo 5 thẻ việc tuần đầu theo thứ tự | **Nhiệm vụ đầu tiên** ghi vào app; xếp hợp lý: ô **Sáng suốt** |
 | `NPC_dong_nghiep_1..3` (Lan, Minh, Hà) | **Say Hello Team:** nói chuyện với từng người, mỗi người cho một lời khuyên ngày đầu | Lời khuyên vào **Sổ lời khuyên**; Kết nối +5 mỗi người |
 | `NPC_ban_bi_a` (anh Khang) | Trò chuyện và mini-game tùy chọn **Một cú bi-a**: chỉnh hướng và lực, đưa bi vào lỗ | Một lời khuyên nữa; Kết nối +5 |
 | `INT_ban_lam_viec` | **Ngồi vào bàn làm việc:** mở hộp quà của team; mini-game **Đăng nhập**: tạo mật khẩu đạt yêu cầu (thanh độ mạnh) và bật xác thực hai lớp *[HR/IT: quy định mật khẩu thật]*; rồi xem checklist ngày đầu tự tick | Bảng tên trống trên bàn hiện tên người chơi; Hiểu biết +10; kích hoạt kết thúc |
@@ -362,16 +362,16 @@ Zone 5 nén cả ngày làm việc thành bốn cuộc gặp, kết thúc khi ng
 
 **Mini-game Sắp xếp ưu tiên (mẫu):** 5 thẻ gồm hoàn thành khóa an toàn thông tin bắt buộc (hạn hôm nay), cài môi trường làm việc, đọc tài liệu dự án, xem qua mã nguồn, đăng ký câu lạc bộ thể thao. Thứ tự hợp lý là việc có hạn hôm nay lên đầu, câu lạc bộ xuống cuối. Ba việc ở giữa đổi chỗ nhau vẫn được tính đúng. Xếp chưa hợp lý thì Manager góp ý một câu và cho xếp lại một lần.
 
-**Trình tự:** khi vào zone, app báo "09:15 Họp với Prajith". Gặp Prajith và Manager theo thứ tự; Say Hello Team làm lúc nào cũng được; bàn làm việc chỉ mở khi đã gặp Manager. Sau buổi gặp Manager, màn hình mờ đi với dòng chữ "12:00 · Cả team rủ bạn đi ăn trưa" rồi sáng lại ở buổi chiều.
+**Trình tự:** khi vào zone, app báo "09:15 Gặp chị Nga". Gặp mentor (chị Nga) rồi quản lý (Prajith) theo thứ tự; Say Hello Team làm lúc nào cũng được; bàn làm việc chỉ mở khi đã gặp quản lý. Sau buổi gặp Manager, màn hình mờ đi với dòng chữ "12:00 · Cả team rủ bạn đi ăn trưa" rồi sáng lại ở buổi chiều.
 
-**Lời Manager (mẫu):** "Chào em, chào mừng em về team! Tuần đầu chưa cần làm gì lớn đâu, nhưng chị muốn xem em sắp xếp công việc thế nào."
+**Lời Prajith — quản lý (mẫu):** "Chào em, chào mừng em về team! Tuần đầu chưa cần làm gì lớn đâu, nhưng anh muốn xem em sắp xếp công việc thế nào."
 
 **Đã làm (10/10/2026)** — chữ tiếng Anh trong `data/dialogues.json`, mini-game trong `data/interactables.json`:
 
-- **Nhân vật:** Prajith dùng model `prajith` thật. Manager, Lan, Minh, Hà, anh Khang là nhân vật hư cấu, **tạm** dùng model `intern_nu` / `intern_nam` với màu áo khác nhau (Manager xanh than, Lan hồng, Minh vàng, Hà xanh lá, Khang tím), không có chân dung trong hộp thoại.
-- **Vào zone:** tin nhắn app "📅 09:15 · Meeting with Prajith" rồi tin nhắn của Prajith. Ở zone 5, câu nhắc khi đứng yên do Prajith nhắn (Tú đã chia tay ở zone 4). Dấu "!" dẫn tới trước cửa phòng họp rồi mới vào trong.
-- **Gặp Prajith:** chào, kể chuyện ngày đầu của Prajith, rồi mini-game **La bàn nghề nghiệp**: 4 câu, mỗi câu 2 phương án, mỗi phương án nghiêng về một xu hướng (Builder, Problem Solver, Team Player, Explorer). Thẻ kết quả gồm xu hướng chính và hướng phát triển theo vị trí intern (4 vị trí × 4 xu hướng). Thẻ lưu trong My FPT → Bag; Kết nối +5.
-- **Gặp Manager** (chỉ sau Prajith; gặp trước thì Manager nhắc gặp Prajith): mục tiêu team *[DRAFT]*, rồi mini-game **Sắp xếp ưu tiên** với 5 thẻ có nhãn hạn (Due today / This week / Anytime). Xếp chưa hợp lý thì Manager góp ý đúng chỗ sai (thẻ đó sáng lên) và cho xếp lại 1 lần; lần 2 vẫn chưa hợp lý thì vẫn xong nhưng không có ô Wisdom. Nhiệm vụ đầu tiên ("Complete the mandatory Information Security course — due today") ghi vào My FPT. Act 4 mở ngay sau đó.
+- **Nhân vật:** mentor là chị Nga (model `nga`), quản lý là Prajith (model `prajith`) — cả hai người thật, đã đồng ý dùng hình (người dùng chốt 12/10/2026). Lan, Minh, Hà, anh Khang là nhân vật hư cấu: Minh dùng model `van_phong_nam` (sơ mi trắng, quần đen); Lan, Hà, Khang **tạm** dùng model `intern_nu` / `intern_nam` với màu áo khác nhau (Lan hồng, Hà xanh lá, Khang tím), không có chân dung trong hộp thoại.
+- **Vào zone:** tin nhắn app "📅 09:15 · Meeting with Ms. Nga" rồi tin nhắn của chị Nga. Ở zone 5, câu nhắc khi đứng yên do chị Nga nhắn (Tú đã chia tay ở zone 4). Dấu "!" dẫn tới trước cửa phòng họp rồi mới vào trong.
+- **Gặp mentor (chị Nga):** chào, "bất ngờ chưa — giờ chị là mentor của em", kể chuyện ngày đầu của các bạn intern chị từng đón, rồi mini-game **La bàn nghề nghiệp**: 4 câu, mỗi câu 2 phương án, mỗi phương án nghiêng về một xu hướng (Builder, Problem Solver, Team Player, Explorer). Thẻ kết quả gồm xu hướng chính và hướng phát triển theo vị trí intern (4 vị trí × 4 xu hướng). Thẻ lưu trong My FPT → Bag; Kết nối +5.
+- **Gặp quản lý — Prajith** (chỉ sau mentor; gặp trước thì Prajith nhắc gặp chị Nga): mục tiêu team *[DRAFT]*, rồi mini-game **Sắp xếp ưu tiên** với 5 thẻ có nhãn hạn (Due today / This week / Anytime). Xếp chưa hợp lý thì Prajith góp ý đúng chỗ sai (thẻ đó sáng lên) và cho xếp lại 1 lần; lần 2 vẫn chưa hợp lý thì vẫn xong nhưng không có ô Wisdom. Nhiệm vụ đầu tiên ("Complete the mandatory Information Security course — due today") ghi vào My FPT. Act 4 mở ngay sau đó.
 - **Ăn trưa:** màn mờ "12:00 · The team invites you to lunch", rồi sáng lại buổi chiều: ánh sáng ấm hơn, đồng hồ 13:30 (`data/zones.json` → `variants`).
 - **Say Hello Team:** Lan, Minh, Hà mỗi người một lời khuyên. Lời khuyên đầu tiên mở tab **Advice** (Sổ lời khuyên) trong My FPT; Kết nối +5 mỗi người. Lan và Hà ngồi phía bắc cụm bàn, nói chuyện được qua mặt bàn.
 - **Anh Khang** (tùy chọn): trò chuyện, mời **Một cú bi-a** trên bàn bi-a thật của khu nghỉ: thế bi dễ cho sẵn (bi trắng + bi cam), đưa bi cam vào lỗ trong 3 cú (hết 3 cú thì xếp lại, thêm 3 cú). Ngắm bằng chuột hoặc A/D, giữ chuột trái / Space nạp lực, thả để đánh. Mỗi cú trượt là 1 lần sai: sai 2 lần hiện đường ngắm gợi ý (cú tìm được bằng vật lý), sai 3 lần có Skip. Thêm 1 lời khuyên; Kết nối +5. Nói chuyện lại thì được đánh thêm.

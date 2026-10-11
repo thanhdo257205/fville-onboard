@@ -1,0 +1,20 @@
+{
+  "_ghi_chu": "van_phong_nam: Nam văn phòng (hư cấu: sơ mi trắng, quần đen) — vai dong_nghiep_2 (Minh), nguoi_la, hanh_khach. File gốc van_phong_nam_rigged.fbx tải từ Mixamo (tư thế chữ A tĩnh) → idle và 13 animation lấy từ file của prajith (retarget), như huyen, nga, tai_xe. Trang phục nguyên bản Meshy, không dán logo.",
+  "base": [
+    "van_phong_nam_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "fold_missing_bones": true,
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "back_of_head_keep": 0.4,
+    "face_keep_tris": 2000,
+    "face_detail_pct": 0.12
+  },
+  "_decimate_ghi_chu": "Bản 6k: prepare_for_mixamo --protect-face giữ mặt trước nguyên vẹn → lượt 0 giảm phần phẳng mặt còn ~2.000 (giữ 12% đỉnh nét), lượt 1 tóc sau gáy còn 40%, lượt 2 giữ đầu, giảm thân."
+}

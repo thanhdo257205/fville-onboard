@@ -74,9 +74,11 @@ export class Net {
   // ---------- gửi ----------
   profile() {
     const g = this.g, chars = g.characters, o = chars.role("player")?.outfit;
-    const wearing = o && (g.outfitOverride === o.until_reward || g.progress.hasReward(o.until_reward));
+    // bộ đồ chọn trong tủ đồ (Game.playerOutfit): Áo Cam FPT → "ao_cam"; bộ ngày đầu mặc định → ""; bộ khác → id texture
+    const pick = g.playerOutfit?.() ?? "";
+    const outfit = !o ? "" : pick === o.until_reward ? o.until_reward : pick === o.texture ? "" : pick;
     // model theo giới tính / ngoại hình; acc: phụ kiện đang đội (vd mũ lưỡi trai — máy chủ cũ bỏ qua trường này)
-    return { name: g.progress.player.name, model: chars.modelId("player") || "", outfit: wearing ? o.until_reward : "", acc: g.wornAccessories?.() || [] };
+    return { name: g.progress.player.name, model: chars.modelId("player") || "", outfit, acc: g.wornAccessories?.() || [] };
   }
   sendJoin() {
     const z = this.g.state.zone;

@@ -11,9 +11,9 @@
     "marker_above_object_m": 0.6,
     "marker_above_trigger_m": 0.3,
     "no_tu_zones": ["zone_05"],
-    "_no_tu_ly_do": "Tú chia tay ở phòng FSA (zone 4) → zone 5 chỉ nhắc bằng tin nhắn điện thoại (Prajith).",
-    "phone_from": { "zone_00": "thao", "zone_01": "thao", "zone_02": "thao", "zone_03": "le_tan", "zone_04": "le_tan", "zone_05": "mentor" },
-    "_ly_do": "idle_s: không tiến triển nhiệm vụ bao lâu (giây, chỉ tính lúc đang đi lại — không tính hội thoại / mini-game / app / menu / cảnh chuyển) thì nhắc lần 1; repeat_s: lần 2 sau bao lâu nữa; max_nudges: mỗi mục tiêu nhắc tối đa bấy nhiêu lần. phone_from: zone 0–2 Ms. Huyền (vai thao), zone 3–4 Ms. Nga (vai le_tan), zone 5 Prajith (vai mentor)."
+    "_no_tu_ly_do": "Tú chia tay ở phòng FSA (zone 4) → zone 5 chỉ nhắc bằng tin nhắn điện thoại (Ms. Nga, mentor).",
+    "phone_from": { "zone_00": "thao", "zone_01": "thao", "zone_02": "thao", "zone_03": "mentor", "zone_04": "mentor", "zone_05": "mentor" },
+    "_ly_do": "idle_s: không tiến triển nhiệm vụ bao lâu (giây, chỉ tính lúc đang đi lại — không tính hội thoại / mini-game / app / menu / cảnh chuyển) thì nhắc lần 1; repeat_s: lần 2 sau bao lâu nữa; max_nudges: mỗi mục tiêu nhắc tối đa bấy nhiêu lần. phone_from: zone 0–2 Ms. Huyền (vai thao), zone 3–5 Ms. Nga (vai mentor — bên Tuyển dụng, mentor của intern ở zone 5; người nhắn tin hr từ đầu game). Lễ tân sảnh zone 3 (vai le_tan) không nhắn tin."
   },
   "goals": {
     "z0_find_bus": {
@@ -95,25 +95,25 @@
       ]
     },
     "z2_cuder": {
-      "help": { "en": "Follow the path to the Cuder Statue in the rice field, then press E to read its story and answer three questions.", "vi": "Đi theo con đường tới tượng Cuder giữa ruộng lúa, rồi nhấn E để đọc câu chuyện và trả lời ba câu hỏi." },
+      "help": { "en": "Follow the path to the Cuder Statue in its U of corn beds, then press E to read its story and answer three questions.", "vi": "Đi theo con đường tới tượng Cuder giữa luống ngô chữ U, rồi nhấn E để đọc câu chuyện và trả lời ba câu hỏi." },
       "tu": [
         { "en": "Let's go see the Cuder Statue — it's further along the path.", "vi": "Mình ra xem tượng Cuder đi — thêm một đoạn nữa là tới." },
-        { "en": "The Cuder Statue is in the rice field up ahead — come on!", "vi": "Tượng Cuder ở giữa ruộng lúa phía trước — đi nào!" }
+        { "en": "The Cuder Statue is in the corn beds up ahead — come on!", "vi": "Tượng Cuder ở giữa luống ngô phía trước — đi nào!" }
       ],
       "phone": [
         { "en": "Stop by the Cuder Statue on your way — read its story and earn a badge!", "vi": "Trên đường đi, em ghé tượng Cuder nhé — đọc câu chuyện và nhận một huy hiệu!" },
-        { "en": "The Cuder Statue stands in the rice field along the path. Don't skip it!", "vi": "Tượng Cuder đứng giữa ruộng lúa bên đường. Đừng bỏ qua nhé!" }
+        { "en": "The Cuder Statue stands among the corn beds along the path. Don't skip it!", "vi": "Tượng Cuder đứng giữa luống ngô bên đường. Đừng bỏ qua nhé!" }
       ]
     },
     "z3_card": {
-      "help": { "en": "Ms. Nga is at the reception desk in the lobby. Talk to her (E) to get your employee card.", "vi": "Chị Nga đang ở quầy lễ tân trong sảnh. Nói chuyện với chị ấy (E) để nhận thẻ nhân viên." },
+      "help": { "en": "The receptionist is at the desk in the lobby. Talk to her (E) to get your employee card.", "vi": "Chị lễ tân đang ở quầy trong sảnh. Nói chuyện với chị ấy (E) để nhận thẻ nhân viên." },
       "tu": [
-        { "en": "That's the reception desk — let's get our cards from Ms. Nga!", "vi": "Quầy lễ tân kia rồi — mình tới nhận thẻ chỗ chị Nga đi!" },
-        { "en": "Ms. Nga is waiting at reception — let's go say hi!", "vi": "Chị Nga đang chờ ở lễ tân — mình ra chào chị đi!" }
+        { "en": "That's the reception desk — let's go get our cards!", "vi": "Quầy lễ tân kia rồi — mình tới nhận thẻ đi!" },
+        { "en": "Reception is waiting for us — let's go say hi!", "vi": "Chị lễ tân đang chờ kìa — mình ra chào chị đi!" }
       ],
       "phone": [
-        { "en": "I'm at the reception desk, right in the lobby — come and get your card!", "vi": "Chị ở quầy lễ tân, ngay trong sảnh — em tới nhận thẻ nhé!" },
-        { "en": "Your employee card is ready at reception — come find me!", "vi": "Thẻ nhân viên của em làm xong rồi — em ra lễ tân gặp chị nhé!" }
+        { "en": "Reception is right in the lobby — your card is waiting for you there!", "vi": "Quầy lễ tân ở ngay trong sảnh — thẻ của em đang chờ ở đó nhé!" },
+        { "en": "Your employee card is ready at reception — go and pick it up!", "vi": "Thẻ nhân viên của em làm xong rồi — em ra lễ tân nhận nhé!" }
       ]
     },
     "z3_rice_room": {
@@ -128,7 +128,7 @@
       ]
     },
     "z3_wallet": {
-      "help": { "en": "You're carrying a lost wallet. Hand it to Ms. Nga at the reception desk (E).", "vi": "Bạn đang cầm một chiếc ví bị đánh rơi. Mang tới đưa chị Nga ở quầy lễ tân (E)." }
+      "help": { "en": "You're carrying a lost wallet. Hand it in at the reception desk (E).", "vi": "Bạn đang cầm một chiếc ví bị đánh rơi. Mang tới đưa chị lễ tân ở quầy (E)." }
     },
     "z4_card_gate": {
       "help": { "en": "Walk down the corridor to the glass doors and tap your employee card on the reader (E). From here on, your card opens the gates.", "vi": "Đi dọc hành lang tới cửa kính rồi quẹt thẻ nhân viên vào đầu đọc (E). Từ giờ, bạn dùng thẻ này để mở các cửa." },
@@ -162,20 +162,20 @@
     },
     "z5_prajith": {
       "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.2 }, { "pos": [-18.0, 0, -3.7], "r": 0.9 }],
-      "_route_ly_do": "Phòng họp chỉ mở cửa phía lối đi chính (giữa vách nam, x −19,3 … −16,7): dấu \"!\" dẫn tới trước cửa, vào hẳn trong cửa rồi mới tới Prajith (đi thẳng từ trước cửa tới Prajith thì vướng mép vách).",
-      "help": { "en": "Prajith is waiting in the mentor meeting room on the left side of the office. Walk in and press E to talk.", "vi": "Anh Prajith đang đợi ở phòng họp mentor bên trái văn phòng. Đi vào rồi nhấn E để nói chuyện." },
+      "_route_ly_do": "Phòng họp chỉ mở cửa phía lối đi chính (giữa vách nam, x −19,3 … −16,7): dấu \"!\" dẫn tới trước cửa, vào hẳn trong cửa rồi mới tới mentor (đi thẳng từ trước cửa tới mentor thì vướng mép vách).",
+      "help": { "en": "Ms. Nga is waiting in the mentor meeting room on the left side of the office. Walk in and press E to talk.", "vi": "Chị Nga đang đợi ở phòng họp mentor bên trái văn phòng. Đi vào rồi nhấn E để nói chuyện." },
       "phone": [
-        { "en": "Hi {player}, I'm in the meeting room on the left — just walk in! 🙂", "vi": "Chào {player}, anh đang ở phòng họp bên trái — em cứ vào nhé! 🙂" },
-        { "en": "Head down the corridor on the left: I'm in the first meeting room. See you there!", "vi": "Em đi theo hành lang bên trái: anh ở phòng họp đầu tiên. Anh đợi em nhé!" }
+        { "en": "Hi {player}, I'm in the meeting room on the left — just walk in! 🙂", "vi": "Chào {player}, chị đang ở phòng họp bên trái — em cứ vào nhé! 🙂" },
+        { "en": "Head down the corridor on the left: I'm in the first meeting room. See you there!", "vi": "Em đi theo hành lang bên trái: chị ở phòng họp đầu tiên. Chị đợi em nhé!" }
       ]
     },
     "z5_manager": {
       "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.5 }, { "pos": [-27.0, 0, -1.4], "r": 1.2 }, { "pos": [-27.0, 0, -3.7], "r": 0.9 }],
-      "_route_ly_do": "Từ phòng Prajith ra cửa, đi dọc lối chính tới trước cửa phòng Manager, vào hẳn trong cửa rồi tới Manager.",
-      "help": { "en": "The manager's room is next door to Prajith's, a little further down the corridor. Press E to talk to her.", "vi": "Phòng chị quản lý ở cạnh phòng anh Prajith, đi thêm một chút dọc hành lang. Nhấn E để nói chuyện với chị ấy." },
+      "_route_ly_do": "Từ phòng mentor ra cửa, đi dọc lối chính tới trước cửa phòng quản lý (Prajith), vào hẳn trong cửa rồi tới quản lý.",
+      "help": { "en": "Prajith, the manager, is in the room next to the mentor meeting room, a little further down the corridor. Press E to talk to him.", "vi": "Phòng anh Prajith (quản lý) ở cạnh phòng họp mentor, đi thêm một chút dọc hành lang. Nhấn E để nói chuyện với anh ấy." },
       "phone": [
-        { "en": "The manager's room is right next to mine — she's expecting you!", "vi": "Phòng chị quản lý ở ngay cạnh phòng anh — chị ấy đang đợi em đấy!" },
-        { "en": "Just one door further down from my room. Good luck! 🙂", "vi": "Chỉ cách phòng anh một cửa thôi. Chúc em may mắn! 🙂" }
+        { "en": "Prajith's room is right next to mine — he's expecting you!", "vi": "Phòng anh Prajith ở ngay cạnh phòng chị — anh ấy đang đợi em đấy!" },
+        { "en": "Just one door further down from my room. Good luck! 🙂", "vi": "Chỉ cách phòng chị một cửa thôi. Chúc em may mắn! 🙂" }
       ]
     },
     "z5_lan": {

@@ -1509,6 +1509,79 @@ z −1,6 … 1,5); zone 3 lối sang zone 4 ở đầu tây sảnh cũng lọt (
 - Build lại zone_03, zone_05 thì bỏ 2 mục `rooms` này (ghi trong CHECKLIST).
 - Gộp main qua PR #28 (774230c), đã deploy gh-pages fe401b2 (cùng bản này lên trang thật: nhân vật thứ 4 `intern_nu_buitoc`).
 
+### Đổi kịch bản: quản lý = Prajith, mentor = Ms. Nga; 2 nhân vật mới (12/10/2026, máy Desktop)
+
+Người dùng gửi 2 mô hình Meshy (nam văn phòng, nữ tiếp tân — sơ mi trắng, quần đen, giữ nguyên trang phục, không logo) và
+chốt kịch bản: **quản lý team ở zone 5 là Prajith, mentor là Ms. Nga**; quầy lễ tân zone 3 là "Lễ tân" (không tên riêng);
+tin nhắn HR (zone 0, zone 4, nhắc việc zone 3–5) vẫn là Ms. Nga; model nam văn phòng cho Minh, Người lạ, Hành khách.
+
+- Model: `van_phong_nam` (1,70 m) và `tiep_tan_nu` (1,60 m) — `prepare_for_mixamo --tris 25000 --protect-face` → Mixamo →
+  `build_character --tris 6000 --single` (15 animation từ prajith, 22 xương, 0,57 / 0,60 MB) + chân dung. `decimate_protect`:
+  mặt ~2.000, tóc sau gáy 40 % (tóc dài của tiếp tân: thân còn ~1.500 tam giác).
+- Vai: `mentor` → model `nga` (giữ quần xanh than), `manager` → `prajith` (bỏ tint, có chân dung), `le_tan` → `tiep_tan_nu`,
+  `dong_nghiep_2` / `nguoi_la` / `hanh_khach` → `van_phong_nam` (bỏ tint tạm; Minh có chân dung). `speaker_as.hr` → `mentor`;
+  `guidance.phone_from` zone 3–4 → `mentor`. Tên: le_tan Receptionist / Lễ tân, mentor Ms. Nga / Chị Nga, manager Prajith.
+- Lời thoại (en + vi): lễ tân chào mới ("Chị Nga bên Tuyển dụng có dặn chị đón em", bỏ "chị em mình mặc giống nhau"); mentor
+  Ms. Nga xưng "chị" ("Bất ngờ chưa — … giờ chị là mentor của em"), lời nhắn tổng kết ký "— Nga" (khoá i18n `summary.prajith` →
+  `summary.mentor_note`); Prajith quản lý xưng "anh", góp ý ở mini-game Sắp xếp ưu tiên. Đổi theo: gợi ý H, nhắc việc,
+  nhiệm vụ, phần thưởng, ô giá trị, lời nhắc bàn làm việc. Id nhiệm vụ (`z5_prajith`, `meet_prajith`…) giữ nguyên (bản lưu cũ).
+  Tài liệu: `docs/GDD.md` (bảng nhân vật, zone 3, zone 5), `docs/dialogue_nga.md` viết lại (zone 3 chỉ còn tin nhắn, thêm zone 5).
+- Đo: test:data; smoke `--look intern_nam` (cả lượt điện thoại + mạng / bản lưu cũ); viewer so 4 vai (lễ tân, Ms. Nga, Prajith,
+  Minh). **Đã deploy** gh-pages 4d18b2e (từ main 28afb3d, sau khi gộp PR #28; smoke `--zone 3`, `--zone 5` đạt trên main mới).
+
+### Luống ngô chữ U quanh tượng Cuder (12/10/2026, máy Desktop)
+
+Người dùng gửi mô hình "Maize Corn Plant" (gilles.schaeck, Sketchfab, CC BY 4.0 — ghi trong `CREDITS.md`), muốn tối ưu rồi
+trồng quanh tượng Cuder theo luống chữ U, tượng ở giữa.
+
+- `scripts/blender/lib/corn.py` (zone_02 gọi khi build, file gốc `assets/props/corn/source/` chỉ ở máy làm việc): gộp 42 mảnh
+  thành 1 lưới, giảm 3.108 → 1.243 tam giác (collapse, giữ đường nối UV), 9 ảnh 1024² (màu / ORM / normal × 3 chất liệu, 5,4 MB)
+  → 1 atlas 512² chỉ ảnh màu; 1 chất liệu `M_corn` cắt alpha (MASK), 2 mặt, không viền; pháp tuyến từ trục thân ra ngoài.
+  Bản sao dùng chung lưới, `batch = ENV_cay_ngo` (game gộp 1 lượt vẽ, làm mờ từng cây khi che camera).
+- `zone_02.py`: `CORN_ARMS` / `CORN_Y` / `CORN_BACK` — 2 cánh luống đất viền gạch (x 17–18 và 22–23, y 59–64, cao hơn sân
+  0,16 m), đáy chữ U là hàng ngô trên ruộng sau tượng (y 64,65); miệng chữ U quay về nam (phía người chơi đi tới, camera sau
+  lưng). 28 cây cao ~2,1 m (± 8 %), so le. Hộp va chạm thấp 1,2 m cho 2 cánh + hàng sau (`COL_luong_ngo_*`). Gợi ý H / Tú /
+  tin nhắn đổi "giữa ruộng lúa" → "giữa luống ngô". Build lại zone_02 (GLB bản Thấp 599 KB).
+- Đo: test:data; smoke `--zone 2` 13/13 (84 cây / bụi / ngô gộp thành 5 mesh, quiz Cuder làm được); trong game đứng trước
+  tượng: 127 FPS, 49,8k tam giác, 16 lượt vẽ. **Đã deploy** gh-pages 667cddf (từ main 0e31d0f).
+- Sau đó (người dùng yêu cầu): bỏ dải ruộng đất nâu sau tượng (x 2–24, y 64–68, `DIRT` cũ) — chỉ giữ đất của luống chữ U; đáy
+  chữ U thành luống riêng (x 17–23, y 64–65,2) nối liền 2 cánh, viền gạch chạy theo đường bao chữ U. Build lại zone_02; test:data,
+  smoke `--zone 2` 13/13. **Đã deploy** gh-pages bf620d1 (từ main 57c7a7b).
+
+### Ảnh team trong khung ảnh khu bàn bi-a (12/10/2026, máy Desktop)
+
+Người dùng gửi 3 ảnh thật (team ở vườn, màn hình trao giải "Outstanding Global HR Team — Skill First Team", Trainer's Day) để
+treo vào 3 khung ảnh trên tường bắc khu bàn bi-a zone 5, khung theo đúng tỉ lệ ảnh. Người dùng xác nhận mọi người trong ảnh (kể
+cả người đứng phía sau) đã đồng ý xuất hiện công khai; chọn làm mờ thẻ nhân viên.
+
+- `scripts/blender/lib/team_photos.py` (zone_05 gọi khi build): đọc ảnh gốc `assets/props/team_photos/source/*.webp` (không có
+  trên repo), làm mờ 18 vùng thẻ nhân viên (`BLUR`, toạ độ ảnh gốc — 5 / 5 / 8 thẻ, kiểm tra bằng ảnh cắt), thu cạnh dài 512 px →
+  `*_game.png` (chỉ ở máy làm việc; ảnh trong GLB là bản này). Khung viền đen + mặt ảnh có UV (object `ENV_anh_team_<k>`, chất
+  liệu ảnh × vertex color, không viền nét).
+- `zone_05.py`: `TEAM_PHOTOS` thay 3 mảng màu 1,0 × 0,7 m — cùng cao 0,75 m, rộng theo tỉ lệ ảnh (1,00 m 4:3 · 0,56 m 3:4 dọc ·
+  1,33 m 16:9), cách nhau 0,35 m, canh giữa x −4,4 như cũ. Build lại zone_05 (GLB bản Thấp 345 → 479 KB).
+- Đo: test:data; smoke `--zone 5` 24/24; xem bằng mắt trong game (đứng trước bàn bi-a). **Đã deploy** gh-pages f079c33 (từ main c24d37e).
+
+### Tủ đồ: nút bấm, chọn áo / phụ kiện (12/10/2026, máy Desktop)
+
+Người dùng yêu cầu thêm tính năng tủ đồ (nút bấm, chọn đồ) và cập nhật checklist. Chưa có món mới (danh sách món vẫn chờ chốt —
+CHECKLIST); tủ đồ dùng các món đã có: 2 áo (Đồ ngày đầu, Áo Cam FPT) + mũ lưỡi trai cam.
+
+- Mở: nút 👕 góc phải dưới (máy tính, chỉ hiện lúc đang đi lại), nút 👕 trong hàng nút cảm ứng, phím I, nút "👕 Tủ đồ" trong
+  menu Esc (thay hàng bật / tắt mũ cũ). Đóng: I, Esc, nút ×. Chế độ `wardrobe`: người chơi đứng yên, camera quay ra trước mặt
+  nhân vật (gần hơn, hơi cao), đóng thì trả góc cũ (`Game.toggleWardrobe`).
+- Bảng (`game/src/ui/wardrobe.js`, bên phải màn hình): mục Áo + Phụ kiện, mỗi món 1 thẻ (biểu tượng, tên, mô tả, trạng thái
+  Đang mặc / Mặc / Đang đội / Chưa đội / Chưa mở + câu gợi ý cách mở khoá), phím 1–9. Màn thấp: thẻ gọn, ẩn mô tả.
+- Dữ liệu `data/characters.json → wardrobe.outfits` (id = texture bộ đồ của model người chơi, hoặc `ao_cam` = bộ trong GLB, kèm
+  morph áo phông của intern_nu_buitoc; `unlock` / `locked`), `accessories.<id>.icon` / `locked`. Áo chọn lưu ở bản lưu
+  `player.outfit` (không có = tự theo phần thưởng như trước; id lạ → `repair()` bỏ); `Game.playerOutfit()` dùng chung cho
+  nhân vật, chân dung, gửi mạng (người khác thấy áo đang chọn; bộ khác ngoài 2 bộ → gửi id texture, máy khách cũ hiện bộ ngày đầu).
+- Chữ en + vi: `wardrobe.*`, `menu.wardrobe(_note)`, `touch.wardrobe`, dòng hướng dẫn điều khiển thêm "I: tủ đồ".
+- Kiểm thử: `test:data` mục "tủ đồ" (mỗi áo có texture ở mọi model người chơi, en + vi, điều kiện mở khoá có thật, repair);
+  smoke sau màn tổng kết: menu Esc → Tủ đồ → đội mũ (đo như cũ) → mặc lại Đồ ngày đầu (morph 0, lưu) → I đóng → nút 👕 mở lại →
+  phím 2 Áo Cam → Esc. Xem bằng mắt: máy tính 1280 × 720, điện thoại 844 × 390. Smoke `--look intern_nu_buitoc --extra off` 86/86, `--extra only` 39/39.
+  **Đã deploy** gh-pages 01593b1 (từ main 04b7b96).
+
 ### Chậu cây mới thay chậu cọ trong nhà (12/10/2026, nhánh `feat/potted-plant` 8d9fcda)
 
 Người dùng gửi `potted_plant.glb` ("Potted Plant" của Blizzy trên Sketchfab, CC BY 4.0 — ghi trong `asset.extras` của file), muốn thay

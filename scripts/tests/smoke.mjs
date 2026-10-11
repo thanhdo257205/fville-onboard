@@ -762,21 +762,39 @@ async function runLook(browser, base, look) {
         const closed = await wait(() => !window.__game?.summary.open, 5000);
         const con2 = problems.splice(0);
         await check(menu && again && closed && !con2.length, "màn tổng kết: Close → menu Esc → View summary mở lại, console sạch", JSON.stringify({ menu, again, closed, console: con2.slice(0, 5) }));
-        // tủ đồ (chưa có tab Wardrobe): xong game → menu Esc có hàng "FPT Orange Cap" → bật → mũ gắn vào xương đầu, vòm trên đỉnh
-        // đầu (không lún, không bay), đi theo animation, vào bản lưu
+        // tủ đồ (ui/wardrobe.js): menu Esc → nút Tủ đồ → bảng (camera ra trước mặt) → đội mũ lưỡi trai (xong game mới mở khoá):
+        // mũ gắn xương đầu, vòm trên đỉnh đầu (không lún, không bay), vào bản lưu → mặc lại Đồ ngày đầu (texture + morph về 0,
+        // bản lưu player.outfit) → phím I đóng, nút 👕 hiện → bấm nút mở lại → phím 2 = Áo Cam FPT → Esc đóng
         await page.keyboard.press("Escape");
-        const row = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-acc=cap][data-on='1']"), 5000);
-        if (row) await page.click("#menu [data-acc=cap][data-on='1']");
+        const mbtn = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-act=wardrobe]"), 5000);
+        if (mbtn) await page.click("#menu [data-act=wardrobe]");
+        const wopen = await wait(() => window.__game?.wardrobe.open && window.__game._game.mode === "wardrobe", 5000);
+        const capItem = "#wardrobe .item[data-kind=acc][data-id=cap]:not([disabled])";
+        if (wopen && await ev((sel) => !!document.querySelector(sel), capItem)) await page.click(capItem);
         const worn = await wait(() => window.__game?.model.accessories.includes("cap"), 15000);
         const cap = worn ? await ev(() => { const i = __game.accessoryInfo("cap"), c = __game._game.player.character;
           const root = c.root.position.y, f = i.fit;
           return { ...i, headTop: +(root + f.top).toFixed(3), saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.accessories }; }) : null;
+        if (wopen) await page.click("#wardrobe .item[data-kind=outfit][data-id=dau_ngay]");
+        const day1 = await wait(() => window.__game?.model.outfit === "dau_ngay", 5000);
+        const d1 = await ev(() => ({ morph: __game.model.morph, saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.outfit,
+          badge: !!document.querySelector("#wardrobe .item.on[data-id=dau_ngay]") }));
+        await page.keyboard.press("KeyI");
+        const shut = await wait(() => !window.__game?.wardrobe.open && window.__game._game.mode === "play", 5000);
+        const btn = shut && await wait(() => { window.__game._game.ui.wardrobe.update(); return window.__game.wardrobe.button; }, 5000);
+        if (btn) await page.click("#wardrobe-btn");
+        const reopen = await wait(() => window.__game?.wardrobe.open, 5000);
+        await page.keyboard.press("Digit2");
+        const orange = await wait(() => window.__game?.model.outfit === null && window.__game.wardrobe.outfit === "ao_cam", 5000);
         await page.keyboard.press("Escape");
+        const done = await wait(() => !window.__game?.wardrobe.open && window.__game._game.mode === "play", 5000);
         const con3 = problems.splice(0);
-        await check(row && worn && /Head$/.test(cap?.bone || "") && cap.top > cap.headTop && cap.top < cap.headTop + 0.15 && cap.bottom < cap.headTop - 0.05
-          && cap.fit.scale > 0.8 && cap.fit.scale < 2 && cap.saved?.includes("cap") && !con3.length,
-          `tủ đồ: menu Esc → đội mũ lưỡi trai (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), lưu vào bản lưu`,
-          JSON.stringify({ row, worn, cap, console: con3.slice(0, 5) }));
+        const morphOk = !("ao_cam" in (d1.morph || {})) || d1.morph.ao_cam === 0;
+        await check(mbtn && wopen && worn && /Head$/.test(cap?.bone || "") && cap.top > cap.headTop && cap.top < cap.headTop + 0.15 && cap.bottom < cap.headTop - 0.05
+          && cap.fit.scale > 0.8 && cap.fit.scale < 2 && cap.saved?.includes("cap") && day1 && morphOk && d1.saved === "dau_ngay" && d1.badge
+          && shut && btn && reopen && orange && done && !con3.length,
+          `tủ đồ: menu Esc → Tủ đồ → đội mũ (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), mặc lại Đồ ngày đầu${"ao_cam" in (d1.morph || {}) ? ` (morph ${d1.morph.ao_cam})` : ""}, lưu; I đóng → nút 👕 mở → phím 2 Áo Cam → Esc`,
+          JSON.stringify({ mbtn, wopen, worn, cap, day1, d1, shut, btn, reopen, orange, done, console: con3.slice(0, 5) }));
         // đã xong ngày đầu → menu Esc có mục "Đi tới" (6 zone, zone đang đứng khoá nút): bấm zone_02 → sang zone_02, về chế độ
         // chơi, không tự mở hội thoại / cảnh chuyển; rồi __game.travel về zone đã đứng; console sạch
         {
@@ -1883,7 +1901,7 @@ async function runShort(browser, base) {
   }
 }
 
-// (f1c) camera hội thoại trên màn thấp: nói chuyện với Ms. Nga (zone 3, camera qua vai dựng được) ở khung 844 × 230 → mặt người
+// (f1c) camera hội thoại trên màn thấp: nói chuyện với lễ tân (zone 3, camera qua vai dựng được) ở khung 844 × 230 → mặt người
 // đối thoại và người chơi nằm phía trên mép trên khung thoại (player/talkcam.js đo khung sau khi thu nhỏ)
 async function runShortCam(browser, base) {
   const view = { width: 844, height: 230 }, label = "điện thoại 844 × 230 · camera hội thoại";

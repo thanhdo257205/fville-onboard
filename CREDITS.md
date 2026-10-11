@@ -55,6 +55,10 @@ do người dùng cung cấp, chỉ nằm trong texture.
   https://sketchfab.com/3d-models/bamboo-tree-d0161434cf6844a8bc6eaeb0c0692ed0 (link nguồn ghi trong file gốc). File gốc
   không có trên repo; `scripts/blender/lib/bamboo.py` dựng lại bản low-poly (thân trụ + lá 2 tam giác) theo đúng vị trí
   thân, lá của mô hình gốc và gộp texture khi build zone.
+- Cây ngô quanh tượng Cuder ở zone 2 (lưới `cay_ngo`, dùng chung cho mọi cây): "Maize Corn Plant" by gilles.schaeck
+  (Sketchfab), giấy phép CC BY 4.0 — https://sketchfab.com/3d-models/maize-corn-plant-5fd3b104d8104519b061469c365d4974
+  (link nguồn ghi trong file gốc). File gốc không có trên repo; `scripts/blender/lib/corn.py` gộp mảnh, giảm lưới, gộp
+  texture màu thành 1 atlas khi build zone.
 
 ## Đồ vật đặt bằng dữ liệu
 - Chậu cây trong nhà (`assets/props/potted_plant/potted_plant.glb` — thay chậu cọ cũ ở sảnh zone 3, tầng trên zone 4, khu

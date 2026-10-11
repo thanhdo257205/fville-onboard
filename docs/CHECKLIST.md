@@ -1,6 +1,6 @@
 # Checklist dự án "Ngày Đầu Ở F-Ville"
 
-Bảng việc chung của nhóm. Cập nhật lần cuối: 10/10/2026 (trang đang chạy: `gh-pages` ec3a35b, build từ `main` f4d5a7b — gồm PR #1
+Bảng việc chung của nhóm. Cập nhật lần cuối: 12/10/2026 (trang đang chạy: `gh-pages` ec3a35b, build từ `main` f4d5a7b — gồm PR #1
 bi-a bước 3, chia phòng, ngồi ghế, mũ, zone_04, sửa lỗi zone 5; PR #2 camera / rơi xuyên sàn; PR #3 tiếng Việt; sửa CI + ảnh
 thẻ; PR #5 mô hình bối cảnh Sketchfab (xe bus, cây, bụi tre); PR #6 sửa bay lơ lửng ở bàn bi-a, rò rỉ bộ nhớ GPU; PR #7 tab
 Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn bi-a trên trang thật vẫn chỉ tập một mình; PR #8 âm thanh; PR #9 màn tiêu đề).
@@ -164,7 +164,7 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 - [ ] P3 Tượng Cuder: quyết giữ / bỏ búi tóc sau gáy (`CUDER_KEEP_BUN` trong `scripts/blender/zone_02.py`); đổi bản sao tượng cũ
   nhìn qua vách kính zone 3 (`ENV_tuong_cuder_xa`) — Phụ trách: —
 - [x] P3 Mũ lưỡi trai phần 2: gắn vào xương Head của 3 intern (tự ướm theo lưới, mở khoá khi xong game, bật / tắt ở menu Esc,
-  người khác thấy mũ) — Phụ trách: Claude — nhánh `feat/zone5-seat-cap`; tab Wardrobe vẫn chờ mục "Tủ đồ"
+  người khác thấy mũ) — Phụ trách: Claude — nhánh `feat/zone5-seat-cap`; tủ đồ (đội / bỏ mũ): xem mục "Tủ đồ" — 7eab946
 - [ ] P3 Huyền, Nga: tay lún vào thân 3–6 cm ở vài động tác (tải animation Mixamo riêng nếu cần) — Phụ trách: —
 - [ ] P2 **Khoảng trống ngoài vùng đi được trông trống trơn** (zone 0, 1, 2; cả chỗ nhìn ra ngoài qua kính zone 3–5) — Phụ trách: Claude
   (lớp 1 + 2, nhánh `feat/sky-backdrop`); lớp 3 + 4: máy có Blender
@@ -332,7 +332,16 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     — 2e53a25 (cảm ứng: chưa viết, `TablePointer` đã tách để thêm "touch" sau)
   - [x] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
     — 2e53a25
-- [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
+- [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: Claude
+  - [x] Bảng tủ đồ: nút 👕 (máy tính góc phải dưới, cảm ứng trong hàng nút), phím I, nút "Tủ đồ" trong menu Esc (thay hàng
+    bật / tắt mũ); camera quay ra trước mặt nhân vật; mục Áo + Phụ kiện, món chưa mở hiện ổ khoá + cách mở; phím 1–9 —
+    7eab946
+  - [x] Chọn áo (Đồ ngày đầu / Áo Cam FPT — cả áo phông morph của intern_nu_buitoc) + đội / bỏ mũ cam; lưu bản lưu
+    (`player.outfit`, `player.accessories`), người chơi khác thấy qua mạng; dữ liệu `data/characters.json → wardrobe` — 7eab946
+  - [x] Kiểm thử: `test:data` mục "tủ đồ", smoke sau màn tổng kết (menu → tủ đồ → mũ, đổi áo, I / nút 👕 / phím 2 / Esc) — 7eab946
+  - [ ] Chốt danh sách món mới (áo / phụ kiện) với nhóm → làm texture cho cả 4 model người chơi (`outfit_textures.py`; intern_nam_kinh,
+    intern_nu_buitoc áo gốc là bộ ngày đầu → cần sửa script để thêm bộ) / phụ kiện (Blender) → thêm 1 mục vào `wardrobe.outfits`
+    hoặc `accessories` — Phụ trách: —
 - [x] P3 Tab Bản đồ trong app My FPT — Phụ trách: Claude — nhánh `feat/map-tab` (PR #7, `main` 1a79739; đã deploy `gh-pages` a9a3dcc). Ảnh zone chụp từ trên xuống
   (cắt bỏ trần / mái ở sàn + 2,4 m, nét tường tối), mũi tên "Bạn" theo hướng mặt, chấm Tú, dấu "!" + dòng mục tiêu (khác tầng:
   "(tầng trên / dưới)"); zone_04 mỗi tầng một ảnh; smoke mở tab ở zone 2–5

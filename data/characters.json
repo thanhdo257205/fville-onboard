@@ -1,10 +1,31 @@
 {
-  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. Vai 'player' dùng intern_nam / intern_nu theo giới tính người chơi (roles.player.model_by_gender). TẠM THỜI mọi vai khác dùng 'prajith', trừ 3 vai tài xế (tai_xe, tai_xe_1, tai_xe_3 — model 'tai_xe', bác tài áo sơ mi trắng, mũ, cà vạt), vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' và vai 'le_tan' (Ms. Nga, Recruitment — sảnh zone 3, tin nhắn 'hr' ở zone 0) dùng 'nga' — id vai giữ nguyên.",
+  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. Vai 'player' dùng intern_nam / intern_nu theo giới tính người chơi (roles.player.model_by_gender). Vai mentor = Ms. Nga (model 'nga'), manager = Prajith (model 'prajith'), le_tan = chị lễ tân (model 'tiep_tan_nu'), dong_nghiep_2 / nguoi_la / hanh_khach = model 'van_phong_nam' (người dùng chốt 12/10/2026). Vai còn lại TẠM dùng model khác, trừ 3 vai tài xế (tai_xe, tai_xe_1, tai_xe_3 — model 'tai_xe', bác tài áo sơ mi trắng, mũ, cà vạt), vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' và vai 'le_tan' (Ms. Nga, Recruitment — sảnh zone 3, tin nhắn 'hr' ở zone 0) dùng 'nga' — id vai giữ nguyên.",
   "_place_ghi_chu": "place: 'spawn' = người chơi, đặt tại SPAWN_ · 'node' = đứng tại node NPC_ (xoay theo yaw_deg) · 'follow_player' = đi theo người chơi · 'near_node' = code đặt cạnh node (offset theo hệ trục glTF, m). pose: 'stand' (mặc định) | 'seated' = ngồi gõ phím (sit_type), ghế sau điểm đứng 0,40 m; khi nói chuyện thì stand_up → quay về phía người chơi → talk → ngồi lại. Không đặt NPC nào ở chỗ bàn intern (SPAWN_ban_lam_viec). node_marks: 'seat' = node đánh dấu CHỖ GHẾ (zone_05 đặt NPC_dong_nghiep_* tại ghế) → điểm đứng tính lùi về phía bàn theo models.<id>.seat.offset_xz_m. chair_height_m: mặt ghế trong GLB (đo bằng tia dò: 0,51 m) → khi ngồi nâng nhân vật thêm (chair_height_m − seat.height_m) để không lún vào ghế. node có thể là danh sách (vd vai thao — chị Huyền: NPC_thao_cua_xe ở zone_00, NPC_dong_nghiep_don ở zone_01) — zone có node nào thì đứng ở đó. wait.<zone>: vai đi theo (Tú) đứng chờ tại near_node + offset tới khi đạt until. carry: đồ cầm tay do code gắn (bag). board: {on_flag, to_node, done_flag} — có cờ on_flag thì đi tới to_node rồi khuất, bật done_flag. hide_if: không đặt vai khi đạt điều kiện.",
   "_tint_ghi_chu": "TẠM (mọi vai dùng chung model): tint = { shirt, pants } màu hex đổi bằng code (game/src/characters/tint.js) để dễ phân biệt NPC: áo = điểm ảnh cam đậm trên thân + tay, quần = điểm ảnh xám sáng trên hông + chân, giữ nếp vải của texture. Bỏ trống = giữ màu gốc (người chơi giữ áo cam, quần kem). Không sửa texture/GLB. Vai dùng model riêng cũng có thể đặt tint (vd le_tan: chỉ quần, để Ms. Nga khác Ms. Huyền).",
+  "wardrobe": {
+    "outfits": [
+      {
+        "id": "dau_ngay",
+        "icon": "👕",
+        "name": { "en": "First-day outfit", "vi": "Đồ ngày đầu" },
+        "desc": { "en": "What you wore on the bus this morning.", "vi": "Bộ đồ bạn mặc lên xe sáng nay." }
+      },
+      {
+        "id": "ao_cam",
+        "icon": "🧡",
+        "name": { "en": "FPT Orange Shirt", "vi": "Áo Cam FPT" },
+        "desc": { "en": "The orange shirt from the F-Ville gate check-in.", "vi": "Chiếc áo cam nhận ở cổng F-Ville lúc check-in." },
+        "unlock": { "rewards": ["ao_cam"] },
+        "locked": { "en": "Check in at the F-Ville gate to get it.", "vi": "Check-in ở cổng F-Ville để nhận áo." }
+      }
+    ],
+    "_ghi_chu": "Tủ đồ (game/src/ui/wardrobe.js — nút 👕, phím I, menu Esc): mục Áo = outfits theo thứ tự này; id = khoá texture bộ đồ của model người chơi (models.<id>.outfit_textures.<id>) hoặc 'ao_cam' = bộ trong GLB (texture + morph của model, vd áo phông intern_nu_buitoc). unlock: điều kiện mở khoá (như progress.check), locked: câu gợi ý cách mở. Mặc gì lưu ở bản lưu player.outfit (không có = tự theo phần thưởng: có Áo Cam thì mặc Áo Cam). Mục Phụ kiện = accessories (icon, locked). Thêm món: thêm texture cho mọi model người chơi (outfit_textures.py) rồi thêm 1 mục ở đây — test:data kiểm tra."
+  },
   "accessories": {
     "cap": {
       "label": { "en": "FPT Orange Cap", "vi": "Mũ lưỡi trai cam FPT" },
+      "icon": "🧢",
+      "locked": { "en": "Finish your first day to unlock it.", "vi": "Hoàn thành ngày đầu để mở khóa." },
       "glb": "assets/accessories/cap/cap.glb",
       "opening_m": [0.181, 0.1849],
       "crown_m": 0.1132,
@@ -14,7 +35,7 @@
         "_ly_do": "Để trống: thử thu 10 % cho intern_nam / intern_nam_kinh (tóc ngắn, mũ trông hơi to) thì tóc đâm xuyên vòm sau (ảnh renders/game/cap_*.png, 10/10/2026) → giữ tỉ lệ máy tính (intern_nam 1,30; intern_nu 1,37; intern_nam_kinh 1,60). Model mới cần chỉnh: { up_m, forward_m, scale, pitch_deg }."
       },
       "unlock": { "flags": ["game_complete"] },
-      "_ghi_chu": "Mũ lưỡi trai cam (tủ đồ, phần 2: gắn vào xương đầu — game/src/characters/accessories.js). opening_m (vòng đội đầu rộng × sâu), crown_m (vòm cao), tilt_deg (mép trước cao hơn mép sau) chép từ assets/accessories/cap/cap.json (build_cap.py; test:data so khớp). Chỗ đội tính lúc chạy từ lưới nhân vật ở tư thế nghỉ (các đỉnh thuộc xương đầu, cả tóc): mép trước vòng đội đầu ở tầm trán = xương đầu + fit.brow × (đỉnh đầu − xương đầu), sát trước trán fit.front_m; tỉ lệ = vòng đội đầu vừa bề ngang / bề sâu đầu + tóc từ tầm trán trở lên × fit.room, rồi phóng to tới khi vòm thật (bản đồ độ cao từ GLB mũ) trùm được fit.enclose (97 %) đỉnh đầu / tóc trên vòng đội đầu; đỉnh vòm thấp hơn đỉnh tóc + fit.gap_m thì nâng cả mũ. adjust.<model>: chỉnh tay { up_m, forward_m, scale, pitch_deg }. unlock: điều kiện mở khoá (xong game). Bản lưu: player.accessories (đang đội); bật / tắt ở menu Esc (chưa có tab Wardrobe — chờ chốt danh sách món)."
+      "_ghi_chu": "Mũ lưỡi trai cam (tủ đồ, phần 2: gắn vào xương đầu — game/src/characters/accessories.js). opening_m (vòng đội đầu rộng × sâu), crown_m (vòm cao), tilt_deg (mép trước cao hơn mép sau) chép từ assets/accessories/cap/cap.json (build_cap.py; test:data so khớp). Chỗ đội tính lúc chạy từ lưới nhân vật ở tư thế nghỉ (các đỉnh thuộc xương đầu, cả tóc): mép trước vòng đội đầu ở tầm trán = xương đầu + fit.brow × (đỉnh đầu − xương đầu), sát trước trán fit.front_m; tỉ lệ = vòng đội đầu vừa bề ngang / bề sâu đầu + tóc từ tầm trán trở lên × fit.room, rồi phóng to tới khi vòm thật (bản đồ độ cao từ GLB mũ) trùm được fit.enclose (97 %) đỉnh đầu / tóc trên vòng đội đầu; đỉnh vòm thấp hơn đỉnh tóc + fit.gap_m thì nâng cả mũ. adjust.<model>: chỉnh tay { up_m, forward_m, scale, pitch_deg }. unlock: điều kiện mở khoá (xong game). Bản lưu: player.accessories (đang đội); đội / bỏ trong tủ đồ (wardrobe, game/src/ui/wardrobe.js). icon, locked: thẻ trong tủ đồ (biểu tượng, câu gợi ý cách mở khoá)."
     }
   },
   "roles": {
@@ -110,13 +131,9 @@
       "node": "NPC_tai_xe_3"
     },
     "hanh_khach": {
-      "model": "prajith",
+      "model": "van_phong_nam",
       "place": "node",
       "node": "NPC_hanh_khach",
-      "tint": {
-        "shirt": "#b07fb0",
-        "pants": "#6b5b4b"
-      },
       "carry": "bag",
       "board": {
         "on_flag": "passenger_boarding",
@@ -131,16 +148,13 @@
       "_ghi_chu": "Hành khách mang túi ở cửa xe số 2 (zone_00). Được nhường (cờ passenger_boarding) thì đi tới cửa xe rồi khuất (cờ passenger_boarded)."
     },
     "le_tan": {
-      "model": "nga",
+      "model": "tiep_tan_nu",
       "place": "node",
       "node": "NPC_le_tan",
-      "tint": {
-        "pants": "#2f3b55"
-      },
-      "_ghi_chu": "Ms. Nga: quần xanh than để khác Ms. Huyền (cùng áo polo cam, quần kem); áo giữ màu gốc."
+      "_ghi_chu": "Chị lễ tân sảnh zone 3 (hư cấu, không tên riêng — bảng tên Receptionist / Lễ tân): model tiep_tan_nu. Đổi 12/10/2026 — trước đó vai này là Ms. Nga (giờ là mentor ở zone 5, vai mentor)."
     },
     "nguoi_la": {
-      "model": "prajith",
+      "model": "van_phong_nam",
       "place": "near_node",
       "node": "INT_cua_quet_the",
       "offset": [
@@ -154,28 +168,22 @@
           "stranger_done"
         ]
       },
-      "_ghi_chu": "zone_04: người lạ (đồ khách) đứng cạnh đầu đọc thẻ, ngoài khung cửa (thế giới ≈ 4,2; 0; −0,9 — docs/zone45_check.md), nhìn về phía người chơi đi tới từ đầu hành lang đông (yaw −70°). Xong tình huống đi ké (cờ stranger_done) thì không đặt lại.",
-      "tint": {
-        "shirt": "#7d8f5a",
-        "pants": "#bfa27a"
-      }
+      "_ghi_chu": "zone_04: người lạ (model van_phong_nam) đứng cạnh đầu đọc thẻ, ngoài khung cửa (thế giới ≈ 4,2; 0; −0,9 — docs/zone45_check.md), nhìn về phía người chơi đi tới từ đầu hành lang đông (yaw −70°). Xong tình huống đi ké (cờ stranger_done) thì không đặt lại."
     },
     "mentor": {
-      "model": "prajith",
+      "model": "nga",
       "place": "node",
       "node": "NPC_mentor",
-      "_ghi_chu": "Prajith (người thật, đã đồng ý dùng hình): model prajith thật, không đổi màu áo."
+      "tint": {
+        "pants": "#2f3b55"
+      },
+      "_ghi_chu": "Ms. Nga (người thật, Tuyển dụng — đã đồng ý dùng hình) là mentor của intern ở zone 5 (người dùng chốt 12/10/2026; trước đó mentor là Prajith, Ms. Nga ở quầy lễ tân zone 3). Tin nhắn 'hr' từ đầu game cũng là chị (speaker_as.hr). Quần xanh than để khác Ms. Huyền (cùng áo polo cam, quần kem)."
     },
     "manager": {
-      "model": "intern_nu",
+      "model": "prajith",
       "place": "node",
       "node": "NPC_manager",
-      "portrait": false,
-      "tint": {
-        "shirt": "#3b4f7a",
-        "pants": "#1c1c1e"
-      },
-      "_tam": "TẠM: nhân vật hư cấu (chị Manager) dùng model intern_nu + đổi màu áo cho dễ phân biệt; không chân dung (khỏi trùng mặt người chơi). Thay khi có model riêng."
+      "_ghi_chu": "Prajith (người thật, đã đồng ý dùng hình) là quản lý team ở zone 5 (người dùng chốt 12/10/2026; trước đó là mentor, quản lý là chị Manager hư cấu). Model prajith thật, không đổi màu áo."
     },
     "dong_nghiep_1": {
       "model": "intern_nu",
@@ -192,18 +200,13 @@
       "_tam": "TẠM: Lan (hư cấu) dùng model intern_nu + áo hồng; không chân dung. Thay khi có model riêng."
     },
     "dong_nghiep_2": {
-      "model": "intern_nam",
+      "model": "van_phong_nam",
       "place": "node",
       "node": "NPC_dong_nghiep_2",
       "pose": "seated",
       "node_marks": "seat",
       "chair_height_m": 0.51,
-      "portrait": false,
-      "tint": {
-        "shirt": "#e3c341",
-        "pants": "#5a4636"
-      },
-      "_tam": "TẠM: Minh (hư cấu) dùng model intern_nam + áo vàng; không chân dung. Thay khi có model riêng."
+      "_ghi_chu": "Minh (hư cấu): model riêng van_phong_nam (sơ mi trắng, quần đen — 12/10/2026; trước đó mượn intern_nam + áo vàng)."
     },
     "dong_nghiep_3": {
       "model": "intern_nu",
@@ -238,10 +241,10 @@
       "tu": "Tú",
       "thao": "Ms. Huyền",
       "tai_xe": "Bus Driver",
-      "le_tan": "Ms. Nga",
+      "le_tan": "Receptionist",
       "nguoi_la": "Stranger",
-      "mentor": "Prajith",
-      "manager": "Manager",
+      "mentor": "Ms. Nga",
+      "manager": "Prajith",
       "dong_nghiep_1": "Lan",
       "dong_nghiep_2": "Minh",
       "dong_nghiep_3": "Hà",
@@ -258,10 +261,10 @@
       "tu": "Tú",
       "thao": "Chị Huyền",
       "tai_xe": "Tài xế",
-      "le_tan": "Chị Nga",
+      "le_tan": "Lễ tân",
       "nguoi_la": "Người lạ",
-      "mentor": "Prajith",
-      "manager": "Quản lý",
+      "mentor": "Chị Nga",
+      "manager": "Prajith",
       "dong_nghiep_1": "Lan",
       "dong_nghiep_2": "Minh",
       "dong_nghiep_3": "Hà",
@@ -278,10 +281,10 @@
     "_ghi_chu": "Cách người chơi gọi một vai khi nhắc trong câu (thông báo, Sổ lời khuyên: \"lời khuyên của chị Lan\"), theo ngôn ngữ — bảng tên dùng names. Thiếu vai / ngôn ngữ → dùng names. Văn phong: docs/vi_style.md.",
     "vi": {
       "thao": "chị Huyền",
-      "le_tan": "chị Nga",
+      "le_tan": "chị lễ tân",
       "hr": "chị Nga",
-      "mentor": "anh Prajith",
-      "manager": "chị quản lý",
+      "mentor": "chị Nga",
+      "manager": "anh Prajith",
       "dong_nghiep_1": "chị Lan",
       "dong_nghiep_2": "anh Minh",
       "dong_nghiep_3": "chị Hà",
@@ -293,7 +296,7 @@
   },
   "speaker_as": {
     "_ghi_chu": "Người nói không có vai đứng trong cảnh (vd tin nhắn điện thoại 'hr') → dùng chân dung của vai này; tên vẫn lấy từ names.",
-    "hr": "le_tan"
+    "hr": "mentor"
   },
   "name_tags": {
     "enabled": true,
@@ -410,6 +413,180 @@
     ]
   },
   "models": {
+    "van_phong_nam": {
+      "_ghi_chu": "Nam văn phòng (hư cấu, Meshy + Mixamo): sơ mi trắng, quần đen, trang phục nguyên bản (không logo). Cao 1,70 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai: dong_nghiep_2 (Minh), nguoi_la, hanh_khach.",
+      "glb": {
+        "low": "assets/characters/van_phong_nam/van_phong_nam.glb"
+      },
+      "tris": {
+        "low": 6000
+      },
+      "height_m": 1.7,
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.77,
+        "run": 4.68
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.409,
+        "offset_xz_m": [
+          -0.015,
+          -0.427
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.41
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/van_phong_nam/van_phong_nam_portrait.png"
+    },
+    "tiep_tan_nu": {
+      "_ghi_chu": "Nữ tiếp tân (hư cấu, Meshy + Mixamo): sơ mi trắng, quần đen, trang phục nguyên bản (không logo). Cao 1,60 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai: le_tan (chị lễ tân sảnh zone 3).",
+      "glb": {
+        "low": "assets/characters/tiep_tan_nu/tiep_tan_nu.glb"
+      },
+      "tris": {
+        "low": 6000
+      },
+      "height_m": 1.6,
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.78,
+        "run": 4.6
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.427,
+        "offset_xz_m": [
+          -0.024,
+          -0.42
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.426
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/tiep_tan_nu/tiep_tan_nu_portrait.png"
+    },
     "tai_xe": {
       "glb": {
         "low": "assets/characters/tai_xe/tai_xe.glb"

@@ -1,0 +1,20 @@
+{
+  "_ghi_chu": "tiep_tan_nu: Nữ tiếp tân (hư cấu: sơ mi trắng, quần đen) — vai le_tan (lễ tân sảnh zone 3). File gốc tiep_tan_nu_rigged.fbx tải từ Mixamo (tư thế chữ A tĩnh) → idle và 13 animation lấy từ file của prajith (retarget), như huyen, nga, tai_xe. Trang phục nguyên bản Meshy, không dán logo.",
+  "base": [
+    "tiep_tan_nu_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "fold_missing_bones": true,
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "back_of_head_keep": 0.4,
+    "face_keep_tris": 2000,
+    "face_detail_pct": 0.12
+  },
+  "_decimate_ghi_chu": "Bản 6k: prepare_for_mixamo --protect-face giữ mặt trước nguyên vẹn → lượt 0 giảm phần phẳng mặt còn ~2.000 (giữ 12% đỉnh nét), lượt 1 tóc sau gáy còn 40%, lượt 2 giữ đầu, giảm thân."
+}

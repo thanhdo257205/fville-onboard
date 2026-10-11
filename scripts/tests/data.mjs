@@ -180,6 +180,37 @@ for (const id of accIds) {
 }
 report("phụ kiện (tủ đồ)", accErrs, `${accIds.join(", ") || "không có"}; số đo khớp ${accIds.map((id) => `${id}.json`).join(", ")}`);
 
+// tủ đồ (characters.json → wardrobe, ui/wardrobe.js): mỗi áo = "ao_cam" (bộ trong GLB) hoặc texture có ở MỌI model người chơi
+// (roles.player.looks); id không trùng; tên / mô tả / câu gợi ý mở khoá đủ en + vi; điều kiện mở khoá có thật; phụ kiện có
+// icon + câu gợi ý khi có unlock. Bản lưu: player.outfit lạ → repair() bỏ
+const wErrs = [];
+const outfits = chars.wardrobe?.outfits || [];
+const playerModels = [...new Set(Object.values(chars.roles.player.looks || {}).flat())];
+const until = chars.roles.player.outfit?.until_reward;
+if (!outfits.length) wErrs.push("wardrobe.outfits trống");
+if (new Set(outfits.map((o) => o.id)).size !== outfits.length) wErrs.push("wardrobe.outfits: id trùng");
+for (const o of outfits) {
+  const w = `wardrobe.outfits.${o.id}`;
+  if (o.id !== until) for (const m of playerModels) if (!chars.models[m]?.outfit_textures?.[o.id]) wErrs.push(`${w}: model ${m} không có texture ${o.id}`);
+  for (const k of ["name", "desc"]) if (!o[k]?.en || !o[k]?.vi) wErrs.push(`${w}.${k}: thiếu en / vi`);
+  if (o.unlock && (!o.locked?.en || !o.locked?.vi)) wErrs.push(`${w}: có unlock nhưng thiếu locked (en / vi)`);
+  for (const r of o.unlock?.rewards || []) if (!content.rewards.has(r)) wErrs.push(`${w}.unlock: không có phần thưởng ${r}`);
+  for (const q of o.unlock?.quests || []) if (!content.questById.has(q)) wErrs.push(`${w}.unlock: không có quest ${q}`);
+}
+if (until && !outfits.some((o) => o.id === until)) wErrs.push(`wardrobe.outfits thiếu ${until} (Áo Cam)`);
+for (const id of accIds) {
+  const a = chars.accessories[id];
+  if (!a.icon) wErrs.push(`accessories.${id}: thiếu icon (tủ đồ)`);
+  if (a.unlock && (!a.locked?.en || !a.locked?.vi)) wErrs.push(`accessories.${id}: có unlock nhưng thiếu locked (en / vi)`);
+}
+{
+  const s = new GameState(content);
+  s.fromJSON({ v: 1, created: true, player: { name: "A", outfit: "ao_la" } });
+  s.repair({ zoneOrder: zones.order, looks: chars.roles.player.looks, outfits: outfits.map((o) => o.id) });
+  if (s.player.outfit !== undefined) wErrs.push(`repair player.outfit "ao_la" → ${JSON.stringify(s.player.outfit)}`);
+}
+report("tủ đồ", wErrs, `${outfits.length} áo (${outfits.map((o) => o.id).join(", ")}) × ${playerModels.length} model người chơi, ${accIds.length} phụ kiện`);
+
 // 6. Tú: khác giới với người chơi; đại từ của Tú trong chữ là biến {tu_he}/{tu_his}/{tu_him}/{tu_himself} (+ viết hoa
 //    {Tu_he}…), không viết cứng he/his/him/she/her. "Nhắc tới Tú" = tên đứng gần nhất trước đại từ là Tú; câu dẫn
 //    (narrator) không có tên nào → xét người nói ở nút hội thoại liền trước (Tú vừa nói → câu dẫn nói về Tú).

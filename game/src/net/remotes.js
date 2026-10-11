@@ -206,7 +206,9 @@ export class RemotePlayers {
       if (r.outfitShown !== r.outfit) {
         r.outfitShown = r.outfit;
         const wearing = o && r.outfit === o.until_reward;      // Áo Cam FPT = texture trong GLB
-        if (o?.texture) ch.setOutfit(wearing ? null : o.texture);
+        // bộ khác chọn trong tủ đồ (id texture model có) → bộ đó; không có / lạ → bộ ngày đầu
+        const tex = r.outfit && !wearing && ch.outfitTex?.[r.outfit] ? r.outfit : o?.texture;
+        if (tex) ch.setOutfit(wearing ? null : tex);
         if (o?.tint) setTint(ch, wearing ? null : o.tint);
       }
       // phụ kiện (vd mũ lưỡi trai cam): đội / bỏ theo tin join gần nhất; id lạ (data khác bản) bỏ qua

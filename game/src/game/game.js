@@ -41,7 +41,7 @@ export class Game {
   constructor({ renderer, data, characters, input, settings, nametags, content, progress, ui }) {
     Object.assign(this, { renderer, data, characters, input, settings, nametags, content, progress, ui });
     ui.hudQueue = () => hud.queue;
-    this.mode = "play";      // play | dialogue | minigame | app | menu | cutscene
+    this.mode = "play";      // play | dialogue | minigame | app | wardrobe | menu | cutscene
     this.cutscene = null;    // cảnh chuyển đang chạy (data/cutscenes.json)
     this.cameraOverride = null;   // mini-game chụp ảnh đặt camera riêng
     this.outfitOverride = null;   // vd đang chụp check-in: mặc thử Áo Cam FPT
@@ -320,16 +320,74 @@ export class Game {
     for (const [role, ch] of [["player", this.player?.character], ["tu", this.follower?.character]]) {
       const o = this.characters.role(role)?.outfit;
       if (!o || !ch) continue;
-      const wearing = this.outfitOverride === o.until_reward || this.progress.hasReward(o.until_reward);
-      const tex = this.characters.outfitTexture(role, ch.modelId);
+      // người chơi: bộ chọn trong tủ đồ (playerOutfit); Tú: theo phần thưởng
+      const pick = role === "player" ? this.playerOutfit() : null;
+      const wearing = role === "player" ? pick === o.until_reward : this.outfitOverride === o.until_reward || this.progress.hasReward(o.until_reward);
+      const tex = pick && pick !== o.until_reward && ch.outfitTex?.[pick] ? pick : this.characters.outfitTexture(role, ch.modelId);
       if (tex) ch.setOutfit(wearing ? null : tex);
       if (o.tint) setTint(ch, wearing ? null : o.tint);
       this.characters.wearing[role] = !wearing && tex && ch.outfit === tex ? tex : null;
     }
   }
 
+  // ---- tủ đồ (characters.json → wardrobe; ui/wardrobe.js) ----
+  // áo người chơi đang mặc: bộ chọn trong tủ đồ (bản lưu player.outfit) nếu đã mở khoá, không thì tự theo phần thưởng (có Áo
+  // Cam FPT → "ao_cam" = bộ trong GLB, chưa → bộ ngày đầu). Đang chụp check-in (outfitOverride): mặc thử Áo Cam
+  wardrobeOutfits() { return this.characters.cfg.wardrobe?.outfits || []; }
+  outfitUnlocked(id) {
+    const o = this.wardrobeOutfits().find((x) => x.id === id);
+    return !!o && this.progress.check(o.unlock);
+  }
+  playerOutfit() {
+    const o = this.characters.role("player")?.outfit, cam = o?.until_reward ?? "ao_cam";
+    if (this.outfitOverride === cam) return cam;
+    const pick = this.progress.player.outfit;
+    if (pick && this.outfitUnlocked(pick)) return pick;
+    return this.progress.hasReward(cam) ? cam : (o?.texture ?? "dau_ngay");
+  }
+  setPlayerOutfit(id) {
+    if (!this.outfitUnlocked(id)) return false;
+    this.progress.player.outfit = id;
+    this.persist(true);
+    this.updateOutfit();
+    return true;
+  }
+  wardrobeInfo() {
+    const worn = this.playerOutfit(), acc = new Set(this.wornAccessories());
+    return {
+      outfits: this.wardrobeOutfits().map((o) => ({ id: o.id, icon: o.icon, name: tx(o.name), desc: tx(o.desc), locked: tx(o.locked),
+        unlocked: this.outfitUnlocked(o.id), worn: o.id === worn })),
+      accessories: this.characters.accessoryIds().map((id) => {
+        const a = this.characters.accessory(id);
+        return { id, icon: a.icon, name: tx(a.label), desc: "", locked: tx(a.locked), unlocked: this.accessoryUnlocked(id), on: acc.has(id) };
+      }),
+    };
+  }
+  // mở / đóng tủ đồ: chỉ lúc đang đi lại; camera quay ra trước mặt nhân vật (gần hơn, hơi cao), đóng thì trả góc cũ
+  toggleWardrobe() {
+    const w = this.ui.wardrobe;
+    if (!w) return;
+    if (w.open) {
+      w.hide();
+      if (this._wardrobeCam) Object.assign(this.cam, this._wardrobeCam);
+      this._wardrobeCam = null;
+      this.setMode("play");
+      sound.play("app_close");
+      return;
+    }
+    if (this.mode !== "play" || this.state.phase !== "playing" || this.cutscene || this.timeSkipping) return;
+    const { yaw, pitch, distance } = this.cam;
+    this._wardrobeCam = { yaw, pitch, distance };
+    this.cam.yaw = this.player.character.root.rotation.y;      // camera ở phía nhân vật đang nhìn = trước mặt
+    this.cam.pitch = 0.12;
+    this.cam.distance = Math.min(distance, 2.6);
+    this.setMode("wardrobe");
+    w.show();
+    sound.play("app_open");
+  }
+
   // phụ kiện (characters.json → accessories, vd mũ lưỡi trai cam): mở khoá theo accessories.<id>.unlock (vd xong game);
-  // đang đội = bản lưu player.accessories. Chưa có tab Wardrobe → bật / tắt ở menu Esc
+  // đang đội = bản lưu player.accessories; đội / bỏ trong tủ đồ
   accessoryUnlocked(id) {
     const a = this.characters.accessory(id);
     return !!a && (!a.unlock || this.progress.check(a.unlock));
@@ -787,7 +845,7 @@ export class Game {
     this.input.enabled = m === "play";
     this.input.setLook(m === "play" || m === "pool");   // chơi: khoá + ẩn con trỏ, chuột xoay camera; còn lại: hiện con trỏ để bấm
     if (m !== "play") { hud.prompt(null); this.guide.hideMarks(); }   // dấu "!" / mũi tên chỉ hiện lúc đang đi lại
-    hud.cover(m === "dialogue" || m === "minigame" || m === "app" || m === "summary");   // ẩn dòng hướng dẫn điều khiển
+    hud.cover(m === "dialogue" || m === "minigame" || m === "app" || m === "summary" || m === "wardrobe");   // ẩn dòng hướng dẫn điều khiển
     sound.duck(m === "dialogue" || m === "minigame" || m === "app" || m === "summary");   // tiếng nền nhỏ lại
   }
 

@@ -24,7 +24,7 @@
       "audio": { "ambience": "corridor", "steps": "concrete", "reverb": 0.25 } },
     "zone_05": { "file": "zone_05_office", "start": "SPAWN_zone_05_from_zone_04",
       "audio": { "ambience": "office", "steps": "carpet", "reverb": 0.12 },
-      "on_enter": { "dialogue": "z5_app_meeting", "once_flag": "z5_meeting_notice", "_ly_do": "GDD zone 5: vào zone, app báo \"09:15 Meeting with Prajith\"." },
+      "on_enter": { "dialogue": "z5_app_meeting", "once_flag": "z5_meeting_notice", "_ly_do": "GDD zone 5: vào zone, app báo \"09:15 Meeting with Ms. Nga\" (mentor)." },
       "variants": [{ "if": { "flags": ["lunch_done"] }, "time": { "en": "13:30", "vi": "13:30" },
         "mood": { "_ghi_chu": "Buổi chiều sau bữa trưa (GDD: màn mờ \"12:00 · The team invites you to lunch\" rồi sáng lại): nắng thấp hơn, ấm hơn.",
           "sky": "#e9d9c4", "sky_top": "#79a6d6", "sky_horizon": "#e9d9c4", "sun": { "color": "#ffd7a3", "intensity": 1.5, "position": [-55, 30, 30] }, "hemi": { "sky": "#f4e3cf", "ground": "#86765f", "intensity": 1.0 } } }] }

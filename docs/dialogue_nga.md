@@ -1,10 +1,14 @@
 # Lời thoại của Ms. Nga
 
-Tài liệu tham khảo lời thoại, game "Ngày Đầu Ở F-Ville" (cập nhật 10/10/2026; nguồn: `data/dialogues.json`). Trong game,
+Tài liệu tham khảo lời thoại, game "Ngày Đầu Ở F-Ville" (cập nhật 12/10/2026; nguồn: `data/dialogues.json`). Trong game,
 chị Nga làm ở bộ phận Tuyển dụng (Recruitment): chị là người đã liên lạc với người chơi suốt quá trình tuyển, gửi tin nhắn
-hẹn xe sáng nay (zone 0), và hôm nay lần đầu gặp người chơi trực tiếp ở quầy lễ tân sảnh tòa nhà (zone 3). Bảng tên trên
-đầu, tên trong hộp thoại và tên người gửi tin nhắn đều ghi **Ms. Nga**; trong câu thoại chị tự giới thiệu là **Nga**.
-Id vai trong dữ liệu vẫn là `le_tan` (tin nhắn điện thoại dùng người nói `hr`, mượn chân dung của vai `le_tan`).
+hẹn xe sáng nay (zone 0), nhắn tin nhắc việc ở zone 3–5, và hôm nay lần đầu gặp người chơi trực tiếp ở văn phòng (zone 5)
+với vai **mentor** của intern. Bảng tên trên đầu, tên trong hộp thoại và tên người gửi tin nhắn đều ghi **Ms. Nga**; trong
+câu thoại chị tự giới thiệu là **Nga**. Id vai trong dữ liệu là `mentor` (tin nhắn điện thoại dùng người nói `hr`, mượn
+chân dung của vai `mentor`).
+
+> Đổi kịch bản 12/10/2026 (người dùng chốt): chị Nga không còn đứng quầy lễ tân zone 3 (thay bằng chị lễ tân hư cấu,
+> vai `le_tan`) mà là mentor ở zone 5; Prajith chuyển từ mentor sang quản lý team (vai `manager`).
 
 Mọi chữ trong game là tiếng Anh, chỉ có chữ, không có lồng tiếng. `{player}` là tên người chơi tự đặt ở màn đầu. Cột
 "Cử chỉ" là animation nhân vật làm khi nói câu đó. Người chơi gọi chị bằng "you" trong tiếng Anh (bản tiếng Việt sau này
@@ -26,33 +30,11 @@ Vừa vào zone, điện thoại rung, tin nhắn tự hiện (khung tin nhắn,
 bật thông báo); gợi ý của bước đăng nhập nhắc lại tin nhắn: *"Hint: the app is installed — now log in with the intern
 code from Ms. Nga's message."*
 
-## 2. Zone 3 · Sảnh tòa nhà, quầy lễ tân (08:00)
+## 2. Zone 3 · Sảnh tòa nhà (08:00) — tin nhắn
 
-Chị Nga đứng sau quầy lễ tân. Lời nhắc khi lại gần: **"Talk to Ms. Nga"**; nhiệm vụ trong app: **"Get your employee card
-from Ms. Nga"**. Thứ tự giữ như cũ: phiếu thông tin (mini-game Kiểm tra hồ sơ) → chụp ảnh thẻ → nhận thẻ nhân viên và
-Welcome Kit.
-
-| # | Ngữ cảnh | Câu thoại | Cử chỉ | Ghi chú |
-| --- | --- | --- | --- | --- |
-| 2 | Lần đầu nói chuyện | {player}? Welcome to F-Ville! I'm Nga from Recruitment — so nice to finally meet you in person. | vẫy tay | |
-| 3 | Ngay sau câu 2 (hoặc câu 12) | After all our emails and calls, it's lovely to put a face to the name. Did my message get you onto Bus No. 2 all right? | | người chơi chọn 1 trong 2 câu trả lời |
-| 4 | Người chơi trả lời: *"Yes — Ms. Huyền was waiting right at the door!"* | That's Huyền — she never loses an intern. Oh, and look: orange suits you. We match today! | gật đầu | người chơi đã mặc Áo Cam FPT từ cổng zone 2 |
-| 5 | Người chơi trả lời: *"Just in time — I almost got on Bus No. 1!"* | Ha! The number on the windshield is the one to trust. Anyway, you made it — and orange suits you. We match today! | | thay cho câu 4 |
-| 6 | Trước mini-game Kiểm tra hồ sơ: nói rõ luật (1 dòng sai → tìm dòng đó rồi chọn giá trị đúng) | Now, the paperwork. One detail on this form got mixed up — can you find that line, then pick the right value for it? | | |
-| 7 | Sửa phiếu xong, trước mini-game Chụp ảnh thẻ: nói rõ luật (chọn biểu cảm rồi chụp) | Perfect. Now a quick photo for your card: pick an expression, then take the shot. Big smile — you'll be wearing this one every day! | chỉ tay | |
-| 8 | Chụp ảnh xong: trao thẻ nhân viên và Welcome Kit | Here's your FPT employee card, {player}, and your Welcome Kit. From our first call to your first day — I'm so glad you're here! | gật đầu | Welcome Kit gồm gì: chờ HR |
-| 9 | Nói chuyện lại sau khi đã có thẻ | Your card opens the card gate down the corridor. If anything comes up today, just message me in the app! | | mở đường cho lựa chọn ở zone 4 (cửa quẹt thẻ ở tầng trệt, cuối hành lang) |
-
-**Chiếc ví đánh rơi.** Người chơi nhặt ví trên ghế ở sảnh rồi mang đến quầy. Câu 10–11 chạy trước mọi câu khác nếu người
-chơi đang cầm ví.
-
-| # | Ngữ cảnh | Câu thoại | Cử chỉ | Ghi chú |
-| --- | --- | --- | --- | --- |
-| 10 | Người chơi (đang cầm ví) nói trước | Excuse me — I found this wallet on the seats over there. | | lời người chơi |
-| 11 | Chị nhận ví | Oh, thank you! Someone must be worried sick. I'll make sure it gets back to its owner. | gật đầu | ô **Chí công** (Fairness), Kết nối +3 |
-| 12 | Sau câu 11, nếu người chơi **chưa** nhận thẻ: chị mới nhận ra người chơi | And you must be {player}! I'm Nga from Recruitment — so nice to finally meet you in person. | vẫy tay | thay cho câu 2, rồi tiếp câu 3 |
-
-Nếu người chơi đã nhận thẻ rồi mới mang ví đến, hội thoại dừng sau câu 11.
+Quầy lễ tân giờ là **chị lễ tân** (nhân vật hư cấu, bảng tên "Receptionist"): chị phát thẻ nhân viên, Welcome Kit, nhận
+lại ví bị đánh rơi; lúc chào chị nhắc *"Ms. Nga from Recruitment told me to look out for you."*, lúc nói chuyện lại thì
+dặn *"…pop back to reception — or message Ms. Nga in the app!"*.
 
 **Tin nhắn nhắc việc (zone 3–4).** Người chơi chưa làm được việc gì trong 30 giây (không tính lúc hội thoại, mini-game)
 mà Tú không đi cùng → chị Nga nhắn một tin ngắn (góc phải trên, không dừng game); mỗi việc tối đa 2 lần, cách nhau 45
@@ -60,7 +42,7 @@ giây. Nguồn: `data/guidance.json`. Ở bản hiện tại Tú luôn đi cùng
 
 | Việc | Lần 1 | Lần 2 |
 | --- | --- | --- |
-| Nhận thẻ ở quầy | I'm at the reception desk, right in the lobby — come and get your card! | Your employee card is ready at reception — come find me! |
+| Nhận thẻ ở quầy | Reception is right in the lobby — your card is waiting for you there! | Your employee card is ready at reception — go and pick it up! |
 | Phòng Hạt Lúa | Before you go up, take a look at the Rice Grain Room at the back of the lobby. | The Rice Grain Room tells FPT's story — it's at the back of the lobby! |
 
 ## 3. Zone 4 · Cửa quẹt thẻ (08:30) — tin nhắn
@@ -86,3 +68,40 @@ Hai lựa chọn còn lại không có tin nhắn của chị Nga: "Sure, come w
 
 Ở zone 3, khi đã nhận thẻ và xem Phòng Hạt Lúa (lối ra zone 4): *"Your card is ready to use — the card gate is down the
 corridor at the back of the lobby."* / *"Head to the corridor at the back of the lobby — the card gate is just there."*
+
+## 4. Zone 5 · Văn phòng (09:00) — mentor
+
+Vừa vào zone, app báo lịch hẹn rồi chị nhắn (khung tin nhắn, chân dung chị Nga):
+
+| # | Ngữ cảnh | Câu thoại | Cử chỉ | Ghi chú |
+| --- | --- | --- | --- | --- |
+| 14 | Lịch hẹn trong app | 📅 09:15 · Meeting with Ms. Nga — mentor meeting room, left side of the office. | | người gửi: app |
+| 15 | Tin nhắn của chị | Hi {player}, welcome to the office! It's Nga — and from today I'm your mentor, too. I'm in the meeting room on the left — the door's open. See you in a minute! 🙂 | | |
+
+Chị ngồi ở phòng họp mentor bên trái văn phòng. Lời nhắc khi lại gần: **"Talk to Ms. Nga"**; nhiệm vụ trong app:
+**"09:15 · Meet Ms. Nga in the meeting room on the left"**.
+
+| # | Ngữ cảnh | Câu thoại | Cử chỉ | Ghi chú |
+| --- | --- | --- | --- | --- |
+| 16 | Lần đầu nói chuyện | There you are, {player}! Welcome to the team. Surprise — after all our emails, I'm your mentor for the whole internship. | vẫy tay |  |
+| 17 | Tiếp câu 16 | I've welcomed plenty of interns, and every first day looks the same: a morning learning everyone's names, an afternoon hunting for the best coffee on this floor. You'll have both sorted by Friday! |  |  |
+| 18 | Trước mini-game La bàn nghề nghiệp (4 câu, không đúng / sai) | Before we plan anything, I'd like to know how you like to work. Four quick questions — there are no right or wrong answers. | chỉ tay |  |
+| 19 | Xong La bàn nghề nghiệp | Thanks, {player} — that tells me a lot. Your Career Compass is saved in My FPT. Let's look at it together again at the end of your first month. | gật đầu | thẻ La bàn lưu trong My FPT → Bag; Kết nối +5 |
+| 20 | Chỉ sang quản lý | Next, Prajith — our team manager — would like to meet you. His room is next door, just a little further down. |  |  |
+| 21 | Nói chuyện lại | Prajith's room is just next door. And I'm right here all day if you have any questions! |  |  |
+
+**Tin nhắn nhắc việc (zone 5)** — Tú đã chia tay ở zone 4 nên ở văn phòng chỉ có tin nhắn của chị:
+
+| Việc | Lần 1 | Lần 2 |
+| --- | --- | --- |
+| Gặp mentor | Hi {player}, I'm in the meeting room on the left — just walk in! 🙂 | Head down the corridor on the left: I'm in the first meeting room. See you there! |
+| Gặp quản lý (Prajith) | Prajith's room is right next to mine — he's expecting you! | Just one door further down from my room. Good luck! 🙂 |
+
+**Lời nhắn ở màn tổng kết** ("A note from Ms. Nga", theo xu hướng chính ở La bàn nghề nghiệp):
+
+| Xu hướng | Lời nhắn |
+| --- | --- |
+| Builder | {player}, you light up when you're building something. Pick one small thing next week and take it all the way to done — I'll be right behind you. — Nga |
+| Problem Solver | {player}, you like getting to the bottom of things — that's a superpower here. Bring me your trickiest question next week! — Nga |
+| Team Player | {player}, you think best with others around you. Don't be shy in meetings — your questions will help the whole team. — Nga |
+| Explorer | {player}, you learn by trying. Keep experimenting, and share what you find with the team — we'll all learn from it. — Nga |

@@ -29,11 +29,11 @@ const KB_MIN = 80;           // bàn phím ảo coi như đang mở khi che quá
 const SHORT_H = 420;         // khung cao ≤ chừng ấy px (CSS) → giao diện màn thấp kể cả khi không cảm ứng
 const BUTTONS = [            // [id, biểu tượng, khoá chữ (aria-label)]
   ["chat", "💬", "touch.chat"], ["emote", "👋", "touch.emote"], ["help", "?", "touch.help"],
-  ["app", "📱", "touch.app"], ["menu", "☰", "touch.menu"], ["full", "⛶", "touch.fullscreen"],
+  ["app", "📱", "touch.app"], ["wardrobe", "👕", "touch.wardrobe"], ["menu", "☰", "touch.menu"], ["full", "⛶", "touch.fullscreen"],
 ];
 
 export class TouchControls {
-  // actions: { interact, chat, emote, help, app, menu } — main.js (cùng việc với phím); emotes / chat: bảng đang có (hoặc null)
+  // actions: { interact, chat, emote, help, app, wardrobe, menu } — main.js (cùng việc với phím); emotes / chat: bảng đang có (hoặc null)
   constructor({ game, input, ui, actions, emotes = null, chat = null }) {
     Object.assign(this, { game, input, ui, actions, emotes, chat });
     this.stickAt = null;       // { id, x, y } tâm cần điều khiển đang giữ
@@ -205,7 +205,7 @@ export class TouchControls {
     const act = free ? g.interaction?.current && hud.promptText : null;
     const vis = {
       chat: free && !!this.chat?.available, emote: free && !!this.emotes && !!g.net?.connected, help: free,
-      app: free && g.progress.hasReward("app_my_fpt"), menu: free, full: free && (device.ios || !!document.fullscreenEnabled),
+      app: free && g.progress.hasReward("app_my_fpt"), wardrobe: free && !!g.ui?.wardrobe, menu: free, full: free && (device.ios || !!document.fullscreenEnabled),
     };
     const key = `${on}|${free}|${act}|${Object.values(vis).map(Number).join("")}`;
     if (key === this.shownKey) return;
