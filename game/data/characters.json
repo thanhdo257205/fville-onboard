@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. Vai 'player' dùng intern_nam / intern_nu theo giới tính người chơi (roles.player.model_by_gender). TẠM THỜI mọi vai khác dùng 'prajith', trừ vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' và vai 'le_tan' (Ms. Nga, Recruitment — sảnh zone 3, tin nhắn 'hr' ở zone 0) dùng 'nga' — id vai giữ nguyên.",
+  "_ghi_chu": "Cấu hình nhân vật cho game. 'roles': mỗi vai → model + cách đặt (sửa tay; thêm nhân vật mới = thêm model rồi trỏ vai sang). 'models.<id>': do scripts/blender/characters/build_character.py sinh/cập nhật (glb theo mức đồ hoạ, số đo animation); riêng speed_mps là tốc độ chơi, chỉnh tay. Đường dẫn tính từ thư mục gốc dự án. Vai 'player' dùng intern_nam / intern_nu theo giới tính người chơi (roles.player.model_by_gender). TẠM THỜI mọi vai khác dùng 'prajith', trừ 3 vai tài xế (tai_xe, tai_xe_1, tai_xe_3 — model 'tai_xe', bác tài áo sơ mi trắng, mũ, cà vạt), vai 'thao' (Ms. Huyền, người đón intern ở zone 0 và zone 1) dùng 'huyen' và vai 'le_tan' (Ms. Nga, Recruitment — sảnh zone 3, tin nhắn 'hr' ở zone 0) dùng 'nga' — id vai giữ nguyên.",
   "_place_ghi_chu": "place: 'spawn' = người chơi, đặt tại SPAWN_ · 'node' = đứng tại node NPC_ (xoay theo yaw_deg) · 'follow_player' = đi theo người chơi · 'near_node' = code đặt cạnh node (offset theo hệ trục glTF, m). pose: 'stand' (mặc định) | 'seated' = ngồi gõ phím (sit_type), ghế sau điểm đứng 0,40 m; khi nói chuyện thì stand_up → quay về phía người chơi → talk → ngồi lại. Không đặt NPC nào ở chỗ bàn intern (SPAWN_ban_lam_viec). node_marks: 'seat' = node đánh dấu CHỖ GHẾ (zone_05 đặt NPC_dong_nghiep_* tại ghế) → điểm đứng tính lùi về phía bàn theo models.<id>.seat.offset_xz_m. chair_height_m: mặt ghế trong GLB (đo bằng tia dò: 0,51 m) → khi ngồi nâng nhân vật thêm (chair_height_m − seat.height_m) để không lún vào ghế. node có thể là danh sách (vd vai thao — chị Huyền: NPC_thao_cua_xe ở zone_00, NPC_dong_nghiep_don ở zone_01) — zone có node nào thì đứng ở đó. wait.<zone>: vai đi theo (Tú) đứng chờ tại near_node + offset tới khi đạt until. carry: đồ cầm tay do code gắn (bag). board: {on_flag, to_node, done_flag} — có cờ on_flag thì đi tới to_node rồi khuất, bật done_flag. hide_if: không đặt vai khi đạt điều kiện.",
   "_tint_ghi_chu": "TẠM (mọi vai dùng chung model): tint = { shirt, pants } màu hex đổi bằng code (game/src/characters/tint.js) để dễ phân biệt NPC: áo = điểm ảnh cam đậm trên thân + tay, quần = điểm ảnh xám sáng trên hông + chân, giữ nếp vải của texture. Bỏ trống = giữ màu gốc (người chơi giữ áo cam, quần kem). Không sửa texture/GLB. Vai dùng model riêng cũng có thể đặt tint (vd le_tan: chỉ quần, để Ms. Nga khác Ms. Huyền).",
   "accessories": {
@@ -92,34 +92,22 @@
       ]
     },
     "tai_xe": {
-      "model": "prajith",
+      "model": "tai_xe",
       "place": "near_node",
       "node": "NPC_tai_xe",
       "offset": [-1.53, -0.85, -2.85],
       "yaw_deg": -30,
-      "_ghi_chu": "zone_01: NPC_tai_xe trong GLB nằm bên trong vỏ xe kín (xe_bus_mesh_1, cao 1 m) → từ ngoài không góc nào thấy được. Đặt ra vỉa hè cạnh cửa xe, phía đầu xe (thế giới ≈ −6,0; 0,15; −4,55 — cách thân xe 1 m, cách lối bước xuống x −4,68 khoảng 1,3 m), quay về phía vỉa hè / chỗ Ms. Huyền (yaw −30°) như bác tài zone_00. Cảnh xe vào trạm: bác 'xuống trước' cùng Ms. Huyền (cutscenes.json off_before_us).",
-      "tint": {
-        "shirt": "#4f7cb8",
-        "pants": "#3a3a3a"
-      }
+      "_ghi_chu": "zone_01: NPC_tai_xe trong GLB nằm bên trong vỏ xe kín (xe_bus_mesh_1, cao 1 m) → từ ngoài không góc nào thấy được. Đặt ra vỉa hè cạnh cửa xe, phía đầu xe (thế giới ≈ −6,0; 0,15; −4,55 — cách thân xe 1 m, cách lối bước xuống x −4,68 khoảng 1,3 m), quay về phía vỉa hè / chỗ Ms. Huyền (yaw −30°) như bác tài zone_00. Cảnh xe vào trạm: bác 'xuống trước' cùng Ms. Huyền (cutscenes.json off_before_us)."
     },
     "tai_xe_1": {
-      "model": "prajith",
+      "model": "tai_xe",
       "place": "node",
-      "node": "NPC_tai_xe_1",
-      "tint": {
-        "shirt": "#6a8fbf",
-        "pants": "#2e3440"
-      }
+      "node": "NPC_tai_xe_1"
     },
     "tai_xe_3": {
-      "model": "prajith",
+      "model": "tai_xe",
       "place": "node",
-      "node": "NPC_tai_xe_3",
-      "tint": {
-        "shirt": "#4a6fa0",
-        "pants": "#3a3a3a"
-      }
+      "node": "NPC_tai_xe_3"
     },
     "hanh_khach": {
       "model": "prajith",
@@ -411,6 +399,92 @@
     ]
   },
   "models": {
+    "tai_xe": {
+      "glb": {
+        "low": "assets/characters/tai_xe/tai_xe.glb"
+      },
+      "tris": {
+        "low": 6000
+      },
+      "height_m": 1.7,
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.66,
+        "run": 4.4
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.37,
+        "offset_xz_m": [
+          0.06,
+          -0.421
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.369
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/tai_xe/tai_xe_portrait.png"
+    },
     "prajith": {
       "glb": {
         "high": "assets/characters/prajith/prajith.glb",
