@@ -1443,6 +1443,10 @@ Người dùng gửi bài "Piano Spiegel" (Oliver Siimon), lấy từ "Fantasy M
 - Kiểm thử: `test:data` mục "nhạc nền"; smoke máy tính (zone 0, ngoại hình đầu): nhạc đang phát + thời gian chạy, thanh Nhạc 0 →
   dừng / kéo lại → phát, độ nhạy chuột 200 % → xoay ×2, lưu cài đặt; điện thoại (844 × 230): menu có độ nhạy cảm ứng, không có độ
   nhạy chuột, 200 % → vuốt xoay ×2. Đo: test:data, test:quick 52/52, `--mobile ui` 20/20, build chép `assets/music/`.
+- **Đã deploy** (PR #27 gộp vào main 2150a37 → gh-pages 5f9cd7c, 11/10/2026, máy Desktop). CI: lượt đầu `smoke (desktop)` hỏng
+  vì `page.goto` quá 30 s (máy CI chậm), chạy lại đạt 83/83; test:data + test:pool đạt trên main sau khi gộp. Smoke máy tính chạy
+  trên laptop có màn cảm ứng hỏng bước nhạc / độ nhạy: menu hiện cả thanh độ nhạy cảm ứng (đúng thiết kế) nhưng smoke mong không
+  có — xem "Việc nhỏ để sau".
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
@@ -1523,6 +1527,8 @@ Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLI
   `seeThrough` gộp thành 1 cây vì các tán dính nhau → khi che thì mờ cả cụm cùng lúc. Chưa cần sửa (cây ngoài vách kính,
   ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá
   gần nó nhất).
+- Smoke máy tính, bước nhạc nền + độ nhạy (`scripts/tests/smoke.mjs`, khối "nhạc nền"): đòi `!mu.rows.touch` → hỏng trên laptop
+  có màn cảm ứng (game hiện thanh độ nhạy cảm ứng khi `device.touchCapable`). Nên so với `navigator.maxTouchPoints > 0` của trang.
 
 ## Nội dung [DRAFT] chờ HR (20 mục)
 1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45, mã intern FV-2026 để đăng nhập App My FPT.
