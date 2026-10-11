@@ -1343,12 +1343,13 @@ Bỏ dòng "Bi-a bằng cảm ứng sắp có". Máy tính giữ nguyên mọi �
   tay kéo + "Đặt bi", bàn khớp máy chủ); ô chat máy tính (bấm mở, `/`, Esc không mở menu). Test bi-a máy tính chờ hội thoại
   on_enter của zone 5 trước khi tới bàn (lỗi chạy đua thỉnh thoảng); test né đè bảng tên (màn thấp) chờ tới khi hết đè, tối đa 4 s, thay vì 600 ms cố định (CI khung thưa → đỏ ở main sau PR #20). `__game.pool.touch()`, `__game.pool.setState()`.
 
-### Sửa lỗi kẹt sau khi đứng dậy khỏi bàn làm việc zone 5 (11/10/2026, nhánh `fix/desk-stand-up`)
+### Sửa lỗi kẹt sau khi đứng dậy khỏi bàn làm việc zone 5 (11/10/2026, nhánh `fix/desk-stand-up` 473fb23)
 
 Người dùng chơi thử trên điện thoại: ngồi vào bàn làm việc (hội thoại `desk_main`) rồi đứng dậy thì kẹt trong bàn, không đi ra
 được. Nguyên nhân: điểm ngồi (chỗ ghế − `seat.offset_xz_m`) lọt giữa bàn và ghế — capsule lồng 0,26 m vào `COL_` bàn / ghế; đứng
 dậy vẫn ở nguyên chỗ đó nên va chạm đẩy qua lại, đi hướng nào cũng kẹt. Chỉ gặp khi đứng dậy (còn việc khác chưa xong); làm bàn
-làm việc là việc cuối thì vào thẳng cảnh kết (ngồi nguyên) nên smoke cũ không gặp. **Chưa deploy.**
+làm việc là việc cuối thì vào thẳng cảnh kết (ngồi nguyên) nên smoke cũ không gặp. **Đã deploy** (PR #22 gộp vào main ee187ef →
+gh-pages c3ef40f).
 
 - `player/player.js`: lúc ngồi nhớ chỗ đứng trước đó; đứng dậy (`standUp`) tìm chỗ trống (`exitSpot`: điểm ngồi nếu trống → điểm
   trống đầu tiên trên đường về chỗ đứng trước khi ngồi → vòng quanh điểm ngồi 0,3 … 1,5 m), trong lúc `stand_up` nhân vật trượt
