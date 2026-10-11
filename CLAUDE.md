@@ -240,6 +240,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật — trừ các test
   mạng dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
 - Zone 0–2 (ngoại hình đầu): `__game.skyCheck()` — chỗ thấy trời ở mọi SPAWN_ × 8 hướng không còn một màu phẳng (≤ 80 %).
+- Mỗi zone, trước mỗi việc bắt buộc / lối ra zone (lúc đang đi lại tự do): phải có dấu "!" hoặc mũi tên chỉ đường
+  (`__game.guide` → `marker` / `arrow`) — 1 dòng mỗi zone.
 - Sau phần chơi theo ngoại hình, smoke chạy **lượt điện thoại giả lập** (Playwright `hasTouch` + `isMobile`, khung ngang 844 × 390,
   `--mobile off` bỏ, `--mobile only` chỉ chạy lượt này): giao diện cảm ứng tự bật, nấc Detail thấp; đẩy joystick (chạy), vuốt
   xoay camera, mở 2 ngón; chơi zone 0 → 2 bằng chạm (nút hành động ghi đúng tên việc, chạm qua hội thoại / lựa chọn, quiz Cuder

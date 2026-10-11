@@ -1181,8 +1181,8 @@ Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2
 ### Bi-a: đánh xoáy ngang + đè / kéo (11/10/2026, nhánh `feat/pool-spin` 08cbdcc)
 
 Người dùng chốt: áp phê trái / phải 5 nấc (−2 … +2) và xoáy lên / xuống (đánh đè / đánh kéo) 5 nấc (CHECKLIST P2 "Bi-a: đánh
-xoáy ngang"). **Chưa deploy** (cần bản web + `npx wrangler deploy` máy chủ — web trước, máy chủ sau; `docs/multiplayer.md` →
-"Bi-a: đánh xoáy").
+xoáy ngang"). **Bản web đã deploy** (PR #18 gộp ở main 0753aef, từ gh-pages 88b7258); máy chủ thật: chạy `npx wrangler deploy`
+ở máy Desktop (chưa ghi lại đã chạy chưa — `docs/multiplayer.md` → "Bi-a: đánh xoáy"; tin chào phải có `"pool_spin"`).
 - `game/src/pool/physics.js`: `simulateShot(…, { angle, power, spin, roll })`. Xoáy ngang: chạm băng → vận tốc dọc băng thêm
   theo chiều xoáy, tỉ lệ lực nảy (nấc 2 đánh thẳng vào băng: bật lệch ~18°; thuận chiều lăn mở góc, ngược khép góc), mỗi lần
   chạm băng còn 1/2; bi trắng lệch 1° ngược phía xoáy lúc đánh; va bi → bi kia lệch rất nhẹ (~1,6° ở cú gần) và nhận xoáy ngược
@@ -1378,6 +1378,13 @@ CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" �
   điện thoại: nấc Detail thấp tắt mây + dãy nhà. Hiệu năng (máy cloud không GPU, SwiftShader): +10–20 % ms / khung —
   `docs/perf_report.md`; còn đo trên laptop Intel.
 - Còn (cần Blender): lớp 3 (kéo mặt đất zone ra xa, ruộng lúa, cột điện), lớp 4 (hàng rào thay tường vô hình), build lại zone 0–2.
+
+### Smoke: dấu chỉ đường trước mỗi việc bắt buộc + dọn checklist (11/10/2026, nhánh `test/guide-markers` 14ae65c)
+
+- `scripts/tests/smoke.mjs`: mỗi zone, trước mỗi việc bắt buộc / lối ra zone (lúc đang đi lại tự do, chờ tối đa 2,5 s) phải có dấu
+  "!" hoặc mũi tên (`__game.guide` → `marker` / `arrow`); 1 dòng mỗi zone. Lượt 1 ngoại hình zone 0 → 5: 20 mục tiêu, đều có.
+- CHECKLIST: tick "Bi-a bước 3" (mọi dòng con đã xong), "Build, push, deploy" phần điện thoại (PR #19–#21), ghi bản web bi-a xoáy
+  đã deploy (còn `wrangler deploy` máy chủ); "zone 3: tách cụm cây" — người dùng chốt bỏ, coi như xong.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
