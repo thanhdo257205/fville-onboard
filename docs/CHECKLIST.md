@@ -447,6 +447,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   ngoại hình — biểu thức `== 'workflow_dispatch' && '' || '--look …'` luôn ra vế sau vì chuỗi rỗng bị coi là sai — Phụ trách:
   Claude
 - [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
+- [x] P3 Kiểm thử nhanh hơn: CI chạy song song 5 job (data + smoke desktop / mobile / pool-touch / net, bộ nhớ đệm Chromium),
+  `npm run test:quick` (data + 1 ngoại hình, ~2 phút) cho máy local — Phụ trách: Claude — nhánh `ci/parallel-smoke`
 - [x] P3 `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 kiểm tra có dấu "!" hoặc mũi tên (`__game.guide` → `marker` /
   `arrow`), để lỗi mất dấu không quay lại mà không ai biết — Phụ trách: Claude — nhánh `test/guide-markers` — 14ae65c
 - [ ] P3 Theo dõi Cloudflare: Workers & Pages → fville-net → Metrics (hạn miễn phí 100.000 lượt/ngày) — Phụ trách: —

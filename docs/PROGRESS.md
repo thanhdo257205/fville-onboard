@@ -1359,7 +1359,8 @@ gh-pages c3ef40f).
 
 ### Bầu trời chuyển màu + mây + phông nền xa (11/10/2026, nhánh `feat/sky-backdrop`)
 
-CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" — lớp 1 + 2 (làm bằng code, không cần Blender). **Chưa deploy.**
+CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" — lớp 1 + 2 (làm bằng code, không cần Blender). **Đã deploy**
+(PR #24 gộp vào main dd4ccb1 → gh-pages 22743fa; cùng lượt: smoke dấu chỉ đường PR #23).
 
 - `game/src/render/sky.js` + `data/backdrop.json`, dùng chung mọi zone, không sửa GLB (chỉ thêm vật ở xa ngoài hộp bao zone):
   - vòm trời: shader đỉnh (`mood.sky_top`) → chân trời (`mood.sky_horizon`) + quầng nắng theo `mood.sun`; đi theo camera, nằm ở mặt
@@ -1385,6 +1386,23 @@ CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" �
   "!" hoặc mũi tên (`__game.guide` → `marker` / `arrow`); 1 dòng mỗi zone. Lượt 1 ngoại hình zone 0 → 5: 20 mục tiêu, đều có.
 - CHECKLIST: tick "Bi-a bước 3" (mọi dòng con đã xong), "Build, push, deploy" phần điện thoại (PR #19–#21), ghi bản web bi-a xoáy
   đã deploy (còn `wrangler deploy` máy chủ); "zone 3: tách cụm cây" — người dùng chốt bỏ, coi như xong.
+
+### Kiểm thử nhanh hơn: CI chạy song song + `npm run test:quick` (11/10/2026, nhánh `ci/parallel-smoke`)
+
+Người dùng hỏi cách làm test nhanh hơn. Một lượt CI cũ 15–20 phút: mọi phần chạy nối tiếp trên 1 máy (cài đặt ~2–3 phút,
+máy tính 2 ngoại hình ~3, điện thoại ~6,5, test mạng ~5). Máy CI không có GPU (trình duyệt vẽ bằng CPU) nên không chạy nhiều
+trình duyệt cùng lúc trên 1 máy — tách máy.
+
+- `.github/workflows/test.yml`: 5 job song song — `data` (test:data + test:pool, không cần trình duyệt) và `smoke` theo matrix
+  `desktop` (2 ngoại hình, `--mobile off --extra off`), `mobile` (`--mobile ui`), `pool-touch` (`--mobile pool`), `net`
+  (`--extra only --mobile off`); `fail-fast: false`; bộ nhớ đệm Chromium (`~/.cache/ms-playwright`, khoá theo phiên bản
+  playwright); artifact `test-results-<phần>`. Không bỏ bước kiểm tra nào: 4 phần smoke phủ đúng những gì lượt cũ chạy.
+- `scripts/tests/smoke.mjs`: `--mobile ui` = lượt điện thoại trừ bi-a cảm ứng (zone 0 → 2 bằng chạm, màn thấp, toàn màn hình,
+  nhắn tin) — để tách bi-a cảm ứng sang job riêng; dòng tổng kết ghi đúng phần đã chạy.
+- `__game.skyCheck()` (smoke bầu trời zone 0–2): vẽ mọi hướng trước rồi đọc điểm ảnh bất đồng bộ cùng lúc — lượt đầu CI song song cho
+  thấy job desktop 11 phút vì mỗi lần đọc trên máy CI không GPU chờ ~3,5 s (96 lần đọc lần lượt ≈ 6,5 phút).
+- `npm run test:quick` (máy local, mỗi lần sửa nhỏ): test:data + smoke 1 ngoại hình zone 0 → 5, bỏ điện thoại + test mạng — đo
+  1 phút 45 giây. Đo các phần riêng: `--mobile ui` ~2,5 phút, `--mobile pool` ~3,8 phút.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →

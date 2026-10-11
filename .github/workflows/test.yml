@@ -1,12 +1,19 @@
-# Kiểm thử tự động (không cần secret): mỗi lần push main và mỗi Pull Request vào main (mở, push thêm, mở lại) → npm run
-# test:data, test:pool, npm run build, npm run test:smoke (2 ngoại hình, chạy trên bản build, mạng tắt ?net=off —
-# không đụng máy chủ chơi nhiều người thật) + các test thêm: bản lưu cũ lệch data; với máy chủ local server/ (wrangler dev,
-# không cần tài khoản): vào zone 4 khi có người chơi khác, bi-a 2 người (2 trình duyệt chơi trọn một ván, luật chuẩn 8 bi),
-# chia phòng; máy chủ giả bản cũ (wrangler dev --var POOL_RULES:1): bi-a 2 người luật cũ.
-# test:pool gồm cả luật 8 bi (cũ + chuẩn) + bàn bi-a của máy chủ (scripts/tests/pool_rules.mjs).
-# Tự động chạy 2 ngoại hình: ngoại hình đầu (tiếng Anh) thử tải lại giữa cảnh kết, ngoại hình thứ 2 chơi bằng tiếng Việt và
-# chạy trọn cảnh kết (rời zone_05 → bến xe — đường người chơi thật đi; 1 ngoại hình thì không phủ được đường này). Chạy tay (Actions → test → Run workflow): cả 3
-# ngoại hình. Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results.
+# Kiểm thử tự động (không cần secret): mỗi lần push main và mỗi Pull Request vào main (mở, push thêm, mở lại).
+# Chia thành nhiều job chạy SONG SONG trên các máy riêng (trước đây nối tiếp trên 1 máy, 15–20 phút; máy CI không có GPU —
+# trình duyệt vẽ bằng CPU, nên không chạy nhiều trình duyệt cùng lúc trên 1 máy mà tách máy):
+#   • data: npm run test:data + test:pool (luật 8 bi cũ + chuẩn, bàn bi-a của máy chủ — scripts/tests/pool_rules.mjs)
+#   • smoke (matrix, mỗi phần 1 máy; build rồi chạy trên bản build, mạng tắt ?net=off — không đụng máy chủ thật):
+#       desktop     — chơi zone 0 → 5 tới màn tổng kết, 2 ngoại hình (--mobile off --extra off): ngoại hình đầu (tiếng Anh) thử tải
+#                     lại giữa cảnh kết, ngoại hình thứ 2 chơi bằng tiếng Việt và chạy trọn cảnh kết (rời zone_05 → bến xe);
+#                     chạy tay (Actions → test → Run workflow): cả 3 ngoại hình
+#       mobile      — lượt điện thoại giả lập trừ bi-a cảm ứng (--mobile ui): chơi zone 0 → 2 bằng chạm, màn thấp, toàn màn
+#                     hình, nhắn tin bằng nút Chat (máy chủ local)
+#       pool-touch  — bi-a cảm ứng (--mobile pool): 844 × 230 + 390, 2 người máy tính + điện thoại qua máy chủ local
+#       net         — bản lưu cũ lệch data + test mạng với máy chủ local server/ (wrangler dev, không cần tài khoản) (--extra only
+#                     --mobile off): zone 4 khi có người chơi khác, bi-a 2 người luật chuẩn, nhắn tin, ô chat máy tính, chia
+#                     phòng; máy chủ giả bản cũ (wrangler dev --var POOL_RULES:1): bi-a 2 người luật cũ
+#   Bộ nhớ đệm: npm (setup-node) + Chromium của Playwright (~/.cache/ms-playwright, theo phiên bản playwright).
+#   Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results-<phần>. Máy local: npm run test:quick (data + 1 ngoại hình, ~3 phút).
 # Pull Request từ fork: GitHub chỉ cấp quyền đọc (permissions bên dưới) — workflow không cần secret nên vẫn chạy đủ.
 name: test
 
@@ -25,9 +32,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: game
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: game/package-lock.json
+
+      - name: Cài thư viện
+        run: npm ci
+
+      - name: Kiểm tra dữ liệu (test:data)
+        run: npm run test:data
+
+      - name: Bi-a (test:pool — 1.000 cú phá bi, tất định; luật 8 bi, bàn máy chủ, ván 2 người giả)
+        run: npm run test:pool
+
+  smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false        # một phần đỏ vẫn chạy hết các phần kia (thấy hết chỗ hỏng trong 1 lượt)
+      matrix:
+        include:
+          - part: desktop
+            args: --mobile off --extra off
+          - part: mobile
+            args: --mobile ui
+          - part: pool-touch
+            args: --mobile pool
+          - part: net
+            args: --extra only --mobile off
+    name: smoke (${{ matrix.part }})
     defaults:
       run:
         working-directory: game
@@ -45,30 +89,35 @@ jobs:
       - name: Cài thư viện
         run: npm ci
 
-      - name: "Cài máy chủ chơi nhiều người local (test mạng: zone 4 có người chơi khác, bi-a 2 người, chia phòng)"
+      - name: "Cài máy chủ chơi nhiều người local (test mạng, nhắn tin, bi-a 2 người)"
+        if: matrix.part != 'desktop'
         run: npm --prefix ../server ci
-
-      - name: Kiểm tra dữ liệu (test:data)
-        run: npm run test:data
-
-      - name: Bi-a (test:pool — 1.000 cú phá bi, tất định; luật 8 bi, bàn máy chủ, ván 2 người giả)
-        run: npm run test:pool
 
       - name: Build
         run: npm run build
 
+      - name: Phiên bản Playwright (khoá bộ nhớ đệm Chromium)
+        id: pw
+        run: echo "version=$(node -p "const p = require('./package.json'); (p.devDependencies || {}).playwright || (p.dependencies || {}).playwright")" >> "$GITHUB_OUTPUT"
+
+      - name: Bộ nhớ đệm Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
       - name: Cài Chromium cho Playwright
         run: npx playwright install --with-deps chromium
 
-      # chạy tay: cả 3 ngoại hình. Không viết `== 'workflow_dispatch' && '' || '--look …'`: chuỗi rỗng bị coi là sai → luôn ra
-      # vế sau (chạy tay từng chỉ chạy 2 ngoại hình)
-      - name: Chơi thử tự động (test:smoke)
-        run: npm run test:smoke -- --build ${{ github.event_name != 'workflow_dispatch' && '--look intern_nam,intern_nu' || '' }}
+      # chạy tay: phần desktop chạy cả 3 ngoại hình. Không viết `== 'workflow_dispatch' && '' || '--look …'`: chuỗi rỗng bị coi
+      # là sai → luôn ra vế sau
+      - name: Chơi thử tự động (test:smoke — ${{ matrix.part }})
+        run: npm run test:smoke -- --build ${{ matrix.args }} ${{ matrix.part == 'desktop' && github.event_name != 'workflow_dispatch' && '--look intern_nam,intern_nu' || '' }}
 
       - name: Ảnh bước hỏng
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.part }}
           path: test-results/
           if-no-files-found: ignore

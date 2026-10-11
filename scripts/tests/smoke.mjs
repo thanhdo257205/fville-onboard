@@ -24,7 +24,8 @@
 //   Lượt điện thoại (Playwright hasTouch + isMobile, khung ngang 844 × 390): giao diện cảm ứng tự bật, đi bằng cần điều khiển
 //     ảo, vuốt xoay camera, chụm 2 ngón thu phóng, chạm nút hành động / qua hội thoại / lựa chọn, chơi zone 0 → 2 (--zone N:
 //     chỉ zone đó) kể cả mini-game bằng chạm (Cài app, Ảnh check-in); máy chủ local: mở chat bằng nút, gửi 1 tin bằng nút Gửi.
-//     --mobile off | only | pool: bỏ / chỉ chạy lượt điện thoại / chỉ bi-a cảm ứng (1 máy + 2 người qua máy chủ local)
+//     --mobile off | only | pool | ui: bỏ / chỉ chạy lượt điện thoại / chỉ bi-a cảm ứng (1 máy + 2 người qua máy chủ local) /
+//     lượt điện thoại trừ bi-a cảm ứng (CI chia 2 job song song: ui + pool)
 //   --headed: mở cửa sổ trình duyệt · --verbose: in thêm chi tiết từng bước
 // In gọn: mỗi bước 1 dòng ✓/✗, cuối cùng 1 dòng tổng kết + thời gian. Ảnh chụp chỉ khi bước hỏng: test-results/ (không commit).
 import { spawn, spawnSync } from "node:child_process";
@@ -55,7 +56,8 @@ if (!startZone) throw new Error(`--zone ${zoneArg}: không có zone này`);
 const onlyZone = zoneArg != null;
 const verbose = !!arg("verbose");
 const extra = arg("extra");
-const mobile = arg("mobile");      // off: bỏ lượt điện thoại · only: chỉ lượt điện thoại (+ nhắn tin, bi-a cảm ứng 2 người nếu có máy chủ local) · pool: chỉ bi-a cảm ứng
+const mobile = arg("mobile");      // off: bỏ lượt điện thoại · only: chỉ lượt điện thoại (+ nhắn tin, bi-a cảm ứng 2 người nếu có máy chủ local) · pool: chỉ bi-a cảm ứng · ui: chỉ lượt điện thoại trừ bi-a cảm ứng
+const mobileOnly = mobile === "only" || mobile === "pool" || mobile === "ui";
 const zoneIsLast = (z) => z === order[order.length - 1];
 const langArg = arg("lang");
 const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
@@ -2174,15 +2176,20 @@ async function runMobileChat(browser, base, srv) {
 const server = await startServer();
 const browser = await chromium.launch({ headless: !arg("headed"), ...(chromePath ? { executablePath: chromePath } : {}),
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
-console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
+console.log(`smoke: ${extra === "only" ? "" : mobileOnly ? `điện thoại (--mobile ${mobile}) · ` : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" || mobileOnly ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
-  if (extra !== "only" && mobile !== "only" && mobile !== "pool") for (const look of looks) await runLook(browser, server.base, look);
+  if (extra !== "only" && !mobileOnly) for (const look of looks) await runLook(browser, server.base, look);
   if (extra !== "only" && mobile !== "off" && mobile !== "pool") { await runMobile(browser, server.base); await runShort(browser, server.base); await runShortCam(browser, server.base); await runFullscreen(browser, server.base); }
-  if (extra !== "only" && mobile !== "off") await runPoolTouch(browser, server.base);
-  if (extra !== "off" && (mobile === "only" || mobile === "pool")) {
+  if (extra !== "only" && mobile !== "off" && mobile !== "ui") await runPoolTouch(browser, server.base);
+  if (extra !== "off" && mobileOnly) {
     const srv = await startNetServer();
-    if (!srv.skip && !srv.error) { try { if (mobile === "only") await runMobileChat(browser, server.base, srv); await runPoolTouchNet(browser, server.base, srv); } finally { srv.stop(); } }
+    if (!srv.skip && !srv.error) {
+      try {
+        if (mobile !== "pool") await runMobileChat(browser, server.base, srv);
+        if (mobile !== "ui") await runPoolTouchNet(browser, server.base, srv);
+      } finally { srv.stop(); }
+    }
   } else if (extra !== "off") {
     await runOldSave(browser, server.base);
     // các test mạng dùng chung 1 máy chủ local; chia phòng chạy cuối (cần phòng 1 trống)
@@ -2210,5 +2217,5 @@ try {
 }
 const bad = results.filter((r) => !r.ok).length;
 const sec = Math.round((Date.now() - t0) / 1000), dur = sec >= 60 ? `${Math.floor(sec / 60)} phút ${sec % 60} giây` : `${sec} giây`;
-console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ)"} (${dur})`);
+console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" || mobileOnly ? 0 : looks.length} ngoại hình${mobileOnly ? ` + điện thoại (--mobile ${mobile})` : ""}${extra === "off" || mobileOnly ? "" : " + bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ)"} (${dur})`);
 process.exit(bad ? 1 : 0);
