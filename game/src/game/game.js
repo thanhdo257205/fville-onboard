@@ -926,8 +926,10 @@ export class Game {
     else {
       this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider, false, this.zone.view);
       // màn thấp: phần khung còn thấy phía trên hộp thoại → camera hội thoại đặt mặt 2 người vào đó (player/talkcam.js)
+      // (đo DOM 5 lần / giây — mỗi khung thì bắt trình duyệt tính lại bố cục liên tục; camera đổi êm nên không thấy giật)
       const dlg = this.ui.dialogue;
-      this.talkCam.setFrame(dlg?.open && document.body.classList.contains("short") ? dlg.el.getBoundingClientRect().top / innerHeight : 1);
+      if (!dlg?.open || !document.body.classList.contains("short")) { this.talkCam.setFrame(1); this._frameT = 0; }
+      else if ((this._frameT = (this._frameT ?? 0) - dt) <= 0) { this._frameT = 0.2; this.talkCam.setFrame(dlg.el.getBoundingClientRect().top / innerHeight); }
       this.talkCam.apply(dt, this.cam.target, { player: this.player, env: this.talkEnv() });
     }
     // cây che: lúc nói chuyện thì xét đường nhìn tới người đối thoại

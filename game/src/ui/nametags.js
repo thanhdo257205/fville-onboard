@@ -1,15 +1,17 @@
 // Bảng tên nhỏ trên đầu NPC (HTML qua CSS2DRenderer): ẩn khi xa hơn maxDistance (characters.json name_tags,
 // mặc định 12 m) hoặc bị tường (COL_) che.
 // Màn thấp (body.short — ui/touch.js): chữ nhỏ hơn (CSS), bảng tên vai phụ (name_tags.minor_roles, vd "Passenger") chỉ hiện
-// khi gần hơn minorDistance; mỗi khung các bảng tên đang hiện (cả người chơi khác — net/remotes.js) không được đè nhau: bảng ở
-// thấp hơn trên màn hình (thường là người gần hơn) giữ chỗ, bảng chồng lên thì dời lên từng nấc, quá DODGE_STEPS nấc vẫn chồng
-// thì ẩn. Đang hội thoại: ẩn hết (CSS body.talking).
+// khi gần hơn minorDistance; các bảng tên đang hiện (cả người chơi khác — net/remotes.js) không được đè nhau: bảng ở thấp hơn
+// trên màn hình (thường là người gần hơn) giữ chỗ, bảng chồng lên thì dời lên từng nấc, quá DODGE_STEPS nấc vẫn chồng thì ẩn.
+// Xếp lại DODGE_HZ lần / giây (đo vị trí = bắt trình duyệt tính lại bố cục — mỗi khung thì máy yếu chậm hẳn), dưới 2 bảng thì
+// thôi. Đang hội thoại: ẩn hết (CSS body.talking).
 import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { blocked } from "../world/collision.js";
 
 const DODGE_STEPS = 2;    // số nấc dời lên tối đa (mỗi nấc = chiều cao bảng + GAP)
 const GAP = 2;            // px giữa 2 bảng tên
+const DODGE_HZ = 5;       // số lần xếp lại mỗi giây
 
 export class NameTags {
   constructor(container) {
@@ -24,6 +26,7 @@ export class NameTags {
     this.above = 0.28;
     this.minorRoles = new Set();   // vai phụ: bảng tên chỉ hiện khi gần (màn thấp)
     this.minorDistance = 5;
+    this.dodgeTimer = 0;
   }
   get short() { return document.body.classList.contains("short"); }
   add(parent, text, height) {
@@ -51,13 +54,16 @@ export class NameTags {
       }
     }
     this.renderer.render(scene, camera);
-    if (this.short && !document.body.classList.contains("talking")) this.dodge();
+    this.dodgeTimer -= dt;
+    if (this.short && !document.body.classList.contains("talking")) { if (this.dodgeTimer <= 0) { this.dodgeTimer = 1 / DODGE_HZ; this.dodge(); } }
     else if (this._dodged) this.undodge();
   }
 
   // màn thấp: dời các bảng tên đang đè nhau (CSS2DRenderer đặt transform mỗi khung → dời bằng style.top)
   dodge() {
     const els = [...this.renderer.domElement.querySelectorAll(".nametag")];
+    const shown = els.filter((el) => el.style.display !== "none");
+    if (shown.length < 2) { if (this._dodged) this.undodge(); return; }
     const items = [];
     for (const el of els) {
       if (el.style.display === "none") { el.style.top = ""; el.style.visibility = ""; continue; }

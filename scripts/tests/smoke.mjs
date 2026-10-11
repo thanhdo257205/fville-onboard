@@ -1663,7 +1663,7 @@ async function runShort(browser, base) {
       // né đè: gắn tạm thêm 2 bảng tên đúng chỗ bảng của Ms. Huyền (3 bảng trùng nhau) → phải dời ra, không cái nào đè
       const dodge = await ev(async () => { const g = __game._game, n = g.npc("thao"), h = n.character.model.height_m;
         const extra = ["Test A", "Test B"].map((x) => g.nametags.add(n.character.root, x, h));
-        for (let k = 0; k < 4; k++) await new Promise((r) => requestAnimationFrame(r));
+        await new Promise((r) => setTimeout(r, 600));   // xếp lại 5 lần / giây (ui/nametags.js DODGE_HZ)
         const r = __game.tags;
         for (const t of extra) { t.element.remove(); t.parent?.remove(t); g.nametags.tags.splice(g.nametags.tags.indexOf(t), 1); }
         return r; });

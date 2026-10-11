@@ -1297,7 +1297,8 @@ Người dùng chơi thử Android Chrome cầm ngang: thanh địa chỉ chiế
   đối thoại ở 0,38 phần còn thấy, người to hơn (camera gần hơn), đổi êm. Ms. Nga ở 844 × 230: mặt 2 người y 55 / 43, hộp thoại
   từ 144. Chỗ Ms. Huyền (zone 0, sát xe bus) camera qua vai không dựng được ở cả máy tính lẫn điện thoại (cả 4 góc "không lùi
   được") → giữ camera chơi như trước — chưa sửa.
-- Bảng tên (`ui/nametags.js`): màn thấp chữ 11 px; mỗi khung bảng ở thấp hơn trên màn giữ chỗ, bảng đè lên thì dời lên tối đa
+- Bảng tên (`ui/nametags.js`): màn thấp chữ 11 px; 5 lần / giây (đo vị trí bắt tính lại bố cục — mỗi khung thì CI 3 trình
+  duyệt chậm tới mức người chơi khác dựng không kịp, test nhắn tin đỏ) bảng ở thấp hơn trên màn giữ chỗ, bảng đè lên thì dời lên tối đa
   2 nấc, vẫn đè thì ẩn (cả bảng người chơi khác); vai phụ (`name_tags.minor_roles`: hành khách, tài xế xe 1 / 3) chỉ hiện khi
   camera cách < 5 m.
 - Toàn màn hình: chạm Start / Continue ở màn tiêu đề (Android cảm ứng) → `requestFullscreen` + khoá xoay ngang (lỗi thì im
