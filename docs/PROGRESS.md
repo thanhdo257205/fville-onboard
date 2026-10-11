@@ -1507,6 +1507,7 @@ z −1,6 … 1,5); zone 3 lối sang zone 4 ở đầu tây sảnh cũng lọt (
 - Kiểm thử: `test:data` mục "phòng giả sau cửa"; smoke: zone_04, zone_05 không có tia nhìn ngang ra ngoài (`FLAT_FREE`), zone_03
   còn 308 tia đều ở cửa trước sảnh mở ra sân (đúng). Đo: test:data, smoke `--zone 3`, `--zone 5`, test:quick 53/53.
 - Build lại zone_03, zone_05 thì bỏ 2 mục `rooms` này (ghi trong CHECKLIST).
+- Gộp main qua PR #28 (774230c), đã deploy gh-pages fe401b2 (cùng bản này lên trang thật: nhân vật thứ 4 `intern_nu_buitoc`).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
