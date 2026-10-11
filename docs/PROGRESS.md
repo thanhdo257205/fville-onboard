@@ -1280,7 +1280,7 @@ CHECKLIST P2 "Chơi trên trình duyệt điện thoại", mọi dòng trừ bi-
 - Còn lại (người dùng): chơi thử trên máy thật (Android Chrome, iPhone Safari), đo FPS + RAM ghi vào `docs/perf_report.md`;
   bi-a cảm ứng làm ở PR sau (sau PR áp phê).
 
-### Sửa giao diện màn thấp trên điện thoại (11/10/2026, nhánh `fix/mobile-short-screen`)
+### Sửa giao diện màn thấp trên điện thoại (11/10/2026, nhánh `fix/mobile-short-screen` 5a819ba)
 
 Người dùng chơi thử Android Chrome cầm ngang: thanh địa chỉ chiếm ~1/4 chiều cao, vùng game chỉ ~230 px CSS — câu hỏi của NPC
 + tiêu đề lựa chọn bị đẩy khỏi mép trên, không lướt lên được. **Chưa deploy.**
