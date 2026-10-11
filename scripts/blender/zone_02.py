@@ -24,7 +24,7 @@ if HERE not in sys.path:
 for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
     del sys.modules[_m]  # nạp lại khi chạy nhiều lần trong Blender đang mở
 
-from lib import bamboo, cuder, kit, props, trees, zone  # noqa: E402
+from lib import bamboo, corn, cuder, kit, props, trees, zone  # noqa: E402
 from lib import quality as Q  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
@@ -58,6 +58,14 @@ CUDER_H = 2.384
 CUDER_KEEP_BUN = True
 CUDER_FOOT = {}                       # khung bao xy của tượng (build_interactives ghi, build_colliders dùng)
 DIRT = (2.0, 24.0, 64.0, 68.0)
+# Luống ngô chữ U quanh tượng Cuder (cây: mô hình Sketchfab, lib/corn.py — người dùng yêu cầu 12/10/2026): 2 cánh là luống đất
+# viền gạch 2 bên tượng, miệng chữ U quay về nam (phía người chơi đi tới, camera sau lưng — không che tượng); đáy chữ U là hàng
+# ngô trên ruộng đất sau tượng (DIRT). Tượng x 19,6..20,4 → mỗi bên chừa 1,6 m tới mép luống.
+CORN_ARMS = ((17.0, 18.0), (22.0, 23.0))   # x 2 cánh (luống rộng 1 m)
+CORN_Y = (59.0, DIRT[2])                  # cánh: từ y0 tới mép ruộng
+CORN_BACK = (16.8, 23.2, 64.65)           # đáy: x0, x1, y của hàng ngô trên ruộng
+CORN_BED_Z = PLAZA_Z + 0.16               # mặt đất luống (cao hơn sân gạch)
+CORN_H = 2.1                              # m — cao trung bình cây ngô (± 8 %)
 STAIRS = dict(x0=18.0, y0=69.5, width=10.0, n=5, rise=0.16, run=0.5)
 LOBBY_Z = PLAZA_Z + STAIRS["n"] * STAIRS["rise"]  # cao độ sàn sảnh (zone_03 khớp vào)
 
@@ -105,6 +113,12 @@ def build_ground(col):
     kit.slab_rect(b, dx0, dy0, dx1, dy1, 0, PLAZA_Z + 0.04, "dirt")
     for p0, p1 in (((dx0, dy0), (dx1, dy0)), ((dx1, dy0), (dx1, dy1)), ((dx1, dy1), (dx0, dy1)), ((dx0, dy1), (dx0, dy0))):
         kit.seg_box(b, p0, p1, 0.12, 0, PLAZA_Z + 0.08, "brick_dark")
+    # luống ngô chữ U: 2 cánh đất viền gạch (cạnh bắc chạm viền ruộng)
+    cy0, cy1 = CORN_Y
+    for ax0, ax1 in CORN_ARMS:
+        kit.slab_rect(b, ax0, cy0, ax1, cy1, 0, CORN_BED_Z, "dirt")
+        for p0, p1 in (((ax0, cy1), (ax0, cy0)), ((ax0, cy0), (ax1, cy0)), ((ax1, cy0), (ax1, cy1))):
+            kit.seg_box(b, p0, p1, 0.12, 0, CORN_BED_Z + 0.05, "brick_dark")
     return b.to_object("ENV_ground", col, tint="ground"), paving
 
 
@@ -192,7 +206,24 @@ def build_vegetation(col, rng):
     kit.TREES = None
     for k, (_, r) in enumerate(bamboo.place(col, BAMBOO_SPOTS)):
         BAMBOO_R[k] = r
+    corn.place(col, corn_spots(), CORN_H)
     return veg
+
+
+def corn_spots():
+    """Chỗ trồng ngô: mỗi cánh 1 hàng so le (± 0,17 m) dọc luống, đáy 1 hàng so le trên ruộng. → [(x, y, z)]"""
+    out = []
+    cy0, cy1 = CORN_Y
+    n = 9
+    for ax0, ax1 in CORN_ARMS:
+        cx = (ax0 + ax1) / 2
+        for i in range(n):
+            out.append((cx + (0.17 if i % 2 else -0.17), cy0 + 0.35 + i * (cy1 - cy0 - 0.7) / (n - 1), CORN_BED_Z))
+    bx0, bx1, by = CORN_BACK
+    m = 10
+    for i in range(m):
+        out.append((bx0 + 0.4 + i * (bx1 - bx0 - 0.8) / (m - 1), by + (0.15 if i % 2 else -0.15), PLAZA_Z + 0.04))
+    return out
 
 
 def build_props(col, rng):
@@ -295,6 +326,11 @@ def build_colliders(col):
     for k, (x, y, z, _) in enumerate(BAMBOO_SPOTS):   # gốc bụi tre (thân tre loe dần lên ngọn, gốc chỉ ~0,3 m)
         d = 2 * (BAMBOO_R[k] + 0.25)
         C("bui_tre" if k == 0 else f"bui_tre_{k + 1}", (x, y, z + 1.5), (d, d, 3.0), col)
+    cy0, cy1 = CORN_Y                           # luống ngô chữ U (thấp: không chặn camera ở tầm mắt)
+    for k, (ax0, ax1) in enumerate(CORN_ARMS):
+        C(f"luong_ngo_{'tay' if k == 0 else 'dong'}", ((ax0 + ax1) / 2, (cy0 + cy1) / 2, 0.6), (ax1 - ax0 + 0.1, cy1 - cy0, 1.2), col)
+    bx0, bx1, by = CORN_BACK
+    C("luong_ngo_sau", ((bx0 + bx1) / 2, by, 0.6), (bx1 - bx0, 0.9, 1.2), col)
     fx, fy = CUDER_FOOT["x"], CUDER_FOOT["y"]   # hộp va chạm ôm khung bao tượng mới (bệ + đống xu + người)
     C("tuong_cuder", ((fx[0] + fx[1]) / 2, (fy[0] + fy[1]) / 2, (CUDER_H + PLAZA_Z) / 2),
       (fx[1] - fx[0] + 0.04, fy[1] - fy[0] + 0.04, CUDER_H + PLAZA_Z), col)

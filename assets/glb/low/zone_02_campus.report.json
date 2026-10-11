@@ -1,12 +1,13 @@
 {
   "zone": "zone_02_campus",
   "quality": "low",
-  "triangles_visible": 114787,
-  "triangles_collision": 444,
+  "triangles_visible": 149683,
+  "triangles_collision": 480,
   "materials": [
     "M_bamboo_leaf",
     "M_bamboo_stalk",
     "M_brick_tex",
+    "M_corn",
     "M_glass",
     "M_gloss",
     "M_hex_tex",
@@ -17,7 +18,7 @@
     "M_tree_bark",
     "M_tree_leaf"
   ],
-  "objects": 114,
+  "objects": 145,
   "game_objects": {
     "COL_": [
       "COL_bac_them",
@@ -55,6 +56,9 @@
       "COL_ground",
       "COL_khe_giua_nha",
       "COL_khoi_kinh_xam",
+      "COL_luong_ngo_dong",
+      "COL_luong_ngo_sau",
+      "COL_luong_ngo_tay",
       "COL_tuong_cuder",
       "COL_via_he"
     ],

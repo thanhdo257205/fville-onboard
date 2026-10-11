@@ -1529,6 +1529,22 @@ tin nhắn HR (zone 0, zone 4, nhắc việc zone 3–5) vẫn là Ms. Nga; mode
 - Đo: test:data; smoke `--look intern_nam` (cả lượt điện thoại + mạng / bản lưu cũ); viewer so 4 vai (lễ tân, Ms. Nga, Prajith,
   Minh). **Đã deploy** gh-pages 4d18b2e (từ main 28afb3d, sau khi gộp PR #28; smoke `--zone 3`, `--zone 5` đạt trên main mới).
 
+### Luống ngô chữ U quanh tượng Cuder (12/10/2026, máy Desktop)
+
+Người dùng gửi mô hình "Maize Corn Plant" (gilles.schaeck, Sketchfab, CC BY 4.0 — ghi trong `CREDITS.md`), muốn tối ưu rồi
+trồng quanh tượng Cuder theo luống chữ U, tượng ở giữa.
+
+- `scripts/blender/lib/corn.py` (zone_02 gọi khi build, file gốc `assets/props/corn/source/` chỉ ở máy làm việc): gộp 42 mảnh
+  thành 1 lưới, giảm 3.108 → 1.243 tam giác (collapse, giữ đường nối UV), 9 ảnh 1024² (màu / ORM / normal × 3 chất liệu, 5,4 MB)
+  → 1 atlas 512² chỉ ảnh màu; 1 chất liệu `M_corn` cắt alpha (MASK), 2 mặt, không viền; pháp tuyến từ trục thân ra ngoài.
+  Bản sao dùng chung lưới, `batch = ENV_cay_ngo` (game gộp 1 lượt vẽ, làm mờ từng cây khi che camera).
+- `zone_02.py`: `CORN_ARMS` / `CORN_Y` / `CORN_BACK` — 2 cánh luống đất viền gạch (x 17–18 và 22–23, y 59–64, cao hơn sân
+  0,16 m), đáy chữ U là hàng ngô trên ruộng sau tượng (y 64,65); miệng chữ U quay về nam (phía người chơi đi tới, camera sau
+  lưng). 28 cây cao ~2,1 m (± 8 %), so le. Hộp va chạm thấp 1,2 m cho 2 cánh + hàng sau (`COL_luong_ngo_*`). Gợi ý H / Tú /
+  tin nhắn đổi "giữa ruộng lúa" → "giữa luống ngô". Build lại zone_02 (GLB bản Thấp 599 KB).
+- Đo: test:data; smoke `--zone 2` 13/13 (84 cây / bụi / ngô gộp thành 5 mesh, quiz Cuder làm được); trong game đứng trước
+  tượng: 127 FPS, 49,8k tam giác, 16 lượt vẽ. Chưa deploy gh-pages.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
