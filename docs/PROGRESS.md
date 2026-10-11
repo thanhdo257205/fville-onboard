@@ -1134,6 +1134,26 @@ Tập một mình và thử thách của anh Khang giữ luật cũ. **Máy ch�
   thường 0–4 ms, **7 cú 11–20 ms** (cú phá + cú sau ở đầu mỗi ván) — vượt mốc 10 ms gói Free nhưng chưa bị chặn → không
   rollback; theo dõi Metrics, cân nhắc giảm CPU máy chủ khi tính lại cú phá. Chi tiết: `docs/multiplayer.md` mục cuối.
 
+### Bi-a: máy khách tính cú, máy chủ không chạy vật lý (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` b8e81e7)
+
+Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms gói Free) → người dùng chốt: tính toán để ở máy khách.
+**Chưa deploy** — thứ tự: bản web trước, máy chủ sau (`docs/multiplayer.md` mục cuối).
+- `game/src/pool/rules.js`: `wireFacts(res)` (máy khách: sự kiện cú → `f`, `r`, `rb`, `kp` của `pool_shot`) và
+  `factsFromWire(table, before, k, m)` (máy chủ: kiểm tra hợp lý → dữ kiện cho `applyShotV2`, không hợp lý → null).
+- `server/src/pool.js`: luật chuẩn dùng kết quả máy khách gửi (`result()` dùng chung với luật cũ) + sự kiện cú; không còn import
+  `simulateShot`; xin ghế phải kèm `r: 2` và `cf: 1` (bản web luật chuẩn đầu tiên → `version`). `index.js`: tin chào thêm
+  `"pool_facts"`.
+- `game/src/pool/table.js`: xin ghế kèm `cf: 1`, cú đánh gửi kèm `wireFacts(res)` (máy chủ e150c939 bỏ qua, tự tính như cũ).
+- Đánh đổi: máy chủ tin kết quả người đánh (như luật rút gọn trước PR #14), chỉ chặn kết quả không hợp lý; bàn vẫn không lệch.
+- Kiểm thử:
+  - `test:pool`: 9 kiểu sự kiện cú / kết quả bịa → `bad`; bản web luật chuẩn đầu → `version`; ván trọn 2 người giả: kết quả
+    người đánh = bàn máy chủ = người xem phát lại, từng bit; `server/src` không gọi `simulateShot`; máy chủ xử lý mỗi cú
+    ~0,09 ms (lâu nhất ~0,15 ms, Node); tin `pool_shot` lớn nhất ~410 ký tự, xấu nhất ~715 (< 1.200).
+  - smoke: tin chào có `"pool_facts"`; bản web luật chuẩn đầu xin ghế → `version`; `--extra only` 27/27.
+  - Thử tay (không commit): bản web mới + mã máy chủ đang chạy (`main` fe49f63 qua `wrangler dev`) chơi trọn ván 15 cú, không
+    lỗi từ máy chủ, phát lại khớp → deploy web trước an toàn.
+- Kết quả: test:data, test:pool đạt; `test:smoke -- --zone 5` 71/71 (3 ngoại hình + bản lưu cũ + mạng, cả máy chủ giả bản cũ).
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
