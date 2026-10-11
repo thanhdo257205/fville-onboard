@@ -195,7 +195,7 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   ứng có nút ×, điện thoại thật / xoay ngang chiếm trọn màn hình — Phụ trách: Claude — nhánh `feat/phone-layout` (10/10/2026)
 - [x] P2 Màn tiêu đề: nền 3D zone 0 lúc 06:30 (camera trôi, nghiêng theo chuột), chữ Be Vietnam Pro (OFL) phẳng, hiện dần,
   Start / Continue / Start over, nút ngôn ngữ; Start dùng lại zone đã dựng — Phụ trách: Claude — nhánh `feat/title` (10/10/2026)
-- [ ] P2 Bi-a bước 3 — chơi 2 người theo lượt qua máy chủ, người khác đứng xem — Phụ trách: Claude — nhánh `feat/pool-step3`
+- [x] P2 Bi-a bước 3 — chơi 2 người theo lượt qua máy chủ, người khác đứng xem — Phụ trách: Claude — nhánh `feat/pool-step3`
   - [x] Máy chủ (`server/src/pool.js`): mỗi bàn giữ 2 ghế, lượt chơi, vị trí bi, bi đã vào lỗ, số thứ tự cú, nhóm trơn/sọc; tin
     nhắn `pool_join`, `pool_leave`, `pool_shot`, `pool_rerack`, `pool_poke` / `pool` (bàn), `pool_shot` (cú + bàn); chỉ người
     tới lượt được đánh; giải phóng ghế khi rời bàn, sang zone khác, mất kết nối hoặc 60 s không đánh; tin chào báo
@@ -216,7 +216,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
 - [ ] P3 Bi-a: chốt có thêm phím V nhìn bàn từ trên xuống hay không — Phụ trách: —
 - [ ] P2 Bi-a: đánh xoáy ngang (side spin / "xoáy trái – phải") + đè / kéo — Phụ trách: Claude — nhánh `feat/pool-spin` — 08cbdcc
-  (11/10/2026; chi tiết: `docs/multiplayer.md` → "Bi-a: đánh xoáy"); còn deploy bản web + máy chủ
+  (11/10/2026; chi tiết: `docs/multiplayer.md` → "Bi-a: đánh xoáy"); bản web đã deploy (từ gh-pages 88b7258, PR #18 gộp ở main
+  0753aef); còn bật trên máy chủ thật
   - Hiện trạng (trước đây): `game/src/pool/physics.js` chỉ có vị trí + vận tốc mỗi bi; bi trắng luôn đánh vào giữa tâm.
   - [x] Chọn điểm chạm trên bi trắng: người dùng chốt áp phê trái / phải 5 nấc (−2 … +2) **và** xoáy lên / xuống (đánh đè /
     đánh kéo) 5 nấc. Ô "Điểm chạm" góc phải dưới: hình bi trắng + chấm, kéo chấm bằng chuột (pointer events trên chính ô đó —
@@ -363,7 +364,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     mép trên ở vùng game ~230 px), camera hội thoại theo phần khung còn thấy, bảng tên nhỏ + né đè + ẩn khi thoại, Start /
     Continue vào toàn màn hình + manifest web app, menu / mini-game / app / tổng kết / chat không tràn — nhánh
     `fix/mobile-short-screen` 5a819ba
-  - [ ] Build, push `main`, deploy `gh-pages`
+  - [x] Build, push `main`, deploy `gh-pages` — PR #19 (main eff445e → gh-pages e8a655f), PR #20 (e5439bb → aa57479), bi-a cảm
+    ứng PR #21 (6757800 → 4b4f5e3)
 
 ## 6. Ngôn ngữ và âm thanh
 
@@ -430,12 +432,13 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   ngoại hình — biểu thức `== 'workflow_dispatch' && '' || '--look …'` luôn ra vế sau vì chuỗi rỗng bị coi là sai — Phụ trách:
   Claude
 - [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
-- [ ] P3 `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 kiểm tra có dấu "!" hoặc mũi tên (`__game.guide` → `marker` /
-  `arrow`), để lỗi mất dấu không quay lại mà không ai biết — Phụ trách: —
+- [x] P3 `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 kiểm tra có dấu "!" hoặc mũi tên (`__game.guide` → `marker` /
+  `arrow`), để lỗi mất dấu không quay lại mà không ai biết — Phụ trách: Claude — nhánh `test/guide-markers` — 14ae65c
 - [ ] P3 Theo dõi Cloudflare: Workers & Pages → fville-net → Metrics (hạn miễn phí 100.000 lượt/ngày) — Phụ trách: —
 - [x] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
   trong `scripts/blender/zone_04.py`, build lại GLB bản Thấp, bỏ bản vá dữ liệu) — Phụ trách: Claude — nhánh `zone04/rebuild`
-- [ ] P3 zone 3: tách cụm cây ngoài sân bị gộp làm một khi làm mờ (`seeThrough`) — Phụ trách: —
+- [x] P3 zone 3: tách cụm cây ngoài sân bị gộp làm một khi làm mờ (`seeThrough`) — Phụ trách: — — bỏ, không làm (người dùng chốt
+  11/10/2026: coi như xong)
 
 ## Đã xong (tóm tắt)
 

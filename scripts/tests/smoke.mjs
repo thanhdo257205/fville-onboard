@@ -574,9 +574,18 @@ async function runLook(browser, base, look) {
           `zone_05: ngồi vào bàn làm việc rồi đứng dậy → ra chỗ trống (điểm ngồi lồng vào bàn / ghế ${sd.seatPen} m → ${sd.pen} m), đi được ${sd.free}/8 hướng`, JSON.stringify(sd));
       }
       let steps = 0, stepFail = null;
+      const marks = [];   // trước mỗi việc bắt buộc / lối ra zone: có dấu "!" hoặc mũi tên chỉ đường (__game.guide → marker / arrow)
       while (steps++ < 40) {
         const g = await ev(() => ({ key: __game._game.guide.current().key, zone: __game.zone }));
         if (g.zone !== zone || g.key === "complete") break;
+        if ((required.includes(g.key) || g.key.startsWith("exit:")) && !marks.some((m) => m.goal === g.key)) {
+          // chỉ xét lúc đang đi lại tự do (hội thoại / cảnh chuyển đang mở thì dấu ẩn là đúng); chờ vài khung để guide cập nhật
+          const free = await wait(() => __game._game.mode === "play" && !__game._game.cutscene && __game.state.phase === "playing", 3000);
+          if (free) {
+            const shown = await wait(() => !!(__game.guide.marker || __game.guide.arrow), 2500);
+            marks.push({ goal: g.key, shown, ...(shown ? {} : { guide: await ev(() => { const x = __game.guide; return { marker: x.marker, arrow: x.arrow, enabled: x.enabled, target: x.target, mode: __game._game.mode }; }) }) });
+          }
+        }
         const st = Date.now();
         let r = await ev((o) => __game.step(o), { pauseOn: pauses(ps) });
         // zone 5: kiểm tra giữa chừng rồi chạy tiếp
@@ -632,6 +641,9 @@ async function runLook(browser, base, look) {
         next && !st.complete && st.zone !== next && `đang ở ${st.zone}, không sang ${next}`, con.length && `console: ${con.slice(0, 5).join(" | ")}`].filter(Boolean);
       const where = st.complete ? "cảnh kết" : next ? `→ ${next}` : "";
       await check(!bad.length, `${zone}: ${required.length} việc bắt buộc, áo ${st.ao ? "ao_cam" : "dau_ngay"}, ${where}, console sạch (${Math.round((Date.now() - zt) / 1000)} s)`, bad.join("; "));
+      const noMark = marks.filter((m) => !m.shown);
+      await check(marks.length > 0 && !noMark.length, `${zone}: dấu "!" hoặc mũi tên chỉ đường trước ${marks.length} việc bắt buộc / lối ra (${marks.map((m) => m.goal).join(", ")})`,
+        JSON.stringify(noMark.length ? noMark : marks));
       if (zone === "zone_02" && !failed && await ev(() => __game.tu.visible)) await tuCheck("sau cổng", true);
       // âm thanh đã phát qua zone 0 → 4 (trước cảnh kết — ngoại hình đầu tải lại trang giữa cảnh kết, bộ đếm về 0)
       if (zone === "zone_04" && !onlyZone && !failed) {
