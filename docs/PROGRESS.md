@@ -1134,7 +1134,7 @@ Tập một mình và thử thách của anh Khang giữ luật cũ. **Máy ch�
   thường 0–4 ms, **7 cú 11–20 ms** (cú phá + cú sau ở đầu mỗi ván) — vượt mốc 10 ms gói Free nhưng chưa bị chặn → không
   rollback; theo dõi Metrics, cân nhắc giảm CPU máy chủ khi tính lại cú phá. Chi tiết: `docs/multiplayer.md` mục cuối.
 
-### Bi-a: máy khách tính cú, máy chủ không chạy vật lý (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l`)
+### Bi-a: máy khách tính cú, máy chủ không chạy vật lý (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` b8e81e7)
 
 Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms gói Free) → người dùng chốt: tính toán để ở máy khách.
 **Chưa deploy** — thứ tự: bản web trước, máy chủ sau (`docs/multiplayer.md` mục cuối).
@@ -1152,7 +1152,7 @@ Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms 
   - smoke: tin chào có `"pool_facts"`; bản web luật chuẩn đầu xin ghế → `version`; `--extra only` 27/27.
   - Thử tay (không commit): bản web mới + mã máy chủ đang chạy (`main` fe49f63 qua `wrangler dev`) chơi trọn ván 15 cú, không
     lỗi từ máy chủ, phát lại khớp → deploy web trước an toàn.
-- Kết quả: test:data, test:pool đạt; `test:smoke -- --extra only` 27/27.
+- Kết quả: test:data, test:pool đạt; `test:smoke -- --zone 5` 71/71 (3 ngoại hình + bản lưu cũ + mạng, cả máy chủ giả bản cũ).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
