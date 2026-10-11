@@ -433,7 +433,8 @@ Lùi lại: `npx wrangler rollback` về e150c939 (bản web mới vẫn chạy 
 
 ## Nhắn tin tự do + bộ lọc từ (11/10/2026)
 
-Trạng thái: [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) đã gộp vào `main` (1195cb1) — chưa lên trang thật (chờ deploy bản web, rồi `wrangler deploy` máy chủ).
+Trạng thái: [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) đã gộp vào `main` (1195cb1); **đã lên mạng 11/10/2026**: bản web gh-pages c26234f, máy chủ version
+c487c71a-f7fb-4692-a942-8bbe6f9d2305 (bản trước e7a013c0 — `npx wrangler rollback` nếu cần quay lại).
 
 Người dùng chốt: cho gõ chữ tự do (không chỉ câu soạn sẵn), kèm bộ lọc từ. Câu soạn sẵn ở phím T vẫn giữ.
 
@@ -488,3 +489,7 @@ python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trư
 cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "chat"
 npx wrangler tail --format json        # 3. 2 cửa sổ nhắn thử: mọi outcome ok, CPU ~0–1 ms
 ```
+
+Máy Desktop: nếu `deploy_site.py` báo `rejected … (non-fast-forward)` khi push gh-pages (có bản deploy từ máy khác, vd máy
+cloud), `dist/` đang cũ hơn GitHub → `cd dist`, `git fetch origin gh-pages`, `git log --oneline FETCH_HEAD..HEAD` (chỉ còn commit
+build vừa tạo), `git reset --hard FETCH_HEAD`, `cd ..`, chạy lại `python scripts/deploy_site.py`.
