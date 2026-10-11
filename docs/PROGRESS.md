@@ -1579,7 +1579,8 @@ CHECKLIST); tủ đồ dùng các món đã có: 2 áo (Đồ ngày đầu, Áo 
 - Chữ en + vi: `wardrobe.*`, `menu.wardrobe(_note)`, `touch.wardrobe`, dòng hướng dẫn điều khiển thêm "I: tủ đồ".
 - Kiểm thử: `test:data` mục "tủ đồ" (mỗi áo có texture ở mọi model người chơi, en + vi, điều kiện mở khoá có thật, repair);
   smoke sau màn tổng kết: menu Esc → Tủ đồ → đội mũ (đo như cũ) → mặc lại Đồ ngày đầu (morph 0, lưu) → I đóng → nút 👕 mở lại →
-  phím 2 Áo Cam → Esc. Xem bằng mắt: máy tính 1280 × 720, điện thoại 844 × 390.
+  phím 2 Áo Cam → Esc. Xem bằng mắt: máy tính 1280 × 720, điện thoại 844 × 390. Smoke `--look intern_nu_buitoc --extra off` 86/86, `--extra only` 39/39.
+  **Đã deploy** gh-pages 01593b1 (từ main 04b7b96).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
