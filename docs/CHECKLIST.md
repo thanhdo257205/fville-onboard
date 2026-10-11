@@ -222,28 +222,33 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [ ] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
     `spin = 0` khớp bản cũ, xoáy trái / phải làm góc bật băng lệch đúng chiều; smoke bi-a 2 người: cú có xoáy phát lại khớp
     bàn máy chủ
-- [ ] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: —
+- [ ] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: Claude — nhánh
+  `feat/pool-rules-8ball` — 6fff4f4 (còn `wrangler deploy` máy chủ thật)
   - Hiện trạng (`game/src/pool/rules.js`, dùng chung với máy chủ): nhóm trơn 1–7 / sọc 9–15 nhận theo bi vào lỗ đầu tiên;
     lỗi duy nhất là bi trắng rơi lỗ → đối thủ đặt bi trắng ở khu đầu bàn; không phạt chạm sai bi trước / không chạm bi nào;
     bi 8 không phải gọi lỗ.
-  - [ ] Chốt bộ luật theo luật 8 bi quốc tế (WPA), viết tóm tắt vào `docs/GDD.md` (mục bi-a), gồm các ý dưới
-  - [ ] Cú phá hợp lệ: có bi vào lỗ hoặc ít nhất 4 bi chạm băng — không thì đối thủ chọn xếp lại phá hoặc đánh tiếp; bi trắng
-    rơi lúc phá → đối thủ đặt bi trắng ở khu đầu bàn; bi 8 vào lỗ lúc phá → đặt lại bi 8 (như hiện nay) hoặc xếp lại
-  - [ ] Bàn vẫn "mở" sau cú phá (bi vào lỗ lúc phá không quyết định nhóm); nhóm chọn ở cú vào bi hợp lệ đầu tiên sau đó
-  - [ ] Lỗi (foul) → đổi lượt, đối thủ có **bi trong tay đặt bất kỳ đâu trên bàn** (trừ sau cú phá chỉ ở khu đầu bàn):
+  - [x] Chốt bộ luật theo luật 8 bi quốc tế (WPA), viết tóm tắt vào `docs/GDD.md` (mục bi-a), gồm các ý dưới — 6fff4f4
+  - [x] Cú phá hợp lệ: có bi vào lỗ hoặc ít nhất 4 bi chạm băng — không thì đối thủ chọn xếp lại phá hoặc đánh tiếp; bi trắng
+    rơi lúc phá → đối thủ đặt bi trắng ở khu đầu bàn; bi 8 vào lỗ lúc phá → đặt lại bi 8 (như hiện nay) hoặc xếp lại — 6fff4f4
+    (chốt: đặt lại bi 8, người phá đánh tiếp; R / P sau cú phá không hợp lệ)
+  - [x] Bàn vẫn "mở" sau cú phá (bi vào lỗ lúc phá không quyết định nhóm); nhóm chọn ở cú vào bi hợp lệ đầu tiên sau đó — 6fff4f4
+  - [x] Lỗi (foul) → đổi lượt, đối thủ có **bi trong tay đặt bất kỳ đâu trên bàn** (trừ sau cú phá chỉ ở khu đầu bàn):
     bi trắng rơi lỗ / văng khỏi bàn; bi trắng chạm bi nhóm khác trước (bàn mở: chạm bi 8 trước); không chạm bi nào; sau khi
-    chạm không có bi nào vào lỗ và không bi nào (kể cả bi trắng) chạm băng
-  - [ ] Bi 8: phải **gọi lỗ** trước cú đánh bi 8 (bấm vào lỗ trên bàn); thua khi đưa bi 8 vào lỗ sớm (nhóm chưa hết), vào lỗ
-    khác lỗ đã gọi, vào lỗ kèm lỗi, hoặc làm bi 8 văng khỏi bàn
-  - [ ] Giao diện: HUD ghi nhóm của mỗi người (trơn / sọc) + số bi còn lại; báo lỗi kèm lý do ("Chạm bi 3 trước — lỗi"); đặt bi
-    trong tay trên cả bàn (không chồng bi khác); chọn lỗ cho bi 8; bấm H xem tóm tắt luật; chữ en + vi
-  - [ ] Bàn chung: thêm giới hạn thời gian mỗi cú (vd 60 s, hết giờ = lỗi) để không ai giữ bàn mãi
-  - [ ] Máy chủ (`server/src/pool.js`) áp đúng bộ luật mới (kiểm tra chỗ đặt bi trong tay, lỗ đã gọi); báo `features` mới (vd
-    `"pool_rules2"`) — máy khách cũ không vào được bàn luật mới, không lệch bàn; `npx wrangler deploy` ở máy Desktop
-  - [ ] Tập một mình và thử thách của anh Khang giữ như cũ (không áp luật thi đấu)
-  - [ ] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
+    chạm không có bi nào vào lỗ và không bi nào (kể cả bi trắng) chạm băng — 6fff4f4 (vật lý 2D chưa làm bi văng khỏi bàn; luật đã có)
+  - [x] Bi 8: phải **gọi lỗ** trước cú đánh bi 8 (bấm vào lỗ trên bàn); thua khi đưa bi 8 vào lỗ sớm (nhóm chưa hết), vào lỗ
+    khác lỗ đã gọi, vào lỗ kèm lỗi, hoặc làm bi 8 văng khỏi bàn — 6fff4f4 (thêm: C đổi lỗ, Space gọi lỗ đang ngắm tới)
+  - [x] Giao diện: HUD ghi nhóm của mỗi người (trơn / sọc) + số bi còn lại; báo lỗi kèm lý do ("Chạm bi 3 trước — lỗi"); đặt bi
+    trong tay trên cả bàn (không chồng bi khác); chọn lỗ cho bi 8; bấm H xem tóm tắt luật; chữ en + vi — 6fff4f4
+  - [x] Bàn chung: thêm giới hạn thời gian mỗi cú (vd 60 s, hết giờ = lỗi) để không ai giữ bàn mãi — 6fff4f4 (đồng hồ trên bảng;
+    hết giờ 3 lần liên tiếp → mất ghế)
+  - [x] Máy chủ (`server/src/pool.js`) áp đúng bộ luật mới (kiểm tra chỗ đặt bi trong tay, lỗ đã gọi); báo `features` mới (vd
+    `"pool_rules2"`) — máy khách cũ không vào được bàn luật mới, không lệch bàn — 6fff4f4 (máy chủ tự tính lại cú; máy chủ cũ →
+    máy khách mới dùng luật cũ)
+  - [ ] `npx wrangler deploy` ở máy Desktop (xem `docs/multiplayer.md` mục cuối; sau deploy kiểm CPU mỗi cú bằng `wrangler tail`)
+  - [x] Tập một mình và thử thách của anh Khang giữ như cũ (không áp luật thi đấu) — 6fff4f4
+  - [x] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
     trong tay toàn bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi; ván 2 người giả chơi trọn; smoke bi-a 2 người với luật
-    mới
+    mới — 6fff4f4 (+ smoke với máy chủ giả bản cũ)
 - [x] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: Claude — nhánh `feat/pool-mouse-aim` — 2e53a25
   - Hiện trạng: chuột chỉ xoay cơ khi con trỏ đang bị khoá (Pointer Lock, `game/src/core/input.js`: không khoá thì bỏ qua di
     chuột và kéo chuột). Khoá không được (vừa bấm Esc, trình duyệt từ chối) thì chuột không làm gì; bấm chuột để khoá lại thì

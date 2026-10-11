@@ -1086,7 +1086,7 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   nạp lực), chuột sang phải → cơ quay sang phải màn hình (0,064 rad / 40 px), Shift 0,016, D xoay sang phải, giữ → đánh.
   test:data, test:pool đạt (vật lý không đổi); `test:smoke -- --zone 5` 3 ngoại hình + bản lưu cũ, mạng: 62/62 bước.
 
-### Bi-a: luật chuẩn 8 bi "sọc trơn" cho bàn chung 2 người (11/10/2026, nhánh `feat/pool-rules-8ball`)
+### Bi-a: luật chuẩn 8 bi "sọc trơn" cho bàn chung 2 người (11/10/2026, nhánh `feat/pool-rules-8ball` 6fff4f4)
 
 Theo WPA, rút gọn cho game (tóm tắt luật: `docs/GDD.md` zone 5; giao thức + tương thích: `docs/multiplayer.md` mục cuối).
 Tập một mình và thử thách của anh Khang giữ luật cũ. **Máy chủ thật chưa `wrangler deploy`** (máy Desktop làm sau) — tới lúc
