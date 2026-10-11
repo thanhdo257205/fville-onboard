@@ -202,6 +202,8 @@ async function boot() {
   };
   input.on("KeyR", () => { if (game.pool?.active) game.pool.rerack(); });   // bi-a: xếp lại bi / ván mới (bàn chung)
   input.on("KeyJ", () => { if (game.pool?.active) game.pool.join(); });     // bi-a bàn chung: đang xem → ngồi vào ghế trống
+  input.on("KeyP", () => { if (game.pool?.active) game.pool.choose("play"); });   // luật chuẩn: sau cú phá không hợp lệ → đánh tiếp
+  input.on("KeyC", () => { if (game.pool?.active) game.pool.cycleCall(); });      // luật chuẩn: đổi lỗ gọi cho bi 8
   input.on("Escape", () => {
     if (title?.open) return;
     if (game.cutscene) return game.cutscene.skip();

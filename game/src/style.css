@@ -15,7 +15,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #9cc4e8; col
 #clock:empty { display: none; }
 #objective { position: absolute; top: 14px; left: 16px; background: var(--panel); padding: 8px 14px; border-radius: 10px; font-weight: 700; max-width: 46vw; }
 #objective:empty { display: none; }
-#hint, #toast { position: absolute; left: 50%; transform: translateX(-50%); background: var(--panel); padding: 8px 16px; border-radius: 10px; opacity: 0; transition: opacity .4s; white-space: nowrap; }
+/* dài hơn màn hình (vd dòng điều khiển ở bàn bi-a, lỗi bi-a + bi trong tay, màn điện thoại) → xuống dòng thay vì bị cắt 2 đầu */
+#hint, #toast { position: absolute; left: 50%; transform: translateX(-50%); background: var(--panel); padding: 8px 16px; border-radius: 10px; opacity: 0; transition: opacity .4s;
+  width: max-content; max-width: calc(100vw - 32px); text-align: center; }
 #hint { bottom: 18px; color: var(--muted); }
 #toast { top: 70px; font-weight: 700; }
 #hint.show, #toast.show { opacity: 1; }
@@ -555,6 +557,17 @@ body.overlay-open #emotes { display: none; }
 #pool-hud .seat.won { background: rgba(255, 210, 122, .18); }
 #pool-hud .seat.empty .nm { color: var(--muted); font-weight: 700; }
 #pool-hud .panel .status { color: #fff; font-size: 13px; line-height: 1.35; }
+/* luật chuẩn: tiêu đề + đồng hồ lượt (≤ 10 s: cam), dòng lỗi gần nhất, thẻ tóm tắt luật (phím H) bên phải */
+#pool-hud .panel .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#pool-hud .panel .clock { font: 800 14px "Nunito"; color: #fff; background: rgba(255, 255, 255, .1); border-radius: 999px; padding: 1px 9px; }
+#pool-hud .panel .clock:empty { display: none; }
+#pool-hud .panel .clock.low { background: #f37021; }
+#pool-hud .panel .foul { color: #ffb08a; font-size: 13px; font-weight: 800; line-height: 1.35; }
+#pool-hud .rules { position: absolute; right: 16px; top: 64px; max-width: min(400px, calc(100vw - 32px)); pointer-events: auto; padding: 10px 14px;
+  border-radius: 14px; background: rgba(27, 30, 36, .92); border-left: 4px solid #ffd27a; color: var(--fg); box-shadow: 0 6px 24px rgba(0, 0, 0, .35); }
+#pool-hud .rules b { color: #ffd27a; }
+#pool-hud .rules p { margin: 5px 0 0; font-size: 13px; font-weight: 700; line-height: 1.4; }
+#pool-hud .rules kbd { display: inline-block; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; color: var(--fg); }
 #pool-hud .power { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); width: min(360px, calc(100vw - 32px));
   display: flex; align-items: center; gap: 10px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); opacity: 0; transition: opacity .2s; }
 #pool-hud .power.keep { opacity: .6; }

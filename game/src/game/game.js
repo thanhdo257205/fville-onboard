@@ -874,10 +874,11 @@ export class Game {
     return r.ok;
   }
 
-  // phím H: gợi ý của mục tiêu hiện tại (đang đi lại: thẻ gợi ý; app My FPT đang mở: ô Help trong app)
+  // phím H: gợi ý của mục tiêu hiện tại (đang đi lại: thẻ gợi ý; app My FPT đang mở: ô Help trong app; ở bàn bi-a: luật chơi)
   help() {
     if (this.state.phase !== "playing") return;
     if (this.mode === "app") { this.ui.app.toggleHelp(); return; }
+    if (this.mode === "pool") { this.pool?.help(); return; }          // bàn bi-a: tóm tắt luật
     if (this.mode === "play") this.guide.help();
   }
 

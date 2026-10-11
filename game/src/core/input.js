@@ -19,6 +19,7 @@ export class Input {
     this.unlockedAt = -Infinity;
     this._releasing = false;     // nhả khoá do game (đổi chế độ), không phải người chơi
     this.fakeLock = null;        // kiểm thử: true / false = giả lập đang / chưa khoá (lock() → khoá sau 30 ms như thật); null = thật
+    this.skipLock = null;        // (pointerdown) → true: cú bấm này không khoá con trỏ (bàn bi-a: bấm vào lỗ để gọi lỗ bi 8)
     addEventListener("keydown", (e) => {
       if (typing(e)) return;               // đang gõ vào ô chữ (vd mật khẩu ở mini-game Đăng nhập): không điều khiển game
       if (e.code === "Tab" || e.code.startsWith("Arrow") || e.code === "Space") e.preventDefault();
@@ -44,7 +45,7 @@ export class Input {
 
     let dragging = false, lx = 0, ly = 0;
     canvas.addEventListener("pointerdown", (e) => {
-      if (this.lockSupported && e.pointerType === "mouse") { if (this.lookActive) this.lock(); return; }
+      if (this.lockSupported && e.pointerType === "mouse") { if (this.lookActive && !this.skipLock?.(e)) this.lock(); return; }
       dragging = true; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture(e.pointerId);
     });
     canvas.addEventListener("pointerup", (e) => { if (!dragging) return; dragging = false; canvas.releasePointerCapture(e.pointerId); });
