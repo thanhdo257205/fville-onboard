@@ -11,6 +11,8 @@
 //   8. âm thanh (data/sounds.json): mỗi bản có file assets/sfx/<id>[_n].mp3, không có file thừa, gói nguồn giấy phép CC0 có bản
 //      giấy phép trong assets/sfx/licenses/, mọi file có trong docs/audio_credits.md; tên trong sound.play("…") của code, "sfx"
 //      của câu thoại, zones.json → audio (tiếng nền, mặt đất) đều có thật; dung lượng trong ngân sách
+//   9. bầu trời + phông nền xa (data/backdrop.json, game/src/render/sky.js): màu trời mặc định, sương, các lớp (có núi Ba Vì),
+//      mood nào có màu trời thì có đủ sky_top + sky_horizon (mọi zone + variants); dựng thật bằng sky.js: ≤ 5.000 tam giác
 // In 1 dòng ✓/✗ cho mỗi mục; lỗi → in chi tiết, thoát mã 1.
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
@@ -21,6 +23,8 @@ import { GameState } from "../../game/src/game/state.js";
 import { buildStartState } from "../../game/src/game/autoplay.js";
 import { AMBIENCES } from "../../game/src/core/ambience.js";
 import { makeFilter, cleanText } from "../../game/src/net/chatfilter.js";
+import * as THREE from "../../game/node_modules/three/build/three.module.js";
+import { Sky } from "../../game/src/render/sky.js";
 
 const t0 = performance.now();
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -335,6 +339,42 @@ for (const [inp, want] of chatCases) {
 }
 if (cleanText("a\u0000b\u202ec") !== "a b c") chatErrs.push("cleanText phải bỏ ký tự điều khiển / đổi chiều chữ");
 report("nhắn tin (bộ lọc từ)", chatErrs, `${chatCases.length} câu mẫu, tối đa ${chatCfg.max_len} ký tự, ${chatCfg.burst} tin dồn / ${chatCfg.rate_per_s} tin mỗi giây`);
+
+// ---------- bầu trời + phông nền xa (data/backdrop.json → game/src/render/sky.js) ----------
+const skyErrs = [];
+const bd = JSON.parse(readFileSync(join(ROOT, "data", "backdrop.json"), "utf8"));
+const hex = (v) => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
+if (!hex(bd.default_sky?.top) || !hex(bd.default_sky?.horizon)) skyErrs.push("backdrop.json: default_sky cần top + horizon (#rrggbb)");
+const fogOk = (f) => Array.isArray(f) && f.length === 2 && f[0] >= 0 && f[1] > f[0] && f[1] <= 600;
+if (!fogOk(bd.default_fog)) skyErrs.push("backdrop.json: default_fog = [gần, xa], 0 ≤ gần < xa ≤ 600 (camera.far)");
+if (!(bd.ground?.radius_m > 0) || !hex(bd.ground?.color)) skyErrs.push("backdrop.json: ground cần radius_m > 0, color");
+const ids = new Set();
+for (const L of bd.layers || []) {
+  if (ids.has(L.id)) skyErrs.push(`backdrop.json: lớp trùng id ${L.id}`);
+  ids.add(L.id);
+  if (!["trees", "blocks", "ridge"].includes(L.kind)) skyErrs.push(`backdrop.json: lớp ${L.id} kind "${L.kind}" lạ (trees | blocks | ridge)`);
+  if (!hex(L.color) || !(L.radius_m > 0) || !(L.height_m?.[1] >= L.height_m?.[0]) || !(L.haze >= 0 && L.haze <= 1)) skyErrs.push(`backdrop.json: lớp ${L.id} thiếu / sai color, radius_m, height_m, haze`);
+  if (L.radius_m >= 560) skyErrs.push(`backdrop.json: lớp ${L.id} radius_m ${L.radius_m} — vòm trời 560 m, camera.far 600 m`);
+}
+if ((bd.layers || []).length < 2) skyErrs.push("backdrop.json: cần ít nhất 2 lớp phông nền");
+if (!(bd.layers || []).some((L) => L.kind === "ridge" && L.peaks?.length)) skyErrs.push("backdrop.json: thiếu lớp núi có đỉnh (Ba Vì)");
+// mood có màu trời → đủ sky_top + sky_horizon; fog hợp lệ
+for (const [z, cfg] of Object.entries(zones.zones)) {
+  for (const [where, m] of [["mood", cfg.mood], ...(cfg.variants || []).map((v, i) => [`variants[${i}].mood`, v.mood])]) {
+    if (!m) continue;
+    if ((m.sky || m.sky_top || m.sky_horizon) && !(hex(m.sky_top) && hex(m.sky_horizon))) skyErrs.push(`zones.${z}.${where}: có màu trời thì cần đủ sky_top + sky_horizon (#rrggbb)`);
+    if (m.fog && !fogOk(m.fog)) skyErrs.push(`zones.${z}.${where}: fog = [gần, xa], 0 ≤ gần < xa ≤ 600`);
+  }
+}
+// dựng thật (không cần trình duyệt): số tam giác
+const skyScene = new THREE.Scene();
+const sky = new Sky(skyScene, bd);
+const fakeZone = { root: new THREE.Mesh(new THREE.BoxGeometry(200, 1, 80)) };
+sky.setZone(fakeZone);
+sky.setMood(zones.zones[zones.order[0]].mood);
+const si = sky.info(), skyTris = si.core + si.extra + si.clouds + si.ground;
+if (skyTris > 5000) skyErrs.push(`phông nền + mây + mặt đất xa ${skyTris} tam giác (> 5.000)`);
+report("bầu trời + phông nền", skyErrs, `${(bd.layers || []).length} lớp (${[...ids].join(", ")}), ${skyTris} tam giác (phông nền ${si.core + si.extra}, mây ${si.clouds}, mặt đất xa ${si.ground}), vòm trời ${si.dome}`);
 
 const ms = Math.round(performance.now() - t0);
 console.log(failed ? `✗ test:data: ${failed} mục lỗi (${ms} ms)` : `✓ test:data: đạt hết (${ms} ms)`);

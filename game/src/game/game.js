@@ -6,6 +6,7 @@ import { device } from "../core/device.js";
 import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, prefetchZone, pendingPrefetch } from "../world/zone.js";
 import { buildCollider } from "../world/collision.js";
 import { createLights, DETAIL_LEVELS } from "../render/renderer.js";
+import { Sky } from "../render/sky.js";
 import { SeeThrough } from "../render/seethrough.js";
 import { ThirdPersonCamera } from "../player/camera.js";
 import { TalkCamera } from "../player/talkcam.js";
@@ -60,6 +61,7 @@ export class Game {
     this.talkCam = new TalkCamera(this.camera);   // camera qua vai khi nói chuyện với NPC / Tú
     this.talkPartner = null;                     // Npc | Follower đang nói chuyện (runDialogue)
     this.lights = createLights(this.scene);
+    this.sky = new Sky(this.scene, data.backdrop);   // vòm trời chuyển màu + mây + phông nền xa + mặt đất xa (render/sky.js)
     this.seeThrough = new SeeThrough(data.sceneFixes?.see_through);   // cây che người chơi → mờ dần
     this.guide = new Guide(this, content);       // dấu "!" + mũi tên chỉ đường, nhắc khi đứng yên, gợi ý phím H
     this.acts = new Acts(this, content);         // 4 Act (data/acts.json): thẻ tiêu đề Act, checklist theo Act
@@ -140,6 +142,7 @@ export class Game {
       await pendingPrefetch(cfg.file, this.state.tier);
       const zone = await this._prepareZone(zoneId, cfg.file);
       this.scene.add(zone.root);
+      this.sky.setZone(zone);
       this.applyMood(this.zoneVariant(zoneId)?.mood ?? cfg?.mood);
       this.preview = new Showcase({ zone, camera: this.camera, cam: this.cam, spawnName: cfg.start });
       if (this.state.phase !== "boot") return false;
@@ -239,6 +242,7 @@ export class Game {
     this.nametags.clear();
     this.zone = zone;
     this.scene.add(zone.root, zone.collider);
+    this.sky.setZone(zone);
     // bàn bi-a (data/pool.json, zone_05): bi + cơ trong GLB, trạng thái bàn giữ trong lượt chơi (this.poolSession)
     this.pool?.detach();
     this.pool = null;
@@ -365,10 +369,11 @@ export class Game {
   }
 
   // ánh sáng / trời / sương riêng của zone (zones.json → mood), vd zone_00 sáng sớm có sương mỏng
+  // trời: vòm 2 màu sky_top → sky_horizon (render/sky.js); sương màu chân trời, mood.fog hoặc backdrop.json → default_fog
   applyMood(mood) {
-    const sky = new THREE.Color(mood?.sky ?? 0x9cc4e8);
-    this.scene.background.copy(sky);
-    this.scene.fog = mood?.fog ? new THREE.Fog(sky, mood.fog[0], mood.fog[1]) : null;
+    const { color, fog } = this.sky.setMood(mood);
+    this.scene.background.copy(color);
+    this.scene.fog = new THREE.Fog(color, fog[0], fog[1]);
     this.lights.setMood(mood);
   }
 
@@ -458,7 +463,11 @@ export class Game {
     return s === "sharper" ? 0 : s === "faster" ? DETAIL_LEVELS.length - 1 : this.state.detailLevel;
   }
 
-  applyDetail() { this.renderer.setDetail(this.detailLevel()); }
+  applyDetail() {
+    const lv = this.detailLevel();
+    this.renderer.setDetail(lv);
+    this.sky.setLowDetail(lv >= DETAIL_LEVELS.length - 1);   // nấc nhẹ nhất (điện thoại): tắt mây + bớt lớp phông nền
+  }
 
   setDetail(setting) {
     this.settings.detail = setting;
@@ -944,6 +953,7 @@ export class Game {
   }
 
   render(dt) {
+    this.sky.update(this.camera, dt);
     this.renderer.render(this.scene, this.camera);
     this.nametags.render(this.scene, this.camera, this.zone?.collider, dt);
   }
