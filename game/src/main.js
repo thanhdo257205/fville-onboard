@@ -283,7 +283,7 @@ async function boot() {
   if (!(testParams && params.get("title") === "off")) {
     hud.loading(null);
     title = titleScreen({ name: progress.created ? progress.player.name : null, onLang: setLanguage, onStartOver: playAgain,
-      onParallax: (x, y) => game.preview?.parallax(x, y) });
+      onParallax: (x, y) => game.preview?.parallax(x, y), onStart: () => touch.fullscreen({ auto: true }) });   // Android cảm ứng: vào toàn màn hình (cần cử chỉ người dùng)
     game.showcase(startZone).then((ok) => { if (ok) title.live(); }, (e) => console.warn("[màn tiêu đề] không dựng được nền:", e));
     await title.done;
   }

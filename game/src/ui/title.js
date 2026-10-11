@@ -10,7 +10,7 @@ import { BUILD_ID } from "../core/fetch.js";
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const LEAVE_MS = 450;   // = transition của #title.leaving (style.css)
 
-export function titleScreen({ name = null, onLang = null, onStartOver = null, onParallax = null } = {}) {
+export function titleScreen({ name = null, onLang = null, onStartOver = null, onParallax = null, onStart = null } = {}) {
   const back = !!name;
   const el = document.createElement("div");
   el.id = "title";
@@ -77,6 +77,7 @@ export function titleScreen({ name = null, onLang = null, onStartOver = null, on
   const close = () => {
     if (!dbg.open) return;
     dbg.open = false;
+    try { onStart?.(); } catch (e) { console.warn("[màn tiêu đề] onStart:", e); }   // trong lúc bấm (cử chỉ người dùng): vd toàn màn hình
     removeEventListener("pointermove", onMove);
     removeEventListener("keydown", onKey);
     onParallax?.(0, 0);

@@ -1397,8 +1397,8 @@ async function runRooms(srv) {
 // khung ngang 844 × 390, hasTouch + isMobile (matchMedia "(pointer: coarse)" → giao diện cảm ứng tự bật, không cần ?touch=1).
 // Chạm: page.touchscreen.tap; kéo / chụm nhiều ngón: CDP Input.dispatchTouchEvent (trình duyệt sinh pointer events như ngón thật)
 const MOBILE_VIEW = { width: 844, height: 390 };
-async function mobilePage(browser, base, { query = "", name = "Mai", look = "intern_nu", gender = "nu", label = "điện thoại" } = {}) {
-  const ctx = await browser.newContext({ viewport: MOBILE_VIEW, hasTouch: true, isMobile: true, deviceScaleFactor: 1, acceptDownloads: true });
+async function mobilePage(browser, base, { query = "", name = "Mai", look = "intern_nu", gender = "nu", label = "điện thoại", view = MOBILE_VIEW, title = false } = {}) {
+  const ctx = await browser.newContext({ viewport: view, hasTouch: true, isMobile: true, deviceScaleFactor: 1, acceptDownloads: true });
   await ctx.addInitScript(INIT_ONCE, { settings: { tier: "low", lang: "en" }, save: { v: 1, created: true, player: { name, position: "developer", gender, look } } });
   const page = await ctx.newPage();
   const problems = watch(page);
@@ -1425,8 +1425,8 @@ async function mobilePage(browser, base, { query = "", name = "Mai", look = "int
     }
     return ok;
   };
-  await page.goto(`${base}/?debug&title=off${query}`);
-  const ready = await wait(() => window.__game?.state.phase === "playing", 120000);
+  await page.goto(`${base}/?debug${title ? "" : "&title=off"}${query}`);
+  const ready = await wait((t) => (t ? window.__title?.open : window.__game?.state.phase === "playing"), 120000, title);
   return { ctx, page, problems, ev, wait, touch, tap, check, ready };
 }
 // tâm của phần tử (selector) trên màn hình, hoặc null khi ẩn
@@ -1580,6 +1580,196 @@ async function runMobile(browser, base) {
   } finally { await P.ctx.close().catch(() => {}); }
 }
 
+// (f1b) màn thấp: Android Chrome cầm ngang, thanh địa chỉ chiếm ~1/4 → vùng game ~230 px (và khung 390 thường). Hội thoại 3–4
+// lựa chọn của Ms. Huyền (zone 0): cả khung (tên, câu hỏi, lựa chọn) nằm trong vùng nhìn hoặc cuộn được về đầu, chạm được mọi
+// lựa chọn, kéo cuộn không chọn nhầm (khung 230: thêm chữ cho dài ra rồi vuốt), không 2 bảng tên nào đè nhau, camera hội thoại
+// (nếu dựng được) đặt mặt 2 người trên khung; khung 230: menu Esc, mini-game, app My FPT, màn tổng kết, thẻ Act / thành tựu —
+// phần tử đầu tiên có top ≥ 0, khung không cao quá vùng nhìn. Mỗi khung 1 ảnh ở test-results/short/ (để người xem; không commit).
+const SHORT_VIEWS = [{ width: 844, height: 230 }, { width: 844, height: 390 }];
+async function runShort(browser, base) {
+  const dir = join(OUT, "short");
+  mkdirSync(dir, { recursive: true });
+  for (const view of SHORT_VIEWS) {
+    const label = `điện thoại ${view.width} × ${view.height}`;
+    const P = await mobilePage(browser, base, { query: "&net=off", label, view, look: "intern_nam", gender: "nam", name: "An" });
+    const { page, ev, check } = P;
+    const snap = (name) => page.screenshot({ path: join(dir, `${name}-${view.height}.png`) }).catch(() => {});
+    try {
+      if (!await check(P.ready, "vào game zone_00")) continue;
+      // tới Ms. Huyền, chạm nút hành động, chạm qua lời chào tới câu "What would you like to know?"
+      const stats = { dialogueTaps: 0, choiceTaps: 0, actTaps: 0, mgTaps: 0, minigames: new Set(), touchMg: new Set(), timeouts: 0 };
+      await touchThrough(P, stats, 20000);
+      for (let i = 0; i < 6 && await ev(() => __game._game.guide.current().key) !== "z0_meet_thao"; i++) { await ev(() => __game.step()); await touchThrough(P, stats, 20000); }
+      await ev((t) => __game.approach(t), await ev(() => __game._game.guide.current().target));
+      await ev(() => { for (let k = 0; k < 4; k++) __game._game.update(1 / 30); });
+      const act = await P.wait(() => !!__game.touch?.act, 4000) && await ev(() => __game.touch.act);
+      if (act) await P.tap(act.x, act.y);
+      for (let i = 0; i < 40; i++) {
+        const w = await ev(() => __game._game.ui.dialogue.waiting?.kind ?? null);
+        if (w === "choice" && (await ev(() => __game._game.ui.dialogue.snapshot.choices.length)) >= 3) break;
+        if (w === "next") await P.tap(view.width / 2, 20);                 // chạm khung vẽ phía trên = nói tiếp
+        else if (w === "choice") { const i2 = await ev(() => __game.touchPick()); const li = await ev((i) => { const e = document.querySelectorAll("#dialogue .choices li[data-i]")[i]; e?.scrollIntoView({ block: "nearest" }); const r = e?.getBoundingClientRect(); return r && { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, i2); if (li) await P.tap(li.x, li.y); }
+        await sleep(300);
+      }
+      await sleep(900);   // camera hội thoại chuyển xong, khung đo lại
+      const d = await ev(() => {
+        const el = document.getElementById("dialogue"), R = (e) => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), bottom: Math.round(b.bottom), left: Math.round(b.left), right: Math.round(b.right) }; };
+        const lis = [...el.querySelectorAll(".choices li[data-i]")];
+        // mọi lựa chọn chạm được: cuộn tới (như vuốt) rồi điểm giữa đúng là lựa chọn đó
+        const hits = lis.map((li) => { li.scrollIntoView({ block: "nearest" }); const r = li.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest("li") === li && r.height >= 38; });
+        el.scrollTop = 0;
+        const g = __game._game, T = g.talkCam;
+        const V = g.camera.position.constructor;
+        const face = (c) => { const v = new V(c.root.position.x, c.root.position.y + c.model.height_m * 0.93, c.root.position.z).project(g.camera); return { x: Math.round((v.x + 1) / 2 * innerWidth), y: Math.round((1 - v.y) / 2 * innerHeight) }; };
+        return { box: R(el), name: R(el.querySelector(".name")), text: R(el.querySelector(".text")), lis: lis.map(R), hits, n: lis.length,
+          scroll: [el.scrollTop, el.scrollHeight, el.clientHeight], more: el.querySelector(".more")?.parentElement.className, tags: __game.tags,
+          hidden: ["objective", "clock", "net-online"].map((id) => { const e = document.getElementById(id); return e ? getComputedStyle(e).display : "none"; }),
+          cam: T.active ? { partner: face(T.partner.character), player: face(g.player.character) } : null, wait: g.ui.dialogue.waiting?.kind };
+      });
+      const inView = d.box.top >= 0 && d.box.bottom <= view.height;
+      const fits = d.scroll[1] <= d.scroll[2] + 1;
+      const headOk = d.name.top >= d.box.top && d.text.top >= d.box.top;   // đang cuộn về đầu: tên + câu hỏi ở đầu khung
+      const overlap = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+      const tagHit = d.tags.some((a, i) => d.tags.some((b, j) => j > i && overlap(a, b)));
+      const camOk = !d.cam || (d.cam.partner.y < d.box.top && d.cam.player.y < d.box.top);
+      await snap("dialogue");
+      await check(d.wait === "choice" && d.n >= 3 && inView && headOk && (fits || view.height < 300) && d.hits.every(Boolean) && !tagHit && !d.tags.length
+        && d.hidden.every((x) => x === "none") && camOk && d.more !== "body",
+        `hội thoại Ms. Huyền ${d.n} lựa chọn: khung ${d.box.top}–${d.box.bottom} px trong vùng nhìn${fits ? ", không cần cuộn" : ", cuộn được"}, chạm được mọi lựa chọn, không bảng tên nào hiện / đè, ẩn mục tiêu + đồng hồ${d.cam ? `, mặt 2 người trên khung (y ${d.cam.partner.y}, ${d.cam.player.y})` : " (camera hội thoại không dựng được ở chỗ này — camera chơi)"}`,
+        JSON.stringify(d));
+      // kéo cuộn không chọn nhầm: thêm chữ cho câu hỏi dài ra → khung phải cuộn; vuốt lên bắt đầu trên 1 lựa chọn
+      if (view.height < 300) {
+        const sc = await ev(() => { const el = document.getElementById("dialogue"), t = el.querySelector(".text"); t.firstChild.textContent = (t.firstChild.textContent + " ").repeat(16); el.scrollTop = 0;
+          const li = el.querySelector(".choices li[data-i]"), r = li.getBoundingClientRect(), b = el.getBoundingClientRect();
+          return { over: el.scrollHeight > el.clientHeight + 4, top: Math.round(b.top), x: Math.round(r.left + r.width / 2), y: Math.round(Math.min(r.top + r.height / 2, b.bottom - 12)) }; });
+        await P.touch([[sc.x, sc.y]], [[sc.x, sc.y - 70]], { steps: 8 });
+        await sleep(400);
+        const after = await ev(() => { const el = document.getElementById("dialogue"); return { scrolled: el.scrollTop, wait: __game._game.ui.dialogue.waiting?.kind ?? null, top: Math.round(el.getBoundingClientRect().top) }; });
+        await snap("dialogue-scroll");
+        await check(sc.over && sc.top >= 0 && after.scrolled > 10 && after.wait === "choice",
+          `câu hỏi dài hơn khung: khung vẫn trong vùng nhìn (top ${sc.top}), vuốt trên lựa chọn → cuộn ${after.scrolled} px, không chọn nhầm`, JSON.stringify({ sc, after }));
+        await ev(() => { document.getElementById("dialogue").scrollTop = 0; });
+      }
+      // chạm lựa chọn smoke sẽ chọn → hội thoại đi tiếp; chơi hết hội thoại
+      const pick = await ev(() => __game.touchPick());
+      const li = await ev((i) => { const e = document.querySelectorAll("#dialogue .choices li[data-i]")[i]; e.scrollIntoView({ block: "nearest" }); const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, pick);
+      await P.tap(li.x, li.y);
+      const chose = await P.wait(() => __game._game.ui.dialogue.waiting?.kind !== "choice" || __game._game.ui.dialogue.snapshot?.choices.length < 3, 3000);
+      await touchThrough(P, stats, 30000);
+      // bảng tên ngoài hội thoại cũng không đè nhau (Tú, Ms. Huyền, hành khách, tài xế… quanh bến xe)
+      await sleep(600);
+      const tags = await ev(() => __game.tags);
+      const tagHit2 = tags.some((a, i) => tags.some((b, j) => j > i && overlap(a, b)));
+      // né đè: gắn tạm thêm 2 bảng tên đúng chỗ bảng của Ms. Huyền (3 bảng trùng nhau) → phải dời ra, không cái nào đè
+      const dodge = await ev(async () => { const g = __game._game, n = g.npc("thao"), h = n.character.model.height_m;
+        const extra = ["Test A", "Test B"].map((x) => g.nametags.add(n.character.root, x, h));
+        for (let k = 0; k < 4; k++) await new Promise((r) => requestAnimationFrame(r));
+        const r = __game.tags;
+        for (const t of extra) { t.element.remove(); t.parent?.remove(t); g.nametags.tags.splice(g.nametags.tags.indexOf(t), 1); }
+        return r; });
+      const dodgeHit = dodge.some((a, i) => dodge.some((b, j) => j > i && overlap(a, b)));
+      await check(chose && !tagHit2 && !dodgeHit && dodge.length >= 2, `chạm lựa chọn → hội thoại đi tiếp; ngoài hội thoại ${tags.length} bảng tên không đè nhau; 3 bảng tên trùng chỗ → dời ra còn ${dodge.length} bảng, không đè`,
+        JSON.stringify({ chose, tags, dodge }));
+      if (view.height >= 300) { const con = P.problems.splice(0); await check(!con.length, "console sạch", con.slice(0, 6).join("; ")); continue; }
+      // các khung khác ở khung 230: phần tử đầu tiên top ≥ 0, khung không cao quá vùng nhìn (dài thì cuộn)
+      const box = (sel) => ev((s) => { const el = document.querySelector(s); if (!el) return null; const b = el.getBoundingClientRect(), f = el.firstElementChild?.getBoundingClientRect();
+        return { top: Math.round(b.top), bottom: Math.round(b.bottom), first: f ? Math.round(f.top) : null, scroll: el.scrollHeight > el.clientHeight + 2, ov: getComputedStyle(el).overflowY }; }, sel);
+      const fitIn = (b) => b && b.top >= 0 && b.first >= 0 && b.bottom <= view.height + 1 && (!b.scroll || /auto|scroll/.test(b.ov));
+      const res = {};
+      // menu Esc (nút ☰)
+      const mb = await P.wait(() => !!__game.touch?.buttons.menu, 5000) && await ev(() => __game.touch.buttons.menu);
+      if (mb) await P.tap(mb.x, mb.y);
+      if (await P.wait(() => !document.getElementById("menu").hidden, 3000)) { await sleep(200); res.menu = await box("#menu .panel"); await snap("menu"); }
+      await ev(() => document.querySelector("#menu [data-act=resume]")?.click());
+      await sleep(300);
+      // mini-game: quiz tượng Cuder (đoạn chuyện dài nhất)
+      await ev(() => { __game._game.runMinigame("cuder_quiz"); });
+      if (await P.wait(() => !!__game._game.ui.minigame.active, 5000)) { await sleep(300); res.minigame = await box("#minigame .panel"); await snap("minigame"); }
+      await ev(() => __game._game.ui.minigame.close(false));
+      await P.wait(() => __game._game.mode === "play", 5000);
+      // app My FPT (cho có app như sau zone 1)
+      await ev(() => { if (!__game._game.progress.hasReward("app_my_fpt")) __game._game.progress.rewards.push("app_my_fpt"); __game._game.toggleApp(); });
+      if (await P.wait(() => __game._game.ui.app.open, 3000)) { await sleep(300); res.app = await box("#myfpt .phone"); await snap("app"); }
+      await ev(() => __game._game.ui.app.open && __game._game.toggleApp());
+      // màn tổng kết (dữ liệu hiện có)
+      await ev(() => __game._game.ui.summary.show(__game._game.summaryData(), () => {}));
+      if (await P.wait(() => __game._game.ui.summary.open, 3000)) { await sleep(300); res.summary = await box("#summary .panel"); await snap("summary"); }
+      await ev(() => __game._game.ui.summary.hide());
+      // thẻ Act, thẻ thành tựu
+      await ev(() => __game.showCard("act"));
+      await sleep(700);
+      res.act = await box("#act-card"); await snap("act-card");
+      await sleep(2000);
+      await ev(() => __game.showCard("ach"));
+      await sleep(900);
+      res.ach = await box("#ach-card"); await snap("ach-card");
+      const bad = Object.entries(res).filter(([, b]) => !fitIn(b)).map(([k]) => k);
+      const miss = ["menu", "minigame", "app", "summary", "act", "ach"].filter((k) => !res[k]);
+      const con = P.problems.splice(0);
+      await check(!bad.length && !miss.length && !con.length, `menu Esc, mini-game, app My FPT, màn tổng kết, thẻ Act / thành tựu: không tràn mép trên, không cao quá vùng nhìn; console sạch`,
+        JSON.stringify({ bad, miss, res, console: con.slice(0, 6) }));
+    } catch (e) {
+      results.push({ look: label, ok: false, text: e.message });
+      line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+    } finally { await P.ctx.close().catch(() => {}); }
+  }
+}
+
+// (f1c) camera hội thoại trên màn thấp: nói chuyện với Ms. Nga (zone 3, camera qua vai dựng được) ở khung 844 × 230 → mặt người
+// đối thoại và người chơi nằm phía trên mép trên khung thoại (player/talkcam.js đo khung sau khi thu nhỏ)
+async function runShortCam(browser, base) {
+  const view = { width: 844, height: 230 }, label = "điện thoại 844 × 230 · camera hội thoại";
+  const P = await mobilePage(browser, base, { query: "&net=off&start=zone_03", label, view, look: "intern_nam", gender: "nam", name: "An" });
+  const { ev, check } = P;
+  try {
+    if (!await check(P.ready, "vào game zone_03")) return;
+    await ev(() => __game.resolve({ maxMs: 20000 }));
+    await ev(async () => { const t = __game._game.guide.current().target; await __game.approach(t); __game._game.interact(); });
+    await P.wait(() => !!__game._game.ui.dialogue.waiting, 8000);
+    await sleep(1500);   // chuyển camera 0,4 s + khung đổi êm
+    const c = await ev(() => {
+      const g = __game._game, T = g.talkCam, V = g.camera.position.constructor, top = g.ui.dialogue.el.getBoundingClientRect().top;
+      const face = (ch) => { const v = new V(ch.root.position.x, ch.root.position.y + ch.model.height_m * 0.93, ch.root.position.z).project(g.camera); return { x: Math.round((v.x + 1) / 2 * innerWidth), y: Math.round((1 - v.y) / 2 * innerHeight), z: +v.z.toFixed(3) }; };
+      return { active: T.active, frame: +T.frame.toFixed(3), top: Math.round(top), partner: T.partner && face(T.partner.character), player: face(g.player.character), who: g.ui.dialogue.snapshot?.name };
+    });
+    mkdirSync(join(OUT, "short"), { recursive: true });
+    await P.page.screenshot({ path: join(OUT, "short", "talkcam-230.png") }).catch(() => {});
+    const inFrame = (f) => f && f.y >= 0 && f.y < c.top && f.x >= 0 && f.x <= view.width && f.z < 1;
+    const con = P.problems.splice(0);
+    await check(c.active && c.frame < 0.8 && inFrame(c.partner) && inFrame(c.player) && !con.length,
+      `${c.who}: mặt người đối thoại (y ${c.partner?.y}) và người chơi (y ${c.player?.y}) nằm trên khung thoại (top ${c.top} px); console sạch`, JSON.stringify({ ...c, console: con.slice(0, 6) }));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally { await P.ctx.close().catch(() => {}); }
+}
+
+// (f1d) toàn màn hình: điện thoại chạm Continue ở màn tiêu đề → vào toàn màn hình (cử chỉ người dùng); thoát → nút ⛶ nhấp nháy;
+// manifest web app (display fullscreen, xoay ngang, icon tải được) cho "Thêm vào màn hình chính"
+async function runFullscreen(browser, base) {
+  const label = "điện thoại · toàn màn hình";
+  const P = await mobilePage(browser, base, { query: "&net=off", label, title: true });
+  const { ev, check } = P;
+  try {
+    if (!await check(P.ready, "màn tiêu đề")) return;
+    const b = await centerOf(P, "#title .start");
+    if (b) await P.tap(b.x, b.y);
+    const full = await P.wait(() => !!document.fullscreenElement, 5000);
+    const playing = await P.wait(() => __game.state.phase === "playing", 90000);
+    await ev(() => document.exitFullscreen());
+    const pulse = await P.wait(() => !document.fullscreenElement && document.querySelector("#touch [data-a=full]").classList.contains("pulse"), 3000);
+    const man = await ev(async () => { const link = document.querySelector("link[rel=manifest]"); const m = await (await fetch(link.href)).json();
+      const icons = await Promise.all(m.icons.map(async (i) => { const r = await fetch(new URL(i.src, link.href)); const im = new Image(); im.src = URL.createObjectURL(await r.blob()); await im.decode(); return r.ok && `${im.naturalWidth}x${im.naturalHeight}` === i.sizes; }));
+      return { display: m.display, orientation: m.orientation, icons }; });
+    const con = P.problems.splice(0);
+    await check(full && playing && pulse && man.display === "fullscreen" && man.orientation === "landscape" && man.icons.length >= 2 && man.icons.every(Boolean) && !con.length,
+      "chạm Continue → toàn màn hình; thoát → nút ⛶ nhấp nháy; manifest: fullscreen, xoay ngang, icon 192 + 512 tải được; console sạch", JSON.stringify({ full, playing, pulse, man, console: con.slice(0, 6) }));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally { await P.ctx.close().catch(() => {}); }
+}
+
 // (f2) nhắn tin bằng cảm ứng (máy chủ local): nút Chat mở khung chat (ô nhập được focus), gõ, chạm nút Gửi → tin tới máy chủ
 // (bản đã lọc quay về), gửi xong cất bàn phím (ô nhập hết focus), đang mở chat thì cần điều khiển ẩn; chạm Menu → menu Esc
 async function runMobileChat(browser, base, srv) {
@@ -1597,15 +1787,25 @@ async function runMobileChat(browser, base, srv) {
     const send = await centerOf(P, "#chat form button");
     if (send) await P.tap(send.x, send.y);
     const echo = await P.wait(() => (__game.net.chat.channels.zone || []).some((e) => e.mine && e.text === "Hello from my phone"), 5000);
+    // màn thấp (Android cầm ngang, thanh địa chỉ hiện): khung chat đang mở không tràn mép trên
+    await P.page.setViewportSize({ width: 844, height: 230 });
+    await sleep(500);
+    const short = await P.ev(() => { const b = document.querySelector("#chat .box").getBoundingClientRect(), f = document.querySelector("#chat .box").firstElementChild.getBoundingClientRect();
+      return { top: Math.round(b.top), bottom: Math.round(b.bottom), first: Math.round(f.top) }; });
+    mkdirSync(join(OUT, "short"), { recursive: true });
+    await P.page.screenshot({ path: join(OUT, "short", "chat-230.png") }).catch(() => {});
+    await P.page.setViewportSize(MOBILE_VIEW);
+    await sleep(300);
     const blurred = await P.ev(() => document.activeElement?.tagName !== "INPUT" && __game._game.chat.isOpen);
     await P.ev(() => __game.chat.close());
     const m = await P.wait(() => !!__game.touch.buttons.menu, 3000) && await P.ev(() => __game.touch.buttons.menu);
     if (m) await P.tap(m.x, m.y);
     const menu = await P.wait(() => !document.getElementById("menu").hidden, 3000);
     const con = P.problems.splice(0);
-    await P.check(on && opened && !!send && echo && blurred && menu && !con.length,
-      "nút Chat → khung chat (ô nhập sẵn sàng, cần điều khiển ẩn), gõ + chạm Gửi → tin tới máy chủ, gửi xong cất bàn phím; nút Menu → menu Esc; console sạch",
-      JSON.stringify({ on, opened, send: !!send, echo, blurred, menu, console: con.slice(0, 6) }));
+    const shortOk = short.top >= 0 && short.first >= 0 && short.bottom <= 231;
+    await P.check(on && opened && !!send && echo && blurred && menu && shortOk && !con.length,
+      "nút Chat → khung chat (ô nhập sẵn sàng, cần điều khiển ẩn), gõ + chạm Gửi → tin tới máy chủ, gửi xong cất bàn phím, khung 844 × 230 không tràn mép trên; nút Menu → menu Esc; console sạch",
+      JSON.stringify({ on, opened, send: !!send, echo, blurred, menu, short, console: con.slice(0, 6) }));
   } catch (e) {
     results.push({ look: label, ok: false, text: e.message });
     line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
@@ -1619,7 +1819,7 @@ console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", 
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
   if (extra !== "only" && mobile !== "only") for (const look of looks) await runLook(browser, server.base, look);
-  if (extra !== "only" && mobile !== "off") await runMobile(browser, server.base);
+  if (extra !== "only" && mobile !== "off") { await runMobile(browser, server.base); await runShort(browser, server.base); await runShortCam(browser, server.base); await runFullscreen(browser, server.base); }
   if (extra !== "off" && mobile === "only") {
     const srv = await startNetServer();
     if (!srv.skip && !srv.error) { try { await runMobileChat(browser, server.base, srv); } finally { srv.stop(); } }

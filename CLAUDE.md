@@ -74,7 +74,7 @@ npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới mà
 npm --prefix game run test:smoke -- --zone 5               # chỉ 1 zone (bản lưu mẫu ?start=zone_05), ~50 giây mỗi ngoại hình
 npm --prefix game run test:smoke -- --look intern_nu       # 1 ngoại hình · --build: chạy trên game/dist (sau npm run build)
 #   ngoại hình thứ 2 chơi bằng tiếng Việt (đổi ở màn tạo nhân vật + thử đổi ở menu Esc) · --lang vi|en: mọi ngoại hình 1 ngôn ngữ
-npm --prefix game run test:smoke -- --mobile only          # chỉ lượt điện thoại giả lập (844 × 390, cảm ứng: zone 0 → 2 + nhắn tin), ~1 phút · --mobile off: bỏ
+npm --prefix game run test:smoke -- --mobile only          # chỉ lượt điện thoại giả lập (844 × 390: zone 0 → 2 + nhắn tin; màn thấp 844 × 230 / 390; toàn màn hình), ~2 phút · --mobile off: bỏ
 npm --prefix game run test:smoke -- --extra only           # chỉ bản lưu cũ + mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ giả bản cũ; máy chủ local), ~80 giây
 
 # Viewer bối cảnh
@@ -114,6 +114,7 @@ tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển �
 độ chuột `mouse`: lock / wait / free — giả lập khoá con trỏ: `_game.input.fakeLock = false | true`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết), `map` (tab Bản đồ của app My FPT: khung, vị trí các dấu), `gaps()` (chỗ hở của mô hình zone đang chơi: từ mọi chỗ đi tới được
 bắn tia ở tầm mắt, tia nhìn xuống / nhìn ngang lọt ra trời → toạ độ; `game/src/world/gaps.js`, smoke dùng), `preview` (nền màn tiêu đề: zone, kịch bản camera, giây; `window.__title`: màn tiêu đề),
 `touch` (giao diện cảm ứng: bật chưa, cần điều khiển, vị trí nút hành động / hàng nút / vùng joystick, bàn phím ảo), `touchPick()` (lựa chọn hội thoại smoke sẽ chạm),
+`tags` (bảng tên đang thấy, toạ độ màn hình), `showCard("act" | "ach")` (hiện thử thẻ Act 2 / thẻ thành tựu cuối),
 `audio` / `sounds` (âm thanh: trạng thái AudioContext, tiếng nền của zone, số file đã tải, số lần phát theo tên, bước chân; các
 lần gọi gần nhất), `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
@@ -184,6 +185,14 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   trong nội dung ("press E") đổi qua `touchText()` (`touch.say_from` / `say_to` trong i18n); dòng hướng dẫn: `hud.controls_touch*`.
   Bi-a cảm ứng chưa có (bàn bi-a hiện `touch.pool_soon` + nút Rời bàn) — `game/src/pool/*` để PR sau. Nút mới ≥ 44 px, đặt
   ngoài hàng nút góc phải dưới / joystick góc trái dưới; bảng cao trên màn thấp (≤ 520 px) phải cuộn được, nút không lọt mép.
+- **Màn thấp** (`body.short` — `ui/touch.js layout()`: giao diện cảm ứng đang bật hoặc khung cao ≤ 420 px; Android cầm ngang có
+  thanh địa chỉ chỉ còn ~230 px): khung mới / sửa khung phải dùng `max-height: calc(var(--vvh, 100dvh) - …)` (`--vvh` = chiều cao
+  vùng nhìn thấy thật — `100vh` trên điện thoại là lúc thanh địa chỉ ẩn, khung đặt giữa sẽ lòi khỏi mép trên) + `overflow-y: auto`.
+  Hộp thoại: nhỏ lại, cuộn được, đang chọn thì ẩn chân dung, lựa chọn 2 cột; `body.talking` (hộp thoại mở) → ẩn bảng tên, dòng mục
+  tiêu, đồng hồ, "N online", thẻ tiêu đề zone. Camera hội thoại đặt mặt 2 người vào phần khung phía trên hộp thoại
+  (`talkCam.setFrame`). Bảng tên: nhỏ, né đè nhau (`nametags.js dodge`), vai phụ `name_tags.minor_roles` chỉ hiện khi gần. Máy
+  tính khung cao bình thường không có `body.short` → giữ nguyên. Toàn màn hình: chạm Start / Continue (Android) +
+  `game/public/manifest.webmanifest` (display fullscreen, icon `game/public/icons/`).
 - **Màn tiêu đề** (`game/src/ui/title.js`) hiện mỗi lần mở game, người mới lẫn người chơi cũ, trên nền zone đầu do game vẽ
   (`Game.showcase` → `game/src/game/showcase.js`: zone dựng như khi vào zone nhưng chưa có người chơi / NPC / trigger, camera
   trôi theo `SHOTS[zone]`, zone không có kịch bản thì quay quanh SPAWN_ đầu zone). Start → `_enterZone` dùng lại zone đó,
@@ -229,7 +238,12 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - Sau phần chơi theo ngoại hình, smoke chạy **lượt điện thoại giả lập** (Playwright `hasTouch` + `isMobile`, khung ngang 844 × 390,
   `--mobile off` bỏ, `--mobile only` chỉ chạy lượt này): giao diện cảm ứng tự bật, nấc Detail thấp; đẩy joystick (chạy), vuốt
   xoay camera, mở 2 ngón; chơi zone 0 → 2 bằng chạm (nút hành động ghi đúng tên việc, chạm qua hội thoại / lựa chọn, quiz Cuder
-  bằng chạm); cầm dọc → nhắc xoay ngang; nhắn tin bằng nút Chat (máy chủ local). Lượt máy tính thường kiểm tra không hiện nút cảm ứng.
+  bằng chạm); cầm dọc → nhắc xoay ngang; nhắn tin bằng nút Chat (máy chủ local, khung chat ở 844 × 230 không tràn mép). Rồi
+  **màn thấp** 844 × 230 và 844 × 390: hội thoại Ms. Huyền 4 lựa chọn (khung trong vùng nhìn, chạm được mọi lựa chọn, câu dài →
+  vuốt cuộn không chọn nhầm, bảng tên ẩn / không đè, 3 bảng tên trùng chỗ → dời ra), ở 230: menu Esc, mini-game, app, màn tổng
+  kết, thẻ Act / thành tựu không tràn mép trên; camera hội thoại Ms. Nga (zone 3) ở 230: mặt 2 người trên khung thoại; chạm
+  Continue → toàn màn hình, thoát → nút ⛶ nhấp nháy, manifest + icon. Ảnh mỗi khung: `test-results/short/` (không commit).
+  Lượt máy tính thường kiểm tra không hiện nút cảm ứng.
 - Sau phần chơi theo ngoại hình, smoke chạy thêm các test (`--extra off` bỏ, `--extra only` chỉ chạy các test này, ~80 giây):
   bản lưu cũ lệch data (`scripts/tests/fixtures/old_save.json`, ẩn danh) → sửa, vào zone_04, tải lại trang, GLB hỏng →
   bảng lỗi + bấm Back, bộ nhớ GPU không tăng khi đổi zone (zone_04 ↔ zone_05 2 vòng); vào zone_04 khi có bot chờ sẵn (khởi động thẳng + đi qua cổng từ zone_03, phải xong trong 20 s,

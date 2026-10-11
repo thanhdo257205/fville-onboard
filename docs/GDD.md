@@ -194,8 +194,15 @@ Nhận biết bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoin
 - Mini-game: mọi bước bấm phím đều có nút để chạm; kéo thả thẻ bằng ngón tay; màn thấp (cầm ngang) thì bảng mini-game rộng
   ra và cuộn được; bàn phím ảo không che ô mật khẩu.
 - Hiệu năng: mặc định nấc Detail thấp nhất (pixelRatio 1, không viền nét), hiện tối đa 6 người chơi khác.
-- Android: nút toàn màn hình (khoá xoay ngang nếu được); iOS Safari không có — hướng dẫn "Thêm vào màn hình chính". Âm
-  thanh phát sau lần chạm đầu. Ảnh thẻ PNG ở màn tổng kết: iOS mở ảnh ở tab mới để lưu.
+- Android: chạm Start / Continue ở màn tiêu đề là vào toàn màn hình (khoá xoay ngang nếu được); nút ⛶ để vào lại (thoát ra
+  thì nút nhấp nháy 1 lần). "Thêm vào màn hình chính" mở game không có thanh địa chỉ (manifest web app). iOS Safari không có
+  toàn màn hình — hướng dẫn "Thêm vào màn hình chính". Âm thanh phát sau lần chạm đầu. Ảnh thẻ PNG ở màn tổng kết: iOS mở ảnh
+  ở tab mới để lưu.
+- Màn thấp (cầm ngang còn thanh địa chỉ: vùng game ~230 px): hộp thoại nhỏ lại (chữ 15 px, chân dung 56 px, ẩn khi đang chọn;
+  lựa chọn 2 cột cao 40 px) và cuộn được, không bao giờ lòi khỏi mép trên; đang hội thoại thì ẩn bảng tên, dòng mục tiêu, đồng
+  hồ, "N online"; camera hội thoại đặt mặt 2 người vào phần còn thấy phía trên hộp thoại. Bảng tên nhỏ hơn, không đè nhau, vai
+  phụ (hành khách, tài xế xe khác) chỉ hiện khi đứng gần. Menu, mini-game, app, màn tổng kết, khung chat: cao tối đa bằng vùng
+  nhìn thấy, dài thì cuộn.
 
 ## Chơi nhiều người (mức "thấy nhau")
 
