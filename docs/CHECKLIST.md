@@ -328,29 +328,36 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [x] Gộp PR vào `main` (1195cb1, 11/10/2026)
   - [x] Deploy `gh-pages` c26234f (từ `main` 1195cb1); máy chủ thật `npx wrangler deploy` version c487c71a (11/10/2026, máy
     Desktop — web trước, máy chủ sau)
-- [ ] P2 Chơi trên trình duyệt điện thoại: tối ưu cho điện thoại + nút điều hướng và tương tác trên màn hình — Phụ trách: —
-  - [ ] Nhận biết máy cảm ứng bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoints` (không dựa vào user agent);
-    khi dev thử bằng `?touch=1` hoặc chế độ giả lập điện thoại của Chrome DevTools. Sửa GDD → "Ngoài phạm vi" (đang ghi
-    "điều khiển cảm ứng trên điện thoại")
-  - [ ] Điều hướng: cần điều khiển ảo (joystick) góc trái dưới để đi (đẩy hết cỡ = chạy); vuốt nửa phải màn hình để xoay
-    camera (đã kéo được bằng ngón tay — chỉnh độ nhạy); chụm 2 ngón để kéo camera xa / gần (thay con lăn chuột)
-  - [ ] Nút tương tác góc phải dưới: nút lớn thay phím E, ghi tên việc như dòng nhắc "E: …", chỉ hiện khi đứng gần vật / người;
-    nút App (Tab), Help (H), Emote / câu chat (T), Menu (Esc); hội thoại: chạm để nói tiếp, chạm vào lựa chọn (không cần
-    phím 1–4)
-  - [ ] Mini-game và bi-a bằng cảm ứng: kéo để ngắm, giữ nút để lấy lực, nút Rerack / Leave / Join; rà từng mini-game xem có
-    chỗ nào cần bàn phím (ô mật khẩu Đăng nhập: bàn phím ảo không được che ô nhập)
-  - [ ] Giao diện: nút ≥ 44 px, không đè lên nhau hay che nhân vật; dòng hướng dẫn điều khiển đổi theo cảm ứng (không ghi
-    "WASD", "E"); cầm dọc thì nhắc xoay ngang; chừa vùng tai thỏ / thanh điều hướng (`env(safe-area-inset-*)`); chặn phóng
-    to trang, kéo xuống làm mới, menu khi giữ ngón
-  - [ ] Hiệu năng: điện thoại mặc định nấc Detail thấp (pixelRatio ≤ 1, tắt viền nét), bóng / số người chơi khác hiện tối đa
-    ít hơn nếu cần; giải phóng zone cũ đủ sạch (Safari iOS đóng tab khi tốn quá nhiều RAM); đo FPS + RAM trên 1 máy Android
-    tầm trung và 1 iPhone, ghi vào `docs/perf_report.md`
-  - [ ] Nút toàn màn hình (Android; iOS Safari không có — hướng dẫn "Thêm vào màn hình chính"); âm thanh chỉ phát sau lần
-    chạm đầu; ảnh thẻ PNG tải được trên điện thoại (iOS: mở ảnh để lưu)
-  - [ ] Chữ giao diện mới trong `data/i18n/en.json` + `vi.json`
-  - [ ] Kiểm thử: `test:smoke` thêm lượt giả lập điện thoại (Playwright `hasTouch` + `isMobile`, khung ngang ~844 × 390): đi
-    bằng joystick ảo, bấm nút tương tác, chơi qua ít nhất 1 zone, console sạch; chơi thử tay trên máy thật (Android Chrome,
-    iPhone Safari)
+- [ ] P2 Chơi trên trình duyệt điện thoại: tối ưu cho điện thoại + nút điều hướng và tương tác trên màn hình — Phụ trách: Claude
+  — nhánh `feat/mobile-touch` (11/10/2026)
+  - [x] Nhận biết máy cảm ứng bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoints` (không dựa vào user agent);
+    khi dev thử bằng `?touch=1` hoặc chế độ giả lập điện thoại của Chrome DevTools; laptop cảm ứng + chuột chỉ hiện nút khi
+    chạm lần đầu. Sửa GDD → "Ngoài phạm vi" + bảng điều khiển cảm ứng — ad43543
+  - [x] Điều hướng: cần điều khiển ảo (joystick) góc trái dưới để đi (đẩy hết cỡ = chạy); vuốt nửa phải màn hình để xoay
+    camera (độ nhạy 0,7); chụm 2 ngón để kéo camera xa / gần (thay con lăn chuột) — ad43543
+  - [x] Nút tương tác góc phải dưới: nút lớn thay phím E, ghi tên việc như dòng nhắc "E: …", chỉ hiện khi đứng gần vật / người;
+    nút App (Tab), Help (H), Emote / câu chat (T), Chat, Menu (Esc); hội thoại: chạm để nói tiếp, chạm vào lựa chọn (không cần
+    phím 1–4) — ad43543
+  - [x] Mini-game bằng cảm ứng: rà từng mini-game, bước nào cần bàn phím đều có nút để chạm; ô mật khẩu Đăng nhập không bị bàn
+    phím ảo che; màn thấp (cầm ngang) bảng mini-game cuộn được, nút không lọt mép — ad43543
+  - [x] Nhắn tin bằng cảm ứng: bàn phím ảo không che ô nhập (`visualViewport`), gửi bằng nút, gửi xong cất bàn phím, đang gõ
+    không điều khiển nhân vật — ad43543
+  - [ ] Bi-a bằng cảm ứng (sau PR áp phê): kéo để ngắm, giữ nút để lấy lực, nút Rerack / Leave / Join, áp phê bằng chạm. Hiện ở
+    bàn bi-a trên máy cảm ứng: dòng "Bi-a bằng cảm ứng sắp có" + nút Rời bàn
+  - [x] Giao diện: nút ≥ 44 px, không đè lên nhau hay che nhân vật / dấu "!" / mũi tên; dòng hướng dẫn điều khiển đổi theo cảm
+    ứng (không ghi "WASD", "E"); cầm dọc thì nhắc xoay ngang; chừa vùng tai thỏ / thanh điều hướng (`env(safe-area-inset-*)`);
+    chặn phóng to trang, kéo xuống làm mới, menu khi giữ ngón — ad43543
+  - [x] Hiệu năng: điện thoại mặc định nấc Detail thấp (pixelRatio ≤ 1, tắt viền nét), tối đa 6 người chơi khác hiện cùng lúc —
+    ad43543
+  - [ ] Đo FPS + RAM trên 1 máy Android tầm trung và 1 iPhone (giải phóng zone cũ đủ sạch — Safari iOS đóng tab khi tốn quá
+    nhiều RAM), ghi vào `docs/perf_report.md` — người dùng làm
+  - [x] Nút toàn màn hình (Android; iOS Safari không có — hướng dẫn "Thêm vào màn hình chính"); âm thanh chỉ phát sau lần
+    chạm đầu; ảnh thẻ PNG tải được trên điện thoại (iOS: mở ảnh ở tab mới để lưu) — ad43543
+  - [x] Chữ giao diện mới trong `data/i18n/en.json` + `vi.json` — ad43543
+  - [x] Kiểm thử: `test:smoke` thêm lượt giả lập điện thoại (Playwright `hasTouch` + `isMobile`, khung ngang 844 × 390): đi
+    bằng joystick ảo, vuốt xoay camera, chụm 2 ngón, bấm nút tương tác, chạm qua hội thoại, chơi zone 0 → 2 kể cả quiz Cuder
+    bằng chạm, nhắn tin 1 tin (máy chủ local), console sạch; lượt máy tính thường không hiện nút cảm ứng — ad43543
+  - [ ] Chơi thử tay trên máy thật (Android Chrome, iPhone Safari) — người dùng làm
   - [ ] Build, push `main`, deploy `gh-pages`
 
 ## 6. Ngôn ngữ và âm thanh

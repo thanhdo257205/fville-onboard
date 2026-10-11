@@ -1240,7 +1240,7 @@ xoáy ngang"). **Chưa deploy** (cần bản web + `npx wrangler deploy` máy ch
 - Smoke: bước mới "chỗ hở mô hình" ở zone 3–5 (ngoại hình đầu): zone trong `GAP_FREE` (hiện `zone_04`) phải 0 tia nhìn xuống
   lọt ra trời, zone khác chỉ ghi số. `--zone 3`, `--zone 4`, `--zone 5` đạt; test:data đạt.
 
-### Chơi trên trình duyệt điện thoại (11/10/2026, nhánh `feat/mobile-touch`)
+### Chơi trên trình duyệt điện thoại (11/10/2026, nhánh `feat/mobile-touch` ad43543)
 
 CHECKLIST P2 "Chơi trên trình duyệt điện thoại", mọi dòng trừ bi-a cảm ứng (phiên khác đang sửa `game/src/pool/*`, `server/`).
 **Chưa deploy.**
