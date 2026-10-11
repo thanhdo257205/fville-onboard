@@ -25,7 +25,7 @@ for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
 import bpy  # noqa: E402
 
 from lib import interior as it  # noqa: E402
-from lib import desktop_computer, kit, pool_table, zone  # noqa: E402
+from lib import desktop_computer, kit, pool_table, team_photos, zone  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
 
@@ -44,6 +44,8 @@ DESK_W = 1.4
 # Bàn bi-a khu nghỉ: mô hình Sketchfab "Pool Table Traditional" (fizyman, CC BY 4.0) — lib/pool_table.py đọc
 # assets/props/pool_table/source/pool_table_traditional.glb (chỉ có trên máy làm việc; thiếu thì build báo lỗi). Đo mặt
 # chơi, lỗ, bi → data/pool.json (ghi lại mỗi lần build).
+# ảnh team treo tường bắc khu nghỉ, trái → phải (assets/props/team_photos/source/<tên>.webp, chỉ ở máy làm việc)
+TEAM_PHOTOS = ("team_garden", "team_award", "team_trainers_day")
 POOL = (-4.0, 3.0)          # tâm bàn — cùng chỗ bàn dựng tay trước đây
 POOL_YAW = 90               # mô hình dài theo Y → xoay cho trục dài theo X (như bàn cũ)
 POOL_INFO = {}
@@ -103,15 +105,15 @@ def build_shell(col, rng):
     it.door_handles(b, bx1 - 0.08, 0.0, along="y")
     it.card_reader(b, bx1 - 0.13, FSA_Y[0] - 0.4, 1.2, face=(-1, 0))
     it.fire_cabinet(b, -9.0, oy1 - 0.15, face=(0, -1))
-    # cửa sổ rèm cuốn (tường nam + tây văn phòng), len chân tường, tranh treo tường khu nghỉ
+    # cửa sổ rèm cuốn (tường nam + tây văn phòng), len chân tường, ảnh team treo tường khu nghỉ
     it.window_band(b, (ox0, oy0), (ox1, oy0), (0, 1), rng=rng)
     it.window_band(b, (ox0, oy0), (ox0, oy1), (1, 0), rng=rng)
     for p0, p1, inw in (((ox0, oy0), (ox1, oy0), (0, 1)), ((ox0, oy1), (ox1, oy1), (0, -1)),
                         ((ox0, oy0), (ox0, oy1), (1, 0)), ((bx0, by1), (bx1, by1), (0, -1)),
                         ((bx0, by0), (bx1, by0), (0, 1))):
         it.baseboard(b, p0, p1, inw)
-    for k, c in enumerate(("fpt_orange", "office_tile_md", "fpt_blue")):
-        it.wall_frame(b, -6.0 + k * 1.6, by1 - 0.13, 1.7, 1.0, 0.7, (0, -1), c)
+    # 3 ảnh team thật (lib/team_photos.py; trước đây 3 mảng màu 1,0 × 0,7 m): cùng cao 0,75 m, rộng theo tỉ lệ từng ảnh
+    team_photos.frames(b, col, TEAM_PHOTOS, by1 - 0.13, 1.7, 0.75, 0.35, -4.4)
     return b.to_object("ENV_vo_phong", col)
 
 

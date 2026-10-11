@@ -1548,6 +1548,20 @@ trồng quanh tượng Cuder theo luống chữ U, tượng ở giữa.
   chữ U thành luống riêng (x 17–23, y 64–65,2) nối liền 2 cánh, viền gạch chạy theo đường bao chữ U. Build lại zone_02; test:data,
   smoke `--zone 2` 13/13. **Đã deploy** gh-pages bf620d1 (từ main 57c7a7b).
 
+### Ảnh team trong khung ảnh khu bàn bi-a (12/10/2026, máy Desktop)
+
+Người dùng gửi 3 ảnh thật (team ở vườn, màn hình trao giải "Outstanding Global HR Team — Skill First Team", Trainer's Day) để
+treo vào 3 khung ảnh trên tường bắc khu bàn bi-a zone 5, khung theo đúng tỉ lệ ảnh. Người dùng xác nhận mọi người trong ảnh (kể
+cả người đứng phía sau) đã đồng ý xuất hiện công khai; chọn làm mờ thẻ nhân viên.
+
+- `scripts/blender/lib/team_photos.py` (zone_05 gọi khi build): đọc ảnh gốc `assets/props/team_photos/source/*.webp` (không có
+  trên repo), làm mờ 18 vùng thẻ nhân viên (`BLUR`, toạ độ ảnh gốc — 5 / 5 / 8 thẻ, kiểm tra bằng ảnh cắt), thu cạnh dài 512 px →
+  `*_game.png` (chỉ ở máy làm việc; ảnh trong GLB là bản này). Khung viền đen + mặt ảnh có UV (object `ENV_anh_team_<k>`, chất
+  liệu ảnh × vertex color, không viền nét).
+- `zone_05.py`: `TEAM_PHOTOS` thay 3 mảng màu 1,0 × 0,7 m — cùng cao 0,75 m, rộng theo tỉ lệ ảnh (1,00 m 4:3 · 0,56 m 3:4 dọc ·
+  1,33 m 16:9), cách nhau 0,35 m, canh giữa x −4,4 như cũ. Build lại zone_05 (GLB bản Thấp 345 → 479 KB).
+- Đo: test:data; smoke `--zone 5` 24/24; xem bằng mắt trong game (đứng trước bàn bi-a). Chưa deploy gh-pages.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
