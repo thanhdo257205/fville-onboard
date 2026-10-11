@@ -1,0 +1,23 @@
+{
+  "_ghi_chu": "Nhắn tin tự do giữa người chơi (docs/multiplayer.md → mục Nhắn tin). Máy chủ (server/src/index.js) đọc file này lúc wrangler deploy: giới hạn + bộ lọc từ (game/src/net/chatfilter.js) — lọc ở máy chủ trước khi phát, người khác chỉ nhận bản đã lọc. Máy khách đọc max_len / rate / burst / history / bubble_s để báo lỗi sớm và hiện. Sửa danh sách từ → cần wrangler deploy.",
+  "max_len": 120,
+  "rate_per_s": 1,
+  "burst": 5,
+  "history": 50,
+  "bubble_s": 6,
+  "_gioi_han_ly_do": "max_len: số ký tự tối đa một tin (quá thì từ chối, không cắt); rate_per_s + burst: mỗi người dồn được tối đa burst tin, rồi hồi 1 tin mỗi 1 / rate_per_s giây (quá thì từ chối, báo 'gửi chậm lại'); history: số tin giữ lại mỗi kênh ở máy khách trong lượt chơi (không vào bản lưu, máy chủ không lưu gì); bubble_s: bong bóng tin cùng zone trên đầu người gửi.",
+  "filter": {
+    "mask": "*",
+    "mask_links": true,
+    "exact": [
+      "địt", "đụ", "đéo", "lồn", "buồi", "cặc", "đĩ", "cứt", "đụ má", "đụ mẹ", "địt mẹ", "chó đẻ", "óc chó", "đồ chó", "con đĩ"
+    ],
+    "plain": [
+      "dm", "dmm", "dcm", "dcmm", "dkm", "dmcs", "vcl", "vkl", "vcc", "cmn", "clgt", "clm", "loz", "djt", "dit me", "dit con me",
+      "fuck*", "motherfuck*", "fck", "fuk", "shit*", "bitch*", "bastard*", "asshole*", "cunt*", "dick", "dickhead*", "pussy",
+      "whore*", "slut*", "nigger*", "nigga*", "faggot*", "retard*", "wtf", "stfu"
+    ],
+    "allow": ["các", "lớn", "lon", "đeo", "dù", "du"],
+    "_bo_loc_ly_do": "Lọc theo từng từ (không lọc chuỗi con, để 'class', 'Scunthorpe', 'assistant' không bị che). exact: so nguyên dấu tiếng Việt (chữ thường, NFC) — từ bỏ dấu sẽ trùng từ thường ('cặc' → 'các', 'lồn' → 'lớn' / 'lon', 'đụ' → 'dù', 'đéo' → 'đeo') nên phải giữ dấu; cụm 2 từ trở lên so liền nhau. plain: so sau khi bỏ dấu, đổi chữ số / ký hiệu giống chữ (0 → o, 1 → i, 3 → e, 4 → a, 5 → s, 7 → t, @ → a, $ → s) và gộp chữ lặp ('fuuuck' → 'fuck'); '*' cuối = mọi từ bắt đầu bằng phần trước. Chữ cái tách rời ('f u c k', 'd m') được ghép lại rồi so. allow: từ không bao giờ che (so nguyên dấu, ưu tiên hơn 2 danh sách trên) — chốt chặn cho từ thường dễ bị che nhầm. mask_links: che đường link (http://, www., tên miền .com / .vn …) thành [link] — tránh dẫn người chơi tới trang lạ. Không lọc được mọi cách viết lách; người chơi vẫn có thể tắt nhận tin từ một người (mute) hoặc tắt hẳn chat trong menu Esc."
+  }
+}
