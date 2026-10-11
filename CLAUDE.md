@@ -70,11 +70,13 @@ npm --prefix game run dev            # http://localhost:5180  (?debug: FPS, vị
 # Kiểm thử (chạy sau MỖI thay đổi — xem "Kiểm thử" dưới)
 npm --prefix game run test:data      # dữ liệu: JSON, tham chiếu, node GLB, bản lưu mẫu, chữ i18n, model (~0,1 giây)
 npm --prefix game run test:pool      # bi-a: 1.000 cú phá bi (không NaN / chồng bi / ra ngoài bàn, tất định; cả có xoáy) + xoáy (spin = roll = 0 giống từng bit bản cũ, chiều bật băng, đè / kéo) + luật 8 bi (cũ + chuẩn), bàn máy chủ, ván 2 người giả (~8 giây)
-npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới màn tổng kết, 3 ngoại hình (~4 phút; tự bật Vite dev)
+npm --prefix game run test:quick     # nhanh, cho mỗi lần sửa nhỏ: test:data + smoke 1 ngoại hình zone 0 → 5, bỏ lượt điện thoại + test mạng (~2 phút)
+npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới màn tổng kết, 3 ngoại hình + điện thoại + test mạng (~12 phút; tự bật Vite dev)
 npm --prefix game run test:smoke -- --zone 5               # chỉ 1 zone (bản lưu mẫu ?start=zone_05), ~50 giây mỗi ngoại hình
 npm --prefix game run test:smoke -- --look intern_nu       # 1 ngoại hình · --build: chạy trên game/dist (sau npm run build)
 #   ngoại hình thứ 2 chơi bằng tiếng Việt (đổi ở màn tạo nhân vật + thử đổi ở menu Esc) · --lang vi|en: mọi ngoại hình 1 ngôn ngữ
 npm --prefix game run test:smoke -- --mobile only          # chỉ lượt điện thoại giả lập (844 × 390: zone 0 → 2 + nhắn tin; màn thấp 844 × 230 / 390; toàn màn hình; bi-a cảm ứng), ~4 phút · --mobile off: bỏ
+npm --prefix game run test:smoke -- --mobile ui            # lượt điện thoại trừ bi-a cảm ứng (~3 phút)
 npm --prefix game run test:smoke -- --mobile pool          # chỉ bi-a cảm ứng (844 × 230 + 390; 2 người máy tính + điện thoại qua máy chủ local; thêm --extra off: bỏ phần 2 người)
 npm --prefix game run test:smoke -- --extra only           # chỉ bản lưu cũ + mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ giả bản cũ; máy chủ local), ~80 giây
 
@@ -235,8 +237,9 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 
 ## Kiểm thử
 
-- **Sau mỗi thay đổi** chạy `npm --prefix game run test:data` và `npm --prefix game run test:smoke` (hoặc
-  `-- --zone N` cho zone vừa sửa); sửa bi-a (`game/src/pool/physics.js`, `rules.js`, `server/src/pool.js`) thì chạy thêm `test:pool`. Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
+- **Sau mỗi thay đổi** chạy `npm --prefix game run test:quick` (data + 1 ngoại hình, ~2 phút) hoặc `test:smoke -- --zone N`
+  cho zone vừa sửa (sửa giao diện điện thoại: `-- --mobile ui`, bi-a cảm ứng: `-- --mobile pool`, mạng: `-- --extra only`); bộ
+  đầy đủ `npm --prefix game run test:smoke` trước khi mở PR / để CI chạy; sửa bi-a (`game/src/pool/physics.js`, `rules.js`, `server/src/pool.js`) thì chạy thêm `test:pool`. Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
   trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật — trừ các test
   mạng dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
 - Mỗi zone, trước mỗi việc bắt buộc / lối ra zone (lúc đang đi lại tự do): phải có dấu "!" hoặc mũi tên chỉ đường
@@ -267,8 +270,10 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - Vật lý bi-a phải **tất định** (bàn chung 2 người: người xem phát lại cú từ bàn của mình, phải khớp từng bit): chỉ + − × ÷,
   `Math.sqrt` (và abs / min / max / floor / round), không `Math.sin` / `cos` / `atan2` / `hypot` / `pow` / `**` trong
   `physics.js`, `rules.js` — dùng `dsin` / `dcos` / `datan2` của `physics.js`.
-- GitHub Actions (`.github/workflows/test.yml`): mỗi lần push main chạy test:data + test:pool + build + test:smoke 1 ngoại hình;
-  chạy tay (Run workflow) thì cả 3 ngoại hình. Đỏ → xem log + artifact `test-results`.
+- GitHub Actions (`.github/workflows/test.yml`): mỗi lần push main / PR chạy song song 5 job trên 5 máy riêng — `data` (test:data +
+  test:pool) và `smoke (desktop | mobile | pool-touch | net)` (build rồi smoke trên bản build: 2 ngoại hình zone 0 → 5 / lượt
+  điện thoại `--mobile ui` / bi-a cảm ứng `--mobile pool` / bản lưu cũ + test mạng `--extra only --mobile off`), ~8–10 phút;
+  chạy tay (Run workflow) thì phần desktop chạy cả 3 ngoại hình. Đỏ → xem log + artifact `test-results-<phần>`.
 
 ## Riêng tư và bản quyền (repo công khai)
 

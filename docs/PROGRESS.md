@@ -1364,6 +1364,21 @@ gh-pages c3ef40f).
 - CHECKLIST: tick "Bi-a bước 3" (mọi dòng con đã xong), "Build, push, deploy" phần điện thoại (PR #19–#21), ghi bản web bi-a xoáy
   đã deploy (còn `wrangler deploy` máy chủ); "zone 3: tách cụm cây" — người dùng chốt bỏ, coi như xong.
 
+### Kiểm thử nhanh hơn: CI chạy song song + `npm run test:quick` (11/10/2026, nhánh `ci/parallel-smoke`)
+
+Người dùng hỏi cách làm test nhanh hơn. Một lượt CI cũ 15–20 phút: mọi phần chạy nối tiếp trên 1 máy (cài đặt ~2–3 phút,
+máy tính 2 ngoại hình ~3, điện thoại ~6,5, test mạng ~5). Máy CI không có GPU (trình duyệt vẽ bằng CPU) nên không chạy nhiều
+trình duyệt cùng lúc trên 1 máy — tách máy.
+
+- `.github/workflows/test.yml`: 5 job song song — `data` (test:data + test:pool, không cần trình duyệt) và `smoke` theo matrix
+  `desktop` (2 ngoại hình, `--mobile off --extra off`), `mobile` (`--mobile ui`), `pool-touch` (`--mobile pool`), `net`
+  (`--extra only --mobile off`); `fail-fast: false`; bộ nhớ đệm Chromium (`~/.cache/ms-playwright`, khoá theo phiên bản
+  playwright); artifact `test-results-<phần>`. Không bỏ bước kiểm tra nào: 4 phần smoke phủ đúng những gì lượt cũ chạy.
+- `scripts/tests/smoke.mjs`: `--mobile ui` = lượt điện thoại trừ bi-a cảm ứng (zone 0 → 2 bằng chạm, màn thấp, toàn màn hình,
+  nhắn tin) — để tách bi-a cảm ứng sang job riêng; dòng tổng kết ghi đúng phần đã chạy.
+- `npm run test:quick` (máy local, mỗi lần sửa nhỏ): test:data + smoke 1 ngoại hình zone 0 → 5, bỏ điện thoại + test mạng — đo
+  1 phút 45 giây. Đo các phần riêng: `--mobile ui` ~2,5 phút, `--mobile pool` ~3,8 phút.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
