@@ -28,6 +28,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/characters/<id>/` | GLB nhân vật, chân dung (`<id>_portrait.png`, theo bộ đồ `<id>_portrait_<bộ>.png`), texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`, `intern_nu_tu_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |
 | `scripts/blender/accessories/build_cap.py` | Mũ lưỡi trai (phụ kiện tủ đồ): dựng lưới thấp bám mô hình Meshy + texture 512 vẽ bằng code → `assets/accessories/cap/cap.glb`, `cap.json` |
 | `assets/accessories/<id>/` | Phụ kiện (GLB + số đo `<id>.json`); `source/`: mô hình Meshy gốc, logo gốc — chỉ có trên máy làm việc. Trong game: `data/characters.json` → `accessories`, gắn vào xương đầu và tự ướm theo lưới nhân vật (`game/src/characters/accessories.js`), mở khoá khi xong game, bật / tắt ở menu Esc |
+| `assets/props/<id>/<id>.glb` | Đồ vật đặt bằng dữ liệu (`data/scene_fixes.json` → `<zone>.props`, `game/src/world/zone.js placeProps`; vd `potted_plant` — chậu cây thay chậu cọ cũ zone 3–5), dựng từ `source/<id>.glb` bằng `scripts/tools/make_prop.sh <id> [tỉ lệ]` (gltf-transform qua npx, không cần Blender: giảm tam giác, texture 512 WebP, Draco) |
 | `assets/props/<id>/source/` | Mô hình gốc của đồ vật (vd `cuder/source/cuder_meshy.glb`, `pool_table/source/pool_table_traditional.glb`, `desktop_computer/source/desktop_computer.glb`, `bus/source/bus_jb5_low_poly.glb`, `tree/source/tree_low_poly_lowpoly.glb`, `bamboo/source/bamboo_tree.glb`) — chỉ có trên máy làm việc, build zone đọc từ đây |
 | `assets/music/` | Nhạc nền MP3 (`<id>.mp3` theo `data/sounds.json` → `music`: nguồn CC0, SHA-256 file gốc), `licenses/` (ghi chú giấy phép của nguồn) |
 | `assets/sfx/` | Hiệu ứng âm thanh MP3 (`<id>.mp3` / `<id>_<n>.mp3` theo `data/sounds.json`), `licenses/` (giấy phép của từng gói nguồn); `source/`: gói zip gốc — chỉ có trên máy làm việc (tải lại ở link trong `data/sounds.json`) |
@@ -213,7 +214,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - **Bản build gắn mã build** vào `data/*.json` và GLB (`?v=<git hash>-<thời gian>`, `__BUILD_ID__` trong
   `vite.config.js`, `url()` của `game/src/core/fetch.js`) → deploy mới không bị bộ nhớ đệm trình duyệt / CDN trả file cũ.
 - **Không sửa GLB bối cảnh từ code game.** Thiếu/sai đối tượng thì chỉnh bằng dữ liệu (`data/collision.json`: bỏ/thêm hộp
-  va chạm; `data/scene_fixes.json`: chỉnh khi chạy, cửa mở được `doors`, phòng giả sau cửa / lối sang zone khác `rooms` — hộp chỉ vẽ mặt trong để nhìn qua cửa không thấy trời; `data/zones.json` → `spawn_offset`: dời chỗ
+  va chạm; `data/scene_fixes.json`: chỉnh khi chạy, cửa mở được `doors`, phòng giả sau cửa / lối sang zone khác `rooms` — hộp chỉ vẽ mặt trong để nhìn qua cửa không thấy trời, gỡ vật dựng chung mesh với đồ khác `remove_parts` (mảnh lưới rời có tâm trong hộp), vật từ GLB riêng `props`; `data/zones.json` → `spawn_offset`: dời chỗ
   xuất hiện; vật do code đặt trong `data/interactables.json`) và ghi vào báo cáo. Sửa bối cảnh
   thật thì sửa script Blender rồi build lại zone (cần người dùng đồng ý).
 - **Âm thanh chỉ lấy từ nguồn CC0 hoặc tự tạo bằng code** (người dùng chốt 10/10/2026; repo công khai, dùng trong tổ chức):

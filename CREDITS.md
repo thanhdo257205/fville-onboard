@@ -56,6 +56,13 @@ do người dùng cung cấp, chỉ nằm trong texture.
   không có trên repo; `scripts/blender/lib/bamboo.py` dựng lại bản low-poly (thân trụ + lá 2 tam giác) theo đúng vị trí
   thân, lá của mô hình gốc và gộp texture khi build zone.
 
+## Đồ vật đặt bằng dữ liệu
+- Chậu cây trong nhà (`assets/props/potted_plant/potted_plant.glb` — thay chậu cọ cũ ở sảnh zone 3, tầng trên zone 4, khu
+  nghỉ zone 5): "Potted Plant" by Blizzy (Sketchfab), giấy phép CC BY 4.0 —
+  https://sketchfab.com/3d-models/potted-plant-2cfe4f4c192f4dd08229bd7460532b09 (ghi trong file gốc, glTF `asset.extras`).
+  File gốc không có trên repo; `scripts/tools/make_prop.sh potted_plant` giảm 3.916 → 1.174 tam giác, texture 512 px WebP,
+  nén Draco; đặt vào zone bằng `data/scene_fixes.json` → `props`.
+
 ## Âm thanh
 Danh sách đầy đủ từng file, nguồn, SHA-256 và giấy phép: `docs/audio_credits.md`.
 

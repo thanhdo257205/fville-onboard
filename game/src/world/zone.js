@@ -2,7 +2,7 @@
 // SPAWN_/NPC_ (empty, yaw_deg), INT_ (vật tương tác, label), TRIGGER_ (hộp [-1,1] × scale), COL_ (va chạm, ẩn).
 import * as THREE from "three";
 import { loadGLTF, url } from "../core/assets.js";
-import { makeZoneMaterial } from "../render/renderer.js";
+import { makeZoneMaterial, makeCharacterMaterial } from "../render/renderer.js";
 import { buildCollider } from "./collision.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
@@ -168,7 +168,97 @@ export function applySceneFixes(zone, fixes = {}) {
       return mesh.name;
     });
   }
+  // gỡ vật dựng chung mesh với đồ khác (remove_parts): mesh khớp `mesh` (tên node hoặc node cha — GLTFLoader tách mỗi chất liệu
+  // thành 1 mesh con), bỏ mọi mảnh lưới rời (tam giác nối nhau qua đỉnh chung) có tâm hộp bao nằm trong một hộp `boxes` (toạ độ
+  // glTF). Vd chậu cọ cũ (chậu + thân + từng lá là các mảnh riêng) nằm chung mesh nội thất → thay bằng mô hình mới (props)
+  if (fixes.remove_parts?.length) out.remove_parts = fixes.remove_parts.map((r) => removeParts(zone, r));
   zone.fixes = out;
+  return out;
+}
+
+function removeParts(zone, r) {
+  const re = new RegExp(r.mesh), boxes = r.boxes.map((b) => new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(...b.center), new THREE.Vector3(...b.size)));
+  const hits = boxes.map(() => 0), done = new Set();
+  let tris = 0;
+  zone.root.updateMatrixWorld(true);
+  zone.root.traverse((m) => {
+    if (!m.isMesh || !(re.test(m.name) || re.test(m.parent?.name || "")) || done.has(m.geometry.uuid) || !m.geometry.index) return;
+    done.add(m.geometry.uuid);
+    const g = m.geometry, idx = g.index.array, pos = g.attributes.position, nv = pos.count;
+    // mảnh rời: hợp các đỉnh cùng tam giác + các đỉnh trùng vị trí (lưới bối cảnh tô phẳng: mỗi mặt có đỉnh riêng) — union-find
+    const par = new Int32Array(nv).map((_, i) => i);
+    const find = (i) => { while (par[i] !== i) i = par[i] = par[par[i]]; return i; };
+    const join = (a, b) => { a = find(a); b = find(b); if (a !== b) par[b] = a; };
+    for (let t = 0; t < idx.length; t += 3) { join(idx[t], idx[t + 1]); join(idx[t], idx[t + 2]); }
+    const same = new Map();
+    for (let i = 0; i < nv; i++) {
+      const k = `${Math.round(pos.getX(i) * 1e4)},${Math.round(pos.getY(i) * 1e4)},${Math.round(pos.getZ(i) * 1e4)}`;
+      if (same.has(k)) join(same.get(k), i); else same.set(k, i);
+    }
+    const bb = new Map(), v = new THREE.Vector3();
+    for (let i = 0; i < nv; i++) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+      const k = find(i);
+      if (!bb.has(k)) bb.set(k, new THREE.Box3());
+      bb.get(k).expandByPoint(v);
+    }
+    const drop = new Set(), c = new THREE.Vector3();
+    for (const [k, box] of bb) {
+      box.getCenter(c);
+      const j = boxes.findIndex((b) => b.containsPoint(c));
+      if (j >= 0) { drop.add(k); hits[j]++; }
+    }
+    if (!drop.size) return;
+    const keep = [];
+    for (let t = 0; t < idx.length; t += 3) { if (drop.has(find(idx[t]))) tris++; else keep.push(idx[t], idx[t + 1], idx[t + 2]); }
+    g.setIndex(keep);
+    g.computeBoundingBox();
+    g.computeBoundingSphere();
+  });
+  return { mesh: r.mesh, parts_per_box: hits, tris };
+}
+
+// vật đặt bằng dữ liệu từ GLB riêng (props): assets/props/<model>/<model>.glb (đã giảm tam giác, nén Draco), mỗi chỗ 1 bản sao
+// dùng chung lưới + chất liệu (đổi sang toon 1 lần, giữ qua các zone: userData.shared). at = điểm đặt đáy (toạ độ glTF),
+// height_m = chiều cao sau khi co, yaw_deg = xoay quanh trục đứng. Lá (alpha BLEND trong file gốc) → alphaTest, 2 mặt, không viền nét
+const propModels = new Map();
+async function propModel(id) {
+  if (!propModels.has(id)) propModels.set(id, loadGLTF(url(`assets/props/${id}/${id}.glb`)).then((gltf) => {
+    const box = new THREE.Box3().setFromObject(gltf.scene), mats = new Map();
+    gltf.scene.traverse((o) => {
+      if (!o.isMesh) return;
+      const src = o.material;
+      if (!mats.has(src)) {
+        const m = makeCharacterMaterial(src);
+        if (src.transparent || src.alphaTest > 0) { m.alphaTest = 0.5; m.userData.outlineParameters = { visible: false }; }
+        m.side = THREE.DoubleSide;
+        m.userData.shared = true;
+        if (m.map) m.map.userData.shared = true;
+        src.dispose();
+        mats.set(src, m);
+      }
+      o.material = mats.get(src);
+      o.geometry.userData.shared = true;
+    });
+    return { scene: gltf.scene, height: box.max.y - box.min.y };
+  }));
+  return propModels.get(id);
+}
+
+export async function placeProps(zone, props = []) {
+  const out = [];
+  for (const [i, p] of props.entries()) {
+    const m = await propModel(p.model);
+    const o = m.scene.clone(true);
+    o.name = `PROP_${p.model}_${i}`;
+    o.position.set(...p.at);
+    o.rotation.y = THREE.MathUtils.degToRad(p.yaw_deg ?? 0);
+    o.scale.setScalar((p.height_m ?? m.height) / m.height);
+    o.userData.fix = "prop";
+    zone.root.add(o);
+    out.push(o.name);
+  }
+  (zone.fixes ||= {}).props = out;
   return out;
 }
 
@@ -192,7 +282,7 @@ export function yawDir(yawDeg) {
 // qua các zone đọng thêm ~25 geometry, ~15 texture trên GPU
 export function disposeTree(root) {
   root.traverse((o) => {
-    o.geometry?.dispose?.();
+    if (!o.geometry?.userData.shared) o.geometry?.dispose?.();   // lưới dùng chung nhiều zone (vd chậu cây props) giữ lại
     // chỉ dọn vật liệu / texture thật (bản sao do code tạo có thể mang userData đã chép qua JSON)
     for (const m of [o.material, o.userData.srcMaterial].flat()) {
       if (!m?.isMaterial || m.userData.shared) continue;

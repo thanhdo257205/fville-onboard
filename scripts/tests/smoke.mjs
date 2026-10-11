@@ -62,6 +62,7 @@ const zoneIsLast = (z) => z === order[order.length - 1];
 const langArg = arg("lang");
 const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
 const I18N = { en: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "en.json"), "utf8")), vi: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "vi.json"), "utf8")) };
+const SCENE_FIXES = JSON.parse(readFileSync(join(ROOT, "data", "scene_fixes.json"), "utf8"));
 const ACH = JSON.parse(readFileSync(join(ROOT, "data", "achievements.json"), "utf8")).final.title;   // tên thành tựu cuối theo ngôn ngữ
 const QUESTS = JSON.parse(readFileSync(join(ROOT, "data", "quests.json"), "utf8")).quests;
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
@@ -582,6 +583,11 @@ async function runLook(browser, base, look) {
           const rooms = []; __game._game.zone.root.traverse((o) => { if (o.userData.fix === "room") rooms.push(o.name); });
           return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), rooms, top: r.gaps.slice(0, 5) }; });
         const strict = GAP_FREE.includes(zone), flatFree = FLAT_FREE.includes(zone);
+        // chậu cây thay chậu cọ cũ (scene_fixes → remove_parts + props): mọi hộp gỡ đúng 1 cây (≥ 3 mảnh), đủ số chậu mới
+        const fxz = SCENE_FIXES[zone] || {}, zf = await ev(() => __game._game.zone.fixes);
+        const parts = (zf.remove_parts || []).flatMap((r) => r.parts_per_box);
+        if (fxz.props || fxz.remove_parts) await check((zf.props || []).length === (fxz.props || []).length && parts.length && parts.every((n) => n >= 3),
+          `${zone}: ${(zf.props || []).length} chậu cây mới (props), gỡ chậu cũ: ${parts.join(" / ")} mảnh mỗi chậu`, JSON.stringify(zf));
         await check(gp.spots > 50 && (!strict || gp.down === 0) && (!flatFree || gp.flat === 0),
           `${zone}: chỗ hở mô hình — ${gp.spots} chỗ đứng, ${gp.rays} tia: ${gp.down} tia nhìn xuống lọt ra trời, ${gp.flat} tia ngang ra ngoài${strict ? "" : " (chưa build lại, chỉ ghi số)"}${gp.rooms.length ? `; phòng giả sau cửa: ${gp.rooms.join(", ")}` : ""}`,
           JSON.stringify(gp));

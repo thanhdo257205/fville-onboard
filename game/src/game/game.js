@@ -3,7 +3,7 @@
 // tương tác (interactables.json) → hội thoại (dialogues.json) / mini-game / nhặt vật; hiệu ứng → tiến trình (lưu trình duyệt).
 import * as THREE from "three";
 import { device } from "../core/device.js";
-import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, prefetchZone, pendingPrefetch } from "../world/zone.js";
+import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, placeProps, prefetchZone, pendingPrefetch } from "../world/zone.js";
 import { buildCollider } from "../world/collision.js";
 import { createLights, DETAIL_LEVELS } from "../render/renderer.js";
 import { Sky } from "../render/sky.js";
@@ -159,6 +159,7 @@ export class Game {
   async _prepareZone(zoneId, file) {
     const zone = await loadZone(zoneId, file, this.state.tier, this.data.collision?.[zoneId]);
     applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
+    await placeProps(zone, this.data.sceneFixes?.[zoneId]?.props);   // vật từ GLB riêng (vd chậu cây) — trước BVH camera
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
     // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
     const plantRe = new RegExp(this.seeThrough.cfg.meshes), blockers = [];
