@@ -1560,7 +1560,7 @@ cả người đứng phía sau) đã đồng ý xuất hiện công khai; chọ
   liệu ảnh × vertex color, không viền nét).
 - `zone_05.py`: `TEAM_PHOTOS` thay 3 mảng màu 1,0 × 0,7 m — cùng cao 0,75 m, rộng theo tỉ lệ ảnh (1,00 m 4:3 · 0,56 m 3:4 dọc ·
   1,33 m 16:9), cách nhau 0,35 m, canh giữa x −4,4 như cũ. Build lại zone_05 (GLB bản Thấp 345 → 479 KB).
-- Đo: test:data; smoke `--zone 5` 24/24; xem bằng mắt trong game (đứng trước bàn bi-a). Chưa deploy gh-pages.
+- Đo: test:data; smoke `--zone 5` 24/24; xem bằng mắt trong game (đứng trước bàn bi-a). **Đã deploy** gh-pages f079c33 (từ main c24d37e).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
