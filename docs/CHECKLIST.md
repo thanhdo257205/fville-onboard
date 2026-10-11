@@ -202,26 +202,35 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   bên = bàn máy chủ sau mọi cú, phát lại không lệch, rời bàn thì ghế trống
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
 - [ ] P3 Bi-a: chốt có thêm phím V nhìn bàn từ trên xuống hay không — Phụ trách: —
-- [ ] P2 Bi-a: đánh xoáy ngang (side spin / "xoáy trái – phải") — Phụ trách: —
-  - Hiện trạng: `game/src/pool/physics.js` chỉ có vị trí + vận tốc mỗi bi (đầu file: "Chưa có xoáy"); bi trắng luôn đánh vào
-    giữa tâm.
-  - [ ] Chọn điểm chạm trên bi trắng: lệch trái / phải (đề xuất 5 nấc: −2 … +2; xoáy lên / xuống — follow / draw — chốt làm
-    cùng hay để sau). Bảng bi-a có hình bi trắng với chấm điểm chạm (bấm / kéo chấm, hoặc phím riêng — đề xuất Z / X, không
-    trùng A / D ngắm, E, R, J, Space); điện thoại: kéo chấm bằng ngón tay
-  - [ ] Vật lý (mỗi bi thêm 1 số `spin`): chạm băng → góc bật lệch theo chiều xoáy (xoáy thuận tay "running" mở góc, ngược
-    "check" khép góc), mỗi lần chạm băng xoáy giảm; bi trắng lệch nhẹ ngược phía xoáy lúc vừa đánh (squirt, ~1°); va bi →
-    truyền một phần xoáy, bi mục tiêu lệch hướng rất nhẹ (throw); xoáy giảm dần theo thời gian lăn trên nỉ
-  - [ ] Giữ **tất định**: chỉ + − × ÷, `Math.sqrt`, `dsin` / `dcos` / `datan2` (quy tắc bi-a trong `CLAUDE.md`); `spin = 0`
-    phải cho kết quả **giống từng bit** như hiện nay (ván cũ, phát lại, thử thách của anh Khang không đổi)
-  - [ ] Chơi nhiều người: tin nhắn cú đánh thêm `spin`; máy chủ (`server/src/pool.js`) kiểm tra giới hạn và tính lại cú như
-    máy khách; báo `features` mới (vd `"pool_spin"`) — máy khách / máy chủ bản cũ thì bàn chung không cho đánh xoáy, không
-    lệch bàn; cần `npx wrangler deploy` ở máy Desktop
-  - [ ] Đường ngắm: thêm đoạn bi trắng sau khi chạm băng / chạm bi có tính xoáy (ngắn, để gợi ý chứ không lộ hết); thử thách
-    của anh Khang giữ đánh tâm (hoặc chỉ cho xoáy sau khi vào bi lần đầu)
-  - [ ] Chữ giao diện en + vi; dòng hướng dẫn bảng bi-a ghi cách chọn xoáy
-  - [ ] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
-    `spin = 0` khớp bản cũ, xoáy trái / phải làm góc bật băng lệch đúng chiều; smoke bi-a 2 người: cú có xoáy phát lại khớp
-    bàn máy chủ
+- [ ] P2 Bi-a: đánh xoáy ngang (side spin / "xoáy trái – phải") + đè / kéo — Phụ trách: Claude — nhánh `feat/pool-spin` — 08cbdcc
+  (11/10/2026; chi tiết: `docs/multiplayer.md` → "Bi-a: đánh xoáy"); còn deploy bản web + máy chủ
+  - Hiện trạng (trước đây): `game/src/pool/physics.js` chỉ có vị trí + vận tốc mỗi bi; bi trắng luôn đánh vào giữa tâm.
+  - [x] Chọn điểm chạm trên bi trắng: người dùng chốt áp phê trái / phải 5 nấc (−2 … +2) **và** xoáy lên / xuống (đánh đè /
+    đánh kéo) 5 nấc. Ô "Điểm chạm" góc phải dưới: hình bi trắng + chấm, kéo chấm bằng chuột (pointer events trên chính ô đó —
+    không đụng ngắm cơ bằng chuột trên khung vẽ / khoá con trỏ; đã làm sẵn cho ngón tay), hoặc phím Z / X (trái / phải), F / B
+    (đè / kéo) — không trùng A / D / W / S, E, H, T, Tab, R, J, P, C, Space, Enter (chat), Esc; mặc định giữa, về giữa sau mỗi
+    cú — 08cbdcc
+  - [x] Vật lý (`spin` ngang + `roll` lên / xuống, trạng thái xoáy chỉ nằm trong cú): chạm băng → góc bật lệch theo chiều xoáy
+    (thuận mở góc, ngược khép góc; nấc 2 đánh thẳng vào băng lệch ~18°), mỗi lần chạm băng xoáy còn 1/2; bi trắng lệch ~1°
+    ngược phía xoáy lúc đánh (squirt); va bi → truyền một phần xoáy ngược chiều, bi mục tiêu lệch rất nhẹ (throw); xoáy giảm
+    dần theo thời gian lăn; đè / kéo: sau lần va bi đầu tiên bi trắng được cộng vận tốc theo hướng cũ / ngược lại, tỉ lệ với
+    nấc, giảm theo quãng đường đã lăn — 08cbdcc
+  - [x] Giữ **tất định**: chỉ + − × ÷, `Math.sqrt`, `dsin` / `dcos` (quy tắc bi-a trong `CLAUDE.md`); `spin = roll = 0` cho kết
+    quả **giống từng bit** như trước (test:pool so dấu vân tay 300 cú ghi từ bản cũ + cú gợi ý thử thách của anh Khang); sự kiện
+    cú (`shotFacts` / `wireFacts`) vẫn đúng khi có xoáy — 08cbdcc
+  - [x] Chơi nhiều người: `pool_shot` thêm `spin`, `roll` (số nguyên −2 … +2); máy chủ (`server/src/pool.js`) **không chạy vật
+    lý** — chỉ kiểm tra giới hạn (sai → bỏ cú, `err: "bad"`), giữ nguyên `factsFromWire`, chuyển tiếp `spin` / `roll` cho người
+    kia và người xem phát lại; tin chào báo `"pool_spin"`; `pool_join` kèm `sp: 1`, bàn `spin: true` khi mọi người ngồi đều hiểu
+    xoáy — máy chủ cũ / có người ngồi bằng máy khách cũ thì bàn chung ẩn chọn xoáy, gửi spin = roll = 0, không lệch bàn — 08cbdcc
+  - [ ] Bật trên máy chủ thật: `cd server && npx wrangler deploy` ở máy Desktop (sau khi deploy bản web)
+  - [x] Đường ngắm: thêm đoạn ngắn hướng bi trắng sau lần chạm đầu (chạm bi / chạm băng) có tính xoáy (gợi ý, không lộ hết);
+    thử thách của anh Khang giữ đánh tâm (không ô chọn, không đoạn gợi ý) — 08cbdcc
+  - [x] Chữ giao diện en + vi; dòng hướng dẫn bảng bi-a ghi cách chọn xoáy; thẻ tóm tắt luật (phím H) thêm 1 dòng — 08cbdcc
+  - [x] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
+    spin = roll = 0 khớp bản cũ từng bit, áp phê trái / phải làm góc bật băng lệch đúng chiều, đè → bi trắng đi tiếp, kéo → lùi,
+    nấc ngoài giới hạn bị máy chủ bỏ, ván trọn có xoáy 2 người giả + người xem khớp từng bit; smoke bi-a 2 trình duyệt + máy chủ
+    local: cú có xoáy phát lại khớp bàn máy chủ, máy chủ giả bản cũ thì không có xoáy; bàn tập: kéo chấm bằng chuột thật + phím
+    — 08cbdcc
 - [x] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: Claude — nhánh
   `feat/pool-rules-8ball` — 6fff4f4 (PR #14, `main` 048fa04); gh-pages 6c15184, máy chủ version e150c939 (11/10/2026)
   - Hiện trạng (`game/src/pool/rules.js`, dùng chung với máy chủ): nhóm trơn 1–7 / sọc 9–15 nhận theo bi vào lỗ đầu tiên;

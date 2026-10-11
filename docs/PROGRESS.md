@@ -1178,7 +1178,7 @@ Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2
 - Xem bằng mắt (3 ảnh, không commit): tin xem trước khi đóng khung bị khung hội thoại đè (cùng ở mép dưới) → ẩn tin xem
   trước khi đang hội thoại / mini-game / app / cảnh chuyển (2033d1f), số tin chưa đọc vẫn đếm.
 
-### Bi-a: đánh xoáy ngang + đè / kéo (11/10/2026, nhánh `feat/pool-spin`)
+### Bi-a: đánh xoáy ngang + đè / kéo (11/10/2026, nhánh `feat/pool-spin` 08cbdcc)
 
 Người dùng chốt: áp phê trái / phải 5 nấc (−2 … +2) và xoáy lên / xuống (đánh đè / đánh kéo) 5 nấc (CHECKLIST P2 "Bi-a: đánh
 xoáy ngang"). **Chưa deploy** (cần bản web + `npx wrangler deploy` máy chủ — web trước, máy chủ sau; `docs/multiplayer.md` →
