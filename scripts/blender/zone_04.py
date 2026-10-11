@@ -47,6 +47,9 @@ def build_ground_floor(col, rng):
     x0, x1, y0, y1 = CORR
     it.floor_tiles(b, x0, y0 - 6, x1, y1, 0.0, ["tile_light", "polished_floor"], cell=1.0, mat="palette",
                    jitter=lambda i, j: int((i + j) % 2 == 0 and (i * j) % 3 == 0))
+    # dải sàn + trần từ x0 tới tường tây (x0 - 0.5): trước đây hở → thấy trời giữa sàn và chân tường
+    it.floor_tiles(b, x0 - 0.6, y0 - 6, x0, y1, 0.0, ["tile_light"], cell=1.0, mat="palette")
+    it.ceiling(b, x0 - 0.6, y0 - 6, x0, y1, CORR_H, "black")
     # trần lộ: mặt đen + ống gió + máng cáp
     it.ceiling(b, x0, y0 - 6, x1, y1, CORR_H, "black")
     b.tube((x0, -0.6, CORR_H - 0.45), (x1, -0.6, CORR_H - 0.45), 0.28, "duct_grey", segments=8)
@@ -71,7 +74,11 @@ def build_ground_floor(col, rng):
         b.ico((x, y0 - 0.35, 1.5), 0.32, "leaf", subdiv=1, scale=(1.2, 1, 0.8))
     for k in range(4):
         b.box((2 + k * 3, y0 - 3.5, 0.37), (1.4, 0.7, 0.74), "desk_black")
-    it.glass_wall(b, (x0, y0 - 6), (x1, y0 - 6), 0, CORR_H)
+    it.glass_wall(b, (x0 - 0.5, y0 - 6), (x1, y0 - 6), 0, CORR_H)  # từ tường tây (trước đây hở 0,5 m ở góc)
+    # ngoài vách kính: sân cỏ + nhà đối diện (chỉ để cảnh; trước đây sau kính không có gì → nhìn chéo xuống thấy trời)
+    gy = y0 - 6
+    b.quad([(x0 - 30, gy - 40, -0.02), (x1 + 30, gy - 40, -0.02), (x1 + 30, gy, -0.02), (x0 - 30, gy, -0.02)], "grass_dark")
+    kit.building_block(b, x0 - 30, gy - 52, x1 + 30, gy - 40, floors=3, facades=("N",), style="glass")
     it.wall(b, (x1, y0 - 6), (x1, y1), 0, CORR_H, color="black")  # đầu hành lang phía đông (cửa mở về Hạt Lúa)
     it.wall(b, (x0 - 0.5, y0 - 6), (x0 - 0.5, y1), 0, CORR_H)
     return b.to_object("ENV_tang_tret", col)
@@ -87,14 +94,16 @@ def build_stair_hall(col, rng):
     it.wall(b, (hx1, hy1), (hx1, hy0), 0, top)
     it.ceiling(b, hx0, hy0, hx1, hy1, top)
     # vế 1: lên theo +Y; chiếu nghỉ; vế 2: lên theo -Y
-    kit.stairs(b, F1[0], F1_Y0, F1[1] - F1[0], STEP_N, STEP_R, STEP_T)
+    # bậc / chiếu nghỉ chạy tới mặt trong tường sảnh (hx0 + 0.1, hx1 - 0.1): trước đây hở 0,4 m giữa mép bậc và tường
+    wx0, wx1 = hx0 + 0.1, hx1 - 0.1
+    kit.stairs(b, wx0, F1_Y0, F1[1] - wx0, STEP_N, STEP_R, STEP_T)
     z_mid = STEP_N * STEP_R
-    b.box_minmax((F1[0], LAND_Y, 0), (F2[1], hy1, z_mid), "stone_black", mat="gloss")
+    b.box_minmax((wx0, LAND_Y, 0), (wx1, hy1, z_mid), "stone_black", mat="gloss")
     for i in range(STEP_N):
         ya = LAND_Y - (i + 1) * STEP_T
-        b.box_minmax((F2[0], ya, z_mid), (F2[1], LAND_Y - i * STEP_T, z_mid + (i + 1) * STEP_R), "stone_black", mat="gloss")
-    b.box_minmax((F2[0], hy0, z_mid), (F2[1], F1_Y0, UP), "stone_black", mat="gloss")  # chiếu tới tầng trên
-    b.box_minmax((F2[0], hy0, 0), (F2[1], F1_Y0, z_mid), "concrete_white")
+        b.box_minmax((F2[0], ya, z_mid), (wx1, LAND_Y - i * STEP_T, z_mid + (i + 1) * STEP_R), "stone_black", mat="gloss")
+    b.box_minmax((F2[0], hy0, z_mid), (wx1, F1_Y0, UP), "stone_black", mat="gloss")  # chiếu tới tầng trên
+    b.box_minmax((F2[0], hy0, 0), (wx1, F1_Y0, z_mid), "concrete_white")
     # lan can song sắt dọc khe giữa 2 vế + mép chiếu nghỉ
     it.bar_railing(b, (F1[1] + 0.05, F1_Y0), (F1[1] + 0.05, LAND_Y), 0.0, z_mid)
     it.bar_railing(b, (F2[0] - 0.05, LAND_Y), (F2[0] - 0.05, F1_Y0), z_mid, UP)
@@ -123,15 +132,15 @@ def build_upper_floor(col, rng):
     for rx0, ry0, rx1, ry1 in ((x0, y0, x1, vy0), (x0, vy1, x1, y1), (x0, vy0, vx0, vy1), (vx1, vy0, x1, vy1)):
         it.ceiling(b, rx0, ry0, rx1, ry1, top)
     for p0, p1 in (((vx0, vy0), (vx1, vy0)), ((vx1, vy0), (vx1, vy1)), ((vx1, vy1), (vx0, vy1)), ((vx0, vy1), (vx0, vy0))):
-        kit.seg_box(b, p0, p1, 0.2, top, top + 2.8, "concrete_white")
-        kit.seg_box(b, p0, p1, 0.25, UP - 0.4, UP + 1.05, "concrete_white")  # lan can đặc trắng quanh lỗ
+        kit.seg_box(b, p0, p1, 0.2, top, top + 2.8, "concrete_white", ext=0.12)
+        kit.seg_box(b, p0, p1, 0.25, UP - 0.4, UP + 1.05, "concrete_white", ext=0.145)  # lan can đặc trắng quanh lỗ
     b.box(((vx0 + vx1) / 2, (vy0 + vy1) / 2, top + 2.9), (vx1 - vx0, vy1 - vy0, 0.06), "lamp_white", mat="light")
     for k in range(6):  # lam thông gió trắng 1 phía giếng trời
         b.box(((vx0 + vx1) / 2, vy1 - 0.15, top + 1.9 + k * 0.14), (vx1 - vx0 - 0.4, 0.04, 0.05), "concrete_white")
     # sàn tầng dưới nhìn qua lỗ thông tầng
     b.quad([(vx0, vy0, 0.0), (vx1, vy0, 0.0), (vx1, vy1, 0.0), (vx0, vy1, 0.0)], "atrium_floor")
     for p0, p1 in (((vx0, vy0), (vx1, vy0)), ((vx1, vy0), (vx1, vy1)), ((vx1, vy1), (vx0, vy1)), ((vx0, vy1), (vx0, vy0))):
-        kit.seg_box(b, p0, p1, 0.15, 0, UP - 0.4, "concrete_white")
+        kit.seg_box(b, p0, p1, 0.15, 0, UP - 0.4, "concrete_white", ext=0.095)
     # tường bao: bắc (cửa lên từ cầu thang ở x F2), đông, nam, tây (cửa FSA)
     it.wall(b, (x0, y1), (x1, y1), UP, top, openings=[(F2[0] - x0, F2[1] - x0, 2.6)])
     it.wall(b, (x1, y1), (x1, y0), UP, top)
@@ -152,6 +161,8 @@ def build_upper_floor(col, rng):
     fy0, fy1 = FSA_Y
     b.quad([(x0 - 6, fy0 - 3, UP), (x0, fy0 - 3, UP), (x0, fy1 + 3, UP), (x0 - 6, fy1 + 3, UP)], "san_go_vp")
     it.wall(b, (x0 - 6, fy0 - 3), (x0 - 6, fy1 + 3), UP, top)
+    it.wall(b, (x0, fy0 - 3), (x0 - 6, fy0 - 3), UP, top)  # 2 tường bên: trước đây nhìn chéo qua cửa thấy trời
+    it.wall(b, (x0 - 6, fy1 + 3), (x0, fy1 + 3), UP, top)
     it.ceiling(b, x0 - 6, fy0 - 3, x0, fy1 + 3, UP + 3.0)
     # khung cửa kính đen ở đầu cầu thang (cánh đã mở hẳn, áp vào tường)
     for xx in (F2[0], F2[1]):
@@ -245,6 +256,13 @@ def build_colliders(col):
     mk.collider_ramp("ve_2", (sum(F2) / 2, LAND_Y, z_mid), (sum(F2) / 2, F1_Y0, UP), F2[1] - F2[0], col)
     C("chieu_tren", (sum(F2) / 2, (hy0 + F1_Y0) / 2, UP / 2), (F2[1] - F2[0], F1_Y0 - hy0, UP), col)
     C("lan_can_giua", ((F1[1] + F2[0]) / 2, (F1_Y0 + LAND_Y) / 2, 3), (F2[0] - F1[1], LAND_Y - F1_Y0, 6), col)
+    # dải 0,4 m giữa bậc / chiếu nghỉ và tường sảnh (bậc đã kéo tới tường): trước đây là khe, bước vào thì rơi xuống sàn
+    wx0, wx1 = hx0 + 0.1, hx1 - 0.1
+    mk.collider_ramp("ve_1_mep_tay", ((wx0 + F1[0]) / 2, F1_Y0, 0), ((wx0 + F1[0]) / 2, LAND_Y, z_mid), F1[0] - wx0, col)
+    C("chieu_nghi_mep_tay", ((wx0 + F1[0]) / 2, (LAND_Y + hy1) / 2, z_mid / 2), (F1[0] - wx0, hy1 - LAND_Y, z_mid), col)
+    C("chieu_nghi_mep_dong", ((F2[1] + wx1) / 2, (LAND_Y + hy1) / 2, z_mid / 2), (wx1 - F2[1], hy1 - LAND_Y, z_mid), col)
+    mk.collider_ramp("ve_2_mep_dong", ((F2[1] + wx1) / 2, LAND_Y, z_mid), ((F2[1] + wx1) / 2, F1_Y0, UP), wx1 - F2[1], col)
+    C("chieu_tren_mep_dong", ((F2[1] + wx1) / 2, (hy0 + F1_Y0) / 2, UP / 2), (wx1 - F2[1], F1_Y0 - hy0, UP), col)
     # lan can mép tây chiếu trên: nối tiếp lan can giữa tới tường bắc hành lang (mặt tường y hy0 + 0.15), cao 2,6–6 m
     # → người đi tầng trệt (cao 1,75 m) vẫn qua cửa quẹt thẻ / chân vế 1 bên dưới
     C("lan_can_chieu_tren", ((F1[1] + F2[0]) / 2, (hy0 + 0.15 + F1_Y0) / 2, 4.3), (F2[0] - F1[1], F1_Y0 - hy0 - 0.15, 3.4), col)

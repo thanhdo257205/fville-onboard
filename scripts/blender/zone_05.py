@@ -91,6 +91,14 @@ def build_shell(col, rng):
     it.wall(b, (ox0, oy0), (ox0, oy1), 0, H)
     it.wall(b, (ox1, oy1), (ox1, by1), 0, H)
     it.wall(b, (ox1, by0), (ox1, oy0), 0, H)
+    # nhìn ra qua cửa FSA: một đoạn sàn tầng trên zone_04 (sàn xanh nhạt, tường, trần) — trước đây sau cửa không có gì,
+    # đứng trong văn phòng nhìn về cửa thấy trời
+    sx1, sy = bx1 + 6.0, 4.6
+    b.quad([(bx1, -sy, 0.0), (sx1, -sy, 0.0), (sx1, sy, 0.0), (bx1, sy, 0.0)], "atrium_floor")
+    it.ceiling(b, bx1, -sy, sx1, sy, 3.2)
+    it.wall(b, (bx1, -sy), (sx1, -sy), 0, 3.2)
+    it.wall(b, (sx1, -sy), (sx1, sy), 0, 3.2)
+    it.wall(b, (sx1, sy), (bx1, sy), 0, 3.2)
     # cửa FSA nhìn từ bên trong (khung, đầu đọc thẻ phía trong)
     it.door_handles(b, bx1 - 0.08, 0.0, along="y")
     it.card_reader(b, bx1 - 0.13, FSA_Y[0] - 0.4, 1.2, face=(-1, 0))
