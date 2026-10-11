@@ -1,5 +1,5 @@
-// npm run test:pool (phần 2, trong game/) — luật 8 bi rút gọn (game/src/pool/rules.js) và bàn bi-a của máy chủ
-// (server/src/pool.js), bằng Node, không cần trình duyệt / máy chủ thật:
+// npm run test:pool (phần 2, trong game/) — luật 8 bi (game/src/pool/rules.js: luật rút gọn cũ + luật chuẩn "sọc trơn") và bàn
+// bi-a của máy chủ (server/src/pool.js, cả 2 bộ luật), bằng Node, không cần trình duyệt / máy chủ thật:
 //   • luật: nhận nhóm, đánh tiếp khi vào bi nhóm mình, bi trắng rơi → đổi lượt + bi trong tay, bi 8 sớm / kèm bi trắng → thua,
 //     bi 8 hợp lệ → thắng, bi 8 lúc phá → đặt lại
 //   • bàn máy chủ: ngồi / tập một mình / người thứ 2 → ván mới (người ngồi trước phá), chặn cú sai lượt / lệch số cú / kết quả
@@ -7,12 +7,21 @@
 //     bản chụp qua lúc ngủ (hibernation)
 //   • một ván trọn giữa 2 người chơi giả (chọn cú: game/src/pool/auto.js) + 1 người xem: người xem phát lại từng cú bằng
 //     physics.js từ bàn của mình → khớp từng bit với kết quả người đánh; chạy lại cả ván → giống hệt
+//   • luật chuẩn: cú phá hợp lệ / không hợp lệ (+ 2 lựa chọn), bàn mở sau phá, từng loại lỗi, bi trong tay cả bàn / khu đầu
+//     bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi / văng, hết giờ = lỗi; sự kiện cú từ vật lý thật (shotFacts)
+//   • bàn máy chủ luật chuẩn: chặn máy khách cũ, máy chủ KHÔNG chạy vật lý — dùng kết quả + sự kiện cú máy khách gửi (wireFacts),
+//     chặn sự kiện cú không hợp lý, kiểm tra chỗ đặt bi trong tay / lỗ đã gọi, lựa chọn sau cú phá không hợp lệ, hết giờ 3 lần →
+//     mất ghế, bản chụp; một ván trọn 2 người giả + người xem; CPU mỗi cú của máy chủ, cỡ tin pool_shot lớn nhất
+//   • xoáy (spin / roll): máy chủ chặn nấc ngoài −2 … +2 / không phải số nguyên, chặn cú có xoáy khi có người ngồi bằng máy
+//     khách chưa hiểu xoáy (bàn báo spin: false), chuyển tiếp spin / roll cho người xem phát lại (khớp từng bit), giữ qua bản
+//     chụp; một ván trọn có xoáy giữa 2 người giả + người xem
 // In 1 dòng ✓/✗ cho mỗi mục; lỗi → thoát mã 1.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeTable, rackState, customState, simulateShot, cloneState } from "../../game/src/pool/physics.js";
-import { applyShot, newMatch, packBalls, unpackBalls, placeCue, canPlaceCue, roundState, targets, SOLID, STRIPE, kitchen } from "../../game/src/pool/rules.js";
+import { applyShot, newMatch, packBalls, unpackBalls, placeCue, canPlaceCue, roundState, targets, SOLID, STRIPE, kitchen,
+  applyShotV2, shotFacts, newMatchV2, canPlaceCueIn, onEight, wireFacts, factsFromWire } from "../../game/src/pool/rules.js";
 import { pickShot } from "../../game/src/pool/auto.js";
 import { PoolRoom } from "../../server/src/pool.js";
 
@@ -68,7 +77,7 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     && !canPlaceCue(table, s0, 0, k.z0 - 0.01) && !canPlaceCue(table, s0, NaN, k.z1)]);
   out.push(["mục tiêu: nhóm mình, hết nhóm → bi 8", same(targets(end, m1, 0), [8]) && targets(end, m1, 1).join() === "9"]);
   const bad = out.filter(([, ok]) => !ok).map(([n]) => n);
-  report(!bad.length, `luật 8 bi rút gọn — ${out.length} tình huống`, bad.join("; "));
+  report(!bad.length, `luật 8 bi rút gọn (cũ) — ${out.length} tình huống`, bad.join("; "));
 }
 
 // ---------- 2. bàn của máy chủ ----------
@@ -82,7 +91,7 @@ function makeShot(room, view, angle, power, cue = null) {
 {
   const out = [];
   let now = 1000;
-  const room = new PoolRoom(cfg, { turnMs: 60000 });
+  const room = new PoolRoom(cfg, { turnMs: 60000, rules: 1 });
   let r = room.join("aa", "An", now);
   out.push(["ngồi một mình → tập (solo)", r.changed && room.m.mode === "solo" && room.view(now).seats[0]?.name === "An"]);
   // tập một mình: cú đánh hợp lệ được nhận
@@ -109,11 +118,11 @@ function makeShot(room, view, angle, power, cue = null) {
     && same(room.view(now).b.filter((v, i) => !s.res.cueScratch || i > 1), packBalls(s.res.finalState).filter((v, i) => !s.res.cueScratch || i > 1))]);
   // bản chụp → dựng lại (DO ngủ dậy): giống hệt; người đã đi → mất ghế, đối thủ thắng
   const snap = JSON.parse(JSON.stringify(room.snapshot()));
-  const back = new PoolRoom(cfg);
+  const back = new PoolRoom(cfg, { rules: 1 });
   const ch1 = back.restore(snap, new Set(["aa", "bb"]), now);
   const v1 = room.view(now), v2 = back.view(now);
   out.push(["bản chụp qua lúc ngủ: dựng lại giống hệt", !ch1 && same({ ...v1, left: 0 }, { ...v2, left: 0 })]);
-  const back2 = new PoolRoom(cfg);
+  const back2 = new PoolRoom(cfg, { rules: 1 });
   const ch2 = back2.restore(snap, new Set(["aa"]), now);
   out.push(["bản chụp: người ngồi đã mất kết nối lúc ngủ → giải phóng ghế, đối thủ thắng", ch2 && back2.seats[1] === null && back2.m.mode === "solo" && back2.ev.k === "forfeit" && back2.ev.seat === 0]);
   // quá giờ lượt → mất ghế
@@ -121,7 +130,7 @@ function makeShot(room, view, angle, power, cue = null) {
   out.push(["chưa hết giờ → giữ ghế", !room.tick(room.turnAt + 59000)]);
   out.push(["quá giờ lượt → mất ghế, đối thủ thắng", room.tick(room.turnAt + 61000) && room.seatOf(who) < 0 && room.ev.k === "forfeit" && room.ev.why === "timeout" && room.m.mode === "solo"]);
   // ván mới khi hết ván: người thua phá
-  const room2 = new PoolRoom(cfg);
+  const room2 = new PoolRoom(cfg, { rules: 1 });
   room2.join("aa", "An", now); room2.join("bb", "Bình", now);
   room2.m = { ...room2.m, mode: "over", winner: 0, reason: "eight" };
   out.push(["hết ván, R → ván mới, người thua phá", room2.rerack("bb", now) && room2.m.mode === "match" && room2.m.turn === 1]);
@@ -129,14 +138,14 @@ function makeShot(room, view, angle, power, cue = null) {
   out.push(["rời bàn giữa ván → đối thủ thắng, còn 1 người tập", room2.leave("bb", now) && room2.ev.k === "forfeit" && room2.ev.seat === 0 && room2.m.mode === "solo" && room2.seated === 1]);
   out.push(["người cuối rời bàn → bàn trống", room2.leave("aa", now) && room2.m.mode === "idle" && room2.seated === 0]);
   const bad = out.filter(([, ok]) => !ok).map(([n]) => n);
-  report(!bad.length, `bàn bi-a của máy chủ — ${out.length} tình huống`, bad.join("; "));
+  report(!bad.length, `bàn bi-a của máy chủ (luật cũ — máy chủ bản cũ) — ${out.length} tình huống`, bad.join("; "));
 }
 
 // ---------- 3. một ván trọn: 2 người chơi giả + 1 người xem ----------
 // scratchOnce: ghế 1 cố ý đánh bi trắng thẳng vào lỗ góc đầu bàn ở lượt đầu → ghế 0 có bi trong tay, đặt bi trắng ở chỗ
 // khác chỗ máy chủ đặt sẵn
 function playMatch({ scratchOnce = false } = {}) {
-  const room = new PoolRoom(cfg);
+  const room = new PoolRoom(cfg, { rules: 1 });
   let now = 0;
   room.join("p0", "An", now);
   room.join("p1", "Bình", now);
@@ -184,6 +193,328 @@ function playMatch({ scratchOnce = false } = {}) {
   report(c.room.m.mode === "over" && c.scratches >= 1 && c.inHand >= 1 && c.mismatch === 0 && c.rejected === 0,
     `ván có bi trắng rơi: đối thủ đặt bi trắng ở khu đầu bàn, máy chủ nhận, người xem khớp — ${c.log.length} cú, ${c.room.m.winner === 0 ? "An" : "Bình"} thắng (${c.room.m.reason})`,
     `bi trắng rơi ${c.scratches}, bi trong tay ${c.inHand}, lệch ${c.mismatch}, bị chặn ${c.rejected}`);
+}
+
+// ---------- 4. luật chuẩn "sọc trơn" (applyShotV2) — dữ kiện cú dựng tay ----------
+{
+  const st = (place) => customState(table, place);
+  const all = Object.fromEntries(table.rack.map((b) => [b.n, [b.x, b.z]]));
+  const F = ({ first = null, rail = true, railBalls = 0, pocketed = [], pockets = {}, off = [] } = {}) =>
+    ({ first, rail, railBalls, pocketed, pockets, scratch: pocketed.includes(0), off });
+  const go = (m, before, f, call = null) => {
+    const after = cloneState(before);
+    for (const n of f.pocketed) after.balls[n].on = false;
+    return applyShotV2(table, m, before, after, f, call);
+  };
+  const out = [];
+  const brk = newMatchV2(0), rack = st(all);
+  let r = go(brk, rack, F({ first: 1, pocketed: [3], railBalls: 2 }));
+  out.push(["phá: vào bi → hợp lệ, người phá đánh tiếp, bàn vẫn mở", r.ev.brk === "legal" && r.ev.keep && r.m.turn === 0 && r.m.groups[0] === null && !r.m.brk && !r.ev.foul]);
+  r = go(brk, rack, F({ first: 1, railBalls: 4 }));
+  out.push(["phá: 4 bi chạm băng, không vào bi → hợp lệ, đổi lượt, không lỗi", r.ev.brk === "legal" && r.m.turn === 1 && !r.ev.foul && !r.m.choice && !r.m.inHand]);
+  r = go(brk, rack, F({ first: 1, railBalls: 3 }));
+  out.push(["phá không hợp lệ (3 bi chạm băng, không vào bi) → đối thủ chọn (choice break)", r.ev.brk === "illegal" && r.m.turn === 1 && r.m.choice === "break" && !r.ev.foul]);
+  r = go(brk, rack, F({ first: 1, railBalls: 6, pocketed: [0] }));
+  out.push(["phá: bi trắng rơi → lỗi, đối thủ đặt bi trắng khu đầu bàn", r.ev.foul?.why === "scratch" && r.m.turn === 1 && r.m.inHand === "kitchen" && r.state.balls[0].on]);
+  r = go(brk, rack, F({ first: 1, pocketed: [8] }));
+  out.push(["phá: bi 8 vào → đặt lại điểm chân, người phá đánh tiếp", r.ev.respot8 && r.state.balls[8].on && r.m.turn === 0 && r.m.mode === "match" && !r.ev.foul]);
+  r = go(brk, rack, F({ first: 1, pocketed: [8, 0] }));
+  out.push(["phá: bi 8 + bi trắng cùng rơi → đặt lại bi 8, đối thủ có bi trong tay khu đầu bàn", r.ev.respot8 && r.state.balls[8].on && r.m.turn === 1 && r.m.inHand === "kitchen"]);
+  const open = { ...newMatchV2(0), brk: false };
+  r = go(open, rack, F({ first: 11, pocketed: [11] }));
+  out.push(["bàn mở sau phá: cú vào bi hợp lệ đầu tiên → nhận nhóm (sọc), đánh tiếp", r.ev.assigned === STRIPE && r.m.groups[0] === STRIPE && r.m.groups[1] === SOLID && r.ev.keep]);
+  r = go(open, rack, F({ first: 8, pocketed: [3] }));
+  out.push(["bàn mở: chạm bi 8 trước → lỗi (bi trong tay cả bàn), chưa chia nhóm", r.ev.foul?.why === "wrong_first" && r.ev.foul.n === 8 && r.m.inHand === "table" && r.m.groups[0] === null && r.m.turn === 1]);
+  const m1 = { ...newMatchV2(0), brk: false, groups: [SOLID, STRIPE] };
+  r = go(m1, rack, F({ first: 2 }));
+  out.push(["chạm bi nhóm mình, có bi chạm băng, không vào bi → đổi lượt, không lỗi", r.m.turn === 1 && !r.ev.foul && !r.m.inHand]);
+  r = go(m1, rack, F({ first: 12 }));
+  out.push(["chạm bi nhóm khác trước (bi 12) → lỗi \"chạm bi 12 trước\"", r.ev.foul?.why === "wrong_first" && r.ev.foul.n === 12 && r.m.inHand === "table" && r.m.turn === 1]);
+  r = go(m1, rack, F({ first: null, rail: false }));
+  out.push(["không chạm bi nào → lỗi", r.ev.foul?.why === "no_hit" && r.m.inHand === "table"]);
+  r = go(m1, rack, F({ first: 2, rail: false }));
+  out.push(["chạm rồi không bi nào vào lỗ, không bi nào chạm băng → lỗi", r.ev.foul?.why === "no_rail" && r.m.inHand === "table"]);
+  r = go(m1, rack, F({ first: 2, rail: false, pocketed: [2] }));
+  out.push(["chạm rồi vào bi (không chạm băng) → hợp lệ, đánh tiếp", !r.ev.foul && r.ev.keep && r.m.turn === 0]);
+  r = go(m1, rack, F({ first: 2, pocketed: [2, 0] }));
+  out.push(["bi trắng rơi (kèm bi nhóm mình) → lỗi, bi đã vào giữ nguyên, bi trắng về bàn", r.ev.foul?.why === "scratch" && !r.ev.keep && r.m.turn === 1 && r.m.inHand === "table" && !r.state.balls[2].on && r.state.balls[0].on]);
+  r = go(m1, rack, F({ first: 2, off: [0] }));
+  out.push(["bi trắng văng khỏi bàn → lỗi", r.ev.foul?.why === "off" && r.m.inHand === "table"]);
+  // bi trong tay
+  const mid = st({ 0: [0, -0.6], 1: [0.2, 0.3], 9: [-0.2, 0.3] }), kk = kitchen(table);
+  out.push(["bi trong tay cả bàn: đặt giữa bàn được, khu đầu bàn thì không", canPlaceCueIn(table, mid, 0, 0, "table") && !canPlaceCueIn(table, mid, 0, 0, "kitchen")
+    && canPlaceCueIn(table, mid, 0, (kk.z0 + kk.z1) / 2, "kitchen")]);
+  out.push(["bi trong tay: không chồng bi, không ra ngoài mũi băng, NaN không được", !canPlaceCueIn(table, mid, 0.2, 0.3, "table") && !canPlaceCueIn(table, mid, 0, table.rz, "table")
+    && !canPlaceCueIn(table, mid, NaN, 0, "table")]);
+  // bi 8 (nhóm trơn đã hết)
+  const end = st({ 0: [0, -0.6], 8: [0, 0.5], 9: [-0.2, 0.3] });
+  out.push(["đang đánh bi 8 khi nhóm mình hết (onEight)", onEight(end, m1, 0) && !onEight(end, m1, 1) && !onEight(rack, m1, 0)]);
+  const p8 = (call, extra = {}) => go(m1, end, F({ first: 8, pocketed: [8], pockets: { 8: "foot_left" }, ...extra }), call);
+  r = p8("foot_left");
+  out.push(["bi 8 vào đúng lỗ đã gọi → thắng", r.m.mode === "over" && r.m.winner === 0 && r.m.reason === "eight"]);
+  r = p8("foot_right");
+  out.push(["bi 8 vào khác lỗ đã gọi → thua", r.m.mode === "over" && r.m.winner === 1 && r.m.reason === "eight_pocket"]);
+  r = p8(null);
+  out.push(["bi 8 vào mà không gọi lỗ → thua", r.m.winner === 1 && r.m.reason === "eight_pocket"]);
+  r = p8("foot_left", { pocketed: [8, 0], pockets: { 8: "foot_left", 0: "side_left" } });
+  out.push(["bi 8 vào kèm bi trắng rơi → thua", r.m.winner === 1 && r.m.reason === "eight_scratch"]);
+  r = p8("foot_left", { first: 9 });
+  out.push(["bi 8 vào kèm lỗi (chạm bi khác trước) → thua", r.m.winner === 1 && r.m.reason === "eight_foul"]);
+  r = go(m1, st({ 0: [0, -0.6], 1: [0.2, 0.2], 8: [0, 0.5], 9: [-0.2, 0.3] }), F({ first: 1, pocketed: [8], pockets: { 8: "foot_left" } }), "foot_left");
+  out.push(["bi 8 vào sớm (nhóm mình còn bi) → thua", r.m.winner === 1 && r.m.reason === "eight_early"]);
+  r = go(open, rack, F({ first: 3, pocketed: [8], pockets: { 8: "foot_left" } }));
+  out.push(["bàn mở mà bi 8 vào → thua", r.m.winner === 1 && r.m.reason === "eight_early"]);
+  r = go(m1, end, F({ first: 8, off: [8] }), "foot_left");
+  out.push(["bi 8 văng khỏi bàn → thua", r.m.winner === 1 && r.m.reason === "eight_off"]);
+  r = go(m1, end, F({ first: 9 }), "foot_left");
+  out.push(["đang đánh bi 8 mà chạm bi khác trước → lỗi", r.ev.foul?.why === "wrong_first" && r.ev.foul.n === 9 && r.m.mode === "match"]);
+  const bad = out.filter(([, ok]) => !ok).map(([n]) => n);
+  report(!bad.length, `luật chuẩn 8 bi "sọc trơn" — ${out.length} tình huống`, bad.join("; "));
+}
+
+// ---------- 5. sự kiện cú từ vật lý thật (shotFacts) ----------
+{
+  const out = [];
+  const brk = simulateShot(table, rackState(table), { angle: Math.PI / 2, power: 0.9 }, { frames: false });
+  const f = shotFacts(brk);
+  out.push(["cú phá thật: bi chạm đầu tiên, số bi chạm băng, bi vào lỗ khớp vật lý", f.first === brk.firstContact && f.first > 0 && f.railBalls >= 4 && same(f.pocketed, brk.pocketed)
+    && f.pocketed.every((n) => typeof f.pockets[n] === "string")]);
+  // bi trắng đánh ngược ra băng đầu bàn, không chạm bi nào: chạm băng trước khi chạm bi không tính
+  const away = simulateShot(table, customState(table, { 0: [0, -0.6], 5: [0, 0.6] }), { angle: -Math.PI / 2, power: 0.15 }, { frames: false });
+  const fa = shotFacts(away);
+  out.push(["bi trắng chỉ chạm băng, không chạm bi → first null, không tính chạm băng sau khi chạm", fa.first === null && !fa.rail && fa.railBalls === 0]);
+  // bi trắng đánh thẳng bi 5 về băng chân bàn: bi 5 chạm băng sau lần chạm
+  const hit = simulateShot(table, customState(table, { 0: [0, -0.2], 5: [0, 0.2] }), { angle: Math.PI / 2, power: 0.7 }, { frames: false });
+  const fh = shotFacts(hit);
+  out.push(["bi trắng đánh bi 5 về băng → first 5, có bi chạm băng sau lần chạm", fh.first === 5 && fh.rail && fh.railBalls >= 1]);
+  out.push(["vật lý không đổi: cú cũ chạy lại giống từng bit", same(packBalls(simulateShot(table, rackState(table), { angle: Math.PI / 2, power: 0.9 }, { frames: false }).finalState), packBalls(brk.finalState))]);
+  const bad = out.filter(([, ok]) => !ok).map(([n]) => n);
+  report(!bad.length, `sự kiện cú từ vật lý (shotFacts) — ${out.length} tình huống`, bad.join("; "));
+}
+
+// ---------- 6. bàn máy chủ luật chuẩn ----------
+// máy khách luật chuẩn (như game/src/pool/table.js): tự tính cú, gửi thông số + kết quả + sự kiện cú (wireFacts)
+function makeShotV2(view, angle, power, cue = null, call = null, spin = 0, roll = 0) {
+  let start = unpackBalls(table, view.b);
+  if (cue) start = placeCue(start, cue[0], cue[1]);
+  const res = simulateShot(table, start, { angle, power, spin, roll }, { frames: false });
+  return { msg: { t: "pool_shot", seq: view.seq, a: angle, p: power, ...(spin || roll ? { spin, roll } : {}), cue, call, b: packBalls(res.finalState),
+    k: res.pocketed, s: res.cueScratch, d: +res.time.toFixed(2), ...wireFacts(res) }, res };
+}
+// lỗ bi 8 sẽ vào với cú này (vật lý tất định) — không vào thì lỗ gần bi 8 nhất
+function callFor(state, angle, power) {
+  const res = simulateShot(table, state, { angle, power }, { frames: false }), f = shotFacts(res);
+  if (f.pockets[8]) return f.pockets[8];
+  const b = state.balls[8];
+  return table.pockets.reduce((best, p) => (!best || (p.x - b.x) ** 2 + (p.z - b.z) ** 2 < (best.x - b.x) ** 2 + (best.z - b.z) ** 2 ? p : best), null).id;
+}
+{
+  const out = [];
+  let now = 1000;
+  const room = new PoolRoom(cfg, { turnMs: 60000 });
+  out.push(["bàn mặc định là luật chuẩn (rules 2)", room.rules === 2 && room.view(now).rules === 2]);
+  let r = room.join("old", "Cũ", now);
+  out.push(["máy khách cũ (pool_join không kèm r) → không được ngồi (err version)", !r.changed && !r.seated && r.err === "version" && room.seated === 0]);
+  r = room.join("old2", "Luật chuẩn bản đầu", now, 2);
+  out.push(["máy khách luật chuẩn bản đầu (r: 2, chưa gửi sự kiện cú) → không được ngồi (err version)", !r.changed && !r.seated && r.err === "version" && room.seated === 0]);
+  room.join("aa", "An", now, 2, true);
+  r = room.join("bb", "Bình", now, 2, true);
+  const v0 = room.view(now);
+  out.push(["2 máy khách mới ngồi → ván luật chuẩn, người ngồi trước phá", r.changed && v0.mode === "match" && v0.turn === 0 && v0.brk && v0.choice === null && v0.inHand === false]);
+  // phá rất nhẹ → không vào bi, < 4 bi chạm băng → không hợp lệ → Bình chọn
+  let s = makeShotV2(v0, Math.PI / 2, 0.02);
+  // sự kiện cú / kết quả không hợp lý → chặn (err bad), bàn không đổi
+  const objOn = unpackBalls(table, v0.b).balls.filter((b) => b.on && b.n !== 0).length;
+  const lies = [
+    ["thiếu sự kiện cú", { f: undefined, r: undefined, rb: undefined, kp: undefined }],
+    ["bi chạm trước không có trên bàn", { f: 99 }],
+    ["bi chạm trước là bi trắng", { f: 0 }],
+    ["r không phải true / false", { r: 1 }],
+    ["số bi chạm băng âm / quá số bi trên bàn", { rb: -1 }], ["", { rb: objOn + 1 }],
+    ["không chạm bi nào mà có bi chạm băng", { f: null, rb: 2 }],
+    ["kp lệch số bi vào lỗ", { kp: ["head_left"] }],
+    ["bi vào lỗ không khớp vị trí bi gửi", { k: [3] }],
+  ];
+  const lied = lies.filter(([, patch]) => room.shot("aa", { ...s.msg, ...patch }, now).err !== "bad").map(([n, p]) => n || JSON.stringify(p));
+  out.push([`sự kiện cú / kết quả không hợp lý → chặn (err bad), bàn không đổi${lied.length ? ` (lọt: ${lied.join(", ")})` : ""}`, !lied.length && room.seq === v0.seq && same(room.view(now).b, v0.b)]);
+  r = room.shot("aa", s.msg, now);
+  const v1 = room.view(now);
+  out.push(["máy chủ dùng kết quả máy khách (không chạy vật lý): bàn = vị trí bi máy khách gửi", r.ok && same(v1.b, packBalls(roundState(cloneState(s.res.finalState)))) && same(r.shot.b, s.msg.b)]);
+  out.push(["phá không hợp lệ → Bình chọn (choice break), cú đánh bị chặn tới khi chọn", v1.choice === "break" && v1.turn === 1 && v1.ev.brk === "illegal"
+    && room.shot("bb", makeShotV2(v1, Math.PI / 2, 0.5).msg, now).err === "choice" && room.choose("aa", "play", now).err === "choice"]);
+  r = room.choose("bb", "rerack", now);
+  const v2 = room.view(now);
+  out.push(["chọn \"xếp lại và tự phá\" → xếp lại bi, Bình phá", r.ok && v2.mode === "match" && v2.brk && v2.turn === 1 && same(v2.b, packBalls(roundState(rackState(table)))) && v2.ev.k === "choice"]);
+  // lựa chọn "đánh tiếp": dựng lại tình huống
+  room.m = { ...room.m, brk: false, choice: "break", turn: 0 };
+  r = room.choose("aa", "play", now);
+  out.push(["chọn \"đánh tiếp từ đây\" → hết lựa chọn, đánh được", r.ok && room.m.choice === null && room.m.turn === 0 && !room.m.brk]);
+  // bi trong tay: cả bàn / khu đầu bàn
+  room.m = { ...room.m, inHand: "table" };
+  const vh = room.view(now), sth = unpackBalls(table, vh.b);
+  const free = [[0, 0], [0.3, 0.1], [-0.3, -0.2], [0.1, 0.5]].find(([x, z]) => canPlaceCueIn(table, sth, x, z, "table"));
+  const busy = sth.balls.find((b) => b.n !== 0 && b.on);
+  out.push(["bi trong tay cả bàn: đặt chồng bi khác → chặn", room.shot("aa", makeShotV2(vh, Math.PI / 2, 0.3, [busy.x, busy.z]).msg, now).err === "cue"]);
+  room.m = { ...room.m, inHand: "kitchen" };
+  out.push(["bi trong tay khu đầu bàn: đặt giữa bàn → chặn", room.shot("aa", makeShotV2(room.view(now), Math.PI / 2, 0.3, free).msg, now).err === "cue"]);
+  room.m = { ...room.m, inHand: "table" };
+  r = room.shot("aa", makeShotV2(room.view(now), Math.PI / 2, 0.3, free).msg, now);
+  out.push(["bi trong tay cả bàn: đặt giữa bàn → được, máy chủ đánh từ chỗ đặt", r.ok && same(r.shot.cue, free.map((v) => Math.round(v * 1e5) / 1e5))]);
+  // gọi lỗ bi 8: nhóm của người tới lượt đã hết
+  const room3 = new PoolRoom(cfg);
+  room3.join("aa", "An", now, 2, true); room3.join("bb", "Bình", now, 2, true);
+  room3.m = { ...room3.m, brk: false, groups: [SOLID, STRIPE], turn: 0 };
+  room3.state = roundState(customState(table, { 0: [0, -0.4], 8: [0, 0.3], 9: [-0.3, 0.3] }));
+  const v3 = room3.view(now), st3 = unpackBalls(table, v3.b);
+  const aim8 = Math.atan2(0.3 + 0.4, 0);
+  out.push(["đánh bi 8 mà không gọi lỗ / gọi lỗ không có → chặn (err call)", room3.shot("aa", makeShotV2(v3, aim8, 0.6).msg, now).err === "call"
+    && room3.shot("aa", makeShotV2(v3, aim8, 0.6, null, "nowhere").msg, now).err === "call"]);
+  const call = callFor(st3, aim8, 0.6);
+  r = room3.shot("aa", makeShotV2(v3, aim8, 0.6, null, call).msg, now);
+  out.push([`gọi lỗ (${call}) rồi đánh → máy chủ nhận, áp luật bi 8`, r.ok && r.shot.call === call && (room3.m.mode === "over" || room3.m.mode === "match")]);
+  // hết giờ = lỗi; 3 lần liên tiếp → mất ghế
+  const room4 = new PoolRoom(cfg, { turnMs: 60000 });
+  room4.join("aa", "An", now, 2, true); room4.join("bb", "Bình", now, 2, true);
+  room4.m = { ...room4.m, brk: false };
+  let t = room4.turnAt;
+  out.push(["chưa hết giờ → không gì", !room4.tick(t + 59000)]);
+  const to1 = room4.tick(t + 61000);
+  out.push(["hết giờ → lỗi: đổi lượt, đối thủ có bi trong tay cả bàn", to1 && room4.m.turn === 1 && room4.m.inHand === "table" && room4.ev.k === "foul" && room4.ev.why === "timeout" && room4.ev.seat === 0]);
+  t = room4.turnAt; room4.tick(t + 61000);           // Bình hết giờ 1
+  t = room4.turnAt; room4.tick(t + 61000);           // An hết giờ 2
+  t = room4.turnAt; room4.tick(t + 61000);           // Bình hết giờ 2
+  t = room4.turnAt;
+  const gone = room4.tick(t + 61000);                // An hết giờ lần 3 liên tiếp → mất ghế
+  out.push(["hết giờ 3 lần liên tiếp → mất ghế, đối thủ thắng", gone && room4.seatOf("aa") < 0 && room4.ev.k === "forfeit" && room4.ev.why === "timeout"]);
+  // bản chụp qua lúc ngủ: giữ luật chuẩn; bản chụp ván luật cũ → bỏ ván đó, xếp lại
+  const snap = JSON.parse(JSON.stringify(room.snapshot())), back = new PoolRoom(cfg);
+  out.push(["bản chụp luật chuẩn: dựng lại giống hệt", !back.restore(snap, new Set(["aa", "bb"]), now) && same({ ...room.view(now), left: 0 }, { ...back.view(now), left: 0 })]);
+  const old = new PoolRoom(cfg, { rules: 1 });
+  old.join("aa", "An", now); old.join("bb", "Bình", now);
+  const fresh = new PoolRoom(cfg), ch = fresh.restore(JSON.parse(JSON.stringify(old.snapshot())), new Set(["aa", "bb"]), now);
+  out.push(["bản chụp ván luật cũ vào máy chủ luật chuẩn → ván mới luật chuẩn", ch && fresh.m.mode === "match" && fresh.m.rules === 2 && fresh.view(now).ev.k === "start"]);
+  const bad = out.filter(([, ok]) => !ok).map(([n]) => n);
+  report(!bad.length, `bàn bi-a của máy chủ (luật chuẩn) — ${out.length} tình huống`, bad.join("; "));
+}
+
+// ---------- 6b. xoáy trên bàn máy chủ ----------
+{
+  const out = [], now = 1000;
+  const room = new PoolRoom(cfg);
+  room.join("aa", "An", now, 2, true, true);
+  out.push(["1 người ngồi bằng máy khách hiểu xoáy (sp) → bàn báo spin: true (tập một mình)", room.view(now).spin === true && room.view(now).mode === "solo"]);
+  room.join("bb", "Bình", now, 2, true, true);
+  room.m = { ...room.m, brk: false };
+  const v = room.view(now);
+  const base = makeShotV2(v, Math.PI / 2, 0.4);
+  const badLv = [3, -3, 1.5, "1", true, NaN].filter((x) => room.shot("aa", { ...base.msg, spin: x }, now).err !== "bad" || room.shot("aa", { ...base.msg, roll: x }, now).err !== "bad");
+  out.push([`nấc xoáy ngoài −2 … +2 / không phải số nguyên → chặn (err bad), bàn không đổi${badLv.length ? ` (lọt: ${badLv.join(", ")})` : ""}`, !badLv.length && room.seq === v.seq && same(room.view(now).b, v.b)]);
+  const watcher = unpackBalls(table, v.b);
+  const sp = makeShotV2(v, Math.PI / 2 - 0.05, 0.6, null, null, 2, -1);
+  let r = room.shot("aa", sp.msg, now);
+  const replay = simulateShot(table, watcher, { angle: r.shot?.a, power: r.shot?.p, spin: r.shot?.spin, roll: r.shot?.roll }, { frames: false });
+  const plain = simulateShot(table, watcher, { angle: r.shot?.a, power: r.shot?.p }, { frames: false });
+  out.push(["cú có xoáy (spin 2, roll −1) → nhận, chuyển tiếp spin / roll; người xem phát lại khớp từng bit (bỏ xoáy thì lệch)",
+    r.ok && r.shot.spin === 2 && r.shot.roll === -1 && same(packBalls(replay.finalState), r.shot.b) && !same(packBalls(plain.finalState), r.shot.b)]);
+  const v2 = room.view(now), id2 = v2.seats[v2.turn].id;
+  r = room.shot(id2, makeShotV2(v2, Math.PI / 2, 0.3).msg, now);
+  out.push(["cú không xoáy (không gửi spin / roll) → nhận, chuyển tiếp spin = roll = 0", r.ok && r.shot.spin === 0 && r.shot.roll === 0]);
+  const back = new PoolRoom(cfg);
+  back.restore(JSON.parse(JSON.stringify(room.snapshot())), new Set(["aa", "bb"]), now);
+  out.push(["bản chụp qua lúc ngủ giữ ghế hiểu xoáy → bàn vẫn spin: true", back.view(now).spin === true && back.seats.every((x) => x.sp)]);
+  // một người ngồi bằng máy khách chưa hiểu xoáy (bản web đang chạy trước khi có xoáy) → bàn tắt xoáy
+  const mix = new PoolRoom(cfg);
+  mix.join("aa", "An", now, 2, true, true);
+  mix.join("old", "Cũ", now, 2, true);
+  mix.m = { ...mix.m, brk: false };
+  const vm = mix.view(now), idm = vm.seats[vm.turn].id;
+  out.push(["có người ngồi bằng máy khách chưa hiểu xoáy → bàn spin: false, cú có xoáy bị chặn (err spin), cú đánh tâm vẫn được",
+    vm.spin === false && mix.shot(idm, makeShotV2(vm, Math.PI / 2, 0.4, null, null, 1, 0).msg, now).err === "spin" && mix.shot(idm, makeShotV2(vm, Math.PI / 2, 0.4).msg, now).ok]);
+  mix.leave("old", now);
+  out.push(["người dùng máy khách cũ rời ghế → bàn bật lại xoáy", mix.view(now).spin === true]);
+  const old = new PoolRoom(cfg, { rules: 1 });
+  old.join("aa", "An", now, null, false, true);
+  out.push(["máy chủ luật cũ (POOL_RULES = 1) → bàn không báo xoáy", old.view(now).spin === false]);
+  const bad = out.filter(([, ok]) => !ok).map(([n]) => n);
+  report(!bad.length, `xoáy trên bàn máy chủ — ${out.length} tình huống`, bad.join("; "));
+}
+
+// ---------- 7. một ván trọn luật chuẩn: 2 người chơi giả + 1 người xem ----------
+// cú phá đầu tiên cố ý rất nhẹ (không hợp lệ) → Bình chọn xếp lại và tự phá; đang đánh bi 8 thì gọi lỗ bi 8 sẽ vào; bi trong
+// tay: giữ chỗ bi trắng đang nằm (cả bàn) — người xem phát lại từng cú phải khớp từng bit với kết quả người đánh gửi (máy chủ
+// dùng kết quả đó); đo thời gian máy chủ xử lý mỗi cú (room.shot)
+// spin: mỗi cú (trừ cú phá đầu) chọn nấc xoáy theo số thứ tự cú (tất định) — người xem phát lại theo spin / roll máy chủ chuyển
+function playMatchV2({ spin = false } = {}) {
+  const room = new PoolRoom(cfg);
+  let now = 0, serverMs = 0, serverMax = 0, maxLen = 0, spun = 0;
+  room.join("p0", "An", now, 2, true, spin);
+  room.join("p1", "Bình", now, 2, true, spin);
+  let watcher = unpackBalls(table, room.view(now).b);
+  const log = [];
+  let mismatch = 0, rejected = 0, fouls = 0, inHand = 0, calls = 0, choices = 0;
+  for (let i = 0; i < 300 && room.m.mode === "match"; i++) {
+    const view = room.view(now), seat = view.turn, id = view.seats[seat].id;
+    if (view.choice) {
+      choices++;
+      const c = choices === 1 ? "rerack" : "play";
+      if (!room.choose(id, c, now).ok) { rejected++; break; }
+      log.push([seat, "choice", c]);
+      watcher = unpackBalls(table, room.view(now).b);
+      continue;
+    }
+    const state = unpackBalls(table, view.b);
+    let cue = null;
+    if (view.inHand) { inHand++; cue = [state.balls[0].x, state.balls[0].z]; placeCue(state, cue[0], cue[1]); }
+    let pick = i === 0 ? { angle: Math.PI / 2, power: 0.02, how: "soft_break" } : pickShot(table, state, targets(state, view, seat));
+    const call = onEight(state, view, seat) ? callFor(state, pick.angle, pick.power) : null;
+    if (call) calls++;
+    const sl = spin && i > 0 ? (i * 7) % 5 - 2 : 0, rl = spin && i > 0 ? (i * 3) % 5 - 2 : 0;
+    if (sl || rl) spun++;
+    const s = makeShotV2(view, pick.angle, pick.power, cue, call, sl, rl);
+    maxLen = Math.max(maxLen, JSON.stringify(s.msg).length);
+    const raw = JSON.stringify(s.msg), t1 = performance.now();
+    const r = room.shot(id, JSON.parse(raw), now);                  // như máy chủ: nhận chuỗi JSON, xử lý
+    const dt = performance.now() - t1;
+    serverMs += dt; serverMax = Math.max(serverMax, dt);
+    if (!r.ok) { rejected++; log.push([seat, "rejected", r.err]); break; }
+    if (!same(r.shot.b, s.msg.b)) mismatch++;                       // máy chủ phát đúng kết quả người đánh gửi
+    let replay = cloneState(watcher);
+    if (r.shot.cue) replay = placeCue(replay, r.shot.cue[0], r.shot.cue[1]);
+    const res = simulateShot(table, replay, { angle: r.shot.a, power: r.shot.p, spin: r.shot.spin, roll: r.shot.roll }, { frames: false });
+    if (!same(packBalls(res.finalState), r.shot.b)) mismatch++;     // người xem phát lại = máy chủ
+    if (room.ev.foul) fouls++;
+    watcher = unpackBalls(table, room.view(now).b);
+    log.push([seat, pick.how, s.msg.k.join(","), room.m.turn, room.ev.foul?.why ?? ""]);
+    now += (s.res.time + 2) * 1000;
+  }
+  return { room, log, mismatch, rejected, fouls, inHand, calls, choices, serverMs, serverMax, maxLen, spun };
+}
+{
+  const a = playMatchV2(), b = playMatchV2();
+  const m = a.room.m;
+  report(m.mode === "over" && a.rejected === 0 && a.choices >= 1 && a.log[1]?.[2] === "rerack",
+    `ván trọn luật chuẩn giữa 2 người chơi giả: ${a.log.length} lượt, ${m.winner === 0 ? "An" : "Bình"} thắng (${m.reason})`,
+    `phá không hợp lệ → xếp lại ${a.choices} lần, lỗi ${a.fouls}, bi trong tay ${a.inHand}, gọi lỗ bi 8 ${a.calls}, bị chặn ${a.rejected}${a.rejected ? ` ${JSON.stringify(a.log.at(-1))}` : ""}`);
+  report(a.mismatch === 0, "kết quả người đánh gửi = bàn máy chủ phát = người xem phát lại, từng bit", `lệch ${a.mismatch}`);
+  report(same(a.log, b.log) && same(a.room.view(0).b, b.room.view(0).b), "chạy lại cả ván luật chuẩn → giống hệt (tất định)");
+  // máy chủ không chạy vật lý: không file nào trong server/src gọi simulateShot; thời gian xử lý mỗi cú (Node, gồm JSON.parse)
+  const srcDir = join(ROOT, "server", "src");
+  const sims = readdirSync(srcDir).filter((f) => f.endsWith(".js") && /simulateShot/.test(readFileSync(join(srcDir, f), "utf8")));
+  const shots = a.log.filter((l) => l[1] !== "choice").length;
+  report(!sims.length, `máy chủ không chạy vật lý (server/src không gọi simulateShot) — mỗi cú ${(a.serverMs / shots).toFixed(3)} ms trung bình, lâu nhất ${a.serverMax.toFixed(2)} ms (Node; bản tự tính lại cú: 0,4–3 ms, cú phá trên Cloudflare 11–20 ms)`,
+    sims.length ? `còn gọi trong ${sims.join(", ")}` : "");
+  // tin pool_shot lớn nhất trong ván + trường hợp xấu nhất (16 bi vào lỗ, lỗ tên dài nhất) phải dưới giới hạn máy chủ (1.200 ký tự)
+  const worst = JSON.stringify({ t: "pool_shot", seq: 9999, a: -3.141592653589793, p: 0.987654321012345, cue: [-0.57531, -1.08419], call: "foot_right",
+    spin: -2, roll: -2, b: Array(32).fill(-0.57531), k: Array.from({ length: 16 }, (_, i) => 15 - i), s: true, d: 29.99, f: 15, r: true, rb: 15, kp: Array(16).fill("foot_right") }).length;
+  report(a.maxLen < 1200 && worst < 1200, `cỡ tin pool_shot: lớn nhất trong ván ${a.maxLen} ký tự, trường hợp xấu nhất ${worst} (giới hạn 1.200)`);
+}
+
+{
+  const a = playMatchV2({ spin: true }), b = playMatchV2({ spin: true });
+  const m = a.room.m;
+  report(a.rejected === 0 && a.mismatch === 0 && a.spun > 5 && same(a.log, b.log),
+    `ván trọn có xoáy: ${a.log.length} lượt (${a.spun} cú có xoáy), ${m.mode === "over" ? `${m.winner === 0 ? "An" : "Bình"} thắng (${m.reason})` : `chưa xong (${m.mode})`}; người xem phát lại khớp từng bit, chạy lại giống hệt`,
+    `lệch ${a.mismatch}, bị chặn ${a.rejected}${a.rejected ? ` ${JSON.stringify(a.log.at(-1))}` : ""}`);
 }
 
 console.log(`${failed ? "✗" : "✓"} pool_rules: ${failed ? `${failed} mục hỏng` : "đạt hết"} (${Math.round(performance.now() - t0)} ms)`);

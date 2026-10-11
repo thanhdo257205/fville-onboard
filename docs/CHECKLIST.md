@@ -49,16 +49,18 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 - [x] P1 **Lỗi: mất dấu Objective markers ở tất cả các zone** (dấu "!" + mũi tên ở mép màn hình) — người dùng kiểm tra lại
   10/10/2026: đã hết lỗi (bản `gh-pages` 6416ec3 trên trình duyệt sạch cũng hiện đủ ở 6 zone; nếu gặp lại, xem trước menu
   Esc → "Objective markers" có đang Off không) — Phụ trách: —
-- [ ] P1 **Lỗi: đánh bi-a xong camera nâng lên, bị đèn treo của bàn che** — Phụ trách: —
+- [x] P1 **Lỗi: đánh bi-a xong camera nâng lên, bị đèn treo của bàn che** (đã sửa — nhánh `fix/pool-camera`: camera lúc bi lăn
+  và lúc ngắm không cao quá mép dưới chao đèn − 15 cm, đo tự động từ lưới bối cảnh; lùi xa hơn để vẫn thấy cả bàn) — Phụ trách: Claude
   - Nguyên nhân (đọc code): lúc bi lăn (`phase === "roll"`, camera trong `game/src/pool/table.js`) camera đặt cao hơn mặt bi
     1,55 m (~2,4 m trên sàn), lùi 1,15 m. 3 chao đèn thả (`pool_lamps`, `scripts/blender/lib/interior.py`: chao ở 1,62–1,87 m,
     bán kính 0,24 m, cách nhau 0,8 m) nằm ngay giữa camera và mặt bàn. `clampCamera` xét cả lưới hiển thị nên tia từ bi tới
     camera chạm chao đèn → camera bị kéo vào sát chao. Lúc ngắm, lăn chuột kéo camera ra xa hết cỡ (`camDist` 2,4 → cao ~2 m)
     cũng chạm đèn.
-  - [ ] Sửa (đề xuất): camera lúc bi lăn hạ xuống dưới mép chao (≤ ~1,5 m) và lùi xa hơn, nhìn chéo xuống bàn; đèn nào che
+  - [x] Sửa (đề xuất): camera lúc bi lăn hạ xuống dưới mép chao (≤ ~1,5 m) và lùi xa hơn, nhìn chéo xuống bàn; đèn nào che
     tầm nhìn thì làm mờ bằng `seeThrough` sẵn có (không sửa GLB) và không tính đèn trong `clampCamera`; giới hạn chiều cao
     camera lúc ngắm thấp hơn mép chao
-  - [ ] Kiểm thử: smoke bi-a — trong lúc bi lăn, tia từ camera tới tâm bàn không cắt lưới nào (trừ bi); chụp 1 ảnh để xem
+  - [x] Kiểm thử: smoke bi-a — trong lúc bi lăn, tia từ camera tới tâm bàn không cắt lưới nào (trừ bi); chụp 1 ảnh để xem
+    (không cần làm mờ đèn: camera dưới mép chao thì đèn không nằm giữa camera và mặt bàn; `clampCamera` vẫn xét đèn)
 - [x] P1 **Lỗi: nhân vật bay lơ lửng khi chỉnh góc cơ ở bàn bi-a** (người dùng báo 10/10/2026; đã sửa — nhánh
   `fix/pool-float-card`, PR #6; đã deploy `gh-pages` a9a3dcc). Giữ A/D hoặc kéo chuột 2 s → người chơi lên cao 1,94 m. Nguyên nhân: mỗi khung xoay cơ
   `placePlayer()` (`game/src/pool/table.js`) đặt người chơi ở độ cao hiện tại + 2 cm, trọng lực chỉ kéo xuống ~3 mm / khung →
@@ -213,59 +215,89 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   bên = bàn máy chủ sau mọi cú, phát lại không lệch, rời bàn thì ghế trống
 - [ ] P2 Bi-a bước 3 — chơi thử một ván 2 người trên trang thật, góp ý cảm giác chơi (lực đánh, tốc độ bi, độ nảy băng) — Phụ trách: —
 - [ ] P3 Bi-a: chốt có thêm phím V nhìn bàn từ trên xuống hay không — Phụ trách: —
-- [ ] P2 Bi-a: đánh xoáy ngang (side spin / "xoáy trái – phải") — Phụ trách: —
-  - Hiện trạng: `game/src/pool/physics.js` chỉ có vị trí + vận tốc mỗi bi (đầu file: "Chưa có xoáy"); bi trắng luôn đánh vào
-    giữa tâm.
-  - [ ] Chọn điểm chạm trên bi trắng: lệch trái / phải (đề xuất 5 nấc: −2 … +2; xoáy lên / xuống — follow / draw — chốt làm
-    cùng hay để sau). Bảng bi-a có hình bi trắng với chấm điểm chạm (bấm / kéo chấm, hoặc phím riêng — đề xuất Z / X, không
-    trùng A / D ngắm, E, R, J, Space); điện thoại: kéo chấm bằng ngón tay
-  - [ ] Vật lý (mỗi bi thêm 1 số `spin`): chạm băng → góc bật lệch theo chiều xoáy (xoáy thuận tay "running" mở góc, ngược
-    "check" khép góc), mỗi lần chạm băng xoáy giảm; bi trắng lệch nhẹ ngược phía xoáy lúc vừa đánh (squirt, ~1°); va bi →
-    truyền một phần xoáy, bi mục tiêu lệch hướng rất nhẹ (throw); xoáy giảm dần theo thời gian lăn trên nỉ
-  - [ ] Giữ **tất định**: chỉ + − × ÷, `Math.sqrt`, `dsin` / `dcos` / `datan2` (quy tắc bi-a trong `CLAUDE.md`); `spin = 0`
-    phải cho kết quả **giống từng bit** như hiện nay (ván cũ, phát lại, thử thách của anh Khang không đổi)
-  - [ ] Chơi nhiều người: tin nhắn cú đánh thêm `spin`; máy chủ (`server/src/pool.js`) kiểm tra giới hạn và tính lại cú như
-    máy khách; báo `features` mới (vd `"pool_spin"`) — máy khách / máy chủ bản cũ thì bàn chung không cho đánh xoáy, không
-    lệch bàn; cần `npx wrangler deploy` ở máy Desktop
-  - [ ] Đường ngắm: thêm đoạn bi trắng sau khi chạm băng / chạm bi có tính xoáy (ngắn, để gợi ý chứ không lộ hết); thử thách
-    của anh Khang giữ đánh tâm (hoặc chỉ cho xoáy sau khi vào bi lần đầu)
-  - [ ] Chữ giao diện en + vi; dòng hướng dẫn bảng bi-a ghi cách chọn xoáy
-  - [ ] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
-    `spin = 0` khớp bản cũ, xoáy trái / phải làm góc bật băng lệch đúng chiều; smoke bi-a 2 người: cú có xoáy phát lại khớp
-    bàn máy chủ
-- [ ] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: —
+- [ ] P2 Bi-a: đánh xoáy ngang (side spin / "xoáy trái – phải") + đè / kéo — Phụ trách: Claude — nhánh `feat/pool-spin` — 08cbdcc
+  (11/10/2026; chi tiết: `docs/multiplayer.md` → "Bi-a: đánh xoáy"); còn deploy bản web + máy chủ
+  - Hiện trạng (trước đây): `game/src/pool/physics.js` chỉ có vị trí + vận tốc mỗi bi; bi trắng luôn đánh vào giữa tâm.
+  - [x] Chọn điểm chạm trên bi trắng: người dùng chốt áp phê trái / phải 5 nấc (−2 … +2) **và** xoáy lên / xuống (đánh đè /
+    đánh kéo) 5 nấc. Ô "Điểm chạm" góc phải dưới: hình bi trắng + chấm, kéo chấm bằng chuột (pointer events trên chính ô đó —
+    không đụng ngắm cơ bằng chuột trên khung vẽ / khoá con trỏ; đã làm sẵn cho ngón tay), hoặc phím Z / X (trái / phải), F / B
+    (đè / kéo) — không trùng A / D / W / S, E, H, T, Tab, R, J, P, C, Space, Enter (chat), Esc; mặc định giữa, về giữa sau mỗi
+    cú — 08cbdcc
+  - [x] Vật lý (`spin` ngang + `roll` lên / xuống, trạng thái xoáy chỉ nằm trong cú): chạm băng → góc bật lệch theo chiều xoáy
+    (thuận mở góc, ngược khép góc; nấc 2 đánh thẳng vào băng lệch ~18°), mỗi lần chạm băng xoáy còn 1/2; bi trắng lệch ~1°
+    ngược phía xoáy lúc đánh (squirt); va bi → truyền một phần xoáy ngược chiều, bi mục tiêu lệch rất nhẹ (throw); xoáy giảm
+    dần theo thời gian lăn; đè / kéo: sau lần va bi đầu tiên bi trắng được cộng vận tốc theo hướng cũ / ngược lại, tỉ lệ với
+    nấc, giảm theo quãng đường đã lăn — 08cbdcc
+  - [x] Giữ **tất định**: chỉ + − × ÷, `Math.sqrt`, `dsin` / `dcos` (quy tắc bi-a trong `CLAUDE.md`); `spin = roll = 0` cho kết
+    quả **giống từng bit** như trước (test:pool so dấu vân tay 300 cú ghi từ bản cũ + cú gợi ý thử thách của anh Khang); sự kiện
+    cú (`shotFacts` / `wireFacts`) vẫn đúng khi có xoáy — 08cbdcc
+  - [x] Chơi nhiều người: `pool_shot` thêm `spin`, `roll` (số nguyên −2 … +2); máy chủ (`server/src/pool.js`) **không chạy vật
+    lý** — chỉ kiểm tra giới hạn (sai → bỏ cú, `err: "bad"`), giữ nguyên `factsFromWire`, chuyển tiếp `spin` / `roll` cho người
+    kia và người xem phát lại; tin chào báo `"pool_spin"`; `pool_join` kèm `sp: 1`, bàn `spin: true` khi mọi người ngồi đều hiểu
+    xoáy — máy chủ cũ / có người ngồi bằng máy khách cũ thì bàn chung ẩn chọn xoáy, gửi spin = roll = 0, không lệch bàn — 08cbdcc
+  - [ ] Bật trên máy chủ thật: `cd server && npx wrangler deploy` ở máy Desktop (sau khi deploy bản web)
+  - [x] Đường ngắm: thêm đoạn ngắn hướng bi trắng sau lần chạm đầu (chạm bi / chạm băng) có tính xoáy (gợi ý, không lộ hết);
+    thử thách của anh Khang giữ đánh tâm (không ô chọn, không đoạn gợi ý) — 08cbdcc
+  - [x] Chữ giao diện en + vi; dòng hướng dẫn bảng bi-a ghi cách chọn xoáy; thẻ tóm tắt luật (phím H) thêm 1 dòng — 08cbdcc
+  - [x] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
+    spin = roll = 0 khớp bản cũ từng bit, áp phê trái / phải làm góc bật băng lệch đúng chiều, đè → bi trắng đi tiếp, kéo → lùi,
+    nấc ngoài giới hạn bị máy chủ bỏ, ván trọn có xoáy 2 người giả + người xem khớp từng bit; smoke bi-a 2 trình duyệt + máy chủ
+    local: cú có xoáy phát lại khớp bàn máy chủ, máy chủ giả bản cũ thì không có xoáy; bàn tập: kéo chấm bằng chuột thật + phím
+    — 08cbdcc
+- [x] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: Claude — nhánh
+  `feat/pool-rules-8ball` — 6fff4f4 (PR #14, `main` 048fa04); gh-pages 6c15184, máy chủ version e150c939 (11/10/2026)
   - Hiện trạng (`game/src/pool/rules.js`, dùng chung với máy chủ): nhóm trơn 1–7 / sọc 9–15 nhận theo bi vào lỗ đầu tiên;
     lỗi duy nhất là bi trắng rơi lỗ → đối thủ đặt bi trắng ở khu đầu bàn; không phạt chạm sai bi trước / không chạm bi nào;
     bi 8 không phải gọi lỗ.
-  - [ ] Chốt bộ luật theo luật 8 bi quốc tế (WPA), viết tóm tắt vào `docs/GDD.md` (mục bi-a), gồm các ý dưới
-  - [ ] Cú phá hợp lệ: có bi vào lỗ hoặc ít nhất 4 bi chạm băng — không thì đối thủ chọn xếp lại phá hoặc đánh tiếp; bi trắng
-    rơi lúc phá → đối thủ đặt bi trắng ở khu đầu bàn; bi 8 vào lỗ lúc phá → đặt lại bi 8 (như hiện nay) hoặc xếp lại
-  - [ ] Bàn vẫn "mở" sau cú phá (bi vào lỗ lúc phá không quyết định nhóm); nhóm chọn ở cú vào bi hợp lệ đầu tiên sau đó
-  - [ ] Lỗi (foul) → đổi lượt, đối thủ có **bi trong tay đặt bất kỳ đâu trên bàn** (trừ sau cú phá chỉ ở khu đầu bàn):
+  - [x] Chốt bộ luật theo luật 8 bi quốc tế (WPA), viết tóm tắt vào `docs/GDD.md` (mục bi-a), gồm các ý dưới — 6fff4f4
+  - [x] Cú phá hợp lệ: có bi vào lỗ hoặc ít nhất 4 bi chạm băng — không thì đối thủ chọn xếp lại phá hoặc đánh tiếp; bi trắng
+    rơi lúc phá → đối thủ đặt bi trắng ở khu đầu bàn; bi 8 vào lỗ lúc phá → đặt lại bi 8 (như hiện nay) hoặc xếp lại — 6fff4f4
+    (chốt: đặt lại bi 8, người phá đánh tiếp; R / P sau cú phá không hợp lệ)
+  - [x] Bàn vẫn "mở" sau cú phá (bi vào lỗ lúc phá không quyết định nhóm); nhóm chọn ở cú vào bi hợp lệ đầu tiên sau đó — 6fff4f4
+  - [x] Lỗi (foul) → đổi lượt, đối thủ có **bi trong tay đặt bất kỳ đâu trên bàn** (trừ sau cú phá chỉ ở khu đầu bàn):
     bi trắng rơi lỗ / văng khỏi bàn; bi trắng chạm bi nhóm khác trước (bàn mở: chạm bi 8 trước); không chạm bi nào; sau khi
-    chạm không có bi nào vào lỗ và không bi nào (kể cả bi trắng) chạm băng
-  - [ ] Bi 8: phải **gọi lỗ** trước cú đánh bi 8 (bấm vào lỗ trên bàn); thua khi đưa bi 8 vào lỗ sớm (nhóm chưa hết), vào lỗ
-    khác lỗ đã gọi, vào lỗ kèm lỗi, hoặc làm bi 8 văng khỏi bàn
-  - [ ] Giao diện: HUD ghi nhóm của mỗi người (trơn / sọc) + số bi còn lại; báo lỗi kèm lý do ("Chạm bi 3 trước — lỗi"); đặt bi
-    trong tay trên cả bàn (không chồng bi khác); chọn lỗ cho bi 8; bấm H xem tóm tắt luật; chữ en + vi
-  - [ ] Bàn chung: thêm giới hạn thời gian mỗi cú (vd 60 s, hết giờ = lỗi) để không ai giữ bàn mãi
-  - [ ] Máy chủ (`server/src/pool.js`) áp đúng bộ luật mới (kiểm tra chỗ đặt bi trong tay, lỗ đã gọi); báo `features` mới (vd
-    `"pool_rules2"`) — máy khách cũ không vào được bàn luật mới, không lệch bàn; `npx wrangler deploy` ở máy Desktop
-  - [ ] Tập một mình và thử thách của anh Khang giữ như cũ (không áp luật thi đấu)
-  - [ ] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
+    chạm không có bi nào vào lỗ và không bi nào (kể cả bi trắng) chạm băng — 6fff4f4 (vật lý 2D chưa làm bi văng khỏi bàn; luật đã có)
+  - [x] Bi 8: phải **gọi lỗ** trước cú đánh bi 8 (bấm vào lỗ trên bàn); thua khi đưa bi 8 vào lỗ sớm (nhóm chưa hết), vào lỗ
+    khác lỗ đã gọi, vào lỗ kèm lỗi, hoặc làm bi 8 văng khỏi bàn — 6fff4f4 (thêm: C đổi lỗ, Space gọi lỗ đang ngắm tới)
+  - [x] Giao diện: HUD ghi nhóm của mỗi người (trơn / sọc) + số bi còn lại; báo lỗi kèm lý do ("Chạm bi 3 trước — lỗi"); đặt bi
+    trong tay trên cả bàn (không chồng bi khác); chọn lỗ cho bi 8; bấm H xem tóm tắt luật; chữ en + vi — 6fff4f4
+  - [x] Bàn chung: thêm giới hạn thời gian mỗi cú (vd 60 s, hết giờ = lỗi) để không ai giữ bàn mãi — 6fff4f4 (đồng hồ trên bảng;
+    hết giờ 3 lần liên tiếp → mất ghế)
+  - [x] Máy chủ (`server/src/pool.js`) áp đúng bộ luật mới (kiểm tra chỗ đặt bi trong tay, lỗ đã gọi); báo `features` mới (vd
+    `"pool_rules2"`) — máy khách cũ không vào được bàn luật mới, không lệch bàn — 6fff4f4 (máy chủ tự tính lại cú; máy chủ cũ →
+    máy khách mới dùng luật cũ)
+  - [x] `npx wrangler deploy` ở máy Desktop (xem `docs/multiplayer.md` mục cuối; sau deploy kiểm CPU mỗi cú bằng `wrangler tail`)
+    — 11/10/2026, version e150c939-0569-43e6-8b68-a377d4296be6; tin chào `["pool","pool_rules2"]`; `wrangler tail` lúc chơi thử
+    3 ván: 325 sự kiện đều `ok`, 0 exception; cú thường 0–4 ms CPU nhưng 7 cú 11–20 ms (vượt mốc 10 ms gói Free, Cloudflare
+    chưa chặn — theo dõi Metrics)
+  - [x] Tập một mình và thử thách của anh Khang giữ như cũ (không áp luật thi đấu) — 6fff4f4
+  - [x] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
     trong tay toàn bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi; ván 2 người giả chơi trọn; smoke bi-a 2 người với luật
-    mới
-- [ ] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: —
+    mới — 6fff4f4 (+ smoke với máy chủ giả bản cũ)
+- [x] P2 Bi-a: máy chủ không chạy vật lý — máy khách tính cú (cú phá trên máy chủ e150c939 tốn 11–20 ms CPU, quá mốc 10 ms gói
+  Free) — Phụ trách: Claude — nhánh `claude/lucid-hamilton-t2xq2l`
+  - [x] Cú đánh gửi kèm sự kiện cú (`rules.js` → `wireFacts`), máy chủ kiểm tra hợp lý (`factsFromWire`) rồi áp luật chuẩn;
+    xin ghế kèm `cf: 1`, tin chào thêm `"pool_facts"`; máy chủ ~0,09 ms mỗi cú (Node) — b8e81e7
+  - [x] Kiểm thử: sự kiện cú bịa → chặn, bản web luật chuẩn đầu → `version`, ván trọn khớp từng bit, smoke 71/71; bản web mới
+    chơi được với máy chủ đang chạy (e150c939) — b8e81e7
+  - [x] Deploy: bản web trước (`python scripts/deploy_site.py`), rồi `npx wrangler deploy` ở máy Desktop; tin chào có
+    `"pool_facts"`; `wrangler tail` khi chơi thử: cú phá ~0 ms CPU (xem `docs/multiplayer.md` mục cuối)
+    — 11/10/2026: bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms
+- [x] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: Claude — nhánh `feat/pool-mouse-aim` — 2e53a25
   - Hiện trạng: chuột chỉ xoay cơ khi con trỏ đang bị khoá (Pointer Lock, `game/src/core/input.js`: không khoá thì bỏ qua di
     chuột và kéo chuột). Khoá không được (vừa bấm Esc, trình duyệt từ chối) thì chuột không làm gì; bấm chuột để khoá lại thì
     cú bấm đó cũng bắt đầu lấy lực (`mouseButton` trong `game/src/pool/table.js`).
-  - [ ] Không khoá con trỏ: cơ chỉ theo con trỏ — chiếu con trỏ xuống mặt bàn, cơ hướng từ bi trắng tới điểm đó; giữ chuột
-    trái để lấy lực, thả để đánh (hoặc kéo lùi chuột để chỉnh lực)
-  - [ ] Đang khoá con trỏ: di chuột ngang xoay cơ như hiện nay; giữ Shift để ngắm tinh (chậm lại); A / D vẫn dùng được
-  - [ ] Cú bấm đầu tiên chỉ để khoá con trỏ / lấy lại chuột, không bắt đầu lấy lực
-  - [ ] Dùng cho cả tập một mình, bàn chung 2 người, thử thách của anh Khang; dòng hướng dẫn trên bảng bi-a ghi cách ngắm bằng
+  - [x] Không khoá con trỏ: cơ chỉ theo con trỏ — chiếu con trỏ xuống mặt bàn, cơ hướng từ bi trắng tới điểm đó; giữ chuột
+    trái để lấy lực, thả để đánh (hoặc kéo lùi chuột để chỉnh lực) — 2e53a25 (`game/src/pool/pointer.js`; camera giữ hướng
+    khi ngắm bằng con trỏ; chưa làm kéo lùi chỉnh lực)
+  - [x] Đang khoá con trỏ: di chuột ngang xoay cơ như hiện nay; giữ Shift để ngắm tinh (chậm lại); A / D vẫn dùng được —
+    2e53a25 (lỗi gốc: ở bàn `input.enabled = false` nên chuột khoá chưa bao giờ xoay được cơ)
+  - [x] Cú bấm đầu tiên chỉ để khoá con trỏ / lấy lại chuột, không bắt đầu lấy lực — 2e53a25
+  - [x] Dùng cho cả tập một mình, bàn chung 2 người, thử thách của anh Khang; dòng hướng dẫn trên bảng bi-a ghi cách ngắm bằng
     chuột (`data/i18n/en.json` + `vi.json`); trên điện thoại: kéo ngón tay để ngắm (xem mục "Chơi trên trình duyệt điện thoại")
-  - [ ] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
+    — 2e53a25 (cảm ứng: chưa viết, `TablePointer` đã tách để thêm "touch" sau)
+  - [x] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
+    — 2e53a25
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
 - [x] P3 Tab Bản đồ trong app My FPT — Phụ trách: Claude — nhánh `feat/map-tab` (PR #7, `main` 1a79739; đã deploy `gh-pages` a9a3dcc). Ảnh zone chụp từ trên xuống
   (cắt bỏ trần / mái ở sàn + 2,4 m, nét tường tối), mũi tên "Bạn" theo hướng mặt, chấm Tú, dấu "!" + dòng mục tiêu (khác tầng:
@@ -273,22 +305,29 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 - [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
   Phụ trách: Claude — nhánh `feat/pool-step3`; [x] đã `wrangler deploy` (10/10/2026, version 3764cab6): `/status` có
   `room_size` 30, `max_rooms` 6, danh sách `rooms`
-- [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —
-  - [ ] Chốt với nhóm / HR: cho gõ chữ tự do hay chỉ mở rộng câu soạn sẵn (hiện có câu chat soạn sẵn ở phím T); quy tắc ứng xử
-    hiện khi mở khung chat lần đầu
-  - [ ] Máy chủ (`server/`): tin nhắn `chat` với kênh `zone` (người cùng zone), `all` (mọi người đang online), `dm` (một người,
-    theo id phiên); giới hạn độ dài (~120 ký tự), chống spam (vd 1 tin / giây, tối đa 5 tin dồn), lọc từ ngữ thô tục cơ bản;
-    không lưu lịch sử trên máy chủ; tin chào báo `features: ["chat"]` — máy chủ bản cũ thì chỉ có câu soạn sẵn
-  - [ ] Game: khung chat (Enter mở / gửi, Esc đóng; đang gõ không điều khiển nhân vật), 3 tab Zone / All / Private kèm số tin
-    chưa đọc; tin cùng zone hiện thêm bong bóng trên đầu người gửi; nhắn riêng bằng cách bấm vào bảng tên người chơi hoặc
-    chọn trong danh sách người online; giữ ~50 tin gần nhất mỗi kênh trong lượt chơi (không vào bản lưu)
-  - [ ] An toàn: tắt nhận tin từ một người (mute), tắt hẳn chat trong menu Esc; "Show other players" tắt thì ẩn cả bong bóng chat;
-    tên người chơi trong tin là tên tự đặt, không hiện thông tin khác
-  - [ ] Chữ giao diện trong `data/i18n/en.json`; tính lại số lượt Cloudflare (mỗi tin = 1 tin nhắn WebSocket) với hạn miễn phí
-    100.000 lượt / ngày, ghi vào `docs/multiplayer.md`
-  - [ ] Kiểm thử: 3 trình duyệt headless + máy chủ local — tin zone chỉ tới người cùng zone, tin all tới mọi người, tin dm chỉ
-    tới đúng người; chặn tin quá dài / gửi quá nhanh; máy chủ bản cũ không có chat thì không lỗi; thêm vào `test:smoke`
-  - [ ] Build, push `main`, deploy `gh-pages`; bật trên máy chủ thật (`npx wrangler deploy` ở máy Desktop)
+- [x] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: Claude — nhánh `claude/lucid-hamilton-t2xq2l`
+  ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16), 11/10/2026; chi tiết: `docs/multiplayer.md` → Nhắn tin tự do); đã gộp vào `main` 1195cb1; **đã deploy** (gh-pages c26234f, máy chủ c487c71a)
+  - [x] Chốt: người dùng chốt cho gõ chữ tự do + bộ lọc từ (11/10/2026); câu soạn sẵn phím T vẫn giữ; thẻ quy tắc ứng xử hiện
+    khi mở khung chat lần đầu
+  - [x] Máy chủ (`server/`): tin nhắn `chat` với kênh `zone` (người cùng zone), `all` (mọi người trong phòng), `dm` (một người,
+    theo id phiên); tối đa 120 ký tự, chống spam (5 tin dồn, hồi 1 tin / giây), bộ lọc từ thô tục Việt + Anh và link
+    (`data/chat.json`, `game/src/net/chatfilter.js`), lọc cả tên tự đặt; không lưu lịch sử; tin chào báo `features: [..., "chat"]`
+    — máy chủ bản cũ thì không hiện khung chat, chỉ có câu soạn sẵn
+  - [x] Game (`game/src/ui/chat.js`): khung chat (Enter mở / gửi, Esc đóng; đang gõ không điều khiển nhân vật), 3 tab Zone / All /
+    Private kèm số tin chưa đọc; tin cùng zone hiện thêm bong bóng trên đầu người gửi; nhắn riêng bằng cách bấm vào bảng tên
+    người chơi / tên trong tin hoặc chọn trong danh sách người online; giữ 50 tin gần nhất mỗi kênh trong lượt chơi (không vào
+    bản lưu)
+  - [x] An toàn: tắt nhận tin từ một người (mute), tắt hẳn chat trong menu Esc; "Show other players" tắt thì ẩn cả bong bóng chat;
+    tên người chơi trong tin là tên tự đặt (đã lọc), không hiện thông tin khác; chữ người khác gửi hiện bằng `textContent`
+  - [x] Chữ giao diện en + vi (`chat.*`, `menu.chat`); số lượt Cloudflare (mỗi tin = 1 tin WebSocket gửi lên, 20 tin = 1
+    request): 21 người × 1 tin / phút ≈ 63 request / giờ (tin vị trí ~11.800) — ghi trong `docs/multiplayer.md`
+  - [x] Kiểm thử: 2 trình duyệt headless + 1 bot WebSocket + máy chủ local — tin zone chỉ tới người cùng zone, tin all tới mọi
+    người, tin dm chỉ tới đúng người; chặn tin quá dài / gửi quá nhanh; lọc từ + link + tên; mute; tắt chat; máy chủ bản cũ
+    không có chat thì không lỗi (`test:smoke`, nhóm "nhắn tin"); `test:data`: 17 câu mẫu của bộ lọc
+  - [x] Build, push nhánh, mở [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) (test đạt: smoke 112/112)
+  - [x] Gộp PR vào `main` (1195cb1, 11/10/2026)
+  - [x] Deploy `gh-pages` c26234f (từ `main` 1195cb1); máy chủ thật `npx wrangler deploy` version c487c71a (11/10/2026, máy
+    Desktop — web trước, máy chủ sau)
 - [ ] P2 Chơi trên trình duyệt điện thoại: tối ưu cho điện thoại + nút điều hướng và tương tác trên màn hình — Phụ trách: —
   - [ ] Nhận biết máy cảm ứng bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoints` (không dựa vào user agent);
     khi dev thử bằng `?touch=1` hoặc chế độ giả lập điện thoại của Chrome DevTools. Sửa GDD → "Ngoài phạm vi" (đang ghi

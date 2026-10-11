@@ -20,6 +20,7 @@ import { setStrings, setTextVars, tuPronouns, fill, TU_VARS } from "../../game/s
 import { GameState } from "../../game/src/game/state.js";
 import { buildStartState } from "../../game/src/game/autoplay.js";
 import { AMBIENCES } from "../../game/src/core/ambience.js";
+import { makeFilter, cleanText } from "../../game/src/net/chatfilter.js";
 
 const t0 = performance.now();
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -312,6 +313,28 @@ for (const [z, cfg] of Object.entries(zones.zones)) for (const a of [cfg.audio, 
   if (a.reverb != null && !(a.reverb >= 0 && a.reverb <= 1)) sfxErrs.push(`zones.${z}.audio.reverb ngoài 0..1`);
 }
 report("âm thanh", sfxErrs, `${want.size} file, ${(sfxBytes / 1024).toFixed(0)} KB, ${Object.keys(snd.sources).length} gói CC0, ${sfxCalls} lần gọi sound.play`);
+
+// ---------- nhắn tin: giới hạn + bộ lọc từ (data/chat.json, game/src/net/chatfilter.js — máy chủ dùng đúng module này) ----------
+const chatErrs = [];
+const chatCfg = JSON.parse(readFileSync(join(ROOT, "data", "chat.json"), "utf8"));
+for (const k of ["max_len", "rate_per_s", "burst", "history", "bubble_s"]) if (!(chatCfg[k] > 0)) chatErrs.push(`chat.json: ${k} phải > 0`);
+const flt = makeFilter(chatCfg);
+// [chữ gửi, chữ người khác thấy] — che đúng từ thô tục / link, KHÔNG che từ thường (tiếng Việt bỏ dấu dễ trùng)
+const chatCases = [
+  ["Chào các bạn, mình là intern mới!", "Chào các bạn, mình là intern mới!"],
+  ["Lớn lên ở Hòa Lạc, đeo kính, dù mà vui", "Lớn lên ở Hòa Lạc, đeo kính, dù mà vui"],
+  ["class assistant Scunthorpe admin", "class assistant Scunthorpe admin"],
+  ["đồ lồn", "đồ ***"], ["cặc", "***"], ["địt mẹ mày", "*** ** mày"], ["dit me may", "*** ** may"], ["Chó đẻ", "*** **"],
+  ["fuuuck you", "****** you"], ["F u c k", "* * * *"], ["sh1t man", "**** man"], ["$hit", "****"], ["WTF vcl", "*** ***"],
+  ["vào https://evil.example/x nhé", "vào [link] nhé"], ["xem www.abc.vn", "xem [link]"], ["F-Ville.com", "[link]"],
+  ["  nhiều   khoảng\u200b trắng  ", "nhiều khoảng trắng"],
+];
+for (const [inp, want] of chatCases) {
+  const got = flt.clean(inp).text;
+  if (got !== want) chatErrs.push(`lọc ${JSON.stringify(inp)} → ${JSON.stringify(got)} (cần ${JSON.stringify(want)})`);
+}
+if (cleanText("a\u0000b\u202ec") !== "a b c") chatErrs.push("cleanText phải bỏ ký tự điều khiển / đổi chiều chữ");
+report("nhắn tin (bộ lọc từ)", chatErrs, `${chatCases.length} câu mẫu, tối đa ${chatCfg.max_len} ký tự, ${chatCfg.burst} tin dồn / ${chatCfg.rate_per_s} tin mỗi giây`);
 
 const ms = Math.round(performance.now() - t0);
 console.log(failed ? `✗ test:data: ${failed} mục lỗi (${ms} ms)` : `✓ test:data: đạt hết (${ms} ms)`);

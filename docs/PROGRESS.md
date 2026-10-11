@@ -1,6 +1,6 @@
 # Tiến độ — Ngày Đầu Ở F-Ville
 
-Cập nhật: 10/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
+Cập nhật: 11/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
 `/viewer/`).
 
 Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và push nhánh `main`.
@@ -1044,6 +1044,171 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   bước; thử tay trong trình duyệt: bi-a (cơ 1, bi chạm bi 7, băng 8, lỗ 1), cửa quẹt thẻ, cảnh lên / xuống xe (tiếng máy 0 →
   12 m/s rồi 7,4 → 0 khi vào bến).
 
+### Camera bàn bi-a không bị đèn treo che (11/10/2026, nhánh `fix/pool-camera`)
+
+- Lỗi: đánh xong, lúc bi lăn camera đặt cao 1,55 m trên mặt bi (~2,35 m trên sàn) — trên 3 chao đèn thả (mép dưới 1,75 m);
+  tia từ bi trắng tới camera chạm chao → `clampCamera` kéo camera vào sát đèn, chao che gần hết bàn. Lăn chuột ra xa hết cỡ
+  lúc ngắm (camera ~2 m) cũng chạm đèn.
+- Sửa (`game/src/pool/table.js`, không sửa GLB): `headroom()` đo 1 lần mỗi zone vật thấp nhất phía trên mặt chơi (tia thẳng
+  đứng từ lưới 17 × 29 điểm phủ mặt bàn, lưới hiển thị `zone.view`) trừ 15 cm → zone_05: 1,60 m. Camera lúc bi lăn / xem
+  (`roll`, `watch`, `wait`) không cao hơn mức đó và lùi xa hơn bù lại (1,15 → 1,9 m từ tâm bàn) để vẫn thấy cả bàn; lúc ngắm
+  chiều cao camera cũng chặn ở mức đó. Camera thấp hơn mép chao thì mọi tia nhìn xuống bàn đi dưới đèn — đèn không che, không
+  kéo camera vào. Bàn không có đèn thì mức trần là trần nhà (không đổi gì).
+- Kiểm thử: `__game._game.pool.cameraView()` (cao bao nhiêu so với bàn, giới hạn, tia camera → tâm bàn có vướng lưới nào); smoke
+  bước bi-a zone 5 kiểm tra mọi khung lúc bi lăn: camera ≤ giới hạn, 0 khung bị che (bản cũ: camera 1,69 m, bị kéo sát chao).
+  Thử tay 4 hướng đánh: camera 1,41–1,60 m, 0 khung bị che.
+
+### Bi-a: ngắm cơ bằng chuột (11/10/2026, nhánh `feat/pool-mouse-aim`)
+
+- **Lỗi gốc "ở bàn chỉ A/D xoay được cơ":** ở bàn game chuyển sang chế độ `"pool"` → `input.enabled = false` (không đi lại) →
+  `Input.consumeDrag()` trả 0 → mọi chuyển động chuột (kể cả khi đã khoá con trỏ) và lăn chuột thu phóng bị bỏ từ trước tới
+  nay. Sửa: `consumeDrag(all)`, `Game.update` lấy drag khi đang ở bàn (camera đi lại chỉ dùng drag ở chế độ `"play"`).
+- `game/src/pool/pointer.js` (`TablePointer`): pointer events trên khung vẽ → điểm trên mặt bàn (toạ độ cục bộ, mặt phẳng tâm
+  bi), callback move / down / up; nhả nút ngoài khung vẫn nhận (`pointerup` trên window). Hiện chỉ nhận chuột; cảm ứng sau này
+  chỉ cần thêm `"touch"` vào `types` (đã giữ pointer capture cho loại không phải chuột).
+- `game/src/pool/table.js` — 3 chế độ chuột (`mouseMode`):
+  - `lock` (con trỏ đang khoá): di chuột ngang xoay cơ 0,0032 rad / đơn vị (40 px → 0,064 rad), Shift chậm 4 lần, A/D như cũ.
+  - `wait` (khoá được nhưng chưa khoá): con trỏ ngắm; cú bấm chỉ để khoá (core/input.js xin khoá), không nạp lực; dòng nhắc
+    giữa màn hình đổi thành "Click to aim with the mouse (the first click doesn't shoot)".
+  - `free` (trình duyệt không hỗ trợ / từ chối khoá — `pointerlockerror`, vd bấm Esc rời bàn rồi vào lại ngay): con trỏ ngắm,
+    giữ chuột trái nạp lực, thả để đánh; cú bấm đầu sau khi cửa sổ mất focus chỉ để lấy lại chuột. Thôi xin khoá ở mỗi cú bấm.
+  - Ngắm bằng con trỏ thì camera giữ hướng (`camAngle`) — camera xoay theo góc ngắm thì điểm dưới con trỏ chạy theo, góc trôi
+    mãi; phím / chuột khoá thì camera lại theo góc ngắm. Đang nạp lực: con trỏ không đổi hướng (thả tay không lệch cú). Bi
+    trong tay (bàn chung): bi trắng theo con trỏ trong khu đầu bàn, bấm để đặt.
+  - Bấm vào bảng bi-a / khung mini-game không còn nạp lực (trước nghe `mousedown` trên cả window).
+  - Áp dụng cho tập một mình, bàn chung 2 người, thử thách của anh Khang. Không đổi `physics.js`, `rules.js`, `server/` — cú gửi
+    đi vẫn là góc + lực.
+- Chữ en + vi: `pool.hint_aim_mouse`, `pool.hint_aim_free`, `pool.click_to_aim`; `pool.controls*` bỏ phần ngắm (dòng hướng
+  dẫn ghép: cách ngắm theo chế độ chuột + phím của chế độ chơi).
+- Kiểm thử: `input.fakeLock` (giả lập khoá con trỏ — headless không khoá thật ổn định), `__game.pool.screen(x, z)`, `info.mouse`.
+  Smoke zone 5 (ngoại hình đầu), sự kiện chuột thật của trình duyệt: không khoá — cơ theo con trỏ ở 2 điểm (lệch 0 rad), camera
+  đứng yên, bấm sau khi rời cửa sổ không đánh, giữ → nạp lực → thả đánh đúng hướng con trỏ; khoá — cú bấm đầu chỉ khoá (không
+  nạp lực), chuột sang phải → cơ quay sang phải màn hình (0,064 rad / 40 px), Shift 0,016, D xoay sang phải, giữ → đánh.
+  test:data, test:pool đạt (vật lý không đổi); `test:smoke -- --zone 5` 3 ngoại hình + bản lưu cũ, mạng: 62/62 bước.
+
+### Bi-a: luật chuẩn 8 bi "sọc trơn" cho bàn chung 2 người (11/10/2026, nhánh `feat/pool-rules-8ball` 6fff4f4)
+
+Theo WPA, rút gọn cho game (tóm tắt luật: `docs/GDD.md` zone 5; giao thức + tương thích: `docs/multiplayer.md` mục cuối).
+Tập một mình và thử thách của anh Khang giữ luật cũ. **Máy chủ thật chưa `wrangler deploy`** (máy Desktop làm sau) — tới lúc
+đó bàn chung trên trang thật vẫn theo luật rút gọn cũ.
+- `game/src/pool/rules.js` (thuần, tất định — chỉ + − × ÷): `shotFacts(res)` đọc sự kiện cú mà `simulateShot` vốn đã ghi
+  (chạm bi / chạm băng / vào lỗ nào, theo thứ tự thời gian) → bi trắng chạm bi nào trước, có bi chạm băng sau lần chạm đó
+  không, số bi chạm băng, bi vào lỗ + lỗ của từng bi. `applyShotV2(table, m, before, after, facts, call)` → ván mới + sự kiện:
+  cú phá hợp lệ / không (`choice: "break"`), bàn mở sau phá, lỗi (`scratch`, `off`, `no_hit`, `wrong_first` kèm số bi,
+  `no_rail`) → bi trong tay `"table"` (sau cú phá: `"kitchen"`), bi 8 (thắng / thua `eight_early`, `eight_pocket`,
+  `eight_foul`, `eight_scratch`, `eight_off`). `onEight`, `handArea`, `canPlaceCueIn`, `newMatchV2`. Luật cũ `applyShot` giữ
+  nguyên. **`physics.js` không đổi** — cú cũ chạy lại giống từng bit.
+- `server/src/pool.js`: `PoolRoom({ rules: 2 })` tự tính lại cú (`simulateShot`, bỏ qua kết quả máy khách gửi), kiểm tra chỗ
+  đặt bi trong tay theo vùng, lỗ gọi khi đánh bi 8 (`err: "call"`), chặn cú khi đang chờ chọn (`choice`); `choose()` cho
+  `pool_choice`; hết giờ lượt = lỗi, 3 lần liên tiếp → mất ghế; máy khách không gửi `pool_join {r: 2}` → `err: "version"`;
+  bản chụp của bộ luật khác → xếp lại ván mới. `rules: 1` = máy chủ cũ (`shotV1`, như trước). `server/src/index.js`: tin chào
+  `features` thêm `"pool_rules2"`; biến `POOL_RULES = "1"` → chạy như bản cũ (smoke dùng để giả máy chủ cũ).
+- `game/src/pool/table.js` (bàn chung luật chuẩn khi bàn có `rules: 2`): xin ghế kèm `r: 2`; bảng: đồng hồ lượt (≤ 10 s
+  màu cam), dòng lỗi gần nhất ("⚠ Hit the 3-ball first — foul." / "Chạm bi 3 trước — lỗi."), nút Rules (H); toast lỗi kèm
+  ai được bi trong tay. Bi trong tay cả bàn: camera nhìn bao quát, chuột / W/A/S/D đặt (không chồng bi). Sau cú phá không hợp
+  lệ: phase `choice`, nút + phím **R** xếp lại và phá / **P** đánh tiếp. Đánh bi 8: vòng sáng ở 6 lỗ (lỗ đã gọi màu cam), bấm
+  vào lỗ để gọi (cú bấm đó không khoá con trỏ — `input.skipLock`), **C** đổi lỗ, Space / cú bấm đầu gọi lỗ bi 8 đang hướng
+  tới (không nạp lực); tên lỗ theo góc nhìn ("far left corner", "lỗ giữa bên trái"…). **H**: thẻ tóm tắt luật (luật chuẩn
+  6 dòng / luật cũ / tập một mình). Người xem thấy lỗ người đánh đã gọi khi bi lăn. Máy chủ cũ → giao diện như trước.
+- `#hint`, `#toast` xuống dòng khi dài hơn màn hình (trước bị cắt 2 đầu — dòng điều khiển ở bàn bi-a chung đã dài hơn màn
+  1280 px từ bản ngắm bằng chuột).
+- Chữ en + vi: `pool.rules*`, `pool.foul_*`, `pool.net_hand*`, `pool.pocket_*`, `pool.net_status_choice / choosing /
+  place_table / call / called`, `pool.net_lose_foul / pocket / off`, `pool.net_break_illegal`, `pool.net_open`,
+  `pool.net_chose_*`, `pool.rerack_break`, `pool.play_on`, `pool.called`.
+- Kiểm thử: `pool_rules.mjs` thêm 27 tình huống luật chuẩn, 4 tình huống `shotFacts` từ vật lý thật (cú cũ chạy lại giống
+  từng bit), 17 tình huống bàn máy chủ luật chuẩn, ván trọn 2 người giả (xếp lại sau phá hỏng, lỗi, bi trong tay, gọi lỗ;
+  người xem phát lại = máy chủ tính, chạy 2 lần giống hệt). Smoke: bi-a 2 người với luật mới + máy chủ giả bản cũ
+  (`wrangler dev --var POOL_RULES:1`, kho dữ liệu riêng) chơi trọn ván luật cũ.
+- CPU máy chủ mỗi cú (Node): 0,4–3 ms khi đã nóng, ~24 ms cú đầu sau khi khởi động — gói Free giới hạn 10 ms CPU / lần gọi
+  Worker; chưa xác nhận được có áp cho tin WebSocket của Durable Object không → kiểm bằng `wrangler tail` sau khi deploy.
+- Kết quả: test:data, test:pool đạt (`physics.js` không đổi; cú cũ chạy lại giống từng bit); `test:smoke -- --zone 5`: 71/71
+  bước (3 ngoại hình + bản lưu cũ + mạng: bi-a 2 người luật chuẩn, chia phòng, máy chủ giả bản cũ); bản build + Chromium
+  headless shell như CI (`--build --extra only`): 27/27. Xem bằng mắt 3 ảnh: lựa chọn sau cú phá (vi), bi trong tay cả bàn
+  (en), gọi lỗ bi 8 + thẻ luật (vi).
+
+### Deploy luật 8 bi chuẩn (PR #14) lên trang thật + máy chủ thật (11/10/2026, máy Desktop)
+- `main` 048fa04 (đã có `applyShotV2`, `pool_rules2`); `npm ci` game + server; test:data, test:pool đạt.
+- Bản web: `deploy_site.py` → gh-pages **6c15184**. Máy chủ: `wrangler deploy` → version **e150c939-0569-43e6-8b68-a377d4296be6**
+  (trước: 3764cab6); `/`, `/status` đúng, tin chào `["pool", "pool_rules2"]` (lần đầu ngay sau deploy còn `["pool"]`, 8 s sau đúng).
+- `wrangler tail` lúc người dùng chơi thử 2 người: 325 sự kiện, mọi `outcome` ok, 0 exception, không `exceededCpu`; CPU cú
+  thường 0–4 ms, **7 cú 11–20 ms** (cú phá + cú sau ở đầu mỗi ván) — vượt mốc 10 ms gói Free nhưng chưa bị chặn → không
+  rollback; theo dõi Metrics, cân nhắc giảm CPU máy chủ khi tính lại cú phá. Chi tiết: `docs/multiplayer.md` mục cuối.
+
+### Bi-a: máy khách tính cú, máy chủ không chạy vật lý (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` b8e81e7)
+
+Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms gói Free) → người dùng chốt: tính toán để ở máy khách.
+**Đã deploy (11/10/2026):** bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms.
+- `game/src/pool/rules.js`: `wireFacts(res)` (máy khách: sự kiện cú → `f`, `r`, `rb`, `kp` của `pool_shot`) và
+  `factsFromWire(table, before, k, m)` (máy chủ: kiểm tra hợp lý → dữ kiện cho `applyShotV2`, không hợp lý → null).
+- `server/src/pool.js`: luật chuẩn dùng kết quả máy khách gửi (`result()` dùng chung với luật cũ) + sự kiện cú; không còn import
+  `simulateShot`; xin ghế phải kèm `r: 2` và `cf: 1` (bản web luật chuẩn đầu tiên → `version`). `index.js`: tin chào thêm
+  `"pool_facts"`.
+- `game/src/pool/table.js`: xin ghế kèm `cf: 1`, cú đánh gửi kèm `wireFacts(res)` (máy chủ e150c939 bỏ qua, tự tính như cũ).
+- Đánh đổi: máy chủ tin kết quả người đánh (như luật rút gọn trước PR #14), chỉ chặn kết quả không hợp lý; bàn vẫn không lệch.
+- Kiểm thử:
+  - `test:pool`: 9 kiểu sự kiện cú / kết quả bịa → `bad`; bản web luật chuẩn đầu → `version`; ván trọn 2 người giả: kết quả
+    người đánh = bàn máy chủ = người xem phát lại, từng bit; `server/src` không gọi `simulateShot`; máy chủ xử lý mỗi cú
+    ~0,09 ms (lâu nhất ~0,15 ms, Node); tin `pool_shot` lớn nhất ~410 ký tự, xấu nhất ~715 (< 1.200).
+  - smoke: tin chào có `"pool_facts"`; bản web luật chuẩn đầu xin ghế → `version`; `--extra only` 27/27.
+  - Thử tay (không commit): bản web mới + mã máy chủ đang chạy (`main` fe49f63 qua `wrangler dev`) chơi trọn ván 15 cú, không
+    lỗi từ máy chủ, phát lại khớp → deploy web trước an toàn.
+- Kết quả: test:data, test:pool đạt; `test:smoke -- --zone 5` 71/71 (3 ngoại hình + bản lưu cũ + mạng, cả máy chủ giả bản cũ).
+
+### Nhắn tin tự do giữa người chơi + bộ lọc từ (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` 35c3536 + 2033d1f, [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16))
+
+Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2 "Nhắn tin giữa người chơi"). Chi tiết: `docs/multiplayer.md` →
+"Nhắn tin tự do + bộ lọc từ". **Đã gộp vào `main` (1195cb1) và đã deploy (11/10/2026, máy Desktop):** bản web gh-pages
+**c26234f** → máy chủ `npx wrangler deploy` version **c487c71a-f7fb-4692-a942-8bbe6f9d2305** (bản trước e7a013c0, để
+`wrangler rollback`). Lần deploy bản web đầu bị từ chối (non-fast-forward) vì `dist/` trên máy Desktop cũ hơn gh-pages (bản
+9de6c01 deploy từ máy cloud) → `cd dist`, `git fetch origin gh-pages`, `git reset --hard FETCH_HEAD`, chạy lại
+`deploy_site.py`. Máy cloud không tự deploy được (bị chặn quyền chạy `deploy_site.py`, không với tới Cloudflare).
+- `data/chat.json`: 120 ký tự, 5 tin dồn + 1 tin / giây, 50 tin mỗi kênh (máy khách), bong bóng 6 s, bộ lọc (`exact` giữ dấu
+  tiếng Việt, `plain` bỏ dấu + leet + gộp chữ lặp, cụm nhiều từ, chữ tách rời, `allow`, che link).
+- `game/src/net/chatfilter.js`: bộ lọc theo từng từ, dùng chung máy chủ + `test:data` (~0,06 ms / tin).
+- `server/src/index.js`: tin `chat` kênh zone / all / dm, lọc trước khi phát (cả bản người gửi nhận lại), lọc tên tự đặt,
+  `chat_err` (empty / long / rate / nobody), không lưu lịch sử; tin chào thêm `"chat"` (máy chủ giả bản cũ `POOL_RULES=1`: chỉ
+  `"pool"`).
+- Game: `game/src/ui/chat.js` (khung chat góc trái dưới: Enter mở / gửi, Esc đóng, 3 tab Zone / All / Private + số tin chưa đọc,
+  bấm tên / bảng tên → nhắn riêng / mute, thẻ quy tắc lần đầu), `net.js` (kênh, mute, chống spam phía máy khách, bong bóng tin
+  zone), `remotes.js` (bảng tên bấm được khi khung chat mở), menu Esc "Chat: On / Off", `__game.chat`; chữ `chat.*` en + vi.
+- Số request Cloudflare: 21 người × 1 tin / phút ≈ 63 request / giờ (tin vị trí ~11.800) — không đáng kể.
+- Kiểm thử: `test:data` 17 câu mẫu của bộ lọc; smoke nhóm "nhắn tin" (2 trình duyệt + bot WebSocket, máy chủ local, 7 bước);
+  máy chủ giả bản cũ → không có khung chat. `test:smoke` đủ 3 ngoại hình 112/112, `--zone 5` 78/78, `--extra only` 34/34;
+  test:pool, build đạt.
+- Xem bằng mắt (3 ảnh, không commit): tin xem trước khi đóng khung bị khung hội thoại đè (cùng ở mép dưới) → ẩn tin xem
+  trước khi đang hội thoại / mini-game / app / cảnh chuyển (2033d1f), số tin chưa đọc vẫn đếm.
+
+### Bi-a: đánh xoáy ngang + đè / kéo (11/10/2026, nhánh `feat/pool-spin` 08cbdcc)
+
+Người dùng chốt: áp phê trái / phải 5 nấc (−2 … +2) và xoáy lên / xuống (đánh đè / đánh kéo) 5 nấc (CHECKLIST P2 "Bi-a: đánh
+xoáy ngang"). **Chưa deploy** (cần bản web + `npx wrangler deploy` máy chủ — web trước, máy chủ sau; `docs/multiplayer.md` →
+"Bi-a: đánh xoáy").
+- `game/src/pool/physics.js`: `simulateShot(…, { angle, power, spin, roll })`. Xoáy ngang: chạm băng → vận tốc dọc băng thêm
+  theo chiều xoáy, tỉ lệ lực nảy (nấc 2 đánh thẳng vào băng: bật lệch ~18°; thuận chiều lăn mở góc, ngược khép góc), mỗi lần
+  chạm băng còn 1/2; bi trắng lệch 1° ngược phía xoáy lúc đánh; va bi → bi kia lệch rất nhẹ (~1,6° ở cú gần) và nhận xoáy ngược
+  chiều; xoáy giảm theo thời gian lăn. Đè / kéo: ở lần va bi đầu của bi trắng, cộng 0,7 × nấc / 2 × tốc độ trước va chạm theo
+  hướng cũ (đè) hoặc ngược lại (kéo), giảm tuyến tính theo quãng đường đã lăn (hết sau 3 m). Trạng thái xoáy chỉ nằm trong cú
+  (không vào bàn); spin = roll = 0 → không tạo trạng thái xoáy, **giống từng bit** bản cũ. `cueAfter()`: hướng bi trắng sau
+  lần chạm đầu cho đường ngắm.
+- `game/src/pool/table.js`: ô "Điểm chạm" góc phải dưới (hình bi trắng + chấm; kéo bằng chuột / ngón tay — pointer events trên
+  chính ô đó, không đụng ngắm cơ trên khung vẽ / khoá con trỏ), phím Z / X (trái / phải), F / B (đè / kéo); về giữa sau mỗi
+  cú; đoạn gợi ý xanh nhạt hướng bi trắng sau chạm; dòng hướng dẫn + thẻ luật (H) thêm 1 dòng. Thử thách của anh Khang: luôn
+  đánh tâm (không ô chọn, không đoạn gợi ý). Bàn chung: chỉ khi máy chủ báo `"pool_spin"` và bàn `spin: true`; `pool_join` kèm
+  `sp: 1`; cú gửi kèm `spin` / `roll`, người kia + người xem phát lại theo đó. Phím Z / X / F / B không trùng phím đang dùng
+  (A/D/W/S, E, H, T, Tab, R, J, P, C, Space, Enter chat, Esc).
+- `server/src/pool.js`: không chạy vật lý; kiểm tra nấc (số nguyên −2 … +2, sai → `err: "bad"`), chuyển tiếp spin / roll;
+  ghế nhớ `sp`; bàn `spin: true` khi mọi người ngồi đều hiểu xoáy, không thì cú có xoáy bị bỏ (`err: "spin"`); bản chụp giữ
+  `sp`. `index.js`: features thêm `"pool_spin"` (không có khi `POOL_RULES = "1"`).
+- Kiểm thử:
+  - `test:pool`: dấu vân tay 300 cú không xoáy = bản cũ (`f97833fdcb8daa82`, ghi từ `main` 8327163) + cú gợi ý thử thách
+    không đổi; 1.000 cú phá có xoáy ngẫu nhiên: không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit; chiều bật băng
+    (−18,1 / −9,3 / 0 / 9,3 / 18,1°), thuận mở / ngược khép góc; đè → bi trắng đi tiếp, kéo → lùi; squirt ±1°; máy chủ: 8 tình
+    huống xoáy (nấc sai, bàn có máy khách cũ, chuyển tiếp, bản chụp, luật cũ) + ván trọn có xoáy 2 người giả + người xem khớp
+    từng bit.
+  - smoke: bàn tập — kéo chấm bằng chuột thật (góc cơ không đổi), Z / X / F / B, cú dùng điểm chạm rồi về giữa; 2 trình duyệt —
+    cú có xoáy phát lại khớp bàn máy chủ, nấc 3 bị máy chủ bỏ, ván trọn có 1/3 cú xoáy; máy chủ giả bản cũ → không có chọn xoáy.
+- Sửa lỗi lúc làm: thuộc tính nấc đè / kéo đặt tên `roll` trùng hàm `roll(dt)` (phát lại bi lăn) → đổi `spinLv` / `rollLv`.
+
 ### Sửa chỗ hở của mô hình bối cảnh zone 3–5 + công cụ dò (11/10/2026, nhánh `fix/scene-gaps`)
 
 - Công cụ dò (không cần Blender): `__game.gaps(opts)` → `game/src/world/gaps.js`. Lưới điểm 1 m trên mọi mặt sàn `COL_` có lưới
@@ -1122,6 +1287,11 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
 
 ## Việc tiếp theo
 Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLIST.md`.
+
+- **Nhắn tin tự do ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16), đã deploy gh-pages c26234f + máy chủ
+  c487c71a):** kiểm tra lời chào có `"chat"`, nhắn thử giữa 2 cửa sổ trên trang thật, xem `npx wrangler tail --format json`
+  (mọi `outcome` = `ok`). Sau buổi chơi thử: xem có từ nào cần thêm / bỏ khỏi bộ lọc (`data/chat.json`, sửa xong phải deploy
+  lại máy chủ).
 
 0. ~~Đưa máy chủ chơi nhiều người lên Cloudflare~~ — **xong 10/10/2026** (`https://fville-net.fville-onboard.workers.dev`,
    xem "Chơi nhiều người đã lên mạng" ở trên). Còn: chơi thử 2–3 người trên bản deploy; đo FPS trên laptop thật với

@@ -63,12 +63,29 @@ export function installDebug(game, loop) {
     get cards() { return { recent: hud.lastCards || [], queued: hud.cards.map((c) => c.kind) }; },
     finish() { game.finishGame(); return api.cards; },
     get net() { return game.net?.info(); },
+    // khung chat (nhắn tin tự do — game/src/ui/chat.js): trạng thái + open(tab, dmWith) / close() / send(text) (gửi ở tab đang mở) /
+    // chat(ch, text, to) (gửi thẳng qua net, trả true | mã lỗi)
+    get chat() {
+      const c = game.chat;
+      if (!c) return null;
+      return Object.assign(c.info(), {
+        open: (tab, dmWith) => { c.open(tab, dmWith); return c.info(); },
+        close: () => { c.close(); return c.info(); },
+        send: (text) => { c.input.value = text; c.send(); return c.info(); },
+        chat: (ch, text, to) => game.net.chat(ch, text, to),
+        rulesOk: () => { c.settings.chat_rules = true; c.save?.(); c.draw(); return c.info(); },
+      });
+    },
     // bàn bi-a zone 5 (game/src/pool/table.js): trạng thái + enter() (chơi một mình / bàn chung), shoot(angle, power, {instant})
     // → Promise kết quả khi bi dừng, leave(), rerack(), solve() (thử thách của anh Khang: đánh cú tìm được bằng vật lý).
     // Bàn chung (bi-a bước 3): .net (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ, số cú đã phát lại, sự kiện), join(),
     // autoShot() (cú tự chọn cho người tới lượt), forceShot(angle, power) (gửi bất chấp lượt — máy chủ phải chặn), place(x, z)
     // (bi trong tay: đặt bi trắng),
-    // setFast(true) (cú của người khác hiện ngay kết quả)
+    // setFast(true) (cú của người khác hiện ngay kết quả). Luật chuẩn (máy chủ "pool_rules2"): choose("rerack" | "play") (sau cú
+    // phá không hợp lệ), call(id) / cycleCall() (gọi lỗ cho bi 8), help() (thẻ tóm tắt luật, phím H). Xoáy: .spin (được chọn
+    // không, nấc đang chọn, ô chọn có hiện, đoạn gợi ý hướng bi trắng, cú vừa xong), setSpin(spin, roll) (nấc −2 … +2), shoot(…, {
+    // spin, roll }), autoShot({ spin, roll }), forceShot(angle, power, { spin: 3 }) (máy chủ phải chặn), spinDot() (toạ độ màn hình
+    // của ô chọn: tâm + bán kính — kéo chấm bằng chuột)
     get pool() {
       const p = game.pool;
       if (!p) return null;
@@ -81,9 +98,16 @@ export function installDebug(game, loop) {
         aim: () => p.aim ?? null,
         join: () => { p.join(); return p.info(); },
         autoShot: (opts) => p.autoShot(opts),
-        forceShot: (angle, power = 0.5) => p.forceShot(angle, power),
+        forceShot: (angle, power = 0.5, extra) => p.forceShot(angle, power, extra),
+        setSpin: (spin, roll = 0) => { p.setSpin(spin, roll); return p.info().spin; },
+        spinDot: () => { const b = p.spinEl?.querySelector(".ball")?.getBoundingClientRect(); return b && b.width ? { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 } : null; },
         setFast: (on = true) => { p.fast = !!on; return p.fast; },
         place: (x, z) => p.debugPlace(x, z),
+        choose: (c) => { p.choose(c); return p.info(); },
+        call: (id) => { p.setCall(id); return p.call; },
+        cycleCall: () => { p.cycleCall(); return p.call; },
+        help: () => p.help(),
+        screen: (x, z) => p.pointer?.screen(x, z) ?? null,      // điểm (x, z) cục bộ trên mặt bàn → toạ độ màn hình (di chuột tới)
       });
     },
     netEmote(id) { return game.net?.emote(id); },

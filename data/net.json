@@ -27,7 +27,7 @@
     { "id": "see_you_lunch", "text": { "en": "See you at lunch!", "vi": "Trưa gặp nhau nhé!" } },
     { "id": "welcome", "text": { "en": "Welcome to F-Ville!", "vi": "Chào mừng đến F-Ville!" } }
   ],
-  "_emote_ly_do": "Emote dùng animation có sẵn của model (characters.json → models.<id>.animations). Câu chat soạn sẵn, KHÔNG có chat tự do: máy chủ chỉ nhận id nằm trong 2 danh sách này.",
+  "_emote_ly_do": "Emote dùng animation có sẵn của model (characters.json → models.<id>.animations). Câu chat soạn sẵn (phím T): máy chủ chỉ nhận id nằm trong 2 danh sách này. Nhắn tin tự do (phím Enter, có bộ lọc từ): data/chat.json.",
   "server": {
     "max_connections": 60,
     "max_msgs_per_s": 10,

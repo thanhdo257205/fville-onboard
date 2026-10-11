@@ -1,11 +1,11 @@
 # Chơi nhiều người mức "thấy nhau"
 
-Cập nhật: 10/10/2026 (thêm chia phòng ~30 người và bi-a 2 người — xem 2 mục cuối)
+Cập nhật: 11/10/2026 (bi-a đánh xoáy — mục cuối; nhắn tin tự do + bộ lọc từ; bi-a: máy khách tính cú, máy chủ chỉ áp luật; luật chuẩn 8 bi "sọc trơn"; 10/10: chia phòng ~30 người, bi-a 2 người)
 
 Không mã phòng, không tạo phòng: máy chủ tự xếp người vào phòng (mỗi phòng ~30 người, xem "Chia phòng"). Mỗi người vẫn
 chơi phần của mình: nhiệm vụ, hội thoại, Tú, NPC đều riêng từng máy. Phần chung là **thấy nhau** khi ở cùng phòng và cùng
-zone, kèm emote và câu chat soạn sẵn, và **bàn bi-a chung** ở zone 5 (2 người chơi theo lượt, người khác đứng xem). Không
-có chat tự do.
+zone, kèm emote và câu chat soạn sẵn, **bàn bi-a chung** ở zone 5 (2 người chơi theo lượt, người khác đứng xem) và **nhắn tin
+tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ — xem "Nhắn tin tự do + bộ lọc từ").
 
 `data/net.json` → `"url": ""` thì mạng tắt hẳn: không kết nối, không có góc online, không có phím T, menu không có dòng
 "Show other players". Game chạy y như bản chơi một mình. Bản trên gh-pages hiện để trống.
@@ -16,7 +16,7 @@ có chat tự do.
 | --- | --- |
 | `server/` | Máy chủ: Cloudflare Worker và Durable Object, mỗi DO một phòng (`fville`, `fville-2`…; `src/index.js`, `wrangler.toml`). Dùng WebSocket Hibernation API |
 | `server/src/pool.js` | Bàn bi-a chung của một phòng: ghế, lượt, vị trí bi, kiểm tra cú đánh, luật (JS thuần, thử bằng Node) |
-| `game/src/pool/rules.js` | Luật 8 bi rút gọn + mã hoá bàn — dùng chung cho game và máy chủ |
+| `game/src/pool/rules.js` | Luật 8 bi (luật chuẩn `applyShotV2` + luật rút gọn cũ `applyShot`) + mã hoá bàn — dùng chung cho game và máy chủ |
 | `data/net.json` | URL máy chủ, nhịp gửi, độ trễ nội suy, số người hiện tối đa, danh sách emote và câu chat, giới hạn của máy chủ (mục `server`: cả `room_size`, `max_rooms`, `pool_turn_s`). **Máy chủ đọc file này (và `data/pool.json`) lúc `wrangler deploy`** |
 | `game/src/net/client.js` | Kết nối WebSocket: thử lại theo backoff, ping khi đứng yên, phát hiện rớt mạng |
 | `game/src/net/remotes.js` | Hiện người chơi khác: model, bộ đồ, bảng tên, animation, nội suy, bong bóng câu chat |
@@ -57,9 +57,12 @@ có chat tự do.
   - Câu chat hiện thành bong bóng trên đầu (cùng kiểu bong bóng của Tú): "Hi!", "Good luck!", "Follow me!",
     "Thank you!", "See you at lunch!", "Welcome to F-Ville!".
   - Mình chọn gì thì máy mình cũng diễn hoặc hiện bong bóng luôn. Đi hoặc chạy thì emote dừng.
-- **Menu Esc:** "Show other players: On / Off", lưu trong trình duyệt. Máy yếu nên tắt; tắt rồi vẫn kết nối, người khác vẫn
+- **Enter: nhắn tin tự do** (khi máy chủ báo `"chat"`): khung chat góc trái dưới, 3 tab Zone / All / Private, bong bóng
+  cho tin cùng zone, bấm tên → nhắn riêng / tắt nhận tin. Chi tiết: "Nhắn tin tự do + bộ lọc từ".
+- **Menu Esc:** "Show other players: On / Off" (tắt thì ẩn cả bong bóng chat), "Chat: On / Off" (tắt thì không hiện khung
+  chat, không nhận tin), lưu trong trình duyệt. Máy yếu nên tắt Show other players; tắt rồi vẫn kết nối, người khác vẫn
   thấy mình.
-- **Dòng điều khiển** thêm "T: wave & chat" khi bật mạng.
+- **Dòng điều khiển** thêm "T: wave & quick phrases · Enter: chat" khi bật mạng.
 
 ## Giao thức (JSON gọn)
 
@@ -69,15 +72,19 @@ có chat tự do.
 | | `state {zone, pos, yaw, anim}` | Tối đa 5 lần/giây và chỉ khi có thay đổi (> 2 cm, > 2°, đổi anim hoặc zone). Đổi zone cũng bằng tin này |
 | | `emote {id}` · `phrase {id}` · `leave` | |
 | | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
-| | `pool_join` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế, rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
-| | `pool_shot {seq, a, p, cue, b, k, s, d}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn |
-| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung |
+| | `pool_join {r, cf, sp}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn, `cf: 1` = gửi sự kiện cú, `sp: 1` = hiểu xoáy), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
+| | `pool_choice {c}` | Luật chuẩn, sau cú phá không hợp lệ của đối thủ: `"rerack"` (xếp lại và tự phá) / `"play"` (đánh tiếp) |
+| | `chat {ch, to?, text}` | Nhắn tin tự do (`ch`: `zone` / `all` / `dm`; `to`: id phiên người nhận khi `dm`), tối đa 120 ký tự |
+| | `pool_shot {seq, a, p, spin, roll, cue, call, b, k, s, d, f, r, rb, kp}` | Cú đánh: số thứ tự, góc, lực, nấc xoáy ngang / đè – kéo (số nguyên −2 … +2, chỉ gửi khi có xoáy), chỗ đặt bi trắng (bi trong tay), lỗ gọi cho bi 8 (luật chuẩn), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn; sự kiện cú cho luật chuẩn (`rules.js` → `wireFacts`): bi trắng chạm bi nào trước, có bi chạm băng sau lần chạm đó, số bi chạm băng, lỗ của từng bi vào lỗ |
+| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi; `"pool_facts"`: máy chủ không chạy vật lý, dùng kết quả + sự kiện cú máy khách gửi; `"pool_spin"`: cú có xoáy; `"chat"`: có nhắn tin tự do |
 | | `zone {zone, players, online}` | Vừa vào zone: danh sách người cùng zone |
 | | `join {p}` · `state {id, pos, yaw, anim}` · `emote {id, e}` · `phrase {id, p}` · `leave {id}` | **Chỉ gửi cho người cùng zone** |
 | | `online {n}` | Số người online, gửi cho cả phòng |
+| | `chat {ch, id, name, text, zone?}` | Tin đã lọc: `zone` → người cùng zone, `all` → cả phòng, `dm` → người nhận; người gửi cũng nhận lại |
+| | `chat_err {code}` | Tin bị từ chối: `empty`, `long` (quá 120 ký tự), `rate` (gửi quá nhanh), `nobody` (người nhận không còn online) |
 | | `error {code, msg}` | Vd phòng đầy |
-| | `pool {tb, err?}` | Bàn bi-a hiện tại (vừa vào zone của bàn cũng nhận); `err`: `full`, `turn`, `seq`, `cue`, `bad`… khi máy chủ từ chối |
-| | `pool_shot {shot, tb}` | Một cú vừa được nhận (`shot`: người đánh, góc, lực, chỗ đặt bi trắng, vị trí bi) + bàn sau cú |
+| | `pool {tb, err?}` | Bàn bi-a hiện tại (vừa vào zone của bàn cũng nhận); `err`: `full`, `turn`, `seq`, `cue`, `bad`, `call`, `choice`, `version` (máy khách cũ xin ghế ở bàn luật chuẩn)… khi máy chủ từ chối |
+| | `pool_shot {shot, tb}` | Một cú vừa được nhận (`shot`: người đánh, góc, lực, `spin` / `roll`, chỗ đặt bi trắng, vị trí bi) + bàn sau cú; `tb.spin`: bàn cho đánh xoáy |
 
 ## Máy chủ: giới hạn và kiểm tra đầu vào
 
@@ -87,6 +94,8 @@ có chat tự do.
 - **Tên:** tối đa 20 ký tự; chỉ giữ chữ (mọi ngôn ngữ, có dấu), số, khoảng trắng và `. ' _ -`, bỏ ký tự lạ và ký tự vô hình.
 - **Vị trí, hướng:** phải là số hữu hạn (|x| ≤ 5000). Zone phải đúng dạng `zone_NN`. Anim lạ đổi thành `idle`.
 - **Emote, câu chat:** id phải nằm trong danh sách của `data/net.json`, một người cách nhau ít nhất 0,8 s.
+- **Nhắn tin tự do:** bỏ ký tự điều khiển / vô hình, tối đa 120 ký tự, mỗi người dồn 5 tin rồi 1 tin / giây; lọc từ thô tục
+  và link (`data/chat.json`) trước khi phát; tên người chơi cũng qua bộ lọc. Không lưu tin nào.
 - **Tần suất:** quá 10 tin/giây mỗi kết nối thì bỏ tin, gấp 3 lần thì ngắt (mã 4003).
 - **Số kết nối:** phòng đủ `room_size` (30) thì người mới sang phòng sau; phòng cuối (`max_rooms` = 6) nhận tối đa 60, người
   thứ 61 nhận `error` "The room is full…" rồi bị đóng (mã 4001).
@@ -98,8 +107,8 @@ có chat tự do.
   và 127.0.0.1 luôn được, để thử. Công cụ không phải trình duyệt (không gửi Origin) vẫn vào được, nhưng các giới hạn trên
   vẫn áp.
 - **`GET /status`:** trả số người online và số người từng zone, không có tên. Dùng để kiểm tra sau khi lên mạng.
-- **Ghi log:** `wrangler.toml` tắt `observability`, Cloudflare không lưu log yêu cầu. Tên người chơi chỉ đi qua bộ nhớ của
-  Durable Object và những người cùng zone đang online.
+- **Ghi log:** `wrangler.toml` tắt `observability`, Cloudflare không lưu log yêu cầu. Tên người chơi và tin nhắn chỉ đi qua
+  bộ nhớ của Durable Object và những người nhận đang online.
 
 ## Chạy thử trên máy (không cần tài khoản Cloudflare)
 
@@ -314,3 +323,207 @@ curl https://fville-net.fville-onboard.workers.dev/status   # có "room_size", "
 
 Rồi deploy bản web (`python scripts/deploy_site.py`). Thứ tự không bắt buộc: bản web mới + máy chủ cũ → bàn chỉ tập một
 mình; máy chủ mới + bản web cũ → bản web cũ bỏ qua các tin `pool`.
+
+## Bi-a luật chuẩn 8 bi "sọc trơn" (11/10/2026)
+
+Bàn chung theo luật 8 bi chuẩn (WPA, rút gọn cho game — tóm tắt luật: `docs/GDD.md`, zone 5): cú phá hợp lệ (có bi vào hoặc
+≥ 4 bi chạm băng; không thì đối thủ chọn xếp lại phá / đánh tiếp), bàn vẫn mở sau cú phá, lỗi → đối thủ có bi trong tay cả
+bàn, phải gọi lỗ cho bi 8, mỗi cú 60 s (hết giờ = lỗi). Tập một mình và thử thách của anh Khang giữ luật cũ.
+
+**Máy chủ** (`server/src/pool.js`, `PoolRoom` với `rules: 2`):
+- *(Bản đầu, đã thay bằng "Máy khách tính cú" — mục cuối.)* **Tự tính lại cú**: người đánh chỉ gửi góc, lực, chỗ đặt bi trắng, lỗ gọi; máy chủ chạy `physics.js` (tất định, cùng mã
+  với game) → sự kiện cú (bi trắng chạm bi nào trước, bi nào chạm băng, bi nào vào lỗ nào — `shotFacts`) → `applyShotV2`.
+  Vị trí bi máy khách gửi (`b`, `k`, `s`, `d`) bị bỏ qua — không gian lận được kết quả. **CPU mỗi cú** (đo bằng Node, cùng
+  V8 với workerd): 0,4–3 ms khi mã đã "nóng" (cú nhẹ → phá mạnh), ~24 ms cho cú đầu tiên sau khi máy chủ vừa khởi động. Gói
+  Free của Workers giới hạn 10 ms CPU mỗi lần gọi; chưa kiểm được trên tài liệu Cloudflare giới hạn này có áp cho từng tin
+  WebSocket của Durable Object không → sau `wrangler deploy` xem `npx wrangler tail` / dashboard (lỗi "exceeded CPU") khi
+  chơi thử vài ván. Nếu bị chặn: chuyển máy chủ về `POOL_RULES = "1"` (luật cũ) rồi tính lại cách làm (vd tin kết quả của
+  máy khách như luật cũ, chỉ kiểm tra lại bằng luật chuẩn).
+- Kiểm tra: đúng ghế / lượt / số thứ tự cú; chưa chọn sau cú phá không hợp lệ thì không nhận cú (`choice`); chỗ đặt bi trong
+  tay (`inHand`: `"kitchen"` khu đầu bàn sau cú phá, `"table"` cả bàn sau lỗi; không chồng bi — `canPlaceCueIn`); đang đánh
+  bi 8 phải có `call` là id lỗ hợp lệ (`call`).
+- Hết giờ lượt: lỗi (`ev {k: "foul", why: "timeout"}`), đối thủ có bi trong tay; 3 lần liên tiếp của cùng một người → mất ghế.
+- `tb` gửi thêm `rules` (2), `choice` (`"break"` khi chờ chọn); `inHand` là `false` / `"kitchen"` / `"table"`; sự kiện cú có
+  `foul {why, n}` (`scratch`, `off`, `no_hit`, `wrong_first`, `no_rail`), `brk` (`"legal"` / `"illegal"`), `call`; hết ván:
+  `reason` thêm `eight_foul`, `eight_pocket`, `eight_off`.
+- Bản chụp qua lúc DO ngủ ghi kèm bộ luật; dậy mà bản chụp là ván của bộ luật khác → xếp lại ván mới (không trộn 2 luật).
+
+**Tương thích — không lệch bàn trong mọi trường hợp:**
+
+| Máy chủ | Bản web | Kết quả |
+| --- | --- | --- |
+| mới (`pool_rules2`) | mới | luật chuẩn |
+| mới | cũ (`pool_join` không có `r: 2`) | không được ngồi (`err: "version"`) → chờ hết 6 s rồi tập một mình; vẫn xem được (cú phát lại khớp vì máy chủ gửi kết quả nó tính) |
+| cũ (chỉ `pool`) | mới | luật rút gọn cũ, giao diện cũ (máy khách thấy `tb.rules` không phải 2) |
+| cũ | cũ | như trước |
+
+Thử máy chủ bản cũ trên máy: `npx wrangler dev --var POOL_RULES:1` (biến `POOL_RULES = "1"` → luật cũ, không báo
+`pool_rules2`; smoke dùng cách này).
+
+**Kiểm thử:** `npm run test:pool` (thêm: từng tình huống luật chuẩn, sự kiện cú từ vật lý — cú cũ chạy lại giống từng bit,
+bàn máy chủ luật chuẩn, ván trọn 2 người giả có xếp lại / lỗi / bi trong tay / gọi lỗ); `npm run test:smoke` (máy chủ local:
+phá không hợp lệ → R / P, lỗi không chạm bi → bi trong tay cả bàn, gọi lỗ bi 8, máy khách cũ bị từ chối; rồi máy chủ giả
+bản cũ: chơi trọn ván luật cũ).
+
+**Cần `wrangler deploy`** (máy Desktop có `wrangler login`, sau khi nhánh `feat/pool-rules-8ball` đã vào `main`) — máy chủ
+thật đang chạy bản cũ, chưa deploy thì bàn chung vẫn theo luật rút gọn cũ:
+
+```bash
+git pull
+cd server
+npx wrangler deploy
+```
+
+Rồi deploy bản web (`python scripts/deploy_site.py`). Nên deploy máy chủ và bản web gần nhau: trong lúc máy chủ đã mới mà
+bản web còn cũ, người chơi bản web cũ không ngồi được bàn chung (chỉ tập một mình / đứng xem).
+
+**Đã deploy (11/10/2026, máy Desktop):** bản web trước — gh-pages 6c15184 (từ `main` 048fa04, PR #14); rồi máy chủ
+`npx wrangler deploy` → version `e150c939-0569-43e6-8b68-a377d4296be6` (bản trước 3764cab6, để `wrangler rollback`). `/` →
+`F-Ville net: OK`, `/status` JSON, tin chào `features: ["pool", "pool_rules2"]`. `wrangler tail --format json` lúc người dùng
+chơi thử bàn chung 2 người (3 lượt ván, ~8 phút): 325 sự kiện của Durable Object, **mọi `outcome` = `ok`**, 0 exception, không
+`exceededCpu`. CPU mỗi tin: 296 tin 0 ms, cú đánh thường 1–4 ms, nhưng **7 cú 11–20 ms** (đi theo cặp ở đầu mỗi ván — cú phá
+và cú ngay sau, nhiều bi lăn nhất; nặng nhất 20 ms). Vượt mốc 10 ms/lần gọi của gói Free nhưng Cloudflare vẫn chạy (không
+`exceededCpu`); cần theo dõi dashboard → Workers & Pages → fville-net → Metrics, và cân nhắc giảm CPU máy chủ khi tự tính lại
+cú phá (vd bước mô phỏng thưa hơn / tính lười).
+
+## Máy khách tính cú, máy chủ chỉ áp luật (11/10/2026, sau deploy e150c939)
+
+Bản e150c939 tự tính lại từng cú trên máy chủ: trên Cloudflare cú phá và cú ngay sau tốn **11–20 ms CPU**, quá mốc 10 ms / lần
+gọi của gói Free (mục trên). Người dùng chốt: chi phí tính toán để ở máy khách.
+
+- **Máy khách** (`game/src/pool/table.js`): như luật cũ, người đánh tự tính cú bằng `physics.js` rồi gửi thông số + kết quả
+  (`b` vị trí bi khi dừng, `k` bi vào lỗ theo thứ tự, `s`, `d`), thêm **sự kiện cú** cho luật chuẩn (`rules.js` → `wireFacts`,
+  rút từ `shotFacts`): `f` bi trắng chạm bi nào trước (null: không chạm), `r` có bi chạm băng sau lần chạm đó, `rb` số bi
+  (trừ bi trắng) chạm băng, `kp` lỗ của từng bi trong `k`. Xin ghế kèm `cf: 1`.
+- **Máy chủ** (`server/src/pool.js`): **không chạy vật lý** (không còn gọi `simulateShot`). Kiểm tra kết quả như luật cũ (bi
+  vào lỗ = đúng những bi biến mất, bi đã vào không quay lại, `s` khớp `k`) + sự kiện cú hợp lý (`rules.js` → `factsFromWire`:
+  `f` là bi đang trên bàn, không chạm bi nào thì không có bi khác vào lỗ / chạm băng, `rb` không quá số bi trên bàn, `kp` đủ
+  và đúng id lỗ) → `applyShotV2` như trước; chỗ đặt bi trong tay, lỗ gọi, lựa chọn sau cú phá, hết giờ giữ nguyên. Tin chào
+  thêm `"pool_facts"`.
+- **CPU mỗi cú của máy chủ** (`test:pool`, Node, cả `JSON.parse`): ~0,09 ms trung bình, lâu nhất ~0,15 ms (bản tự tính lại:
+  0,4–3 ms trong Node, 11–20 ms cú phá trên Cloudflare). Tin `pool_shot` lớn nhất trong ván ~410 ký tự, xấu nhất (16 bi vào
+  lỗ) ~715 — dưới giới hạn 1.200.
+- **Đánh đổi:** máy chủ tin kết quả người đánh gửi (như luật rút gọn cũ trước PR #14) — chỉ chặn được kết quả không hợp lý,
+  không chặn được máy khách bị sửa để "bịa" một cú hợp lý. Mọi bên vẫn chốt theo bàn máy chủ gửi nên bàn không lệch; người
+  xem phát lại từng cú và đếm cú lệch (`__game.pool.net.mismatch`). Nếu sau này cần chống gian lận: để người kia (đối thủ)
+  phát lại cú — vốn đã làm để hiện hoạt cảnh — và báo máy chủ khi lệch.
+
+**Tương thích (3 bản máy chủ):**
+
+| Máy chủ | Bản web | Kết quả |
+| --- | --- | --- |
+| mới (`pool_facts`) | mới | luật chuẩn, máy chủ không chạy vật lý |
+| mới | luật chuẩn bản đầu (gh-pages 6c15184: `r: 2`, chưa có `cf`) | không được ngồi (`version`) → chờ 6 s rồi tập một mình; vẫn xem được |
+| e150c939 (đang chạy: `pool_rules2`, tự tính cú) | mới | luật chuẩn — máy chủ bỏ qua `cf` và sự kiện cú, tự tính như cũ (đã thử: chơi trọn ván với mã máy chủ của `main` fe49f63 qua `wrangler dev`, 15 cú, không lỗi, phát lại khớp) |
+| cũ (chỉ `pool`) | mới | luật rút gọn cũ (smoke: `--var POOL_RULES:1`) |
+
+**Thứ tự deploy: bản web trước, máy chủ sau** (bản web mới chạy được với máy chủ đang chạy, nên không có lúc nào người chơi
+mất bàn chung; chỉ tab mở từ trước còn bản web cũ mới bị từ chối sau khi máy chủ lên bản mới — tải lại trang là được):
+
+```bash
+git pull
+python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trước)
+cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "pool_facts"
+npx wrangler tail --format json        # 3. chơi thử 1 ván 2 người: cú phá phải còn ~0 ms CPU, mọi outcome ok
+```
+
+Lùi lại: `npx wrangler rollback` về e150c939 (bản web mới vẫn chạy với nó — bảng trên).
+
+**Đã deploy (11/10/2026):** bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms.
+
+## Nhắn tin tự do + bộ lọc từ (11/10/2026)
+
+Trạng thái: [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) đã gộp vào `main` (1195cb1); **đã lên mạng 11/10/2026**: bản web gh-pages c26234f, máy chủ version
+c487c71a-f7fb-4692-a942-8bbe6f9d2305 (bản trước e7a013c0 — `npx wrangler rollback` nếu cần quay lại).
+
+Người dùng chốt: cho gõ chữ tự do (không chỉ câu soạn sẵn), kèm bộ lọc từ. Câu soạn sẵn ở phím T vẫn giữ.
+
+- **Cấu hình:** `data/chat.json` — `max_len` 120 ký tự, chống spam `burst` 5 tin dồn + hồi `rate_per_s` 1 tin / giây,
+  `history` 50 tin mỗi kênh (chỉ ở máy khách trong lượt chơi, không vào bản lưu), `bubble_s` 6 giây bong bóng; `filter`: danh
+  sách từ. Máy chủ đọc file này lúc `wrangler deploy` → sửa danh sách từ thì phải deploy lại máy chủ.
+- **Giao thức:** máy khách gửi `{ t: "chat", ch: "zone" | "all" | "dm", to?, text }`; máy chủ phát
+  `{ t: "chat", ch, id, name, text, zone? }` (bản **đã lọc**) — `zone`: người cùng zone, `all`: cả phòng (mọi zone), `dm`: đúng
+  1 người (id phiên, cùng phòng). Người gửi cũng nhận lại bản đã lọc (thấy đúng như người khác thấy). Lỗi:
+  `{ t: "chat_err", code: "empty" | "long" | "rate" | "nobody" }` (tin quá dài bị từ chối, không cắt). Tin chào thêm
+  `features: [..., "chat"]`; máy chủ bản cũ không có `"chat"` → game không hiện khung chat (vẫn có câu soạn sẵn). Máy chủ
+  **không lưu lịch sử** — người vào sau không thấy tin cũ.
+- **Bộ lọc** (`game/src/net/chatfilter.js`, dùng chung máy chủ + `test:data`): lọc theo từng từ (không lọc chuỗi con →
+  "class", "assistant" không bị che). `exact`: so nguyên dấu tiếng Việt (bỏ dấu sẽ trùng từ thường: "cặc" / "các", "lồn" /
+  "lớn"); `plain`: so sau khi bỏ dấu, đổi chữ số / ký hiệu giống chữ (0 → o, 4 → a, @ → a…), gộp chữ lặp ("fuuuck"); `*` cuối
+  = tiền tố; cụm nhiều từ ("đụ má"); chữ cái tách rời ("f u c k") ghép lại rồi so; `allow`: từ không bao giờ che. Đường link
+  (http://, www., tên miền .com / .vn …) → `[link]`. Tên tự đặt của người chơi cũng qua bộ lọc. Mất ~0,06 ms / tin 120 ký tự
+  (Node). Không lọc được mọi cách viết lách — người chơi còn có mute và tắt chat.
+- **Trong game** (`game/src/ui/chat.js`): góc trái dưới.
+  - Đóng: vài tin mới nhất (mờ sau ~12 s) + "N tin mới — nhấn Enter để đọc".
+  - **Enter** mở (khi đang đi lại / ở bàn bi-a, không trong hội thoại): nhân vật đứng yên, hiện con trỏ, gõ chữ không điều
+    khiển nhân vật. Enter gửi, Enter khi ô trống / **Esc** đóng.
+  - 3 tab **Zone / All / Private** kèm số tin chưa đọc; tin Zone hiện thêm bong bóng trên đầu người gửi (ẩn theo "Show other
+    players"). Private: chọn người trong danh sách, hoặc bấm tên trong tin / bảng tên người chơi (bảng tên bấm được khi khung
+    chat mở).
+  - Bấm tên → nhắn riêng / tắt nhận tin (mute, theo phiên) / bật lại. Lần đầu mở: thẻ quy tắc ứng xử.
+  - Menu Esc: "Chat: On / Off" (lưu cài đặt; tắt thì không hiện khung, không nhận tin).
+  - Mọi chữ người khác gửi hiện bằng `textContent` (không chèn HTML).
+- **Thử:** `__game.chat` (trạng thái, `open()`, `close()`, `send(text)`, `chat(ch, text, to)`, `rulesOk()`), `__game.net.chat`
+  (kênh, mute, lỗi). Smoke (`--extra only`, máy chủ local): 2 trình duyệt + 1 bot WebSocket — tin zone chỉ tới người cùng
+  zone (+ bong bóng), all tới cả phòng, từ thô tục / link bị che, dm chỉ tới đúng người, bấm bảng tên → Private, chặn tin
+  dài / gửi nhanh, tên tự đặt bị lọc, mute, tắt chat ở menu Esc, máy chủ không có `"chat"` → không có khung chat.
+
+**Số request Cloudflare.** Mỗi tin chat = 1 tin WebSocket gửi lên (tính như tin vị trí: 20 tin = 1 request); tin máy chủ phát
+ra không tính. CPU máy chủ mỗi tin: lọc ~0,06 ms + gửi tới tối đa ~30 người cùng phòng.
+
+| Trường hợp | Tin nhận / giờ | Request / giờ |
+| --- | --- | --- |
+| 21 người, mỗi người 1 tin / phút | 1.260 | **~63** (tin vị trí cùng lúc: ~11.800) |
+| 21 người, mỗi người 1 tin / 10 giây (chat rất sôi nổi) | 7.560 | ~380 |
+| Xấu nhất: cả 21 người gửi sát giới hạn (1 tin / giây) | 75.600 | ~3.800 |
+
+→ Chat thêm không đáng kể so với tin vị trí; hạn 100.000 request / ngày gần như không đổi (trước: ~8,5 giờ chơi 21 người /
+ngày; chat bình thường vẫn ~8,4 giờ).
+
+**Deploy: bản web trước, máy chủ sau.** Bản web mới chạy được với máy chủ đang chạy (chưa có `"chat"` → khung chat ẩn, mọi
+thứ khác như cũ); máy chủ mới chạy được với bản web cũ (bản cũ bỏ qua `features` lạ, không gửi `chat`).
+
+```bash
+git pull
+python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trước)
+cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "chat"
+npx wrangler tail --format json        # 3. 2 cửa sổ nhắn thử: mọi outcome ok, CPU ~0–1 ms
+```
+
+Máy Desktop: nếu `deploy_site.py` báo `rejected … (non-fast-forward)` khi push gh-pages (có bản deploy từ máy khác, vd máy
+cloud), `dist/` đang cũ hơn GitHub → `cd dist`, `git fetch origin gh-pages`, `git log --oneline FETCH_HEAD..HEAD` (chỉ còn commit
+build vừa tạo), `git reset --hard FETCH_HEAD`, `cd ..`, chạy lại `python scripts/deploy_site.py`.
+
+## Bi-a: đánh xoáy (11/10/2026, nhánh `feat/pool-spin`)
+
+Người dùng chốt: áp phê trái / phải 5 nấc (−2 … +2) và xoáy lên / xuống (đánh đè / đánh kéo) 5 nấc. Chi tiết vật lý: đầu
+`game/src/pool/physics.js`; giao diện: `game/src/pool/table.js` (ô chọn điểm chạm góc phải dưới, phím Z / X / F / B).
+
+- **Máy khách** tính cú có xoáy như cú thường (`simulateShot(table, state, { angle, power, spin, roll })`, tất định — chỉ + − × ÷,
+  `Math.sqrt`, `dsin` / `dcos`), gửi `pool_shot` kèm `spin`, `roll` (chỉ khi khác 0). Sự kiện cú (`wireFacts`: bi chạm trước,
+  chạm băng, lỗ của từng bi) lấy từ cùng danh sách sự kiện của vật lý nên vẫn đúng khi có xoáy. `spin = roll = 0` cho kết quả
+  **giống từng bit** bản trước (test:pool so dấu vân tay 300 cú ghi từ bản cũ) — ván cũ, phát lại, thử thách của anh Khang không
+  đổi.
+- **Máy chủ** (`server/src/pool.js`) vẫn **không chạy vật lý**: kiểm tra `spin` / `roll` là số nguyên −2 … +2 (không gửi = 0; sai →
+  bỏ cú, `err: "bad"`), giữ nguyên `factsFromWire`, chuyển tiếp `spin` / `roll` trong `pool_shot.shot` để người kia và người xem
+  phát lại đúng cú. Tin chào thêm `"pool_spin"`. CPU mỗi cú không đổi (~0,1 ms trong Node).
+- **Tương thích:** `pool_join` kèm `sp: 1` = máy khách hiểu xoáy; bàn báo `tb.spin: true` khi mọi người đang ngồi đều hiểu xoáy.
+  Có người ngồi bằng bản web chưa có xoáy (vd gh-pages c26234f) → `tb.spin: false`, cú có xoáy bị bỏ (`err: "spin"`), máy khách
+  mới ẩn ô chọn và gửi như cũ. Máy chủ cũ (không có `"pool_spin"`, kể cả `POOL_RULES = "1"`) → máy khách mới ẩn ô chọn, luôn
+  đánh tâm. Người xem dùng bản web cũ (không ngồi) phát lại cú có xoáy như đánh tâm → lệch hoạt cảnh, nhưng cuối cú vẫn chốt
+  theo bàn máy chủ (bàn không lệch).
+
+| Máy chủ | Bản web người ngồi | Kết quả |
+| --- | --- | --- |
+| mới (`pool_spin`) | cả 2 bản mới | đánh xoáy được |
+| mới | có 1 người bản cũ | bàn chung luật chuẩn như trước, không xoáy |
+| cũ (c487c71a, chưa có `pool_spin`) | mới | như trước, không xoáy (máy chủ cũ bỏ qua `sp`) |
+
+**Thứ tự deploy: bản web trước, máy chủ sau** (bản web mới chạy được với máy chủ đang chạy):
+
+```bash
+git pull
+python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trước)
+cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "pool_spin"
+```
+

@@ -874,10 +874,11 @@ export class Game {
     return r.ok;
   }
 
-  // phím H: gợi ý của mục tiêu hiện tại (đang đi lại: thẻ gợi ý; app My FPT đang mở: ô Help trong app)
+  // phím H: gợi ý của mục tiêu hiện tại (đang đi lại: thẻ gợi ý; app My FPT đang mở: ô Help trong app; ở bàn bi-a: luật chơi)
   help() {
     if (this.state.phase !== "playing") return;
     if (this.mode === "app") { this.ui.app.toggleHelp(); return; }
+    if (this.mode === "pool") { this.pool?.help(); return; }          // bàn bi-a: tóm tắt luật
     if (this.mode === "play") this.guide.help();
   }
 
@@ -895,7 +896,7 @@ export class Game {
     this.footsteps.update(dt);   // cả lúc cảnh chuyển dắt người chơi / Tú đi
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)
     if (this.state.phase !== "playing") return;
-    const drag = this.input.consumeDrag();
+    const drag = this.input.consumeDrag(!!this.pool?.active);
     // bi-a: ngắm, nạp lực, bi lăn, camera riêng (cameraOverride); không ở bàn: cú của người khác (bàn chung) vẫn lăn
     if (this.pool) this.pool.update(dt, this.pool.active ? drag : null);
     const still = { x: 0, y: 0, run: false };

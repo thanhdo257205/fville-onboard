@@ -1,5 +1,5 @@
 // Bảng emote + câu chat soạn sẵn (chơi nhiều người, data/net.json): phím T mở / đóng, phím 1–9 hoặc bấm chuột để chọn.
-// Không chặn điều khiển (vẫn đi lại được khi bảng đang mở); chọn xong tự đóng. KHÔNG có chat tự do.
+// Không chặn điều khiển (vẫn đi lại được khi bảng đang mở); chọn xong tự đóng. Nhắn tin tự do: ./chat.js (phím Enter).
 import { tx } from "../content/content.js";
 import { t } from "../i18n.js";
 

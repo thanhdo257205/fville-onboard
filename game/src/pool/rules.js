@@ -1,8 +1,11 @@
-// Luật 8 bi rút gọn + mã hoá trạng thái bàn — dùng chung cho game (game/src/pool/table.js) và máy chủ chơi nhiều người
+// Luật 8 bi + mã hoá trạng thái bàn — dùng chung cho game (game/src/pool/table.js) và máy chủ chơi nhiều người
 // (server/src/pool.js). JS thuần, không three.js; TẤT ĐỊNH như physics.js: chỉ + − × ÷ và Math.round / abs / floor, không
 // dùng ** (Math.pow) — máy chủ và mọi máy khách phải ra cùng một bàn.
 //
-// Luật (docs/CHECKLIST.md → "Bi-a bước 3"):
+// Có 2 bộ luật cho ván 2 người: luật chuẩn "sọc trơn" (applyShotV2, bàn chung khi máy chủ báo features "pool_rules2") và
+// luật rút gọn cũ (applyShot — máy chủ cũ chưa có "pool_rules2"; tập một mình và thử thách của anh Khang luôn như cũ).
+//
+// Luật rút gọn cũ (docs/CHECKLIST.md → "Bi-a bước 3"):
 //   • Người ngồi trước phá bi. Bàn "mở" tới khi có người đưa được bi vào lỗ mà bi trắng không rơi: người đó nhận nhóm của
 //     bi vào lỗ đầu tiên — bi trơn 1–7 (solid) hoặc bi sọc 9–15 (stripe); đối thủ nhận nhóm còn lại.
 //   • Đánh tiếp khi đưa được bi nhóm mình vào lỗ (bàn mở: bi bất kỳ trừ bi 8) và bi trắng không rơi; không thì đổi lượt.
@@ -136,4 +139,142 @@ export function targets(state, m, seat) {
   if (m?.mode !== "match") return on.map((b) => b.n);
   const list = on.filter((b) => (own ? groupOf(b.n) === own : b.n !== 8)).map((b) => b.n);
   return list.length ? list : on.filter((b) => b.n === 8).map((b) => b.n);
+}
+
+// ================= luật chuẩn 8 bi "sọc trơn" (theo WPA, rút gọn cho game) =================
+// docs/GDD.md → mục bi-a. Khác luật cũ:
+//   • Cú phá hợp lệ: có bi vào lỗ hoặc ≥ 4 bi (trừ bi trắng) chạm băng. Không hợp lệ → đối thủ chọn (choice "break"): xếp lại
+//     và tự phá, hoặc đánh tiếp từ bàn đang có. Bi trắng rơi lúc phá → lỗi, đối thủ đặt bi trắng ở khu đầu bàn. Bi 8 vào lúc
+//     phá → đặt lại ở điểm chân, người phá đánh tiếp (bi trắng cũng rơi → đối thủ có bi trong tay ở khu đầu bàn).
+//   • Bàn vẫn mở sau cú phá (bi vào lỗ lúc phá không quyết định nhóm); nhóm chọn ở cú vào bi hợp lệ đầu tiên sau đó.
+//   • Lỗi → đổi lượt, đối thủ có bi trong tay đặt bất kỳ đâu trên bàn (inHand "table"): bi trắng rơi lỗ / văng khỏi bàn
+//     ("scratch" / "off"); chạm bi khác nhóm trước — bàn mở: chạm bi 8 trước ("wrong_first"); không chạm bi nào ("no_hit");
+//     sau khi chạm không bi nào vào lỗ và không bi nào chạm băng ("no_rail"); hết giờ ("timeout", máy chủ).
+//   • Bi 8: phải gọi lỗ trước cú đánh bi 8 (call = id lỗ). Thua khi bi 8 vào sớm ("eight_early"), vào khác lỗ đã gọi / không
+//     gọi ("eight_pocket"), vào kèm lỗi ("eight_scratch" nếu bi trắng rơi, còn lại "eight_foul") hoặc văng khỏi bàn ("eight_off").
+// Vật lý 2D (physics.js) không làm bi văng khỏi bàn — "off" chỉ có khi sự kiện cú đánh mang facts.off (để sau này có nhảy bi).
+export const RULES_V2 = 2;
+
+// sự kiện của cú (simulateShot → events theo thứ tự thời gian, không đổi vật lý) → dữ kiện để áp luật:
+// { first: bi trắng chạm bi nào trước (null: không chạm), rail: sau lần chạm đó có bi nào (kể cả bi trắng) chạm băng,
+//   railBalls: số bi (trừ bi trắng) chạm băng trong cả cú, pocketed: bi vào lỗ theo thứ tự, pockets: { n: id lỗ }, scratch, off }
+export function shotFacts(res) {
+  let contacted = false, rail = false;
+  const railBalls = new Set(), pockets = {}, pocketed = [];
+  for (const e of res.events) {
+    if (e.type === "ball") { if (e.a === 0 || e.b === 0) contacted = true; }
+    else if (e.type === "rail") { if (e.a !== 0) railBalls.add(e.a); if (contacted) rail = true; }
+    else if (e.type === "pocket") { pocketed.push(e.a); pockets[e.a] = e.v; }
+  }
+  return { first: res.firstContact ?? null, rail, railBalls: railBalls.size, pocketed, pockets, scratch: pocketed.includes(0), off: res.off || [] };
+}
+
+// máy khách gửi kèm cú (máy chủ không chạy vật lý — CPU máy chủ ~0 mỗi cú): sự kiện cú → trường của pool_shot
+// { f: bi trắng chạm trước | null, r: có bi chạm băng sau lần chạm đó, rb: số bi (trừ bi trắng) chạm băng, kp: lỗ của từng bi
+// trong k (k = res.pocketed, cùng thứ tự) }
+export function wireFacts(res) {
+  const fx = shotFacts(res);
+  return { f: fx.first, r: fx.rail, rb: fx.railBalls, kp: fx.pocketed.map((n) => fx.pockets[n]) };
+}
+// ngược lại (máy chủ): bàn trước cú + bi vào lỗ k (đã kiểm khớp với vị trí bi máy khách gửi) + trường f / r / rb / kp → dữ kiện
+// cho applyShotV2, hoặc null khi không hợp lý: f không phải bi đang trên bàn; không chạm bi nào mà có bi khác vào lỗ / chạm
+// băng; rb quá số bi trên bàn; kp lệch số bi vào lỗ hoặc có lỗ không tồn tại
+export function factsFromWire(table, before, k, m) {
+  const f = m.f ?? null, kp = m.kp;
+  const objects = before.balls.reduce((c, b) => c + (b.on && b.n !== 0 ? 1 : 0), 0);
+  if (f !== null && !(Number.isInteger(f) && f >= 1 && f < before.balls.length && before.balls[f].on)) return null;
+  if (typeof m.r !== "boolean" || !Number.isInteger(m.rb) || m.rb < 0 || m.rb > objects) return null;
+  if (f === null && (m.r || m.rb > 0 || k.some((n) => n !== 0))) return null;
+  if (!Array.isArray(kp) || kp.length !== k.length || !kp.every((id) => table.pockets.some((p) => p.id === id))) return null;
+  const pockets = {};
+  k.forEach((n, i) => { pockets[n] = kp[i]; });
+  return { first: f, rail: m.r, railBalls: m.rb, pocketed: [...k], pockets, scratch: k.includes(0), off: [] };
+}
+
+// người ở ghế `seat` đang đánh bi 8 (nhóm mình đã hết trước cú này) → cú phải gọi lỗ
+export function onEight(state, m, seat) {
+  const own = m?.mode === "match" ? m.groups[seat] : null;
+  return own != null && ballsLeft(state, own) === 0;
+}
+
+// bi trong tay: "kitchen" = khu đầu bàn (sau cú phá bi trắng rơi), "table" = bất kỳ đâu trong mũi băng; không chồng bi
+export function handArea(table, hand) {
+  if (hand === "kitchen") return kitchen(table);
+  return { x0: -table.rx + table.r, x1: table.rx - table.r, z0: -table.rz + table.r, z1: table.rz - table.r };
+}
+export function canPlaceCueIn(table, state, x, z, hand) {
+  const k = handArea(table, hand);
+  if (!(x >= k.x0 && x <= k.x1 && z >= k.z0 && z <= k.z1)) return false;      // NaN → false
+  const d2 = 4 * table.r * table.r;
+  return state.balls.every((b) => b.n === 0 || !b.on || (b.x - x) * (b.x - x) + (b.z - z) * (b.z - z) >= d2);
+}
+
+// ván luật chuẩn: thêm rules: 2, choice (null | "break": người tới lượt chọn sau cú phá không hợp lệ), to: số lần hết giờ
+// liên tiếp của mỗi ghế (máy chủ); inHand: false | "kitchen" | "table"
+export const newMatchV2 = (breaker) => ({ ...newMatch(breaker), rules: RULES_V2, choice: null, to: [0, 0] });
+
+// cú đánh xong (luật chuẩn) → { m, state, ev }. before: bàn trước cú (đã đặt bi trắng nếu có bi trong tay); after: bàn sau
+// cú; facts: shotFacts(res); call: id lỗ đã gọi cho bi 8 (hoặc null). Tập một mình / chưa vào ván: như luật cũ.
+// ev: { k: "shot", seat, potted, assigned, keep, respot8, foul: null | { why, n? }, brk: null | "legal" | "illegal", call }
+export function applyShotV2(table, m, before, after, facts, call = null) {
+  if (m.mode !== "match") return applyShot(table, m, before, after, { pocketed: facts.pocketed, scratch: facts.scratch });
+  const state = cloneState(after), turn = m.turn, opp = 1 - turn;
+  const next = { ...m, groups: [...m.groups], inHand: false, choice: null };
+  const obj = facts.pocketed.filter((n) => n !== 0 && n !== 8);
+  const scratch = facts.scratch || facts.off.includes(0);
+  const eight = facts.pocketed.includes(8) || facts.off.includes(8);
+  const ev = { k: "shot", seat: turn, scratch, potted: facts.pocketed.filter((n) => n !== 0), assigned: null, keep: false, respot8: false,
+    foul: null, brk: null, call };
+  const foulOut = (why, extra = {}) => {
+    ev.foul = { why, ...extra };
+    next.turn = opp;
+    next.inHand = "table";
+    if (scratch) respotCue(table, state);           // bi trắng về điểm đầu bàn — người kia dời đi đâu cũng được
+    return { m: next, state, ev };
+  };
+  if (m.brk) {
+    next.brk = false;
+    ev.brk = obj.length || eight || facts.railBalls >= 4 ? "legal" : "illegal";
+    if (facts.pocketed.includes(8)) { respotBall(table, state, 8); ev.respot8 = true; }
+    if (scratch) {                                   // bi trắng rơi lúc phá: đối thủ đặt bi trắng ở khu đầu bàn
+      ev.foul = { why: facts.off.includes(0) ? "off" : "scratch" };
+      next.turn = opp;
+      next.inHand = "kitchen";
+      respotCue(table, state);
+      return { m: next, state, ev };
+    }
+    if (ev.respot8) { ev.keep = true; return { m: next, state, ev }; }    // bi 8 vào lúc phá: người phá đánh tiếp
+    if (ev.brk === "illegal") { next.turn = opp; next.choice = "break"; return { m: next, state, ev }; }
+    ev.keep = obj.length > 0;                        // phá hợp lệ: vào bi → đánh tiếp (bàn vẫn mở)
+    if (!ev.keep) next.turn = opp;
+    return { m: next, state, ev };
+  }
+  const own = m.groups[turn], eightNow = onEight(before, m, turn);
+  // lỗi của cú (chưa tính bi 8)
+  let foul = null;
+  if (scratch) foul = { why: facts.off.includes(0) ? "off" : "scratch" };
+  else if (facts.first == null) foul = { why: "no_hit" };
+  else if (own == null ? facts.first === 8 : eightNow ? facts.first !== 8 : groupOf(facts.first) !== own) foul = { why: "wrong_first", n: facts.first };
+  else if (!facts.pocketed.length && !facts.rail) foul = { why: "no_rail" };
+  if (eight) {
+    const off8 = facts.off.includes(8);
+    const reason = off8 ? "eight_off" : !eightNow ? "eight_early" : foul ? (scratch ? "eight_scratch" : "eight_foul")
+      : call == null || facts.pockets[8] !== call ? "eight_pocket" : "eight";
+    next.mode = "over";
+    next.winner = reason === "eight" ? turn : opp;
+    next.reason = reason;
+    if (scratch) respotCue(table, state);
+    return { m: next, state, ev: { ...ev, k: "over", foul, winner: next.winner, reason } };
+  }
+  if (foul) return foulOut(foul.why, foul.n != null ? { n: foul.n } : {});
+  if (own == null && obj.length) {                   // bàn mở: cú vào bi hợp lệ đầu tiên → nhận nhóm của bi vào trước
+    const g = groupOf(obj[0]);
+    next.groups[turn] = g;
+    next.groups[opp] = otherGroup(g);
+    ev.assigned = g;
+  }
+  const mine = next.groups[turn];
+  ev.keep = mine != null && obj.some((n) => groupOf(n) === mine);
+  if (!ev.keep) next.turn = opp;
+  return { m: next, state, ev };
 }

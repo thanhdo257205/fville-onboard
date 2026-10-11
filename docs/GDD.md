@@ -168,7 +168,9 @@ thanh trạng thái giả, xoay ngang ẩn thêm 2 thanh chỉ số để còn c
 | Mở App My FPT | Tab |
 | Menu, cài đặt, mức đồ họa | Esc |
 | Bỏ qua cảnh chuyển | Nút Skip hoặc Esc |
+| Bi-a: điểm chạm trên bi trắng (xoáy trái / phải, đánh đè / kéo) | Z / X, F / B, hoặc kéo chấm trên ô bi trắng |
 | Emote, câu chat soạn sẵn (chỉ khi bật chơi nhiều người) | T, rồi 1–9 |
+| Nhắn tin tự do (khi máy chủ có chat): mở / gửi, đóng | Enter, Esc |
 
 ## Chơi nhiều người (mức "thấy nhau")
 
@@ -178,8 +180,9 @@ Mọi người chơi vào một phòng chung, không mã phòng. Mỗi người 
 - Kết nối sau khi bấm "Start my first day". Mất mạng thì vẫn chơi một mình bình thường, game tự vào lại khi có mạng.
 - Người khác có model và bộ đồ của họ (Áo Cam FPT khi đã nhận), bảng tên viền xanh ngọc (NPC viền cam), đi / chạy / đứng mượt. Chỉ hiện 10 người gần nhất cùng zone, không va chạm.
 - Góc dưới phải: "N online · M in this zone".
-- Phím T: 3 emote (Wave, Nod, Cheer) và 6 câu chat soạn sẵn ("Hi!", "Good luck!", "Follow me!", "Thank you!", "See you at lunch!", "Welcome to F-Ville!") hiện thành bong bóng trên đầu. Không có chat tự do.
-- Menu Esc: "Show other players: On / Off".
+- Phím T: 3 emote (Wave, Nod, Cheer) và 6 câu chat soạn sẵn ("Hi!", "Good luck!", "Follow me!", "Thank you!", "See you at lunch!", "Welcome to F-Ville!") hiện thành bong bóng trên đầu.
+- Nhắn tin tự do (Enter): 3 tab Zone (người cùng zone, kèm bong bóng trên đầu) / All (cả phòng) / Private (nhắn riêng: bấm bảng tên hoặc chọn người); tối đa 120 ký tự, chống spam, từ thô tục và link bị che ở máy chủ (`data/chat.json`); bấm tên để mute; thẻ quy tắc ứng xử lần đầu; tắt hẳn trong menu Esc. Máy chủ không lưu lịch sử.
+- Menu Esc: "Show other players: On / Off", "Chat: On / Off".
 - Người khác không ảnh hưởng nhiệm vụ: dấu "!", gợi ý E, camera hội thoại vẫn như chơi một mình. Đang hội thoại thì ẩn người đứng sát; đang mini-game thì ẩn hết.
 
 ## Zone 0 · Điểm đón xe bus (06:30, khoảng 2 phút)
@@ -336,7 +339,15 @@ Zone 5 nén cả ngày làm việc thành bốn cuộc gặp, kết thúc khi ng
 - **Ăn trưa:** màn mờ "12:00 · The team invites you to lunch", rồi sáng lại buổi chiều: ánh sáng ấm hơn, đồng hồ 13:30 (`data/zones.json` → `variants`).
 - **Say Hello Team:** Lan, Minh, Hà mỗi người một lời khuyên. Lời khuyên đầu tiên mở tab **Advice** (Sổ lời khuyên) trong My FPT; Kết nối +5 mỗi người. Lan và Hà ngồi phía bắc cụm bàn, nói chuyện được qua mặt bàn.
 - **Anh Khang** (tùy chọn): trò chuyện, mời **Một cú bi-a** trên bàn bi-a thật của khu nghỉ: thế bi dễ cho sẵn (bi trắng + bi cam), đưa bi cam vào lỗ trong 3 cú (hết 3 cú thì xếp lại, thêm 3 cú). Ngắm bằng chuột hoặc A/D, giữ chuột trái / Space nạp lực, thả để đánh. Mỗi cú trượt là 1 lần sai: sai 2 lần hiện đường ngắm gợi ý (cú tìm được bằng vật lý), sai 3 lần có Skip. Thêm 1 lời khuyên; Kết nối +5. Nói chuyện lại thì được đánh thêm.
-- **Bàn bi-a — chơi một mình** (tùy chọn, bước 2 của bi-a): đến gần bàn có lời nhắc **Play pool**. Camera sau bi trắng, xoay quanh bàn theo hướng ngắm; người chơi đứng cạnh bàn; đường ngắm + bi ma ở điểm chạm đầu tiên; cây cơ lùi theo lực rồi đẩy tới; bi lăn có xoay. Xếp bi, phá bi, đếm số cú và số bi vào lỗ; bi trắng rơi lỗ → đặt lại ở điểm đầu bàn; **Rerack** (R); Esc rời bàn, trạng thái bàn giữ trong lượt chơi. Vật lý 2D tất định (bước thời gian cố định 1/240 s, chỉ + − × ÷ và căn bậc hai) để bước 3 (chơi bi-a với người khác) cho kết quả giống hệt trên mọi máy.
+- **Bàn bi-a — chơi một mình** (tùy chọn, bước 2 của bi-a): đến gần bàn có lời nhắc **Play pool**. Camera sau bi trắng, xoay quanh bàn theo hướng ngắm; người chơi đứng cạnh bàn; đường ngắm + bi ma ở điểm chạm đầu tiên; cây cơ lùi theo lực rồi đẩy tới; bi lăn có xoay. Xếp bi, phá bi, đếm số cú và số bi vào lỗ; bi trắng rơi lỗ → đặt lại ở điểm đầu bàn; **Rerack** (R); Esc rời bàn, trạng thái bàn giữ trong lượt chơi. **Điểm chạm trên bi trắng (xoáy):** ô hình bi trắng ở góc phải dưới, kéo chấm (chuột / ngón tay) hoặc phím **Z / X** (xoáy trái / phải), **F / B** (đánh đè / đánh kéo), 5 nấc mỗi chiều (−2 … +2), mặc định giữa, về giữa sau mỗi cú. Xoáy trái / phải làm bi bật băng lệch đi (thuận chiều lăn mở góc, ngược chiều khép góc; mỗi lần chạm băng xoáy giảm), bi trắng lệch nhẹ ~1° ngược phía xoáy lúc đánh, va bi đẩy bi kia lệch rất nhẹ; đè làm bi trắng chạy tiếp sau khi chạm bi, kéo làm bi trắng lùi (giảm dần theo quãng đường lăn trước khi chạm). Đường ngắm thêm một đoạn ngắn hướng bi trắng sau lần chạm đầu. Mini-game của anh Khang luôn đánh tâm. Vật lý 2D tất định (bước thời gian cố định 1/240 s, chỉ + − × ÷ và căn bậc hai) để bước 3 (chơi bi-a với người khác) cho kết quả giống hệt trên mọi máy.
+- **Bàn bi-a — 2 người** (bàn chung qua máy chủ, khi bật chơi nhiều người): cả phòng thấy cùng một bàn. Một người ngồi → tập một mình (cú vẫn phát cho người xem); người thứ hai ngồi → ván 8 bi, người ngồi trước phá; hết ghế → đứng xem (J: ngồi khi có ghế trống); hết ván R = đấu lại, người thua phá. Bảng góc trên: 2 ghế, nhóm (trơn / sọc) + số bi còn lại, người đang đánh, đồng hồ lượt, lỗi gần nhất; **H** mở thẻ tóm tắt luật. Đánh xoáy như bàn tập (cú gửi kèm nấc xoáy, người kia và người xem phát lại đúng cú đó); có người ngồi bằng bản web cũ chưa hiểu xoáy, hoặc máy chủ cũ, thì bàn chung ẩn ô chọn và luôn đánh tâm.
+- **Luật 8 bi "sọc trơn"** (theo WPA, rút gọn cho game; `game/src/pool/rules.js` → `applyShotV2`; người đánh tự tính cú, máy chủ chỉ kiểm tra rồi áp luật):
+  - **Cú phá hợp lệ:** có bi vào lỗ hoặc ít nhất 4 bi chạm băng. Không hợp lệ → đối thủ chọn: **R** xếp lại và tự phá, hoặc **P** đánh tiếp từ thế bi đó. Bi trắng rơi lúc phá → lỗi, đối thủ đặt bi trắng ở khu đầu bàn. Bi 8 vào lỗ lúc phá → đặt lại ở điểm chân bàn, người phá đánh tiếp (bi trắng cũng rơi thì đối thủ có bi trong tay ở khu đầu bàn).
+  - **Bàn vẫn mở sau cú phá:** bi vào lỗ lúc phá không chia nhóm; cú vào bi hợp lệ đầu tiên sau đó quyết định nhóm (bi trơn 1–7 / bi sọc 9–15) theo bi vào trước. Vào bi nhóm mình → đánh tiếp.
+  - **Lỗi** → đổi lượt, đối thủ có **bi trong tay đặt bất kỳ đâu trên bàn** (không chồng bi): bi trắng rơi lỗ / văng khỏi bàn; chạm bi nhóm kia trước (bàn mở: chạm bi 8 trước; đang đánh bi 8: chạm bi khác trước); không chạm bi nào; sau khi chạm không bi nào vào lỗ và không bi nào chạm băng. Báo kèm lý do, vd "Chạm bi 3 trước — lỗi".
+  - **Bi 8:** hết bi nhóm mình thì phải **gọi lỗ** trước cú đánh bi 8 — bấm vào lỗ trên bàn, C đổi lỗ (Space / cú bấm đầu gọi lỗ đang ngắm tới); vòng sáng ở các lỗ, lỗ đã gọi màu cam. Vào đúng lỗ đã gọi, không lỗi → thắng. **Thua** khi bi 8 vào lỗ sớm (nhóm chưa hết), vào lỗ khác lỗ đã gọi, vào kèm lỗi, hoặc văng khỏi bàn.
+  - **Giờ:** mỗi cú tối đa 60 s, hết giờ = lỗi (đối thủ có bi trong tay); hết giờ 3 lần liên tiếp → mất ghế, đối thủ thắng.
+  - Vật lý 2D hiện chưa làm bi văng khỏi bàn (luật đã có sẵn cho sau này). **Tập một mình** và **thử thách của anh Khang** giữ luật cũ (không chia lượt, không tính lỗi). Máy chủ bản cũ (chưa có luật chuẩn) → bàn chung theo luật rút gọn cũ: chỉ bi trắng rơi là lỗi, bi trong tay ở khu đầu bàn, bi 8 không phải gọi lỗ.
 - **Bàn làm việc** (chỉ sau Manager; chưa chào đủ team thì hỏi có muốn chào trước không): hộp quà của team *[DRAFT]*, mini-game **Đăng nhập** *[DRAFT, quy định thật chờ HR/IT]*: 5 quy định mật khẩu tick dần, thanh độ mạnh, rồi bật 2FA. Mật khẩu chỉ kiểm tra trong trình duyệt, không lưu. Sau đó bảng tên trên bàn hiện tên người chơi + vị trí intern, checklist ngày đầu tự tick lần lượt (mục bàn làm việc tick cuối); Hiểu biết +10; hiệu ứng `finish` mở cảnh kết.
 - **Hạt lúa vàng:** trên nóc kệ ô vuông đỏ – trắng và dưới mép bàn bi-a.
 
@@ -459,7 +470,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
 
 **Cắt được nếu thiếu thời gian**, theo thứ tự cắt trước: Đừng ngủ gật, Một cú bi-a, cảnh hoàng hôn, hạt lúa vàng. Tú là phần đắt nhất nhưng cũng giữ mạch cảm xúc; nếu phải bỏ Tú, chuyển tình huống thẻ báo đỏ sang một intern khác do code đặt tạm ở cửa.
 
-**Ngoài phạm vi:** chơi nhiều người đầy đủ (chat tự do, làm nhiệm vụ cùng nhau, phòng riêng — hiện chỉ có mức "thấy nhau"), điều khiển cảm ứng trên điện thoại, lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
+**Ngoài phạm vi:** chơi nhiều người đầy đủ (làm nhiệm vụ cùng nhau, phòng riêng — hiện có mức "thấy nhau", bi-a 2 người, nhắn tin), điều khiển cảm ứng trên điện thoại, lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
 
 ## Phụ lục: dữ liệu JSON cho Claude Code
 
@@ -477,6 +488,7 @@ Toàn bộ nội dung game nằm trong các file JSON ở thư mục `data/`, đ
 | `data/cutscenes.json` | Cảnh chuyển (cảnh lên xe zone 0 → zone 1): đối tượng, góc máy, thời lượng từng nhịp |
 | `data/characters.json` | Vai, model, tên hiển thị, màu áo/quần tạm cho các NPC còn dùng chung model |
 | `data/net.json` | Chơi nhiều người: URL máy chủ (trống = tắt), nhịp gửi, emote và câu chat soạn sẵn, giới hạn của máy chủ |
+| `data/chat.json` | Nhắn tin tự do: độ dài tối đa, chống spam, số tin giữ lại, bộ lọc từ (máy chủ đọc lúc deploy) |
 | `data/i18n/en.json` | Chữ giao diện tiếng Anh (thêm ngôn ngữ khác bằng file cùng cấu trúc) |
 
 **Hiệu ứng** dùng chung cho lựa chọn hội thoại và mini-game: `hieu_biet`, `ket_noi` (số cộng thêm), `value` (id giá trị), `reward` (id phần thưởng), `flags` (cờ đánh dấu sự kiện), `quest` (id việc vừa xong). Chữ hiển thị là object theo mã ngôn ngữ, ví dụ `{ "en": "..." }`. Nội dung chờ HR có `"draft": true` (game hiện `[DRAFT]`); bản phát hành báo lỗi nếu còn mục nào như vậy.
