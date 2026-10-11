@@ -3,8 +3,11 @@
 // định, toạ độ cục bộ bàn); luật 8 bi rút gọn: ./rules.js (dùng chung với máy chủ server/src/pool.js).
 //   • Đến gần bàn: lời nhắc "Play pool" (interactables.json → action pool:play) → chế độ "pool": camera sau bi trắng, xoay
 //     quanh bàn theo hướng ngắm; người chơi đứng cạnh bàn; đường ngắm + bi ma ở điểm chạm đầu tiên.
-//   • Ngắm: chuột (con trỏ khoá) hoặc A/D, ←/→ (Shift: chậm); giữ chuột trái / Space nạp lực (thanh lực chạy lên xuống),
-//     thả để đánh: cây cơ lùi theo lực rồi đẩy tới, bi lăn (xoay theo quãng đường). Lăn chuột: gần / xa.
+//   • Ngắm (./pointer.js đổi con trỏ → điểm trên mặt bàn): con trỏ đang khoá → di chuột ngang xoay cơ; chưa khoá / không
+//     khoá được → cơ hướng từ bi trắng tới điểm con trỏ trên mặt bàn (camera đứng yên). A/D, ←/→ luôn dùng được; Shift: chậm.
+//     Cú bấm khi chưa khoá chỉ để khoá con trỏ (hoặc lấy lại chuột sau khi rời cửa sổ) — không nạp lực. Giữ chuột trái /
+//     Space nạp lực (thanh lực chạy lên xuống), thả để đánh: cây cơ lùi theo lực rồi đẩy tới, bi lăn (xoay theo quãng
+//     đường). Lăn chuột: gần / xa. Cú đánh gửi đi (bàn chung) vẫn chỉ là góc + lực như cũ.
 //   • Tập một mình (không có mạng, hoặc máy chủ cũ chưa báo features "pool"): đếm số cú, số bi vào lỗ; bi trắng rơi lỗ → đặt
 //     lại ở điểm đầu bàn; R / nút Rerack: xếp lại. Esc rời bàn; trạng thái bàn giữ trong lượt chơi (game.poolSession, không
 //     vào bản lưu). Ẩn cue (cây dựng cạnh bàn) và cue_2 (cây nằm trên mặt nỉ) khi đang chơi.
@@ -21,6 +24,7 @@ import * as THREE from "three";
 import { makeTable, rackState, customState, simulateShot, aimInfo, findPottingShot, respotCue, cloneState, angleTo, FRAME_STEPS, DT, MAX_SPEED } from "./physics.js";
 import { packBalls, unpackBalls, canPlaceCue, placeCue, kitchen, ballsLeft, targets } from "./rules.js";
 import { pickShot } from "./auto.js";
+import { TablePointer } from "./pointer.js";
 import { clampCamera } from "../world/collision.js";
 import { hud } from "../ui/hud.js";
 import { t } from "../i18n.js";
@@ -50,8 +54,21 @@ export class PoolTable {
     this.camDist = 1.05;
     this.view = new THREE.Vector3();
     this.lookAt = new THREE.Vector3();
-    this.mouse = false;
-    this.onMouse = (e) => { if (e.button === 0) this.mouseButton(e.type === "mousedown"); };
+    this.mouse = false;           // đang giữ nút chuột chính (nạp lực)
+    this.pointer = null;          // TablePointer khi đang ở bàn (con trỏ → điểm trên mặt bàn)
+    this.cursorAim = false;       // góc ngắm vừa đặt bằng con trỏ (không khoá) → camera giữ hướng, không xoay theo góc ngắm
+    this.cursorMoved = false;     // con trỏ vừa đổi góc ngắm → đặt lại chỗ đứng của người chơi ở khung tới
+    this.camAngle = this.angle;   // hướng camera nhìn bàn (khoá chuột / phím: theo góc ngắm)
+    this.lockFailed = false;      // lần ngồi này trình duyệt từ chối khoá con trỏ → ngắm bằng con trỏ, bấm là nạp lực
+    this.regain = false;          // cửa sổ vừa mất focus → cú bấm tới chỉ để lấy lại chuột
+    this.onBlur = () => { this.regain = true; this.mouse = false; };
+    this.onLockError = () => {
+      if (!this.active) return;
+      this.lockFailed = true;
+      this.game.input.setLook(false);       // thôi xin khoá ở mỗi cú bấm (cú bấm giờ là nạp lực)
+      this.showHint();
+    };
+    this.onLockChange = () => { if (this.active) this.showHint(); };
     this.netActive = false;       // đang ở bàn chung (quyết lúc vào bàn)
     this.seat = -1;               // ghế của mình ở bàn chung (−1: đứng xem)
     this.override = null;         // bàn có bi trắng mình vừa đặt (bi trong tay), chỉ trong lượt của mình
@@ -166,21 +183,28 @@ export class PoolTable {
     this.apply(this.state);
     this.snapCamera = true;
     g.cameraOverride = (dt) => this.camera(dt);
+    this.mouse = false;
+    this.lockFailed = false;
+    this.regain = false;
+    this.cursorAim = false;
     g.input.setLook(true);
-    addEventListener("mousedown", this.onMouse);
-    addEventListener("mouseup", this.onMouse);
+    this.pointer = new TablePointer({ canvas: g.input.canvas, camera: g.camera, root: this.root, y: this.table.ballY,
+      onMove: (pt) => this.pointerMove(pt), onDown: (pt) => this.pointerDown(pt), onUp: () => { this.mouse = false; } }).attach();
+    addEventListener("blur", this.onBlur);
+    document.addEventListener("pointerlockerror", this.onLockError);
+    document.addEventListener("pointerlockchange", this.onLockChange);
     if (this.netActive) {
       this.phase = "wait";
       this.waitT = 0;
       this.hideAim();
       this.net.sendPool({ t: "pool_join" });
-      hud.hint(t("pool.controls_net"), 600);
     } else {
       this.phase = "aim";
       this.aimAtTarget();
-      hud.hint(t(challenge ? "pool.controls_challenge" : "pool.controls"), 600);
       this.placePlayer();
     }
+    this.camAngle = this.angle;
+    this.showHint();
     this.drawHud();
     return () => this.leave();
   }
@@ -199,8 +223,12 @@ export class PoolTable {
     this.seat = -1;
     this.override = null;
     this.phase = "idle";
-    removeEventListener("mousedown", this.onMouse);
-    removeEventListener("mouseup", this.onMouse);
+    this.pointer?.detach();
+    this.pointer = null;
+    this.mouse = false;
+    removeEventListener("blur", this.onBlur);
+    document.removeEventListener("pointerlockerror", this.onLockError);
+    document.removeEventListener("pointerlockchange", this.onLockChange);
     this.hudEl?.remove();
     this.hudEl = null;
     this.helpers.visible = false;
@@ -279,13 +307,34 @@ export class PoolTable {
   }
 
   // ---------- điều khiển ----------
-  mouseButton(down) {
+  // chế độ chuột ở bàn: "lock" con trỏ đang khoá (di chuột xoay cơ) · "wait" chưa khoá nhưng khoá được (con trỏ ngắm; cú bấm
+  // để khoá, chưa nạp lực) · "free" không khoá được (trình duyệt không hỗ trợ / từ chối): con trỏ ngắm, giữ chuột trái nạp lực
+  get mouseMode() {
+    const i = this.game.input;
+    return i.locked ? "lock" : i.lockSupported && !this.lockFailed ? "wait" : "free";
+  }
+  // bấm nút chuột chính trên khung vẽ (./pointer.js)
+  pointerDown(pt) {
     if (!this.active) return;
-    if (down) {
-      // nhấp đầu tiên để khoá con trỏ (ngắm bằng chuột) — chưa nạp lực
-      if (this.game.input.lockSupported && !this.game.input.locked) return;
-      this.mouse = true;
-    } else this.mouse = false;
+    const mode = this.mouseMode;
+    if (mode === "wait") return;                           // cú bấm này chỉ để khoá con trỏ (core/input.js) — chưa nạp lực
+    if (mode === "free") {
+      if (this.regain) { this.regain = false; return; }    // vừa quay lại cửa sổ: cú bấm chỉ để lấy lại chuột
+      this.pointerMove(pt);                                 // ngắm đúng chỗ vừa bấm rồi mới nạp lực
+    }
+    this.mouse = true;
+  }
+  // con trỏ chưa khoá di trên mặt bàn: cơ hướng từ bi trắng tới điểm đó (đang nạp lực thì giữ hướng — thả tay không lệch cú);
+  // bi trong tay: bi trắng theo con trỏ trong khu đầu bàn
+  pointerMove(pt) {
+    if (!this.active || !pt || this.game.input.locked) return;
+    if (this.phase === "aim") {
+      const cue = this.state.balls[0], dx = pt.x - cue.x, dz = pt.z - cue.z;
+      if (!cue.on || dx * dx + dz * dz < (this.table.r * 1.5) ** 2) return;   // sát bi trắng: hướng không rõ
+      this.angle = angleTo(cue.x, cue.z, pt.x, pt.z);
+      this.cursorAim = true;
+      this.cursorMoved = true;
+    } else if (this.phase === "place") this.moveCue(pt.x, pt.z);
   }
   rerack() {
     if (!this.active || this.challenge || this.playback) return;
@@ -505,7 +554,7 @@ export class PoolTable {
     this.placePlayer();
     this.snapCamera = true;
     hud.toast(t(key));
-    hud.hint(t("pool.controls"), 600);
+    this.showHint();
     this.drawHud();
   }
   // mỗi khung (bàn chung): chờ ghế quá lâu, đồng hồ lượt, báo máy chủ khi đối thủ hết giờ
@@ -530,10 +579,17 @@ export class PoolTable {
     if (this.netActive) this.netTick(dt);
     const slow = k.has("ShiftLeft") || k.has("ShiftRight") ? 0.25 : 1;
     const turn = ((k.has("KeyD") || k.has("ArrowRight") ? 1 : 0) - (k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0)) * 0.9 * slow;
-    if (this.phase === "place") this.updatePlace(dt, drag, pressing);
-    else if (this.phase === "watch" || this.phase === "wait") this.angle += turn * dt + (drag?.dx || 0) * 0.0032 * slow;   // xem: xoay quanh bàn
-    else if (this.phase === "aim" || this.phase === "charge") {
-      this.angle += turn * dt + (drag?.dx || 0) * 0.0032 * slow;
+    // chuột khoá: di chuột xoay cơ (movementX → drag, core/input.js); chuột không khoá: con trỏ ngắm (pointerMove), kéo chuột
+    // không xoay cơ. Kéo ngón tay / kéo kiểu cũ khi không có chuột: vẫn xoay.
+    const useDrag = input.locked || this.pointer?.lastType !== "mouse";
+    const dx = useDrag ? (drag?.dx || 0) : 0, dy = useDrag ? (drag?.dy || 0) : 0;
+    if (turn || dx) this.cursorAim = false;               // phím / chuột khoá: camera lại theo góc ngắm
+    if (this.phase === "place") this.updatePlace(dt, { dx, dy }, pressing);
+    else if (this.phase === "watch" || this.phase === "wait") {
+      this.angle += turn * dt + (drag?.dx || 0) * 0.0032 * slow;   // xem: xoay quanh bàn (kéo chuột cũng được)
+      if (drag?.dx) this.cursorAim = false;
+    } else if (this.phase === "aim" || this.phase === "charge") {
+      this.angle += turn * dt + dx * 0.0032 * slow;
       const want = pressing && !this.needRelease;
       if (want && this.phase === "aim") { this.phase = "charge"; this.chargeT = 0; }
       if (this.phase === "charge") {
@@ -543,8 +599,10 @@ export class PoolTable {
         if (!want) this.shoot(this.angle, Math.max(0.04, this.power));
       }
       if (this.phase === "aim" || this.phase === "charge") this.drawAim();
-      if (turn || drag?.dx) this.placePlayer();
+      if (turn || dx || this.cursorMoved) this.placePlayer();
+      this.cursorMoved = false;
     }
+    if (!this.cursorAim) this.camAngle = this.angle;
     if (drag?.wheel) this.camDist = THREE.MathUtils.clamp(this.camDist + drag.wheel * 0.12, 0.55, 2.4);
     if (this.phase === "strike") {
       this.strikeT += dt;
@@ -574,9 +632,16 @@ export class PoolTable {
     // camera nhìn từ đầu bàn về phía xếp bi (+z): bên phải màn hình = −x cục bộ
     const dx = -right * sp - (drag?.dx || 0) * 0.0012, dz = fwd * sp - (drag?.dy || 0) * 0.0012;
     if (!dx && !dz) return;
+    const c = st.balls[0];
+    this.moveCue(c.x + dx, c.z + dz);
+  }
+  // bi trong tay: dời bi trắng tới (x, z) cục bộ — kẹp trong khu đầu bàn, không chồng bi (không được thì trượt theo 1 trục)
+  moveCue(x, z) {
+    const st = this.override;
+    if (!st) return;
     const c = st.balls[0], kk = kitchen(this.table), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-    const nx = clamp(c.x + dx, kk.x0, kk.x1), nz = clamp(c.z + dz, kk.z0, kk.z1);
-    const tryAt = (x, z) => canPlaceCue(this.table, st, x, z) && !!placeCue(st, x, z);
+    const nx = clamp(x, kk.x0, kk.x1), nz = clamp(z, kk.z0, kk.z1);
+    const tryAt = (px, pz) => canPlaceCue(this.table, st, px, pz) && !!placeCue(st, px, pz);
     if (tryAt(nx, nz) || tryAt(nx, c.z) || tryAt(c.x, nz)) this.apply(st);
   }
 
@@ -745,6 +810,12 @@ export class PoolTable {
     const el = this.hudEl?.querySelector(".status");
     if (el) el.textContent = this.statusText();
   }
+  // dòng hướng dẫn dưới màn hình: cách ngắm theo chế độ chuột + phím của chế độ chơi
+  hintText() {
+    const aim = t(this.mouseMode === "free" ? "pool.hint_aim_free" : "pool.hint_aim_mouse");
+    return `${aim} · ${t(this.challenge ? "pool.controls_challenge" : this.netActive ? "pool.controls_net" : "pool.controls")}`;
+  }
+  showHint() { if (this.active) hud.hint(this.hintText(), 600); }
 
   // ---------- camera + chỗ đứng ----------
   local(v) { return this.root.localToWorld(v.clone()); }
@@ -771,7 +842,9 @@ export class PoolTable {
   }
   camera(dt) {
     const cam = this.game.camera, s = this.state, cue = s.balls[0], y = this.table.ballY;
-    const d = new THREE.Vector3(Math.cos(this.angle), 0, Math.sin(this.angle));
+    // hướng camera: theo góc ngắm, trừ khi vừa ngắm bằng con trỏ không khoá (camera xoay theo thì điểm dưới con trỏ chạy
+    // theo → góc ngắm trôi mãi)
+    const d = new THREE.Vector3(Math.cos(this.camAngle), 0, Math.sin(this.camAngle));
     let pos, look;
     if (this.phase === "place") {
       // bi trong tay: nhìn từ sau băng đầu bàn xuống khu đầu bàn
@@ -870,6 +943,7 @@ export class PoolTable {
       shots: this.session?.shots, potted: this.session?.potted, onTable: s?.balls.filter((b) => b.on).map((b) => b.n),
       cue: s && { x: +s.balls[0].x.toFixed(4), z: +s.balls[0].z.toFixed(4), on: s.balls[0].on },
       cuesHidden: this.cues?.every((c) => !c.visible), rolling: !!this.playback, left: this.challenge?.left ?? null,
+      mouse: this.active ? this.mouseMode : null, cursorAim: this.cursorAim, camAngle: +this.camAngle.toFixed(4), pressing: this.mouse,
       net: { on: this.netMode, active: this.netActive, seat: this.seat, myTurn: this.myTurn, mode: tb?.mode ?? null, seq: tb?.seq ?? null,
         v: tb?.v ?? null, turn: tb?.turn ?? null, groups: tb?.groups ?? null, inHand: tb?.inHand ?? null, winner: tb?.winner ?? null,
         reason: tb?.reason ?? null, seats: tb?.seats.map((x) => x?.name ?? null) ?? null, replays: this.replays, mismatch: this.replayMismatch,

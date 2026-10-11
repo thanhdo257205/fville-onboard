@@ -82,6 +82,7 @@ export function installDebug(game, loop) {
         forceShot: (angle, power = 0.5) => p.forceShot(angle, power),
         setFast: (on = true) => { p.fast = !!on; return p.fast; },
         place: (x, z) => p.debugPlace(x, z),
+        screen: (x, z) => p.pointer?.screen(x, z) ?? null,      // điểm (x, z) cục bộ trên mặt bàn → toạ độ màn hình (di chuột tới)
       });
     },
     netEmote(id) { return game.net?.emote(id); },
