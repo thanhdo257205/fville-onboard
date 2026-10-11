@@ -1509,6 +1509,43 @@ z −1,6 … 1,5); zone 3 lối sang zone 4 ở đầu tây sảnh cũng lọt (
 - Build lại zone_03, zone_05 thì bỏ 2 mục `rooms` này (ghi trong CHECKLIST).
 - Gộp main qua PR #28 (774230c), đã deploy gh-pages fe401b2 (cùng bản này lên trang thật: nhân vật thứ 4 `intern_nu_buitoc`).
 
+### Chậu cây mới thay chậu cọ trong nhà (12/10/2026, nhánh `feat/potted-plant` 8d9fcda)
+
+Người dùng gửi `potted_plant.glb` ("Potted Plant" của Blizzy trên Sketchfab, CC BY 4.0 — ghi trong `asset.extras` của file), muốn thay
+các chậu cây trong phòng.
+
+- Xử lý không cần Blender: `scripts/tools/make_prop.sh <id> [tỉ lệ]` (gltf-transform 4.5.1 qua npx) — gộp phép biến đổi (gốc
+  Sketchfab: trục Z lên + cm), gốc ở giữa đáy chậu, hàn đỉnh, giảm tam giác, bỏ dữ liệu thừa (UV thứ 2), texture ≤ 512 px WebP,
+  nén Draco. Thử 50 % (1.958 tam giác) và 30 % (1.174) — nhìn gần như nhau → chọn 30 %: 3.916 → 1.174 tam giác, 809 KB → 57 KB.
+  File gốc ở `assets/props/potted_plant/source/` (`.gitignore`, không lên repo, không vào bản build).
+- Thay 8 chậu cọ (`interior.potted_palm` / chậu dựng tay ở zone 4): sảnh zone 3 (3, cao 1,9 m), tầng trên zone 4 (3, 1,9 m), khu
+  nghỉ zone 5 (2, 1,6 m). Không sửa GLB zone:
+  - `scene_fixes.json → <zone>.remove_parts` — chậu cũ dựng chung mesh với đồ khác (`ENV_noi_that`, `ENV_tang_tren`,
+    `ENV_khu_nghi`; chung chất liệu bảng màu nên không lọc theo chất liệu được) → bỏ mọi mảnh lưới rời có tâm hộp bao trong hộp
+    (`zone.js removeParts`). Lưới bối cảnh tô phẳng (mỗi mặt có đỉnh riêng) → nối cả đỉnh trùng vị trí, không thì mỗi tam giác
+    là 1 mảnh và lá thò ra ngoài hộp còn sót. Đo: zone 3 / 5 gỡ đúng 11 mảnh mỗi chậu (chậu + thân + 9 lá), zone 4: 7 (10 lá chạm
+    nhau thành cụm). Hộp zone 3 chừa vách lam + dây trầu bà sát tường.
+  - `scene_fixes.json → <zone>.props` — vật từ GLB riêng (`zone.js placeProps`): mỗi chỗ 1 bản sao dùng chung lưới + chất liệu toon
+    (lá: alphaTest, 2 mặt, không viền nét), giữ qua các zone (`userData.shared`, `disposeTree` không dọn lưới dùng chung). Va chạm
+    `COL_chau_cay_*` (0,8 m) giữ nguyên, ôm vừa chậu mới; bỏ cấu hình làm mờ chậu cọ cũ ở sảnh zone 3.
+  - Bản build chép `assets/props/<id>/<id>.glb` (`vite.config.js`).
+- Kiểm thử: `test:data` mục "vật từ GLB riêng" (file có thật, Draco, ≤ 300 KB, ghi nguồn CREDITS, hộp / regex hợp lệ); smoke zone 3–5:
+  mỗi hộp gỡ ≥ 3 mảnh, đủ số chậu mới; `--extra only`: bộ nhớ GPU zone_04 ↔ zone_05 2 vòng không tăng (geometry 37 → 37, texture 9 → 9).
+  Đo: test:data, test:quick 56/56 + 57/57.
+- Chưa đổi: cây nhỏ trên bàn làm việc zone 5, hộp cây trên tủ trắng zone 4.
+
+### Xong ngày đầu → đi tự do giữa các zone (12/10/2026, nhánh `feat/potted-plant` c1cd732)
+
+Người dùng muốn chọn tự do vào giữa các zone sau khi xong ngày đầu.
+
+- `Game.travel(zone)`: chỉ khi có cờ `game_complete`, khác zone đang đứng, đang chơi, không có cảnh chuyển → `enterZone(zone,
+  zones.json → start)` (màn chờ, thẻ tên zone, bảng lỗi khi tải hỏng như mọi lần đổi zone). Việc của zone đã xong nên không lặp lại
+  hội thoại vào zone / cảnh chuyển (thử cả 6 zone: chế độ chơi, không hội thoại, console sạch).
+- Menu Esc: mục **Đi tới** ngay dưới tiêu đề (để cuối menu dài thì phải cuộn mới thấy), lưới 2 cột: giờ + tên zone (zone 1 hiện
+  17:40 — hoàng hôn sau cảnh kết), zone đang đứng tô cam và khoá nút. Chữ mới `menu.travel`, `travel_note`, `travel_here` (en + vi).
+- `__game.travel(zone)`; smoke (ngoại hình đầu): trước khi xong, menu Esc không có mục này; sau màn tổng kết bấm zone khác → sang
+  zone, chơi tiếp không hội thoại / cảnh chuyển, `__game.travel` về lại, console sạch.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

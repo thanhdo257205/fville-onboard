@@ -209,8 +209,21 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
       không GPU (SwiftShader: +10–20 % ms / khung, xem `docs/perf_report.md`); laptop Intel: người dùng làm
   - [ ] Build lại zone 0–2 bản Thấp (máy có Blender), push `main`, deploy `gh-pages`
 
+- [x] P2 Chậu cây trong nhà thay bằng mô hình Sketchfab "Potted Plant" (Blizzy, CC BY 4.0; người dùng gửi file, 12/10/2026,
+  nhánh `feat/potted-plant` 8d9fcda) — Phụ trách: Claude
+  - [x] Giảm 3.916 → 1.174 tam giác, texture 512 px WebP, nén Draco: 809 KB → 57 KB (`scripts/tools/make_prop.sh`, không cần
+    Blender); ghi nguồn `CREDITS.md`, file gốc chỉ ở `assets/props/potted_plant/source/` (không lên repo)
+  - [x] Thay 8 chậu cọ cũ: sảnh zone 3 (3), tầng trên zone 4 (3), khu nghỉ zone 5 (2) — không sửa GLB zone: gỡ chậu cũ dựng chung
+    mesh nội thất (`scene_fixes.json` → `remove_parts`), đặt chậu mới (`props`); va chạm `COL_chau_cay_*` giữ nguyên
+  - [ ] Cây nhỏ trên bàn làm việc zone 5, hộp cây trên tủ trắng zone 4 chưa đổi (loại khác) — đổi nếu người dùng muốn
+  - [ ] Build lại zone 3–5 trên máy có Blender: bỏ `potted_palm` trong script, đặt chậu mới thẳng trong GLB rồi bỏ `remove_parts`
+
 ## 5. Tính năng
 
+- [x] P2 Xong ngày đầu → đi tự do giữa các zone (12/10/2026, nhánh `feat/potted-plant` c1cd732; người dùng yêu cầu): menu Esc có
+  mục **Đi tới** ngay dưới tiêu đề, chỉ hiện khi đã có cờ `game_complete` — 6 zone (giờ + tên; zone 1 lúc hoàng hôn sau cảnh
+  kết), zone đang đứng khoá nút; vào zone ở điểm bắt đầu (`Game.travel`, `__game.travel`), không lặp lại hội thoại / cảnh chuyển.
+  Smoke: trước khi xong không có mục này; sau màn tổng kết bấm zone khác → sang zone, chơi tiếp, về lại — Phụ trách: Claude
 - [x] P2 App My FPT bố cục điện thoại thông minh: thanh trạng thái, thanh app, thanh tab dưới có biểu tượng, vạch home; màn cảm
   ứng có nút ×, điện thoại thật / xoay ngang chiếm trọn màn hình — Phụ trách: Claude — nhánh `feat/phone-layout` (10/10/2026)
 - [x] P2 Màn tiêu đề: nền 3D zone 0 lúc 06:30 (camera trôi, nghiêng theo chuột), chữ Be Vietnam Pro (OFL) phẳng, hiện dần,
