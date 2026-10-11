@@ -1,11 +1,11 @@
 # Chơi nhiều người mức "thấy nhau"
 
-Cập nhật: 11/10/2026 (bi-a: máy khách tính cú, máy chủ chỉ áp luật — mục cuối; luật chuẩn 8 bi "sọc trơn" — mục áp cuối; 10/10: chia phòng ~30 người, bi-a 2 người)
+Cập nhật: 11/10/2026 (nhắn tin tự do + bộ lọc từ — mục cuối; bi-a: máy khách tính cú, máy chủ chỉ áp luật; luật chuẩn 8 bi "sọc trơn"; 10/10: chia phòng ~30 người, bi-a 2 người)
 
 Không mã phòng, không tạo phòng: máy chủ tự xếp người vào phòng (mỗi phòng ~30 người, xem "Chia phòng"). Mỗi người vẫn
 chơi phần của mình: nhiệm vụ, hội thoại, Tú, NPC đều riêng từng máy. Phần chung là **thấy nhau** khi ở cùng phòng và cùng
-zone, kèm emote và câu chat soạn sẵn, và **bàn bi-a chung** ở zone 5 (2 người chơi theo lượt, người khác đứng xem). Không
-có chat tự do.
+zone, kèm emote và câu chat soạn sẵn, **bàn bi-a chung** ở zone 5 (2 người chơi theo lượt, người khác đứng xem) và **nhắn tin
+tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ — xem "Nhắn tin tự do + bộ lọc từ").
 
 `data/net.json` → `"url": ""` thì mạng tắt hẳn: không kết nối, không có góc online, không có phím T, menu không có dòng
 "Show other players". Game chạy y như bản chơi một mình. Bản trên gh-pages hiện để trống.
@@ -57,9 +57,12 @@ có chat tự do.
   - Câu chat hiện thành bong bóng trên đầu (cùng kiểu bong bóng của Tú): "Hi!", "Good luck!", "Follow me!",
     "Thank you!", "See you at lunch!", "Welcome to F-Ville!".
   - Mình chọn gì thì máy mình cũng diễn hoặc hiện bong bóng luôn. Đi hoặc chạy thì emote dừng.
-- **Menu Esc:** "Show other players: On / Off", lưu trong trình duyệt. Máy yếu nên tắt; tắt rồi vẫn kết nối, người khác vẫn
+- **Enter: nhắn tin tự do** (khi máy chủ báo `"chat"`): khung chat góc trái dưới, 3 tab Zone / All / Private, bong bóng
+  cho tin cùng zone, bấm tên → nhắn riêng / tắt nhận tin. Chi tiết: "Nhắn tin tự do + bộ lọc từ".
+- **Menu Esc:** "Show other players: On / Off" (tắt thì ẩn cả bong bóng chat), "Chat: On / Off" (tắt thì không hiện khung
+  chat, không nhận tin), lưu trong trình duyệt. Máy yếu nên tắt Show other players; tắt rồi vẫn kết nối, người khác vẫn
   thấy mình.
-- **Dòng điều khiển** thêm "T: wave & chat" khi bật mạng.
+- **Dòng điều khiển** thêm "T: wave & quick phrases · Enter: chat" khi bật mạng.
 
 ## Giao thức (JSON gọn)
 
@@ -71,11 +74,14 @@ có chat tự do.
 | | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
 | | `pool_join {r, cf}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn, `cf: 1` = gửi sự kiện cú), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
 | | `pool_choice {c}` | Luật chuẩn, sau cú phá không hợp lệ của đối thủ: `"rerack"` (xếp lại và tự phá) / `"play"` (đánh tiếp) |
+| | `chat {ch, to?, text}` | Nhắn tin tự do (`ch`: `zone` / `all` / `dm`; `to`: id phiên người nhận khi `dm`), tối đa 120 ký tự |
 | | `pool_shot {seq, a, p, cue, call, b, k, s, d, f, r, rb, kp}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), lỗ gọi cho bi 8 (luật chuẩn), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn; sự kiện cú cho luật chuẩn (`rules.js` → `wireFacts`): bi trắng chạm bi nào trước, có bi chạm băng sau lần chạm đó, số bi chạm băng, lỗ của từng bi vào lỗ |
-| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi; `"pool_facts"`: máy chủ không chạy vật lý, dùng kết quả + sự kiện cú máy khách gửi |
+| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi; `"pool_facts"`: máy chủ không chạy vật lý, dùng kết quả + sự kiện cú máy khách gửi; `"chat"`: có nhắn tin tự do |
 | | `zone {zone, players, online}` | Vừa vào zone: danh sách người cùng zone |
 | | `join {p}` · `state {id, pos, yaw, anim}` · `emote {id, e}` · `phrase {id, p}` · `leave {id}` | **Chỉ gửi cho người cùng zone** |
 | | `online {n}` | Số người online, gửi cho cả phòng |
+| | `chat {ch, id, name, text, zone?}` | Tin đã lọc: `zone` → người cùng zone, `all` → cả phòng, `dm` → người nhận; người gửi cũng nhận lại |
+| | `chat_err {code}` | Tin bị từ chối: `empty`, `long` (quá 120 ký tự), `rate` (gửi quá nhanh), `nobody` (người nhận không còn online) |
 | | `error {code, msg}` | Vd phòng đầy |
 | | `pool {tb, err?}` | Bàn bi-a hiện tại (vừa vào zone của bàn cũng nhận); `err`: `full`, `turn`, `seq`, `cue`, `bad`, `call`, `choice`, `version` (máy khách cũ xin ghế ở bàn luật chuẩn)… khi máy chủ từ chối |
 | | `pool_shot {shot, tb}` | Một cú vừa được nhận (`shot`: người đánh, góc, lực, chỗ đặt bi trắng, vị trí bi) + bàn sau cú |
@@ -88,6 +94,8 @@ có chat tự do.
 - **Tên:** tối đa 20 ký tự; chỉ giữ chữ (mọi ngôn ngữ, có dấu), số, khoảng trắng và `. ' _ -`, bỏ ký tự lạ và ký tự vô hình.
 - **Vị trí, hướng:** phải là số hữu hạn (|x| ≤ 5000). Zone phải đúng dạng `zone_NN`. Anim lạ đổi thành `idle`.
 - **Emote, câu chat:** id phải nằm trong danh sách của `data/net.json`, một người cách nhau ít nhất 0,8 s.
+- **Nhắn tin tự do:** bỏ ký tự điều khiển / vô hình, tối đa 120 ký tự, mỗi người dồn 5 tin rồi 1 tin / giây; lọc từ thô tục
+  và link (`data/chat.json`) trước khi phát; tên người chơi cũng qua bộ lọc. Không lưu tin nào.
 - **Tần suất:** quá 10 tin/giây mỗi kết nối thì bỏ tin, gấp 3 lần thì ngắt (mã 4003).
 - **Số kết nối:** phòng đủ `room_size` (30) thì người mới sang phòng sau; phòng cuối (`max_rooms` = 6) nhận tối đa 60, người
   thứ 61 nhận `error` "The room is full…" rồi bị đóng (mã 4001).
@@ -99,8 +107,8 @@ có chat tự do.
   và 127.0.0.1 luôn được, để thử. Công cụ không phải trình duyệt (không gửi Origin) vẫn vào được, nhưng các giới hạn trên
   vẫn áp.
 - **`GET /status`:** trả số người online và số người từng zone, không có tên. Dùng để kiểm tra sau khi lên mạng.
-- **Ghi log:** `wrangler.toml` tắt `observability`, Cloudflare không lưu log yêu cầu. Tên người chơi chỉ đi qua bộ nhớ của
-  Durable Object và những người cùng zone đang online.
+- **Ghi log:** `wrangler.toml` tắt `observability`, Cloudflare không lưu log yêu cầu. Tên người chơi và tin nhắn chỉ đi qua
+  bộ nhớ của Durable Object và những người nhận đang online.
 
 ## Chạy thử trên máy (không cần tài khoản Cloudflare)
 
@@ -424,6 +432,8 @@ Lùi lại: `npx wrangler rollback` về e150c939 (bản web mới vẫn chạy 
 **Đã deploy (11/10/2026):** bản web gh-pages 9de6c01 (từ `main` 3bc97b8) → máy chủ `npx wrangler deploy` version **e7a013c0-82b6-4613-825a-74c93f299103** (bản trước e150c939, để `wrangler rollback`); `wrangler tail` lúc chơi thử ván 2 người: hơn 100 sự kiện, mọi `outcome` = `ok`, CPU 0 ms (3 sự kiện 1 ms) — cú phá hết 11–20 ms.
 
 ## Nhắn tin tự do + bộ lọc từ (11/10/2026)
+
+Trạng thái: [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) — chưa lên trang thật (chờ gộp PR, deploy bản web, rồi `wrangler deploy` máy chủ).
 
 Người dùng chốt: cho gõ chữ tự do (không chỉ câu soạn sẵn), kèm bộ lọc từ. Câu soạn sẵn ở phím T vẫn giữ.
 

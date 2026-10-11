@@ -284,7 +284,7 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   Phụ trách: Claude — nhánh `feat/pool-step3`; [x] đã `wrangler deploy` (10/10/2026, version 3764cab6): `/status` có
   `room_size` 30, `max_rooms` 6, danh sách `rooms`
 - [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: Claude — nhánh `claude/lucid-hamilton-t2xq2l`
-  (11/10/2026; chi tiết: `docs/multiplayer.md` → Nhắn tin tự do); còn bật trên máy chủ thật
+  ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16), 11/10/2026; chi tiết: `docs/multiplayer.md` → Nhắn tin tự do); còn gộp PR, deploy bản web, bật trên máy chủ thật
   - [x] Chốt: người dùng chốt cho gõ chữ tự do + bộ lọc từ (11/10/2026); câu soạn sẵn phím T vẫn giữ; thẻ quy tắc ứng xử hiện
     khi mở khung chat lần đầu
   - [x] Máy chủ (`server/`): tin nhắn `chat` với kênh `zone` (người cùng zone), `all` (mọi người trong phòng), `dm` (một người,
@@ -302,8 +302,10 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [x] Kiểm thử: 2 trình duyệt headless + 1 bot WebSocket + máy chủ local — tin zone chỉ tới người cùng zone, tin all tới mọi
     người, tin dm chỉ tới đúng người; chặn tin quá dài / gửi quá nhanh; lọc từ + link + tên; mute; tắt chat; máy chủ bản cũ
     không có chat thì không lỗi (`test:smoke`, nhóm "nhắn tin"); `test:data`: 17 câu mẫu của bộ lọc
-  - [ ] Build, push `main`, deploy `gh-pages` (hỏi người dùng); bật trên máy chủ thật (`npx wrangler deploy` ở máy Desktop —
-    người dùng tự làm, web trước máy chủ sau)
+  - [x] Build, push nhánh, mở [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) (test đạt: smoke 112/112)
+  - [ ] Gộp PR vào `main`; deploy `gh-pages` (người dùng đã đồng ý 11/10/2026 — máy cloud bị chặn quyền chạy
+    `deploy_site.py`, chờ cho phép hoặc chạy ở máy Desktop); bật trên máy chủ thật (`cd server && npx wrangler deploy` ở máy
+    Desktop — người dùng tự làm, **web trước máy chủ sau**; tin chào phải có `"chat"`)
 - [ ] P2 Chơi trên trình duyệt điện thoại: tối ưu cho điện thoại + nút điều hướng và tương tác trên màn hình — Phụ trách: —
   - [ ] Nhận biết máy cảm ứng bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoints` (không dựa vào user agent);
     khi dev thử bằng `?touch=1` hoặc chế độ giả lập điện thoại của Chrome DevTools. Sửa GDD → "Ngoài phạm vi" (đang ghi

@@ -270,8 +270,11 @@ Thời gian mở game (từ lúc bấm link tới màn tạo nhân vật): ____ 
    chat soạn sẵn.
 3. Trên từng máy: **Esc → Show other players: On**, đứng yên 10 giây, `__game.benchmark(120)`, ghi FPS góc màn hình;
    rồi **Off**, đo lại.
+4. Nhắn tin (khi máy chủ đã bật chat — lời chào có `"chat"`): nhấn **Enter**, gửi 1 tin ở tab **Khu vực** (người cùng zone
+   thấy tin + bong bóng trên đầu), 1 tin ở **Tất cả**, 1 tin nhắn riêng (bấm vào bảng tên người kia). Ghi lại từ nào bị che
+   nhầm hoặc từ thô tục nào lọt qua bộ lọc (sửa ở `data/chat.json`, phải deploy lại máy chủ).
 
-| Mã máy | Zone | Số người cùng zone | On: benchmark ms / fps | On: FPS góc màn hình | Off: benchmark ms / fps | Off: FPS góc màn hình | Thấy nhau? Vẫy tay / chat được? | Ghi chú (giật, nhân vật nhảy, mất kết nối) |
+| Mã máy | Zone | Số người cùng zone | On: benchmark ms / fps | On: FPS góc màn hình | Off: benchmark ms / fps | Off: FPS góc màn hình | Thấy nhau? Vẫy tay / câu nhanh / nhắn tin được? | Ghi chú (giật, nhân vật nhảy, mất kết nối, từ bị che nhầm / lọt) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | M__ | | | / | | / | | | |
 | M__ | | | / | | / | | | |

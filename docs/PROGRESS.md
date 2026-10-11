@@ -1154,11 +1154,14 @@ Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms 
     lỗi từ máy chủ, phát lại khớp → deploy web trước an toàn.
 - Kết quả: test:data, test:pool đạt; `test:smoke -- --zone 5` 71/71 (3 ngoại hình + bản lưu cũ + mạng, cả máy chủ giả bản cũ).
 
-### Nhắn tin tự do giữa người chơi + bộ lọc từ (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l`)
+### Nhắn tin tự do giữa người chơi + bộ lọc từ (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` 35c3536 + 2033d1f, [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16))
 
 Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2 "Nhắn tin giữa người chơi"). Chi tiết: `docs/multiplayer.md` →
-"Nhắn tin tự do + bộ lọc từ". **Chưa bật trên máy chủ thật** — cần `npx wrangler deploy` ở máy Desktop (người dùng tự làm,
-bản web trước, máy chủ sau; bản web mới với máy chủ đang chạy: khung chat ẩn, mọi thứ khác như cũ).
+"Nhắn tin tự do + bộ lọc từ". **Chưa lên trang thật:**
+1. bản web: `python scripts/deploy_site.py` — người dùng đã đồng ý, nhưng máy cloud bị chặn quyền chạy lệnh deploy
+   (11/10/2026) → chờ người dùng cho phép, hoặc tự chạy ở máy Desktop;
+2. máy chủ: `cd server && npx wrangler deploy` ở máy Desktop (người dùng tự làm) — sau bản web. Bản web mới với máy chủ
+   đang chạy: khung chat ẩn, mọi thứ khác như cũ.
 - `data/chat.json`: 120 ký tự, 5 tin dồn + 1 tin / giây, 50 tin mỗi kênh (máy khách), bong bóng 6 s, bộ lọc (`exact` giữ dấu
   tiếng Việt, `plain` bỏ dấu + leet + gộp chữ lặp, cụm nhiều từ, chữ tách rời, `allow`, che link).
 - `game/src/net/chatfilter.js`: bộ lọc theo từng từ, dùng chung máy chủ + `test:data` (~0,06 ms / tin).
@@ -1170,7 +1173,10 @@ bản web trước, máy chủ sau; bản web mới với máy chủ đang chạ
   zone), `remotes.js` (bảng tên bấm được khi khung chat mở), menu Esc "Chat: On / Off", `__game.chat`; chữ `chat.*` en + vi.
 - Số request Cloudflare: 21 người × 1 tin / phút ≈ 63 request / giờ (tin vị trí ~11.800) — không đáng kể.
 - Kiểm thử: `test:data` 17 câu mẫu của bộ lọc; smoke nhóm "nhắn tin" (2 trình duyệt + bot WebSocket, máy chủ local, 7 bước);
-  máy chủ giả bản cũ → không có khung chat. `--extra only` 34/34.
+  máy chủ giả bản cũ → không có khung chat. `test:smoke` đủ 3 ngoại hình 112/112, `--zone 5` 78/78, `--extra only` 34/34;
+  test:pool, build đạt.
+- Xem bằng mắt (3 ảnh, không commit): tin xem trước khi đóng khung bị khung hội thoại đè (cùng ở mép dưới) → ẩn tin xem
+  trước khi đang hội thoại / mini-game / app / cảnh chuyển (2033d1f), số tin chưa đọc vẫn đếm.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
@@ -1219,6 +1225,11 @@ bản web trước, máy chủ sau; bản web mới với máy chủ đang chạ
 
 ## Việc tiếp theo
 Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLIST.md`.
+
+- **Nhắn tin tự do ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16)):** gộp PR → deploy bản web (`python scripts/deploy_site.py`) → máy chủ
+  (`cd server && npx wrangler deploy`, lời chào phải có `"chat"`) → nhắn thử giữa 2 cửa sổ trên trang thật, xem
+  `npx wrangler tail --format json` (mọi `outcome` = `ok`). Sau buổi chơi thử: xem có từ nào cần thêm / bỏ khỏi bộ lọc
+  (`data/chat.json`, sửa xong phải deploy lại máy chủ).
 
 0. ~~Đưa máy chủ chơi nhiều người lên Cloudflare~~ — **xong 10/10/2026** (`https://fville-net.fville-onboard.workers.dev`,
    xem "Chơi nhiều người đã lên mạng" ở trên). Còn: chơi thử 2–3 người trên bản deploy; đo FPS trên laptop thật với
