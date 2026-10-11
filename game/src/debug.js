@@ -62,6 +62,14 @@ export function installDebug(game, loop) {
     get acts() { return game.acts.info(); },
     get cards() { return { recent: hud.lastCards || [], queued: hud.cards.map((c) => c.kind) }; },
     finish() { game.finishGame(); return api.cards; },
+    // hiện thử thẻ giữa màn hình (kiểm tra bố cục màn thấp): "act" = thẻ Act 2, "ach" = thẻ thành tựu cuối
+    showCard(kind = "act") {
+      if (kind === "act") game.acts.announce(game.acts.list[1]);
+      else { const a = game.content.achievements?.final; if (a) hud.achievement(tx(a.label), tx(a.title)); }
+      return api.cards;
+    },
+    // bảng tên đang thấy (toạ độ màn hình) — smoke kiểm tra trên màn thấp không có 2 bảng đè nhau
+    get tags() { return game.nametags.visibleRects(); },
     get net() { return game.net?.info(); },
     // khung chat (nhắn tin tự do — game/src/ui/chat.js): trạng thái + open(tab, dmWith) / close() / send(text) (gửi ở tab đang mở) /
     // chat(ch, text, to) (gửi thẳng qua net, trả true | mã lỗi)

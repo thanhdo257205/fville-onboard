@@ -84,6 +84,8 @@ export class Game {
     nametags.maxDistance = tags.max_distance_m ?? 12;
     nametags.occlusion = tags.hide_when_occluded !== false;
     nametags.above = tags.above_head_m ?? 0.28;
+    nametags.minorRoles = new Set(tags.minor_roles || []);
+    nametags.minorDistance = tags.minor_distance_m ?? 5;
     this.resolveTier();
   }
 
@@ -923,6 +925,11 @@ export class Game {
     if (this.cameraOverride) { this.cameraOverride(dt); this.talkCam.overridden(); }
     else {
       this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider, false, this.zone.view);
+      // màn thấp: phần khung còn thấy phía trên hộp thoại → camera hội thoại đặt mặt 2 người vào đó (player/talkcam.js)
+      // (đo DOM 5 lần / giây — mỗi khung thì bắt trình duyệt tính lại bố cục liên tục; camera đổi êm nên không thấy giật)
+      const dlg = this.ui.dialogue;
+      if (!dlg?.open || !document.body.classList.contains("short")) { this.talkCam.setFrame(1); this._frameT = 0; }
+      else if ((this._frameT = (this._frameT ?? 0) - dt) <= 0) { this._frameT = 0.2; this.talkCam.setFrame(dlg.el.getBoundingClientRect().top / innerHeight); }
       this.talkCam.apply(dt, this.cam.target, { player: this.player, env: this.talkEnv() });
     }
     // cây che: lúc nói chuyện thì xét đường nhìn tới người đối thoại

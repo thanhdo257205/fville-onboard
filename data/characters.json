@@ -310,6 +310,9 @@
   "name_tags": {
     "enabled": true,
     "max_distance_m": 12,
+    "minor_roles": ["hanh_khach", "tai_xe_1", "tai_xe_3"],
+    "minor_distance_m": 5,
+    "_minor_ghi_chu": "Màn thấp (điện thoại): bảng tên vai phụ chỉ hiện khi camera cách < minor_distance_m — đỡ rối khung nhỏ.",
     "hide_when_occluded": true,
     "above_head_m": 0.28,
     "_ghi_chu": "Mọi NPC đang trông giống nhau → bảng tên nhỏ trên đầu, chữ lấy từ names.<ngôn ngữ>.<vai> (không dùng label tiếng Việt trong GLB). Ẩn khi bị tường che hoặc xa hơn max_distance_m."

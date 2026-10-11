@@ -1,5 +1,9 @@
 // Hộp hội thoại: chân dung bên trái, tên người nói, lời thoại; tiếp lời bằng Space/click, chọn đáp án bằng phím 1–4 hoặc click
 // (cảm ứng: chạm vào hộp / bất kỳ đâu trên màn hình để nói tiếp, chạm vào lựa chọn).
+// Màn thấp (body.short — ui/touch.js): khung nhỏ lại, cao tối đa bằng vùng nhìn thấy (--vvh), nội dung dài thì cuộn bằng ngón tay
+// (kéo cuộn không tính là chọn: trình duyệt không bắn click khi ngón đã kéo); mở câu mới → cuộn về đầu (tên + câu hỏi). Dòng
+// "Chạm…" không chiếm dòng riêng: cuối câu thoại (nói tiếp), ô trống cuối lưới lựa chọn (số lựa chọn lẻ, 2 cột) hoặc cạnh tên.
+// body.talking: đang mở hộp thoại (CSS ẩn bảng tên, dòng mục tiêu / đồng hồ / "N online" trên màn thấp); .choosing: đang chọn.
 // Chạy cây hội thoại trong dialogues.json: branch / action (mini-game) / lời thoại có anim / choices + effects.
 // Tiếng: sang câu (line), chọn đáp án (select), câu kiểu tin nhắn style "phone" (phone); câu có "sfx": "<tên>" (data/sounds.json)
 // phát tiếng đó khi câu hiện (vd tiếng bíp đầu đọc thẻ ở cửa quẹt thẻ zone 4).
@@ -9,15 +13,18 @@ import { url } from "../core/assets.js";
 import { sound } from "../core/sound.js";
 import { device } from "../core/device.js";
 
+const TWO_COL_MIN = 520;   // màn thấp rộng hơn chừng ấy px: lựa chọn xếp 2 cột (style.css, cùng số)
+
 export class DialogueUI {
   constructor() {
     const el = document.createElement("div");
     el.id = "dialogue";
     el.hidden = true;
-    el.innerHTML = `<img class="portrait" alt=""><div class="body"><div class="name"></div><div class="text"></div>
+    el.innerHTML = `<img class="portrait" alt=""><div class="body"><div class="head"><div class="name"></div></div><div class="text"></div>
       <ol class="choices"></ol><div class="more"></div></div>`;
     document.body.appendChild(el);
     this.el = el;
+    this.moreEl = el.querySelector(".more");   // giữ tham chiếu: màn thấp dời nó vào trong câu thoại (textContent xoá mất)
     this.waiting = null;   // { kind: "next" | "choice", resolve, count }
     el.addEventListener("click", (e) => {
       const li = e.target.closest("li[data-i]");
@@ -28,30 +35,41 @@ export class DialogueUI {
   get open() { return !this.el.hidden; }
   show({ name, portrait, text, choices, style = null }) {
     this.el.hidden = false;
+    document.body.classList.add("talking");
+    this.el.classList.toggle("choosing", !!choices?.length);
     this.el.classList.toggle("narrator", !name);
     this.el.classList.toggle("phone", style === "phone");
     const img = this.el.querySelector(".portrait");
     img.hidden = !portrait;
     if (portrait) img.src = portrait;
     this.el.querySelector(".name").textContent = name || "";
-    this.el.querySelector(".text").textContent = text;
+    const textEl = this.el.querySelector(".text");
+    textEl.textContent = text;
     const ol = this.el.querySelector(".choices");
-    ol.innerHTML = (choices || []).map((c, i) => `<li data-i="${i}"><b>${i + 1}</b> ${escapeHtml(c)}</li>`).join("");
+    ol.innerHTML = (choices || []).map((c, i) => `<li data-i="${i}"><b>${i + 1}</b> <span>${escapeHtml(c)}</span></li>`).join("");
     // cảm ứng: "Chạm để nói tiếp" (chạm bất kỳ đâu — ui/touch.js) / "Chạm vào một lựa chọn"
-    this.el.querySelector(".more").textContent = choices?.length ? t(device.touch ? "dialogue.choose_touch" : "dialogue.choose_hint", { n: choices.length })
+    const more = this.moreEl;
+    more.textContent = choices?.length ? t(device.touch ? "dialogue.choose_touch" : "dialogue.choose_hint", { n: choices.length })
       : t(device.touch ? "dialogue.continue_touch" : "dialogue.continue");
+    // màn thấp: dòng "Chạm…" vào chỗ trống sẵn có; màn thường: dòng riêng cuối khung như cũ
+    const short = document.body.classList.contains("short"), n = choices?.length || 0;
+    if (!short) this.el.querySelector(".body").appendChild(more);
+    else if (!n) textEl.appendChild(more);
+    else if (n % 2 && innerWidth > TWO_COL_MIN) ol.appendChild(more);
+    else this.el.querySelector(".head").appendChild(more);
+    this.el.scrollTop = 0;
     return new Promise((resolve) => { this.waiting = { kind: choices?.length ? "choice" : "next", resolve, count: choices?.length || 0 }; });
   }
   // auto: tự sang câu (cảnh chuyển) → không có tiếng
   next({ auto = false } = {}) { if (this.waiting?.kind === "next") { const w = this.waiting; this.waiting = null; if (!auto) sound.play("line"); w.resolve(null); } }
   choose(i) { if (this.waiting?.kind === "choice" && i >= 0 && i < this.waiting.count) { const w = this.waiting; this.waiting = null; sound.play("select"); w.resolve(i); } }
-  hide() { this.el.hidden = true; this.waiting = null; }
+  hide() { this.el.hidden = true; this.waiting = null; document.body.classList.remove("talking"); }
   // huỷ hội thoại đang chờ (vd chuyển zone) — trả 'abort' cho vòng chạy
-  abort() { const w = this.waiting; this.waiting = null; this.el.hidden = true; w?.resolve("abort"); }
+  abort() { const w = this.waiting; this.waiting = null; this.el.hidden = true; document.body.classList.remove("talking"); w?.resolve("abort"); }
   get snapshot() {
     if (!this.open) return null;
     return { name: this.el.querySelector(".name").textContent, text: this.el.querySelector(".text").textContent,
-      choices: [...this.el.querySelectorAll(".choices li")].map((li) => li.textContent.trim()), waiting: this.waiting?.kind || null };
+      choices: [...this.el.querySelectorAll(".choices li[data-i]")].map((li) => li.textContent.trim()), waiting: this.waiting?.kind || null };
   }
 }
 

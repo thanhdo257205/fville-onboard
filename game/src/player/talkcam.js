@@ -11,6 +11,9 @@
 // không đặt camera bên trong hay sát (< 0,15 m) bề mặt nào, không lùi qua chúng (thu gần lại). Góc hợp lệ: thấy mặt, điểm
 // qua vai và camera không nằm trong vật / tán cây, camera lùi được ít nhất 0,3 m. Không góc nào hợp lệ → giữ camera chơi.
 // Đóng hội thoại → chuyển êm về camera chơi (yaw / pitch / khoảng cách giữ nguyên như trước khi mở).
+// Màn thấp (điện thoại cầm ngang, khung thoại chiếm nửa dưới): game.js báo phần khung còn thấy phía trên hộp thoại
+// (setFrame: mép trên hộp thoại / chiều cao khung, đo DOM sau khi hộp đã thu nhỏ) → mặt người đối thoại đặt ở FACE_SHORT
+// phần đó, người to hơn (camera gần hơn) để mặt 2 người nằm trên hộp thoại; đổi êm theo FRAME_RATE. Máy tính: luôn 1 → như cũ.
 import * as THREE from "three";
 import { blocked } from "../world/collision.js";
 
@@ -25,6 +28,8 @@ const PAD = 0.2;              // dừng trước tường / quầy
 const LIFTS = [0, 0.5];       // phương án độ cao camera (m, cộng thêm): người đối thoại đứng cao / sau cửa xe → thử nâng
 const CLEAR = 0.15;           // camera / điểm qua vai cách bề mặt gần nhất ít nhất (m)
 const MIN_FREE = 0.3;         // camera lùi sau điểm qua vai ít nhất (m) khi bị chắn — ít hơn thì góc đó không dùng
+const FACE_SHORT = 0.38;      // màn thấp: mặt người đối thoại cách mép trên = chừng ấy phần khung còn thấy
+const FRAME_RATE = 6;         // tốc độ đổi theo phần khung còn thấy (1/s)
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _ray = new THREE.Ray();
@@ -78,6 +83,17 @@ export class TalkCamera {
     this.t = 1;               // tiến độ chuyển 0..1
     this.cur = { pos: new THREE.Vector3(), look: new THREE.Vector3(), w: 0 };   // tư thế đang hiện (w = tỉ lệ hội thoại)
     this.info = null;
+    this.frame = 1;           // phần khung còn thấy phía trên hộp thoại (0..1); 1 = cả khung
+    this.frameGoal = 1;
+  }
+
+  // game.js mỗi khung: b = mép trên hộp thoại / chiều cao khung (màn thấp), 1 = không bị che (máy tính / chưa mở)
+  setFrame(b) { this.frameGoal = THREE.MathUtils.clamp(b, 0.3, 1); }
+  // chiều cao người đối thoại / khung, vị trí mặt [mép bên, mép trên] theo phần khung còn thấy
+  framing() {
+    const b = this.frame;
+    if (b >= 0.999) return { frac: FRAME_FRAC, face: FACE_AT };
+    return { frac: FRAME_FRAC * (2 - b), face: [FACE_AT[0], b * FACE_SHORT] };
   }
 
   get active() { return !!this.partner && (this.goal === 1 || this.t < 1); }
@@ -120,7 +136,7 @@ export class TalkCamera {
     const toShoulder = dir.length();
     dir.divideScalar(toShoulder);
     const fovY = THREE.MathUtils.degToRad(this.camera.fov);
-    let want = H / (FRAME_FRAC * 2 * Math.tan(fovY / 2));          // khoảng cách để cao 1/3 khung
+    let want = H / (this.framing().frac * 2 * Math.tan(fovY / 2));  // khoảng cách để cao 1/3 khung (màn thấp: to hơn)
     want = THREE.MathUtils.clamp(want, toShoulder + MIN_BACK, Math.max(MAX_DIST, toShoulder + MIN_BACK));
     const desired = face.clone().addScaledVector(dir, want);
     desired.y = Math.max(desired.y, shoulder.y) + lift;               // không nhìn từ dưới tầm mắt lên
@@ -134,7 +150,8 @@ export class TalkCamera {
   // hướng nhìn để mặt nằm ở FACE_AT (phía không có người chơi): tính theo góc, chỉnh lại 1 lần bằng phép chiếu thật
   aim(pos, face, side) {
     const cam = this.camera, tanY = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2), tanX = tanY * cam.aspect;
-    const ndcX = side * (1 - 2 * FACE_AT[0]), ndcY = 1 - 2 * FACE_AT[1];   // vai phải → người đối thoại lệch phải
+    const FA = this.framing().face;
+    const ndcX = side * (1 - 2 * FA[0]), ndcY = 1 - 2 * FA[1];   // vai phải → người đối thoại lệch phải
     const d = face.clone().sub(pos).normalize();
     let az = Math.atan2(d.x, d.z) + Math.atan(ndcX * tanX), el = Math.asin(d.y) - Math.atan(ndcY * tanY);
     const look = new THREE.Vector3();
@@ -207,6 +224,8 @@ export class TalkCamera {
       this.cur.pos.copy(cam.position); this.cur.look.copy(cam.position).addScaledVector(fwd, 3);
       if (this.active) { this.from = { pos: this.cur.pos.clone(), look: this.cur.look.clone(), w: this.cur.w }; this.t = 0; }
     }
+    this.frame += (this.frameGoal - this.frame) * Math.min(1, dt * FRAME_RATE);
+    if (Math.abs(this.frameGoal - this.frame) < 1e-3) this.frame = this.frameGoal;
     if (!this.active) {
       this.cur.pos.copy(cam.position); this.cur.look.copy(gameLook); this.cur.w = 0;
       return;

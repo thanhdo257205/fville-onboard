@@ -358,6 +358,10 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     bằng joystick ảo, vuốt xoay camera, chụm 2 ngón, bấm nút tương tác, chạm qua hội thoại, chơi zone 0 → 2 kể cả quiz Cuder
     bằng chạm, nhắn tin 1 tin (máy chủ local), console sạch; lượt máy tính thường không hiện nút cảm ứng — ad43543
   - [ ] Chơi thử tay trên máy thật (Android Chrome, iPhone Safari) — người dùng làm
+  - [x] Sửa giao diện màn thấp trên điện thoại (chơi thử Android 11/10): khung thoại cuộn được + thu nhỏ (câu hỏi không lòi khỏi
+    mép trên ở vùng game ~230 px), camera hội thoại theo phần khung còn thấy, bảng tên nhỏ + né đè + ẩn khi thoại, Start /
+    Continue vào toàn màn hình + manifest web app, menu / mini-game / app / tổng kết / chat không tràn — nhánh
+    `fix/mobile-short-screen` 5a819ba
   - [ ] Build, push `main`, deploy `gh-pages`
 
 ## 6. Ngôn ngữ và âm thanh

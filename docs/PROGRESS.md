@@ -1280,6 +1280,38 @@ CHECKLIST P2 "Chơi trên trình duyệt điện thoại", mọi dòng trừ bi-
 - Còn lại (người dùng): chơi thử trên máy thật (Android Chrome, iPhone Safari), đo FPS + RAM ghi vào `docs/perf_report.md`;
   bi-a cảm ứng làm ở PR sau (sau PR áp phê).
 
+### Sửa giao diện màn thấp trên điện thoại (11/10/2026, nhánh `fix/mobile-short-screen` 5a819ba)
+
+Người dùng chơi thử Android Chrome cầm ngang: thanh địa chỉ chiếm ~1/4 chiều cao, vùng game chỉ ~230 px CSS — câu hỏi của NPC
++ tiêu đề lựa chọn bị đẩy khỏi mép trên, không lướt lên được. **Chưa deploy.**
+
+- `body.short` (`ui/touch.js layout()`): giao diện cảm ứng đang bật hoặc khung cao ≤ 420 px; `--vvh` = chiều cao vùng nhìn thấy
+  thật (`visualViewport`). Máy tính khung cao bình thường: không có lớp này → giữ nguyên.
+- Hộp thoại: cao tối đa `--vvh` trừ safe-area + 16 px, cuộn bằng ngón tay (`overflow-y: auto`, `touch-action: pan-y`,
+  `overscroll-behavior: contain`; kéo cuộn không thành chọn); mở câu mới → cuộn về đầu. Chữ 15 px (line-height 1,35), tên 13 px,
+  đệm 7 × 10 px, cách đáy 8 px, chân dung 56 px (ẩn khi đang chọn), lựa chọn 14 px cao 40 px căn giữa dọc, 2 cột khi khung rộng
+  > 520 px, gap 4 px, ẩn số 1/2/3 trên cảm ứng. Dòng "Tap…" không chiếm dòng riêng: cuối câu thoại / ô trống cuối lưới lựa chọn
+  / cạnh tên. Ms. Huyền 4 lựa chọn ở 844 × 230: khung 75–222 px, không cần cuộn.
+- `body.talking`: ẩn bảng tên, dòng mục tiêu, đồng hồ, "N online", thẻ tiêu đề zone; thẻ Act / thành tựu nhỏ, sát mép trên.
+- Camera hội thoại (`player/talkcam.js`): `setFrame(mép trên hộp thoại / chiều cao khung)` mỗi khung (game.js đo DOM) → mặt người
+  đối thoại ở 0,38 phần còn thấy, người to hơn (camera gần hơn), đổi êm. Ms. Nga ở 844 × 230: mặt 2 người y 55 / 43, hộp thoại
+  từ 144. Chỗ Ms. Huyền (zone 0, sát xe bus) camera qua vai không dựng được ở cả máy tính lẫn điện thoại (cả 4 góc "không lùi
+  được") → giữ camera chơi như trước — chưa sửa.
+- Bảng tên (`ui/nametags.js`): màn thấp chữ 11 px; 5 lần / giây (đo vị trí bắt tính lại bố cục — mỗi khung thì CI 3 trình
+  duyệt chậm tới mức người chơi khác dựng không kịp, test nhắn tin đỏ) bảng ở thấp hơn trên màn giữ chỗ, bảng đè lên thì dời lên tối đa
+  2 nấc, vẫn đè thì ẩn (cả bảng người chơi khác); vai phụ (`name_tags.minor_roles`: hành khách, tài xế xe 1 / 3) chỉ hiện khi
+  camera cách < 5 m.
+- Toàn màn hình: chạm Start / Continue ở màn tiêu đề (Android cảm ứng) → `requestFullscreen` + khoá xoay ngang (lỗi thì im
+  lặng); thoát → nút ⛶ nhấp nháy 1 lần. `game/public/manifest.webmanifest` (display fullscreen, xoay ngang, màu cam) + icon
+  192 / 512 (`game/public/icons/`, từ chân dung intern_nam có sẵn) → "Thêm vào màn hình chính" mở không có thanh địa chỉ.
+- Khung khác ở màn thấp: menu Esc, mini-game, màn tạo nhân vật, hộp xác nhận, màn tổng kết cao tối đa `--vvh` − 12 px và cuộn;
+  app My FPT không cao quá `--vvh`; khung chat: ô tin nhắn co theo `--vvh`; toast, thẻ tiêu đề zone, thẻ Act / thành tựu nhỏ lại.
+- Smoke (`--mobile only`, ~1,5 phút thêm): màn thấp 844 × 230 + 390 (hội thoại Ms. Huyền: khung trong vùng nhìn, chạm được mọi
+  lựa chọn, câu dài → vuốt cuộn 14 px không chọn nhầm, bảng tên ẩn khi thoại; 3 bảng tên trùng chỗ → dời ra không đè; ở 230:
+  menu, mini-game, app, tổng kết, thẻ Act / thành tựu không tràn mép trên), camera hội thoại Ms. Nga ở 230, khung chat ở 230
+  (máy chủ local), chạm Continue → toàn màn hình + manifest. Ảnh từng khung: `test-results/short/` (không commit).
+  `__game.tags`, `__game.showCard("act" | "ach")`.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

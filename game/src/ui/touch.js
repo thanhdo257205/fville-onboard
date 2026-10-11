@@ -11,6 +11,11 @@
 //     phần còn thấy (khung chat, ô mật khẩu mini-game Đăng nhập, ô tên).
 //   • Chặn menu khi giữ ngón (contextmenu), phóng to bằng 2 ngón trên iOS (gesturestart); phóng to / kéo xuống làm mới: CSS
 //     (touch-action, overscroll-behavior), meta viewport.
+//   • Màn thấp (body.short — giao diện cảm ứng đang bật hoặc khung cao ≤ SHORT_H px; vd Android cầm ngang, thanh địa chỉ chiếm
+//     ~1/4 → còn ~230 px): CSS thu nhỏ khung thoại / bảng tên / các khung khác; --vvh = chiều cao vùng nhìn thấy thật
+//     (visualViewport) cho max-height của các khung.
+//   • Toàn màn hình: Start / Continue ở màn tiêu đề (cử chỉ người dùng) → tự xin toàn màn hình + khoá xoay ngang (Android; lỗi
+//     thì im lặng); thoát toàn màn hình → nút ⛶ nhấp nháy 1 lần. "Thêm vào màn hình chính": public/manifest.webmanifest.
 // Chữ: data/i18n → touch.*. __game.touch: trạng thái + vị trí các nút (smoke test chạm đúng chỗ).
 import { t, lang } from "../i18n.js";
 import { device } from "../core/device.js";
@@ -21,6 +26,7 @@ const STICK_R = 56;          // bán kính kéo của cần điều khiển (px)
 const DEAD = 0.12;           // vùng chết (tỉ lệ bán kính)
 const RUN_AT = 0.92;         // đẩy quá chừng ấy bán kính = chạy
 const KB_MIN = 80;           // bàn phím ảo coi như đang mở khi che quá chừng ấy px
+const SHORT_H = 420;         // khung cao ≤ chừng ấy px (CSS) → giao diện màn thấp kể cả khi không cảm ứng
 const BUTTONS = [            // [id, biểu tượng, khoá chữ (aria-label)]
   ["chat", "💬", "touch.chat"], ["emote", "👋", "touch.emote"], ["help", "?", "touch.help"],
   ["app", "📱", "touch.app"], ["menu", "☰", "touch.menu"], ["full", "⛶", "touch.fullscreen"],
@@ -44,15 +50,23 @@ export class TouchControls {
         device.setTouch(false);
       }, { capture: true });
     }
-    device.onChange((on) => this.onTouch(on));
+    device.onChange((on) => { this.onTouch(on); this.layout(); });
     if (device.touch) this.onTouch(true);
+    addEventListener("resize", () => this.layout());
+    this.layout();
+    // thoát toàn màn hình (vuốt từ mép, nút Back) → nút ⛶ nhấp nháy 1 lần cho người chơi biết bấm lại ở đâu
+    document.addEventListener("fullscreenchange", () => {
+      if (document.fullscreenElement || !device.touch) return;
+      const b = this.el.querySelector("[data-a=full]");
+      b.classList.remove("pulse"); void b.offsetWidth; b.classList.add("pulse");
+    });
     // chạm nhanh trên khung vẽ: hội thoại đang chờ "nói tiếp" → sang câu
     input.onTap = () => { if (device.touch && this.ui.dialogue.waiting?.kind === "next") this.ui.dialogue.next(); };
     // bàn phím ảo
     const vv = window.visualViewport;
     this.kb = 0;
     if (vv) {
-      const onVV = () => this.keyboard(vv);
+      const onVV = () => { this.keyboard(vv); this.layout(); };
       vv.addEventListener("resize", onVV);
       vv.addEventListener("scroll", onVV);
       addEventListener("focusin", () => setTimeout(onVV, 250));
@@ -157,13 +171,22 @@ export class TouchControls {
     this.shownKey = "";
   }
 
-  // toàn màn hình (Android Chrome…; iOS Safari không có Fullscreen API → hướng dẫn "Thêm vào màn hình chính")
-  fullscreen() {
+  // màn thấp + chiều cao vùng nhìn thấy thật (thanh địa chỉ, bàn phím ảo không tính)
+  layout() {
+    const h = Math.round(window.visualViewport?.height || innerHeight);
+    if (h !== this.vvh) { this.vvh = h; document.body.style.setProperty("--vvh", `${h}px`); }
+    document.body.classList.toggle("short", device.touch || innerHeight <= SHORT_H);
+  }
+
+  // toàn màn hình (Android Chrome…; iOS Safari không có Fullscreen API → hướng dẫn "Thêm vào màn hình chính").
+  // auto: gọi từ nút Start / Continue của màn tiêu đề — chỉ khi giao diện cảm ứng đang bật, không hiện thông báo khi lỗi
+  fullscreen({ auto = false } = {}) {
+    if (auto && (!device.touch || device.ios || !document.fullscreenEnabled || document.fullscreenElement)) return;
     if (device.ios || !document.fullscreenEnabled) { hud.toast(t("touch.ios_home")); return; }
     if (document.fullscreenElement) { document.exitFullscreen?.().catch(() => {}); return; }
-    document.documentElement.requestFullscreen?.({ navigationUI: "hide" })
-      .then(() => screen.orientation?.lock?.("landscape").catch(() => {}))
-      .catch(() => hud.toast(t("touch.fullscreen_failed")));
+    const p = document.documentElement.requestFullscreen?.({ navigationUI: "hide" });
+    p?.then(() => screen.orientation?.lock?.("landscape").catch(() => {}))
+      .catch(() => { if (!auto) hud.toast(t("touch.fullscreen_failed")); });
   }
 
   leavePool() {
