@@ -333,12 +333,13 @@ export function installDebug(game, loop) {
     // phông nền (render/sky.js) → điểm ảnh giống nhau ở 2 lần = chỗ nhìn thấy trời / phông nền (không bị nhà, xe, cây che). Trên
     // các điểm đó ở nửa trên khung: share = tỉ lệ thuộc màu phổ biến nhất (làm tròn 16 mức mỗi kênh) — trời một màu phẳng ≈ 1;
     // sky = tỉ lệ điểm nhìn thấy trời trong nửa trên (ít quá → hướng bị che, không xét)
-    skyCheck({ w = 160, h = 90, dirs = 8, pitch = 4 } = {}) {
+    // đọc điểm ảnh bất đồng bộ (như bản đồ app, ui/map.js): đọc đồng bộ làm trình duyệt in cảnh báo "GPU stall due to ReadPixels"
+    async skyCheck({ w = 160, h = 90, dirs = 8, pitch = 4 } = {}) {
       const r = game.renderer.three, rt = new THREE.WebGLRenderTarget(w, h);
       rt.texture.colorSpace = THREE.SRGBColorSpace;
       const cam = new THREE.PerspectiveCamera(60, w / h, 0.1, 600), all = new Uint8Array(w * h * 4), bare = new Uint8Array(w * h * 4), out = [];
       const keep = r.getRenderTarget(), scene = game.scene;
-      const shot = (buf) => { r.setRenderTarget(rt); r.render(scene, cam); r.readRenderTargetPixels(rt, 0, 0, w, h, buf); };
+      const shot = async (buf) => { r.setRenderTarget(rt); r.render(scene, cam); r.setRenderTarget(keep); await r.readRenderTargetPixelsAsync(rt, 0, 0, w, h, buf); };
       try {
         for (const [name, o] of game.zone.spawns) {
           const p = worldPos(o).add(new THREE.Vector3(0, 1.7, 0));
@@ -348,10 +349,13 @@ export function installDebug(game, loop) {
             cam.lookAt(p.x + Math.sin(yaw) * Math.cos(pr), p.y + Math.sin(pr), p.z + Math.cos(yaw) * Math.cos(pr));
             cam.updateMatrixWorld();
             game.sky.update(cam, 0);
-            shot(all);
+            await shot(all);
             const hidden = scene.children.filter((c) => c.visible && c !== game.sky.root && !c.isLight);
             for (const c of hidden) c.visible = false;
-            try { shot(bare); } finally { for (const c of hidden) c.visible = true; }
+            game.sky.update(cam, 0);             // vòng lặp game có thể đã vẽ khung chính trong lúc chờ đọc → đặt lại vòm theo camera đo
+            r.setRenderTarget(rt); r.render(scene, cam); r.setRenderTarget(keep);
+            for (const c of hidden) c.visible = true;
+            await r.readRenderTargetPixelsAsync(rt, 0, 0, w, h, bare);
             const bins = new Map();
             let n = 0;
             for (let y = Math.floor(h / 2); y < h; y++) for (let x = 0; x < w; x++) {     // hàng dưới cùng trước → nửa trên khung = y ≥ h/2

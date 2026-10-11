@@ -317,7 +317,7 @@ async function runLook(browser, base, look) {
       // phần nhìn thấy trời / phông nền ở nửa trên khung không còn là một màu phẳng (màu phổ biến nhất ≤ 80 %; trời phẳng cũ = 100 %);
       // sương màu chân trời; tổng tam giác trong giới hạn
       if (["zone_00", "zone_01", "zone_02"].includes(zone) && look === looks[0]) {
-        const sk = await ev(() => ({ info: __game.sky, views: __game.skyCheck() }));
+        const sk = await ev(async () => ({ info: __game.sky, views: await __game.skyCheck() }));
         const open = sk.views.filter((v) => v.sky >= 0.15), flat = open.filter((v) => v.share > 0.8);
         const tris = sk.info.core + sk.info.extra + sk.info.clouds + sk.info.ground;
         await check(open.length > 0 && !flat.length && sk.info.fog && tris <= 5000,
