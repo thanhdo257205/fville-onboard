@@ -33,7 +33,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `assets/textures/` | Texture lặp cho bối cảnh (`assets/logos/`: logo để dán vào áo — chỉ có trên máy làm việc) |
 | `data/` | Toàn bộ nội dung game dạng JSON: hội thoại, nhiệm vụ, vật tương tác, mini-game, quiz, phần thưởng, giá trị, zone, cảnh chuyển, nhân vật, va chạm bổ sung, hướng dẫn người chơi mới (`guidance.json`: gợi ý phím H, câu nhắc khi đứng yên), 4 Act (`acts.json`), thành tựu cuối + danh hiệu (`achievements.json`), chơi nhiều người (`net.json`), số đo bàn bi-a zone 5 (`pool.json`, build zone_05 ghi lại), hiệu ứng âm thanh (`sounds.json`: nguồn + giấy phép của từng gói, mỗi tiếng → file, âm lượng), nhắn tin tự do (`chat.json`: độ dài, chống spam, bộ lọc từ — máy chủ đọc lúc deploy) |
 | `data/i18n/en.json`, `vi.json` | Mọi chữ giao diện: tiếng Anh (bản gốc) và tiếng Việt, cùng khoá. Văn phong bản Việt: `docs/vi_style.md` |
-| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người; `chatfilter.js` bộ lọc từ của chat, dùng chung với máy chủ; khung chat: `ui/chat.js`), `pool/` (bi-a zone 5: `physics.js` vật lý tất định (có xoáy ngang `spin` + đè / kéo `roll`, nấc −2 … +2; 0 = giống từng bit bản không xoáy), `rules.js` luật 8 bi — luật chuẩn "sọc trơn" cho bàn chung (`applyShotV2`) + luật rút gọn cũ khi máy chủ cũ — + mã hoá bàn, dùng chung với máy chủ, `table.js` chế độ chơi: tập một mình / bàn chung 2 người / thử thách, `pointer.js` con trỏ / ngón tay → điểm trên mặt bàn (ngắm bằng chuột không khoá; cảm ứng dùng lại sau), `auto.js` chọn cú cho kiểm thử), màn tiêu đề (`ui/title.js`; nền zone đầu + camera trôi: `game/showcase.js`), `debug.js` |
+| `game/` | Game web (Vite). `game/src/`: `world/` (tải zone, va chạm), `player/`, `characters/`, `game/` (vòng chơi, tương tác, cảnh chuyển), `minigames/`, `ui/`, `render/`, `net/` (chơi nhiều người; `chatfilter.js` bộ lọc từ của chat, dùng chung với máy chủ; khung chat: `ui/chat.js`), `pool/` (bi-a zone 5: `physics.js` vật lý tất định (có xoáy ngang `spin` + đè / kéo `roll`, nấc −2 … +2; 0 = giống từng bit bản không xoáy), `rules.js` luật 8 bi — luật chuẩn "sọc trơn" cho bàn chung (`applyShotV2`) + luật rút gọn cũ khi máy chủ cũ — + mã hoá bàn, dùng chung với máy chủ, `table.js` chế độ chơi: tập một mình / bàn chung 2 người / thử thách, `pointer.js` con trỏ / ngón tay → điểm trên mặt bàn (ngắm bằng chuột không khoá; cảm ứng dùng lại sau), `auto.js` chọn cú cho kiểm thử), màn tiêu đề (`ui/title.js`; nền zone đầu + camera trôi: `game/showcase.js`), cảm ứng (`core/device.js` nhận biết máy cảm ứng + `touchText`; `ui/touch.js` cần điều khiển ảo, nút hành động, hàng nút, nhắc xoay ngang), `debug.js` |
 | `server/` | Máy chủ chơi nhiều người "thấy nhau": Cloudflare Worker + Durable Object, mỗi DO một phòng (~30 người, tự chia phòng; `wrangler.toml`, `src/index.js`), bàn bi-a chung của phòng (`src/pool.js`: luật chuẩn 8 bi, **không chạy vật lý** — người đánh tự tính cú, gửi kết quả + sự kiện cú (`rules.js` → `wireFacts`), máy chủ kiểm tra (`factsFromWire`) rồi áp luật; báo features `"pool_rules2"`, `"pool_facts"`, `"pool_spin"` (cú có xoáy: máy chủ chỉ kiểm tra nấc −2 … +2 rồi chuyển tiếp); nhắn tin tự do kênh zone / all / dm, lọc từ ở máy chủ, không lưu lịch sử — features `"chat"`; biến `POOL_RULES = "1"` → chạy như bản cũ); bật bằng `data/net.json` → `url` (trống = tắt). Đã lên mạng: `https://fville-net.fville-onboard.workers.dev` (`/status`). Xem `docs/multiplayer.md` |
 | `viewer/index.html` | Trang xem bối cảnh + nhân vật (`?zone=zone_03_lobby&compare=prajith,huyen`; id vai cũng được: `compare=thao,le_tan,prajith` → kèm tint, tên vai) |
 | `references/` | Chỉ có ghi chú `.md` và bảng màu trên repo; video, khung hình gốc chỉ có trên máy làm việc |
@@ -74,6 +74,7 @@ npm --prefix game run test:smoke     # chơi tự động zone 0 → 5 tới mà
 npm --prefix game run test:smoke -- --zone 5               # chỉ 1 zone (bản lưu mẫu ?start=zone_05), ~50 giây mỗi ngoại hình
 npm --prefix game run test:smoke -- --look intern_nu       # 1 ngoại hình · --build: chạy trên game/dist (sau npm run build)
 #   ngoại hình thứ 2 chơi bằng tiếng Việt (đổi ở màn tạo nhân vật + thử đổi ở menu Esc) · --lang vi|en: mọi ngoại hình 1 ngôn ngữ
+npm --prefix game run test:smoke -- --mobile only          # chỉ lượt điện thoại giả lập (844 × 390, cảm ứng: zone 0 → 2 + nhắn tin), ~1 phút · --mobile off: bỏ
 npm --prefix game run test:smoke -- --extra only           # chỉ bản lưu cũ + mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ giả bản cũ; máy chủ local), ~80 giây
 
 # Viewer bối cảnh
@@ -112,13 +113,14 @@ tới đích, bấm E, tự giải hội thoại / mini-game / cảnh chuyển �
 `net` / `netEmote(id)` / `netPhrase(id)` (chơi nhiều người), `chat` (khung chat: `open()`, `close()`, `send(text)`, `chat(ch, text, to)`, `rulesOk()`), `pool` (bàn bi-a zone 5: `enter()`, `shoot(angle, power)` → Promise khi bi dừng, `leave()`, `rerack()`, `solve()`; bàn chung: `net` (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ), `join()`, `autoShot()`, `place(x, z)`, `forceShot()`, `setFast()`; luật chuẩn: `choose("rerack" | "play")`, `call(id)` / `cycleCall()` (gọi lỗ bi 8), `help()` (thẻ luật); xoáy: `spin` (trạng thái), `setSpin(spin, roll)`, `shoot(a, p, { spin, roll })`, `spinDot()` (toạ độ ô chọn điểm chạm); `screen(x, z)`: điểm trên mặt bàn → toạ độ màn hình; chế
 độ chuột `mouse`: lock / wait / free — giả lập khoá con trỏ: `_game.input.fakeLock = false | true`), `ending` (nhịp cảnh kết), `summaryCard()` (thẻ PNG của màn tổng kết), `map` (tab Bản đồ của app My FPT: khung, vị trí các dấu), `gaps()` (chỗ hở của mô hình zone đang chơi: từ mọi chỗ đi tới được
 bắn tia ở tầm mắt, tia nhìn xuống / nhìn ngang lọt ra trời → toạ độ; `game/src/world/gaps.js`, smoke dùng), `preview` (nền màn tiêu đề: zone, kịch bản camera, giây; `window.__title`: màn tiêu đề),
+`touch` (giao diện cảm ứng: bật chưa, cần điều khiển, vị trí nút hành động / hàng nút / vùng joystick, bàn phím ảo), `touchPick()` (lựa chọn hội thoại smoke sẽ chạm),
 `audio` / `sounds` (âm thanh: trạng thái AudioContext, tiếng nền của zone, số file đã tải, số lần phát theo tên, bước chân; các
 lần gọi gần nhất), `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
 Tham số URL để thử (khi dev, hoặc bản build mở với `?debug`): `?lang=vi|en` (ngôn ngữ, không lưu — dùng được mọi lúc), `?start=zone_05` (bản lưu mẫu "đã chơi xong các zone trước",
 dựng từ data: `game/src/game/autoplay.js`), `?look=intern_nam_kinh`, `?gender=nu`, `?net=ws://127.0.0.1:8787/ws`;
-`?net=off` (tắt mạng) dùng được mọi lúc; `?title=off` bỏ màn tiêu đề (smoke test, thử nhanh).
+`?net=off` (tắt mạng) và `?touch=1` / `?touch=0` (ép bật / tắt giao diện cảm ứng) dùng được mọi lúc; `?title=off` bỏ màn tiêu đề (smoke test, thử nhanh).
 
 ## Bắt đầu từ bản clone mới (Claude Code Web hoặc máy khác)
 
@@ -176,6 +178,12 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   tạo thì cho vào `zone.root` (dọn cùng zone) hoặc tự gọi `disposeTree` (`game/src/world/zone.js`) khi gỡ; nhân vật gỡ bằng
   `Character.dispose()` (dọn cả texture xương); vật liệu / texture dùng chung nhiều zone đánh dấu `userData.shared = true`.
   Smoke kiểm tra: zone_04 ↔ zone_05 2 vòng, `renderer.info.memory` không tăng.
+- **Cảm ứng** (`game/src/core/device.js`, `game/src/ui/touch.js`): nhận biết bằng `(pointer: coarse)` / `maxTouchPoints`, không
+  dựa user agent; điện thoại bật giao diện cảm ứng ngay (`body.touch`), laptop cảm ứng + chuột chỉ bật khi chạm lần đầu (bấm phím
+  thì tắt). Đang ở giao diện cảm ứng thì **không khoá con trỏ** (khoá → sự kiện ngón tay báo toạ độ cố định). Chữ nói về phím
+  trong nội dung ("press E") đổi qua `touchText()` (`touch.say_from` / `say_to` trong i18n); dòng hướng dẫn: `hud.controls_touch*`.
+  Bi-a cảm ứng chưa có (bàn bi-a hiện `touch.pool_soon` + nút Rời bàn) — `game/src/pool/*` để PR sau. Nút mới ≥ 44 px, đặt
+  ngoài hàng nút góc phải dưới / joystick góc trái dưới; bảng cao trên màn thấp (≤ 520 px) phải cuộn được, nút không lọt mép.
 - **Màn tiêu đề** (`game/src/ui/title.js`) hiện mỗi lần mở game, người mới lẫn người chơi cũ, trên nền zone đầu do game vẽ
   (`Game.showcase` → `game/src/game/showcase.js`: zone dựng như khi vào zone nhưng chưa có người chơi / NPC / trigger, camera
   trôi theo `SHOTS[zone]`, zone không có kịch bản thì quay quanh SPAWN_ đầu zone). Start → `_enterZone` dùng lại zone đó,
@@ -218,6 +226,10 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   `-- --zone N` cho zone vừa sửa); sửa bi-a (`game/src/pool/physics.js`, `rules.js`, `server/src/pool.js`) thì chạy thêm `test:pool`. Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
   trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật — trừ các test
   mạng dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
+- Sau phần chơi theo ngoại hình, smoke chạy **lượt điện thoại giả lập** (Playwright `hasTouch` + `isMobile`, khung ngang 844 × 390,
+  `--mobile off` bỏ, `--mobile only` chỉ chạy lượt này): giao diện cảm ứng tự bật, nấc Detail thấp; đẩy joystick (chạy), vuốt
+  xoay camera, mở 2 ngón; chơi zone 0 → 2 bằng chạm (nút hành động ghi đúng tên việc, chạm qua hội thoại / lựa chọn, quiz Cuder
+  bằng chạm); cầm dọc → nhắc xoay ngang; nhắn tin bằng nút Chat (máy chủ local). Lượt máy tính thường kiểm tra không hiện nút cảm ứng.
 - Sau phần chơi theo ngoại hình, smoke chạy thêm các test (`--extra off` bỏ, `--extra only` chỉ chạy các test này, ~80 giây):
   bản lưu cũ lệch data (`scripts/tests/fixtures/old_save.json`, ẩn danh) → sửa, vào zone_04, tải lại trang, GLB hỏng →
   bảng lỗi + bấm Back, bộ nhớ GPU không tăng khi đổi zone (zone_04 ↔ zone_05 2 vòng); vào zone_04 khi có bot chờ sẵn (khởi động thẳng + đi qua cổng từ zone_03, phải xong trong 20 s,

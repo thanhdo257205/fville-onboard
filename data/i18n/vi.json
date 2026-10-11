@@ -75,7 +75,9 @@
     "photo_saved_checkin": "Đã lưu ảnh check-in vào My FPT",
     "photo_saved_id": "Ảnh của bạn đã được in lên thẻ",
     "advice_new": "Đã lưu lời khuyên của {name} vào Sổ lời khuyên",
-    "objective_complete": "Bạn đã hoàn thành ngày đầu tiên! 🎉"
+    "objective_complete": "Bạn đã hoàn thành ngày đầu tiên! 🎉",
+    "controls_touch": "Bên trái: đi (đẩy hết cỡ để chạy) · Vuốt: nhìn quanh · Chụm hai ngón: thu phóng · ?: trợ giúp",
+    "controls_touch_net": "Bên trái: đi (đẩy hết cỡ để chạy) · Vuốt: nhìn quanh · Chụm hai ngón: thu phóng · 👋 vẫy tay · 💬 nhắn tin · ?: trợ giúp"
   },
   "guide": {
     "help_title": "Giờ làm gì đây?",
@@ -103,7 +105,8 @@
     "photos": "Ảnh của bạn",
     "no_photo": "Chưa có ảnh",
     "download_busy": "Đang tạo thẻ…",
-    "download_failed": "Trình duyệt này không tạo được ảnh thẻ. Hãy thử lại, hoặc chụp màn hình."
+    "download_failed": "Trình duyệt này không tạo được ảnh thẻ. Hãy thử lại, hoặc chụp màn hình.",
+    "download_ios": "Thẻ đã mở ở tab mới — giữ ngón trên ảnh để lưu."
   },
   "menu": {
     "title": "Tạm dừng",
@@ -259,7 +262,9 @@
   "dialogue": {
     "continue": "Space ▸",
     "narrator": "",
-    "choose_hint": "Nhấn 1–{n} hoặc bấm chuột"
+    "choose_hint": "Nhấn 1–{n} hoặc bấm chuột",
+    "continue_touch": "Chạm để tiếp ▸",
+    "choose_touch": "Chạm vào một lựa chọn"
   },
   "stats": {
     "hieu_biet": "Hiểu biết",
@@ -384,6 +389,25 @@
     "empty_zone": "Khu vực này chưa có tin nào. Chào mọi người đi!",
     "empty_all": "Chưa có tin nào.",
     "empty_dm": "Chọn một người để bắt đầu nhắn riêng.",
-    "unread": "{n} tin mới — nhấn Enter để đọc"
+    "unread": "{n} tin mới — nhấn Enter để đọc",
+    "help_touch": "Gửi: gửi tin · chạm vào tên: nhắn riêng / tắt nhận tin",
+    "unread_touch": "{n} tin mới — chạm 💬 để đọc"
+  },
+  "touch": {
+    "_note": "Nút cảm ứng (game/src/ui/touch.js): nút là biểu tượng, đây là tên nút (trình đọc màn hình, giữ ngón để xem). say_from / say_to: gợi ý trong game ghi \"nhấn E\" sẽ đọc thành say_to khi chơi bằng cảm ứng.",
+    "chat": "Nhắn tin",
+    "emote": "Vẫy tay & câu nhanh",
+    "help": "Trợ giúp",
+    "app": "App My FPT",
+    "menu": "Menu",
+    "fullscreen": "Toàn màn hình",
+    "fullscreen_failed": "Trình duyệt này không cho chơi toàn màn hình.",
+    "ios_home": "Trên iPhone / iPad: chạm nút Chia sẻ ⬆ rồi chọn \"Thêm vào MH chính\" để chơi toàn màn hình.",
+    "ios_tip": "Mẹo: Chia sẻ ⬆ → \"Thêm vào MH chính\" để chơi toàn màn hình.",
+    "pool_soon": "Bi-a bằng cảm ứng sắp có.",
+    "pool_leave": "Rời bàn",
+    "rotate": "Xoay ngang điện thoại để chơi nhé.",
+    "say_from": "nhấn E",
+    "say_to": "chạm nút hành động"
   }
 }

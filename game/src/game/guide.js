@@ -7,6 +7,7 @@
 //     Mỗi mục tiêu nhắc tối đa max_nudges lần, cách nhau repeat_s giây.
 //   • Phím H / nút Help trong app My FPT: gợi ý của mục tiêu hiện tại (+ việc phụ đang nhận, vd tìm balo cho Tú).
 import * as THREE from "three";
+import { device } from "../core/device.js";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { worldPos } from "../world/zone.js";
 import { tx } from "../content/content.js";
@@ -15,6 +16,8 @@ import { hud } from "../ui/hud.js";
 import { sound } from "../core/sound.js";
 
 const EDGE = { x: 34, top: 74, bottom: 112 };   // mũi tên cách mép màn hình (trên: dòng mục tiêu, dưới: gợi ý E + dòng điều khiển)
+// cảm ứng: dưới là cần điều khiển (trái) + nút hành động / hàng nút (phải) → chừa nhiều hơn (ui/touch.js, style.css #touch)
+const EDGE_TOUCH = { x: 40, top: 74, bottom: 200 };
 const TU_NEAR_M = 15;      // Tú ở xa hơn (vd vừa bị bỏ lại) → coi như không đi cùng, nhắn điện thoại
 
 const _v = new THREE.Vector3(), _s = new THREE.Vector3(), _box = new THREE.Box3();
@@ -175,7 +178,8 @@ export class Guide {
     if (c.z > 0) dy = -Math.abs(dy) - 0.6 * Math.hypot(dx, dy) - 0.01;
     const len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
     // khung đặt mũi tên: màn hình trừ lề; tia từ tâm khung theo hướng (ux, uy) cắt cạnh khung
-    const x0 = EDGE.x, x1 = innerWidth - EDGE.x, y0 = EDGE.top, y1 = innerHeight - EDGE.bottom;
+    const E = device.touch ? EDGE_TOUCH : EDGE;
+    const x0 = E.x, x1 = innerWidth - E.x, y0 = E.top, y1 = Math.max(E.top + 40, innerHeight - E.bottom);
     const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
     const k = Math.min((x1 - cx) / Math.max(Math.abs(ux), 1e-4), (y1 - cy) / Math.max(Math.abs(uy), 1e-4));
     const x = cx + ux * k, y = cy - uy * k;

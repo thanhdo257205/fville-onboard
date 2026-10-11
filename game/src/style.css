@@ -676,3 +676,80 @@ body.chat-open .nametag.player-tag { pointer-events: auto; cursor: pointer; }
 #pool-spin.off .ball i { background: #6b7280; }
 #pool-spin .val { font: 800 12px "Nunito"; color: #fff; min-height: 1.2em; }
 #pool-spin .keys { font: 700 11px "Nunito"; color: var(--muted); }
+
+/* ---------- cảm ứng (ui/touch.js, core/device.js — body.touch) ----------
+   Cần điều khiển ảo góc trái dưới, nút hành động (thay E) + hàng nút tròn góc phải dưới (≥ 48 px), chừa tai thỏ / thanh điều
+   hướng (env(safe-area-inset-*)). Không phóng to trang / kéo xuống làm mới / menu khi giữ ngón. Cầm dọc: nhắc xoay ngang. */
+html, body { overscroll-behavior: none; }
+body.touch { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+body.touch button, body.touch li, body.touch #dialogue { touch-action: manipulation; }
+body.touch input, body.touch textarea, body.touch select { -webkit-user-select: text; user-select: text; touch-action: manipulation; }
+body.touch #app canvas { touch-action: none; }
+body.touch #menu, body.touch #minigame, body.touch #myfpt, body.touch #summary, body.touch #chat .log, body.touch #creator { touch-action: pan-y; }
+#touch, #rotate { display: none; }
+body.touch #touch { display: block; position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+body.cinematic #touch { display: none; }
+#touch .stick-zone { position: absolute; left: 0; bottom: 0; width: 44vw; height: 66vh; pointer-events: auto; touch-action: none; display: none; }
+#touch.free .stick-zone { display: block; }
+#touch .stick { position: absolute; left: calc(86px + env(safe-area-inset-left)); top: calc(100% - 86px - env(safe-area-inset-bottom)); width: 112px; height: 112px;
+  margin: -56px 0 0 -56px; border-radius: 50%; background: rgba(18, 20, 24, .28); border: 2px solid rgba(255, 255, 255, .45); opacity: .7; transition: opacity .15s; }
+#touch .stick.on { opacity: 1; background: rgba(18, 20, 24, .38); }
+#touch .stick i { position: absolute; left: 50%; top: 50%; width: 50px; height: 50px; margin: -25px 0 0 -25px; border-radius: 50%; background: rgba(255, 255, 255, .85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
+/* hàng nút: lưới 3 cột xếp từ phải sang (tối đa 2 hàng) → giữa màn còn chỗ cho dòng hướng dẫn */
+#touch .pad { position: absolute; right: calc(12px + env(safe-area-inset-right)); bottom: calc(12px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(3, 48px);
+  gap: 8px; direction: rtl; pointer-events: auto; }
+#touch .round { width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .35); background: var(--panel); color: #fff; font: 800 20px/1 "Nunito";
+  display: grid; place-items: center; padding: 0; cursor: pointer; box-shadow: 0 3px 10px rgba(0, 0, 0, .3); }
+#touch .round[hidden] { display: none; }
+#touch .round:active { background: var(--orange); }
+#touch .act { position: absolute; right: calc(14px + env(safe-area-inset-right)); bottom: calc(126px + env(safe-area-inset-bottom)); min-height: 60px; min-width: 120px;
+  max-width: min(46vw, 360px); padding: 0 22px; border: 0; border-radius: 999px; background: var(--orange); color: #fff; font: 800 16px/1.2 "Nunito";
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .35); pointer-events: auto; cursor: pointer; }
+#touch .act[hidden] { display: none; }
+#touch .act span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#touch .act:active { filter: brightness(1.1); transform: scale(.97); }
+#touch .pool-note { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
+  padding: 8px 10px 8px 16px; border-radius: 14px; background: var(--panel); pointer-events: auto; max-width: calc(100vw - 32px); }
+#touch .pool-note[hidden] { display: none; }
+body.touch-pool #hint { display: none; }
+#touch .pool-note p { margin: 0; font-weight: 800; }
+#touch .pool-note button { min-height: 44px; white-space: nowrap; }
+/* HUD khi chơi bằng cảm ứng: không gợi ý phím (nút hành động thay #prompt), dòng điều khiển ở giữa đáy (giữa cần điều khiển và
+   hàng nút), số người online lên góc trên phải, tin chat xem trước lên trên cần điều khiển */
+body.touch kbd, body.touch #prompt, body.touch #lockhint { display: none !important; }
+body.touch #hint { bottom: calc(12px + env(safe-area-inset-bottom)); max-width: calc(100vw - 2 * max(184px, 22vw)); font-size: 13px; }
+body.touch #objective { left: calc(16px + env(safe-area-inset-left)); max-width: 40vw; }
+body.touch #clock { right: calc(16px + env(safe-area-inset-right)); }
+body.touch #net-online { bottom: auto; top: 58px; right: calc(16px + env(safe-area-inset-right)); }
+body.touch #emotes { bottom: calc(126px + env(safe-area-inset-bottom)); right: calc(12px + env(safe-area-inset-right)); }
+body.touch #emotes li { min-height: 40px; }
+body.touch #chat { left: calc(16px + env(safe-area-inset-left)); bottom: calc(150px + env(safe-area-inset-bottom)); }
+body.touch #chat .peek p:nth-last-child(n + 4) { display: none; }
+body.touch #chat.open { bottom: calc(8px + env(safe-area-inset-bottom) + var(--kb, 0px)); width: min(440px, calc(100vw - 32px)); }
+body.touch #chat.open .log { max-height: max(70px, calc(100vh - var(--kb, 0px) - 190px)); }
+body.touch #chat .tabs button, body.touch #chat form button, body.touch #chat form input { min-height: 40px; }
+/* bàn phím ảo đang mở: khung mini-game / menu dồn lên trên phần còn thấy, cuộn được (ô mật khẩu Đăng nhập không bị che) */
+body.kb-open #minigame { align-items: flex-start; padding-bottom: var(--kb, 0px); overflow-y: auto; }
+body.kb-open #creator { padding-bottom: var(--kb, 0px); overflow-y: auto; }
+/* nút / dòng chọn đủ lớn cho ngón tay (≥ 44 px) */
+body.touch #menu button, body.touch #minigame button, body.touch #summary button, body.touch #title button, body.touch #creator button { min-height: 44px; }
+body.touch #dialogue .choices li, body.touch .mg ol li { min-height: 44px; }
+body.touch #myfpt .close { display: grid; width: 44px; height: 44px; }
+body.touch #myfpt .foot { display: none; }
+body.touch .mg .cards { touch-action: none; }   /* kéo thả thẻ (Dòng thời gian, Ưu tiên): ngón tay không cuộn trang */
+/* màn thấp (điện thoại cầm ngang, ~390 px): bảng mini-game rộng ra, đệm mỏng → ít phải cuộn; vẫn cuộn được bằng ngón tay */
+@media (max-height: 520px) {
+  #minigame .panel.mg { width: min(760px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))); max-height: calc(100dvh - 12px); padding: 14px 20px;
+    box-sizing: border-box; }
+  .mg .line { margin: 2px 0 8px; font-size: 14px; }
+  .quiz .story { font-size: 14px; line-height: 1.4; padding: 10px 12px; }
+  .quiz .q { font-size: 16px; margin: 2px 0 8px; }
+}
+/* cầm dọc: nhắc xoay ngang */
+@media (orientation: portrait) {
+  body.touch #rotate { display: grid; position: fixed; inset: 0; z-index: 50; place-content: center; justify-items: center; gap: 14px; padding: 24px; text-align: center;
+    background: rgba(18, 20, 24, .94); color: #fff; font: 800 20px/1.35 "Nunito"; }
+  body.touch #rotate .icon { font-size: 56px; animation: rotate-hint 1.8s ease-in-out infinite; }
+}
+@keyframes rotate-hint { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }

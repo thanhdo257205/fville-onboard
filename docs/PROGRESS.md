@@ -1240,6 +1240,46 @@ xoáy ngang"). **Chưa deploy** (cần bản web + `npx wrangler deploy` máy ch
 - Smoke: bước mới "chỗ hở mô hình" ở zone 3–5 (ngoại hình đầu): zone trong `GAP_FREE` (hiện `zone_04`) phải 0 tia nhìn xuống
   lọt ra trời, zone khác chỉ ghi số. `--zone 3`, `--zone 4`, `--zone 5` đạt; test:data đạt.
 
+### Chơi trên trình duyệt điện thoại (11/10/2026, nhánh `feat/mobile-touch` ad43543)
+
+CHECKLIST P2 "Chơi trên trình duyệt điện thoại", mọi dòng trừ bi-a cảm ứng (phiên khác đang sửa `game/src/pool/*`, `server/`).
+**Chưa deploy.**
+
+- Nhận biết (`game/src/core/device.js`): `matchMedia("(pointer: coarse)")` → điện thoại / máy tính bảng, giao diện cảm ứng bật
+  ngay; `navigator.maxTouchPoints` > 0 mà con trỏ chính là chuột (laptop cảm ứng) → chơi bàn phím như thường, lần chạm đầu mới
+  bật, bấm phím thì tắt. Không đọc user agent (trừ `navigator.platform` để biết iOS: không có Fullscreen API, tải ảnh khác).
+  `?touch=1` / `?touch=0` ép bật / tắt. `body.touch` bật CSS cảm ứng; chữ "press E" / "nhấn E" trong nội dung đổi thành
+  "tap the action button" / "chạm nút hành động" (`touchText`, cặp chữ trong i18n `touch.say_from` / `say_to`).
+- `game/src/ui/touch.js`: cần điều khiển ảo (đặt ngón ở nửa trái dưới, tâm theo chỗ chạm; đẩy ≥ 92 % = chạy, nhẹ hơn = đi
+  chậm theo độ đẩy — `input.stick`), nút cam lớn thay E (ghi đúng tên việc như dòng nhắc, chỉ hiện khi đứng gần), hàng nút tròn
+  48 px (Chat, Emote, Help, App, Menu, toàn màn hình — nút chỉ hiện khi dùng được), màn nhắc xoay ngang khi cầm dọc. Ở bàn bi-a:
+  "Bi-a bằng cảm ứng sắp có" + nút Rời bàn (thử thách anh Khang: đóng mini-game), ẩn dòng hướng dẫn phím của bàn.
+- `core/input.js`: vuốt xoay camera nhạy 0,7 lần chuột kéo; chụm / mở 2 ngón = con lăn (40 px một nấc); chạm nhanh trên khung vẽ
+  → hội thoại nói tiếp. Giao diện cảm ứng **không khoá con trỏ** (đang khoá thì mọi sự kiện con trỏ — cả ngón tay — báo toạ độ
+  cố định 0, joystick hỏng; laptop cảm ứng đang khoá thì chạm sẽ nhả); `setPointerCapture` bọc try (chạm giả lập có lúc ném lỗi).
+- Hội thoại: "Tap to continue ▸" / "Chạm để tiếp ▸", chạm vào lựa chọn. Chat: nút Chat mở khung, ô nhập focus ngay (bàn phím ảo
+  hiện), khung chat dời lên theo `visualViewport` (`--kb`), gửi bằng nút, gửi xong cất bàn phím; đang gõ không điều khiển nhân vật.
+- Mini-game: rà cả 12 loại (trừ Một cú bi-a) — bước nào bấm phím cũng có nút để chạm; kéo thả thẻ (Dòng thời gian, Ưu tiên)
+  bằng ngón tay (`touch-action: none`), Lộ trình học kéo thả kiểu HTML5 không chạy trên cảm ứng nhưng chạm thẻ là chọn; ô mật khẩu
+  nhận Enter của bàn phím ảo (`e.key`); bàn phím ảo mở thì bảng mini-game / màn tạo nhân vật chừa chỗ dưới. Màn thấp (≤ 520 px):
+  bảng mini-game rộng ra, đệm mỏng, cuộn được (trước đây nút "Start quiz" của quiz Cuder nằm dưới mép màn 844 × 390).
+- Giao diện: nút ≥ 44 px; `env(safe-area-inset-*)`; viewport `user-scalable=no, viewport-fit=cover`; `overscroll-behavior:
+  none`, `touch-action`, `user-select` / `-webkit-touch-callout` tắt; dòng hướng dẫn bản cảm ứng (`hud.controls_touch*`);
+  mũi tên chỉ đường né joystick / hàng nút (`guide.js` `EDGE_TOUCH`); hàng nút xếp lưới 3 cột tối đa 2 hàng để giữa màn còn
+  chỗ cho dòng hướng dẫn.
+- Hiệu năng: điện thoại mặc định nấc Detail thấp nhất (pixelRatio 1, không viền nét), tối đa 6 người chơi khác hiện cùng lúc.
+- Nút toàn màn hình (Android: `requestFullscreen` + khoá xoay ngang); iOS: toast hướng dẫn "Thêm vào màn hình chính" (một lần).
+  Âm thanh vẫn chỉ phát sau lần chạm đầu (như cũ). Ảnh thẻ PNG trên iOS: mở tab mới trước khi vẽ ảnh, rồi đưa ảnh vào tab đó
+  để giữ ngón lưu ảnh (`summary.download_ios`).
+- Chữ mới: `touch.*`, `hud.controls_touch`, `hud.controls_touch_net`, `dialogue.continue_touch`, `dialogue.choose_touch`,
+  `chat.help_touch`, `chat.unread_touch`, `summary.download_ios` (en + vi).
+- Smoke: lượt điện thoại giả lập (Playwright `hasTouch` + `isMobile`, 844 × 390, chạm thật qua CDP `Input.dispatchTouchEvent`):
+  giao diện tự bật, Detail thấp; joystick chạy ~7 m, vuốt xoay 40°, mở 2 ngón camera 4,2 → 2,2 m; chơi zone 0 → 2 bằng chạm
+  (nút hành động 4 lần, 8 lần chạm qua hội thoại, 1 lựa chọn, quiz Cuder chạm từng đáp án); cầm dọc → nhắc xoay; console sạch;
+  nhắn tin bằng nút Chat qua máy chủ local. Lượt máy tính thường: không hiện nút cảm ứng, Detail cao. `--mobile only|off`.
+- Còn lại (người dùng): chơi thử trên máy thật (Android Chrome, iPhone Safari), đo FPS + RAM ghi vào `docs/perf_report.md`;
+  bi-a cảm ứng làm ở PR sau (sau PR áp phê).
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

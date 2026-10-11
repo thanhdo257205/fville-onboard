@@ -4,6 +4,7 @@
 // Nút: Close (Esc, chơi tiếp), Download card (PNG — vẽ lại thẻ bằng canvas), Play again.
 // Mở bằng Game.finishGame() sau cảnh kết (hiệu ứng "finish" ở bàn làm việc zone 5; __game.finish() khi thử).
 import { t } from "../i18n.js";
+import { device } from "../core/device.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 // tên file ảnh thẻ: bỏ dấu tiếng Việt (NFD rồi xoá dấu kết hợp \p{M}; đ / Đ không tách được → d), chữ thường, nối bằng "-"
@@ -165,9 +166,12 @@ export class Summary {
   // nút Download card: vẽ thẻ → PNG → tải về. Hỏng (canvas không có, hết bộ nhớ…) → báo ngay trong màn tổng kết.
   // PNG bằng toDataURL (đồng bộ, ~50 ms): toBlob chờ lúc luồng chính rảnh mà vòng lặp game không để rảnh → 1–2 s.
   // lastDownload.ms: thời gian từng khâu (đang tạo dở cũng có — smoke test in ra khi hỏng)
+  // iOS (Safari không lưu được file tải về kiểu <a download>): mở ảnh trong tab mới — giữ ngón trên ảnh để lưu vào Ảnh. Tab mở
+  // ngay trong lượt bấm (sau await thì trình duyệt chặn cửa sổ bật lên), ảnh xong thì đổ vào tab đó.
   async download() {
     const d = this.data;
     if (!d || this.busy) return;
+    const tab = device.ios ? window.open("", "_blank") : null;
     const msg = this.el.querySelector(".dl-msg"), btn = this.el.querySelector("[data-a=download]");
     const say = (text, kind) => { if (!msg) return; msg.hidden = !text; msg.textContent = text || ""; msg.dataset.kind = kind || ""; };
     this.busy = true;
@@ -185,6 +189,12 @@ export class Summary {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `fville-first-day-${fileSlug(d.name)}.png`;
+      if (tab) {
+        tab.location.href = a.href;                     // giữ URL (không thu hồi): tab mới còn đọc ảnh
+        this.lastDownload = { name: a.download, bytes: blob.size, width: cv.width, height: cv.height, ms, tab: true };
+        say(t("summary.download_ios"));
+        return;
+      }
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -192,6 +202,7 @@ export class Summary {
       this.lastDownload = { name: a.download, bytes: blob.size, width: cv.width, height: cv.height, ms };
       say(null);
     } catch (e) {
+      tab?.close();
       console.warn("[ảnh thẻ] không tạo được ảnh:", e?.message || e);
       this.lastDownload = { error: String(e?.message || e), ms };
       say(t("summary.download_failed"), "error");

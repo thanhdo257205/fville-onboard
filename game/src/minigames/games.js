@@ -635,7 +635,8 @@ const login = {
     ctx.idleHint = () => (stage === "pw" ? tx(d.idle.pw) : stage === "twofa" ? tx(d.idle.twofa) : null);
     ctx.onAssist = () => { if (stage === "twofa") draw(); };
     ctx.onKey = (e) => {
-      if (stage === "pw" && (e.code === "Enter" || e.code === "NumpadEnter")) { submit(); return true; }
+      // bàn phím ảo (điện thoại) có khi gửi e.code rỗng, chỉ có e.key = "Enter"
+      if (stage === "pw" && (e.code === "Enter" || e.code === "NumpadEnter" || e.key === "Enter")) { submit(); return true; }
       if (stage === "twofa" && ["Space", "Enter", "NumpadEnter"].includes(e.code)) { enable2fa(); return true; }
       return false;
     };

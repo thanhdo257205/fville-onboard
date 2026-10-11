@@ -1,4 +1,5 @@
-// Hộp hội thoại: chân dung bên trái, tên người nói, lời thoại; tiếp lời bằng Space/click, chọn đáp án bằng phím 1–4 hoặc click.
+// Hộp hội thoại: chân dung bên trái, tên người nói, lời thoại; tiếp lời bằng Space/click, chọn đáp án bằng phím 1–4 hoặc click
+// (cảm ứng: chạm vào hộp / bất kỳ đâu trên màn hình để nói tiếp, chạm vào lựa chọn).
 // Chạy cây hội thoại trong dialogues.json: branch / action (mini-game) / lời thoại có anim / choices + effects.
 // Tiếng: sang câu (line), chọn đáp án (select), câu kiểu tin nhắn style "phone" (phone); câu có "sfx": "<tên>" (data/sounds.json)
 // phát tiếng đó khi câu hiện (vd tiếng bíp đầu đọc thẻ ở cửa quẹt thẻ zone 4).
@@ -6,6 +7,7 @@ import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
 import { url } from "../core/assets.js";
 import { sound } from "../core/sound.js";
+import { device } from "../core/device.js";
 
 export class DialogueUI {
   constructor() {
@@ -35,7 +37,9 @@ export class DialogueUI {
     this.el.querySelector(".text").textContent = text;
     const ol = this.el.querySelector(".choices");
     ol.innerHTML = (choices || []).map((c, i) => `<li data-i="${i}"><b>${i + 1}</b> ${escapeHtml(c)}</li>`).join("");
-    this.el.querySelector(".more").textContent = choices?.length ? t("dialogue.choose_hint", { n: choices.length }) : t("dialogue.continue");
+    // cảm ứng: "Chạm để nói tiếp" (chạm bất kỳ đâu — ui/touch.js) / "Chạm vào một lựa chọn"
+    this.el.querySelector(".more").textContent = choices?.length ? t(device.touch ? "dialogue.choose_touch" : "dialogue.choose_hint", { n: choices.length })
+      : t(device.touch ? "dialogue.continue_touch" : "dialogue.continue");
     return new Promise((resolve) => { this.waiting = { kind: choices?.length ? "choice" : "next", resolve, count: choices?.length || 0 }; });
   }
   // auto: tự sang câu (cảnh chuyển) → không có tiếng

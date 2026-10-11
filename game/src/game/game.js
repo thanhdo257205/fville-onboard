@@ -2,6 +2,7 @@
 // trigger chuyển zone có màn mờ (điều kiện từ quests.json), mức đồ hoạ (tự chọn / menu / tự hạ khi FPS < 40),
 // tương tác (interactables.json) → hội thoại (dialogues.json) / mini-game / nhặt vật; hiệu ứng → tiến trình (lưu trình duyệt).
 import * as THREE from "three";
+import { device } from "../core/device.js";
 import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, prefetchZone, pendingPrefetch } from "../world/zone.js";
 import { buildCollider } from "../world/collision.js";
 import { createLights, DETAIL_LEVELS } from "../render/renderer.js";
@@ -75,7 +76,9 @@ export class Game {
     this.monitor = new FpsMonitor({ onLow: (fps) => this.autoLow(fps) });
     // đã ở mức Thấp mà FPS vẫn < DETAIL_FPS → hạ độ nét từng nấc (menu Esc → Detail = Auto)
     this.detailMonitor = new FpsMonitor({ threshold: DETAIL_FPS, onLow: (fps) => this.autoDetail(fps) });
-    this.state.detailLevel = 0;              // nấc Auto đã tự hạ tới (chỉ trong phiên chơi này)
+    // nấc Auto đã tự hạ tới (chỉ trong phiên chơi này); điện thoại / máy tính bảng (core/device.js): bắt đầu ở nấc thấp nhất
+    // (pixelRatio ≤ 1, tắt viền nét) — menu Esc → Detail: Sharper vẫn chọn được
+    this.state.detailLevel = device.phone ? DETAIL_LEVELS.length - 1 : 0;
     this.applyDetail();
     const tags = characters.tagConfig();
     nametags.maxDistance = tags.max_distance_m ?? 12;

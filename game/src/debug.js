@@ -320,6 +320,15 @@ export function installDebug(game, loop) {
       const from = [game.player.position];
       game.zone.root.traverse((o) => { if (/^(SPAWN|NPC|INT)_/.test(o.name)) from.push(o.getWorldPosition(new THREE.Vector3())); });
       return findGaps(game.zone, from, { skip: new RegExp(game.seeThrough.cfg.meshes), ...opts }); },
+    // cảm ứng (ui/touch.js): bật chưa, cần điều khiển đang đẩy, tâm nút hành động / hàng nút / vùng cần điều khiển (toạ độ màn
+    // hình — smoke chạm đúng chỗ); touchPick() = lựa chọn hội thoại đang chờ mà resolve() sẽ chọn (autoplay.pickChoice)
+    get touch() { return game.touch?.info() ?? null; },
+    touchPick() {
+      const a = game.runner.active, n = game.content.dialogues.get(a?.id)?.nodes[a?.node];
+      if (game.ui.dialogue.waiting?.kind !== "choice" || !n) return null;
+      const vis = (n.choices || []).filter((ch) => game.progress.check(ch.if));
+      return pickChoice(game.content, a.id, a.node, vis, game.guide.current().quest?.id ?? null);
+    },
     get talkCam() { const c = game.talkCam; return { active: c.active, goal: c.goal, t: +c.t.toFixed(2), side: c.side, lift: c.lift, pick: c.info, partner: c.partner?.role ?? (c.partner ? "tu" : null) }; },
     get _game() { return game; },          // truy cập nội bộ khi cần soi sâu
     nodes(prefix = "") { return [...game.zone.nodes.keys()].filter((n) => n.startsWith(prefix)); },

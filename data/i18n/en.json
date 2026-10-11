@@ -75,7 +75,9 @@
     "photo_saved_checkin": "Check-in photo saved to My FPT",
     "photo_saved_id": "Your photo is printed on your card",
     "advice_new": "{name}'s tip saved to your Advice Book",
-    "objective_complete": "Your first day is complete! 🎉"
+    "objective_complete": "Your first day is complete! 🎉",
+    "controls_touch": "Left side: move (push all the way to run) · Swipe: look around · Pinch: zoom · ?: help",
+    "controls_touch_net": "Left side: move (push all the way to run) · Swipe: look around · Pinch: zoom · 👋 wave · 💬 chat · ?: help"
   },
   "guide": {
     "help_title": "What now?",
@@ -103,7 +105,8 @@
     "photos": "Your photos",
     "no_photo": "No photo yet",
     "download_busy": "Preparing your card…",
-    "download_failed": "Couldn't create the card image in this browser. Try again, or take a screenshot instead."
+    "download_failed": "Couldn't create the card image in this browser. Try again, or take a screenshot instead.",
+    "download_ios": "The card opened in a new tab — press and hold the image to save it."
   },
   "menu": {
     "title": "Paused",
@@ -259,7 +262,9 @@
   "dialogue": {
     "continue": "Space ▸",
     "narrator": "",
-    "choose_hint": "Press 1–{n} or click"
+    "choose_hint": "Press 1–{n} or click",
+    "continue_touch": "Tap ▸",
+    "choose_touch": "Tap an answer"
   },
   "stats": {
     "hieu_biet": "Knowledge",
@@ -384,6 +389,25 @@
     "empty_zone": "No messages in this zone yet. Say hi!",
     "empty_all": "No messages yet.",
     "empty_dm": "Choose a player to start a private chat.",
-    "unread": "{n} new — press Enter to read"
+    "unread": "{n} new — press Enter to read",
+    "help_touch": "Send: send · tap a name: private message / mute",
+    "unread_touch": "{n} new — tap 💬 to read"
+  },
+  "touch": {
+    "_note": "Touch controls (game/src/ui/touch.js): buttons are icons, these are their labels (screen readers, long-press tooltips). say_from / say_to: in-game hints that say \"press E\" read as say_to when playing by touch.",
+    "chat": "Chat",
+    "emote": "Wave & quick phrases",
+    "help": "Help",
+    "app": "My FPT app",
+    "menu": "Menu",
+    "fullscreen": "Full screen",
+    "fullscreen_failed": "Full screen isn't available in this browser.",
+    "ios_home": "On iPhone / iPad: tap Share ⬆, then \"Add to Home Screen\" to play full screen.",
+    "ios_tip": "Tip: Share ⬆ → \"Add to Home Screen\" to play full screen.",
+    "pool_soon": "Pool by touch is coming soon.",
+    "pool_leave": "Leave the table",
+    "rotate": "Turn your phone sideways to play.",
+    "say_from": "press E",
+    "say_to": "tap the action button"
   }
 }
