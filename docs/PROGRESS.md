@@ -1359,7 +1359,8 @@ gh-pages c3ef40f).
 
 ### Bầu trời chuyển màu + mây + phông nền xa (11/10/2026, nhánh `feat/sky-backdrop`)
 
-CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" — lớp 1 + 2 (làm bằng code, không cần Blender). **Chưa deploy.**
+CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" — lớp 1 + 2 (làm bằng code, không cần Blender). **Đã deploy**
+(PR #24 gộp vào main dd4ccb1 → gh-pages 22743fa; cùng lượt: smoke dấu chỉ đường PR #23).
 
 - `game/src/render/sky.js` + `data/backdrop.json`, dùng chung mọi zone, không sửa GLB (chỉ thêm vật ở xa ngoài hộp bao zone):
   - vòm trời: shader đỉnh (`mood.sky_top`) → chân trời (`mood.sky_horizon`) + quầng nắng theo `mood.sun`; đi theo camera, nằm ở mặt
