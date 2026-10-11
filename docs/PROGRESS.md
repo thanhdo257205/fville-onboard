@@ -1312,7 +1312,7 @@ Người dùng chơi thử Android Chrome cầm ngang: thanh địa chỉ chiế
   (máy chủ local), chạm Continue → toàn màn hình + manifest. Ảnh từng khung: `test-results/short/` (không commit).
   `__game.tags`, `__game.showCard("act" | "ach")`.
 
-### Bi-a bằng cảm ứng + ô nhắn tin máy tính + sửa Esc khung chat (11/10/2026, nhánh `feat/pool-touch`)
+### Bi-a bằng cảm ứng + ô nhắn tin máy tính + sửa Esc khung chat (11/10/2026, nhánh `feat/pool-touch` 2e1fd3b)
 
 Trên máy cảm ứng (`body.touch`) chơi được bi-a trọn vẹn: tập một mình, bàn chung 2 người, người xem, thử thách của anh Khang.
 Bỏ dòng "Bi-a bằng cảm ứng sắp có". Máy tính giữ nguyên mọi điều khiển. **Không đổi** `physics.js`, `rules.js`, `server/`,
