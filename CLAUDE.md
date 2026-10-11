@@ -213,7 +213,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
 - **Bản build gắn mã build** vào `data/*.json` và GLB (`?v=<git hash>-<thời gian>`, `__BUILD_ID__` trong
   `vite.config.js`, `url()` của `game/src/core/fetch.js`) → deploy mới không bị bộ nhớ đệm trình duyệt / CDN trả file cũ.
 - **Không sửa GLB bối cảnh từ code game.** Thiếu/sai đối tượng thì chỉnh bằng dữ liệu (`data/collision.json`: bỏ/thêm hộp
-  va chạm; `data/scene_fixes.json`: chỉnh khi chạy, cửa mở được `doors`; `data/zones.json` → `spawn_offset`: dời chỗ
+  va chạm; `data/scene_fixes.json`: chỉnh khi chạy, cửa mở được `doors`, phòng giả sau cửa / lối sang zone khác `rooms` — hộp chỉ vẽ mặt trong để nhìn qua cửa không thấy trời; `data/zones.json` → `spawn_offset`: dời chỗ
   xuất hiện; vật do code đặt trong `data/interactables.json`) và ghi vào báo cáo. Sửa bối cảnh
   thật thì sửa script Blender rồi build lại zone (cần người dùng đồng ý).
 - **Âm thanh chỉ lấy từ nguồn CC0 hoặc tự tạo bằng code** (người dùng chốt 10/10/2026; repo công khai, dùng trong tổ chức):
