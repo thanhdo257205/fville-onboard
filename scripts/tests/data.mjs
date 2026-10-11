@@ -408,6 +408,27 @@ const si = sky.info(), skyTris = si.core + si.extra + si.clouds + si.ground;
 if (skyTris > 5000) skyErrs.push(`phông nền + mây + mặt đất xa ${skyTris} tam giác (> 5.000)`);
 report("bầu trời + phông nền", skyErrs, `${(bd.layers || []).length} lớp (${[...ids].join(", ")}), ${skyTris} tam giác (phông nền ${si.core + si.extra}, mây ${si.clouds}, mặt đất xa ${si.ground}), vòm trời ${si.dome}`);
 
+// 10. phòng giả sau cửa / lối sang zone khác (data/scene_fixes.json → <zone>.rooms): zone có thật, center / size 3 số (size > 0),
+// màu floor / wall / ceiling dạng #rrggbb, id không trùng
+const roomErrs = [], fx = D("scene_fixes") || {};
+let roomN = 0;
+for (const [z, cfg] of Object.entries(fx)) {
+  if (!cfg?.rooms) continue;
+  if (!zones.zones[z]) roomErrs.push(`scene_fixes.${z}: không có zone này`);
+  const seen = new Set();
+  for (const [i, r] of cfg.rooms.entries()) {
+    roomN++;
+    const w = `scene_fixes.${z}.rooms[${r.id ?? i}]`;
+    if (r.id && seen.has(r.id)) roomErrs.push(`${w}: id trùng`);
+    seen.add(r.id);
+    if (!(Array.isArray(r.center) && r.center.length === 3 && r.center.every(Number.isFinite))) roomErrs.push(`${w}: center phải là [x, y, z]`);
+    if (!(Array.isArray(r.size) && r.size.length === 3 && r.size.every((v) => Number.isFinite(v) && v > 0))) roomErrs.push(`${w}: size phải là 3 số > 0`);
+    for (const k of ["floor", "wall", "ceiling"]) if (!/^#[0-9a-f]{6}$/i.test(r[k] || "")) roomErrs.push(`${w}.${k} = ${r[k]} (#rrggbb)`);
+    if (r.pad_m != null && !(r.pad_m >= 0 && r.pad_m <= 3)) roomErrs.push(`${w}.pad_m ngoài 0..3`);
+  }
+}
+report("phòng giả sau cửa (scene_fixes → rooms)", roomErrs, `${roomN} phòng (${Object.entries(fx).filter(([, c]) => c?.rooms).map(([z]) => z).join(", ") || "—"})`);
+
 const ms = Math.round(performance.now() - t0);
 console.log(failed ? `✗ test:data: ${failed} mục lỗi (${ms} ms)` : `✓ test:data: đạt hết (${ms} ms)`);
 process.exit(failed ? 1 : 0);
