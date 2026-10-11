@@ -48,8 +48,8 @@
     }
   },
   "hud": {
-    "controls": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · H: help · Esc: menu",
-    "controls_net": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · T: wave & quick phrases · Enter: chat · H: help · Esc: menu",
+    "controls": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · I: wardrobe · H: help · Esc: menu",
+    "controls_net": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · T: wave & quick phrases · Enter: chat · I: wardrobe · H: help · Esc: menu",
     "click_to_look": "Click to look around with the mouse",
     "objective_explore": "Explore the {zone}",
     "zone_locked": "This way opens in the next update.",
@@ -108,6 +108,22 @@
     "download_failed": "Couldn't create the card image in this browser. Try again, or take a screenshot instead.",
     "download_ios": "The card opened in a new tab — press and hold the image to save it."
   },
+  "wardrobe": {
+    "title": "Wardrobe",
+    "outfits": "Outfits",
+    "accessories": "Accessories",
+    "wearing": "Wearing",
+    "wear": "Wear",
+    "on": "On",
+    "off": "Off",
+    "locked": "Locked",
+    "close": "Close",
+    "keys": "Click an item or press 1–{n} · I or Esc: close",
+    "worn_outfit": "Now wearing: {name}",
+    "worn_on": "{name}: on",
+    "worn_off": "{name}: off",
+    "busy": "Finish what you're doing first."
+  },
   "menu": {
     "title": "Paused",
     "resume": "Resume",
@@ -135,6 +151,8 @@
     "no": "Cancel",
     "players": "Show other players",
     "accessories_note": "Unlocked by finishing your first day.",
+    "wardrobe": "👕 Wardrobe",
+    "wardrobe_note": "Change outfits and accessories — or press I while walking around.",
     "view_summary": "View summary",
     "language": "Language",
     "sound": "Sound",
@@ -421,6 +439,7 @@
     "emote": "Wave & quick phrases",
     "help": "Help",
     "app": "My FPT app",
+    "wardrobe": "Wardrobe",
     "menu": "Menu",
     "fullscreen": "Full screen",
     "fullscreen_failed": "Full screen isn't available in this browser.",

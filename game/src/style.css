@@ -865,3 +865,45 @@ body.touch #minigame.mg-pool .panel, body.touch.short #minigame.mg-pool .panel.m
   max-height: max(84px, calc(var(--vvh, 100dvh) * .4)); overflow-y: auto; box-sizing: border-box; }
 body.touch #minigame.mg-pool .mg header h2 { font-size: 14px; }
 body.touch #minigame.mg-pool .mg .line { font-size: 12px; margin: 0 0 4px; }
+
+/* tủ đồ (ui/wardrobe.js): bảng bên phải, nhân vật vẫn thấy ở giữa / trái (camera quay ra trước mặt); nút 👕 góc phải dưới
+   (máy tính — cảm ứng dùng hàng nút) */
+#wardrobe { position: fixed; top: 16px; right: 16px; bottom: 16px; z-index: 5; display: flex; align-items: center; pointer-events: none; }
+#wardrobe[hidden] { display: none; }
+#wardrobe .panel { pointer-events: auto; width: min(380px, calc(100vw - 32px)); max-height: 100%; overflow-y: auto; box-sizing: border-box;
+  background: #1b1e24; border-radius: 16px; padding: 18px 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, .45); overscroll-behavior: contain; }
+#wardrobe header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#wardrobe h2 { margin: 0; font-weight: 800; font-size: 20px; }
+#wardrobe h3 { margin: 14px 0 8px; font: 800 13px "Nunito"; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+#wardrobe .x { background: #2a2e36; color: var(--fg); border: 0; width: 34px; height: 34px; border-radius: 50%; font: 800 20px/1 "Nunito"; cursor: pointer; }
+#wardrobe .items { display: grid; gap: 8px; }
+#wardrobe .item { display: grid; grid-template-columns: 40px 1fr auto auto; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: #242830; color: var(--fg); border: 2px solid transparent; border-radius: 12px; padding: 9px 12px; cursor: pointer; font: 600 14px "Nunito"; }
+#wardrobe .item:hover:not([disabled]), #wardrobe .item:focus-visible { border-color: rgba(243, 112, 33, .55); outline: none; }
+#wardrobe .item.on { border-color: var(--orange); background: #2c241f; }
+#wardrobe .item[disabled] { cursor: default; opacity: .62; }
+#wardrobe .item .ic { font-size: 26px; text-align: center; }
+#wardrobe .item .tx { display: grid; gap: 2px; min-width: 0; }
+#wardrobe .item .tx b { font-weight: 800; }
+#wardrobe .item .tx small { color: var(--muted); font-size: 12.5px; line-height: 1.3; }
+#wardrobe .item .st { font: 800 12px "Nunito"; padding: 4px 8px; border-radius: 999px; background: #2a2e36; white-space: nowrap; }
+#wardrobe .item.on .st { background: var(--orange); color: #fff; }
+#wardrobe .item kbd { font: 700 11px "Nunito"; color: var(--muted); border: 1px solid #3a3f49; border-radius: 5px; padding: 1px 5px; }
+#wardrobe .keys { margin: 12px 0 0; color: var(--muted); font-size: 12.5px; }
+#wardrobe .keys:empty { display: none; }
+#wardrobe-btn { position: fixed; right: 18px; bottom: 54px; z-index: 4; display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+  background: rgba(18, 20, 24, .72); color: #fff; border: 1.5px solid rgba(255, 255, 255, .25); border-radius: 999px; font: 22px/1 "Nunito"; cursor: pointer; }
+#wardrobe-btn:hover { border-color: var(--orange); background: rgba(243, 112, 33, .25); }
+#wardrobe-btn kbd { font: 800 12px "Nunito"; border: 1px solid rgba(255, 255, 255, .4); border-radius: 5px; padding: 1px 5px; }
+#wardrobe-btn[hidden] { display: none; }
+body.touch #wardrobe .item { min-height: 52px; }
+body.touch #wardrobe .item kbd { display: none; }
+body.touch #wardrobe .panel { touch-action: pan-y; }
+/* màn thấp (cầm ngang): bảng thấp theo vùng nhìn thấy thật, chữ nhỏ hơn, chừa hàng nút cảm ứng góc phải dưới */
+body.short #wardrobe { top: 6px; bottom: auto; right: 8px; max-height: calc(var(--vvh, 100dvh) - 12px); }
+body.short #wardrobe .panel { padding: 10px 14px; width: min(340px, calc(100vw - 24px)); }
+body.short #wardrobe h2 { font-size: 17px; }
+body.short #wardrobe h3 { margin: 8px 0 5px; }
+body.short #wardrobe .item { padding: 6px 10px; grid-template-columns: 30px 1fr auto; }
+body.short #wardrobe .item .ic { font-size: 20px; }
+body.short #wardrobe .item .tx small { display: none; }

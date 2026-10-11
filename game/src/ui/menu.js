@@ -7,9 +7,9 @@ import { TIERS } from "../core/quality.js";
 import { sound } from "../core/sound.js";
 
 export class Menu {
-  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onAccessory, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info }) {
+  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info }) {
     this.el = document.getElementById("menu");
-    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onAccessory, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info });
+    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info });
     this.open = false;
     // tiếng bấm nút (nút Resume: tiếng đóng menu)
     this.el.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && b.dataset.act !== "resume") sound.play("tap"); });
@@ -42,11 +42,8 @@ export class Menu {
       .map((k) => `<div class="row vol look"><span>${t(`menu.look_${k}`)}</span>${look(k)}</div>`).join("");
     const pbtn = (on) => `<button data-players="${on ? 1 : 0}" class="${i.players === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     const cbtn = (on) => `<button data-chat="${on ? 1 : 0}" class="${i.chat === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
-    // phụ kiện đã mở khoá (vd mũ lưỡi trai sau khi xong game): [{ id, label, on }]
-    const abtn = (a, on) => `<button data-acc="${a.id}" data-on="${on ? 1 : 0}" class="${a.on === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     // tên ngôn ngữ viết bằng chính ngôn ngữ đó (lang.en = English, lang.vi = Tiếng Việt ở cả 2 file chữ)
     const lbtn = (l) => `<button data-lang="${l}" lang="${l}" class="${lang === l ? "on" : ""}">${t(`lang.${l}`)}</button>`;
-    const accRows = (i.accessories || []).map((a) => `<div class="row"><span>${a.label}</span><div class="seg">${abtn(a, true)}${abtn(a, false)}</div></div>`).join("");
     this.el.innerHTML = `
       <div class="panel">
         <h2>${t("menu.title")}</h2>
@@ -66,7 +63,7 @@ export class Menu {
         <p class="muted">${t("menu.guide_note")}</p>
         ${i.net ? `<div class="row"><span>${t("menu.players")}</span><div class="seg">${pbtn(true)}${pbtn(false)}</div></div>` : ""}
         ${i.net ? `<div class="row"><span>${t("menu.chat")}</span><div class="seg">${cbtn(true)}${cbtn(false)}</div></div>` : ""}
-        ${accRows ? `${accRows}<p class="muted">${t("menu.accessories_note")}</p>` : ""}
+        ${i.wardrobe ? `<button class="ghost wide" data-act="wardrobe">${t("menu.wardrobe")}</button><p class="muted">${t("menu.wardrobe_note")}</p>` : ""}
         <button class="primary" data-act="resume">${t("menu.resume")}</button>
         ${i.complete ? `<button class="ghost wide" data-act="summary">🏆 ${t("menu.view_summary")}</button>` : ""}
         <button class="ghost wide" data-act="again">${t("menu.play_again")}</button>
@@ -88,7 +85,7 @@ export class Menu {
       r.addEventListener("change", () => this.onLook?.({ [r.dataset.look]: r.value / 100 }));
     });
     this.el.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.lang !== lang) this.onLang?.(b.dataset.lang); }));
-    this.el.querySelectorAll("[data-acc]").forEach((b) => b.addEventListener("click", () => this.onAccessory?.(b.dataset.acc, b.dataset.on === "1")));
+    this.el.querySelector("[data-act=wardrobe]")?.addEventListener("click", () => { clearInterval(this._tick); this.onWardrobe?.(); });
     this.el.querySelector("[data-act=resume]").addEventListener("click", () => this.hide());
     this.el.querySelector("[data-act=summary]")?.addEventListener("click", () => { clearInterval(this._tick); this.onSummary?.(); });
     this.el.querySelector("[data-act=again]").addEventListener("click", () => { clearInterval(this._tick); this.onPlayAgain?.(); });

@@ -175,6 +175,12 @@ export function installDebug(game, loop) {
       return { id, gender: game.characters.gender, look: game.characters.look, tier: c.tier, glb: game.characters.model(id).glb[c.tier], outfit: c.outfit ?? null,
         accessories: c.accessoryList, morph };
     },
+    // tủ đồ (ui/wardrobe.js): .info (mở chưa, nút 👕, món + mở khoá / đang mặc), toggle(), pick(i) → Promise, outfit (áo đang
+    // mặc: Game.playerOutfit), wear(id) (mặc thẳng, không qua bảng)
+    get wardrobe() {
+      const w = game.ui.wardrobe;
+      return { ...w.info(), outfit: game.playerOutfit(), toggle: () => game.toggleWardrobe(), pick: (i) => w.pick(i), wear: (id) => game.setPlayerOutfit(id) };
+    },
     // phụ kiện (characters.json → accessories, vd "cap"): đội / bỏ (opts.force: bỏ qua điều kiện mở khoá) → Promise
     setAccessory(id, on = true, opts) { return game.setAccessory(id, on, opts); },
     // phụ kiện đang đội trên người chơi: xương gắn, hộp bao (thế giới) so với xương đầu

@@ -25,6 +25,7 @@ import { MyFptApp } from "./ui/app.js";
 import { Summary } from "./ui/summary.js";
 import { EmotePanel } from "./ui/emotes.js";
 import { ChatPanel } from "./ui/chat.js";
+import { Wardrobe } from "./ui/wardrobe.js";
 import { TouchControls } from "./ui/touch.js";
 import { device } from "./core/device.js";
 import { Net } from "./net/net.js";
@@ -88,7 +89,8 @@ async function boot() {
     // bản lưu cũ lệch data (zone / quest / phần thưởng / ngoại hình… không còn) → sửa về giá trị hợp lệ gần nhất, ghi lại
     const fixed = progress.repair({ zoneOrder: zones.order, looks: chars.roles.player.looks || {},
       positions: (chars.character_creation?.positions || []).map((x) => x.id),
-      accessories: Object.keys(chars.accessories || {}).filter((k) => !k.startsWith("_")) });
+      accessories: Object.keys(chars.accessories || {}).filter((k) => !k.startsWith("_")),
+      outfits: (chars.wardrobe?.outfits || []).map((o) => o.id) });
     if (fixed.length) { console.warn([`[bản lưu] đã sửa ${fixed.length} chỗ lệch dữ liệu`, ...fixed].join("\n")); save.store(progress); }
   }
   const playAgain = async () => {
@@ -126,6 +128,7 @@ async function boot() {
   }
   const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes, pool: poolCfg, backdrop }, characters,
     input, settings, nametags, content, progress, ui });
+  ui.wardrobe = new Wardrobe({ game });                 // tủ đồ (nút 👕, phím I, menu Esc)
   game.validation = { problems, nodes: nodeCheck };
   // chơi nhiều người "thấy nhau" (data/net.json → url trống = tắt, game y như chơi một mình). ?net=off: tắt (smoke test,
   // không đụng máy chủ thật); ?net=ws://127.0.0.1:8787/ws: máy chủ local (tham số thử)
@@ -171,11 +174,9 @@ async function boot() {
       sound: { ...SOUND_DEFAULTS, ...settings.sound },
       // độ nhạy xoay: chuột (máy có chuột — không phải điện thoại), cảm ứng (máy có màn cảm ứng)
       look: lookSens(settings.look), lookMouse: !device.phone, lookTouch: device.touchCapable,
-      complete: game.complete,
-      // phụ kiện đã mở khoá (tủ đồ — chưa có tab Wardrobe): bật / tắt ở đây
-      accessories: chars.accessories ? game.characters.accessoryIds().filter((id) => game.accessoryUnlocked(id))
-        .map((id) => ({ id, label: tx(game.characters.accessory(id).label), on: game.wornAccessories().includes(id) })) : [] }),
-    onAccessory: async (id, on) => { await game.setAccessory(id, on); menu.draw(); },
+      complete: game.complete, wardrobe: !!chars.wardrobe }),
+    // tủ đồ (áo, phụ kiện): đóng menu rồi mở bảng tủ đồ
+    onWardrobe: () => { menu.hide(true); game.setMode("play"); game.toggleWardrobe(); },
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },
@@ -217,7 +218,7 @@ async function boot() {
     const free = !ui.dialogue.open && (game.mode === "play" || game.mode === "pool") && game.state.phase === "playing";
     if (free && chat?.open(null, null, { quick: true })) e?.preventDefault();
   });
-  const digit = (i) => () => { if (emotes?.open) emotes.pick(i - 1); else if (i <= 4) ui.dialogue.choose(i - 1); };
+  const digit = (i) => () => { if (emotes?.open) emotes.pick(i - 1); else if (ui.wardrobe.open) ui.wardrobe.pick(i - 1); else if (i <= 4) ui.dialogue.choose(i - 1); };
   for (let i = 1; i <= 9; i++) { input.on(`Digit${i}`, digit(i)); input.on(`Numpad${i}`, digit(i)); }
   const emote = () => {
     if (!emotes || game.mode !== "play" || game.state.phase !== "playing") return;
@@ -226,6 +227,7 @@ async function boot() {
   };
   if (emotes) input.on("KeyT", emote);
   input.on("Tab", () => game.toggleApp());
+  input.on("KeyI", () => game.toggleWardrobe());       // tủ đồ (lúc đang đi lại; đang mở thì đóng)
   // Esc khi đang khoá con trỏ: trình duyệt tự nhả khoá → mở menu ở onUnlock (bỏ qua phím Esc đi kèm nếu có)
   const pause = () => { if (!menu.open) { menu.show(); game.setMode("menu"); } };
   // Esc khi đang khoá con trỏ ở bàn bi-a (chơi một mình): trình duyệt tự nhả khoá → rời bàn
@@ -250,6 +252,7 @@ async function boot() {
     if (input.locked || performance.now() - input.unlockedAt < 300) return;
     if (ui.summary.open) return ui.summary.hide();
     if (ui.app.open) return game.toggleApp();
+    if (ui.wardrobe.open) return game.toggleWardrobe();
     if (ui.minigame.open) return ui.minigame.close(false);
     if (ui.dialogue.open) return;
     menu.toggle();
@@ -258,7 +261,8 @@ async function boot() {
   input.on("Escape", escape);
   // cảm ứng (ui/touch.js — chỉ hiện khi device.touch): cần điều khiển ảo, nút hành động thay E, hàng nút cùng việc với phím
   const touch = new TouchControls({ game, input, ui, emotes, chat, actions: {
-    interact: () => game.interact(), chat: () => chat?.open(), emote, help: () => game.help(), app: () => game.toggleApp(), menu: escape } });
+    interact: () => game.interact(), chat: () => chat?.open(), emote, help: () => game.help(), app: () => game.toggleApp(),
+    wardrobe: () => game.toggleWardrobe(), menu: escape } });
   game.touch = touch;
 
   document.getElementById("skip").textContent = t("cutscene.skip");
@@ -280,6 +284,7 @@ async function boot() {
     if (emotes?.open && game.mode !== "play") emotes.hide();
     chat?.update();
     touch.update();
+    ui.wardrobe.update();
     game.render(dt);
     sound.update(dt, game.camera);            // tai nghe ở camera, tiếng nền, tiếng máy xe bus
     hud.lockHint(!device.touch && input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t(game.pool?.active ? "pool.click_to_aim" : "hud.click_to_look") : null);
