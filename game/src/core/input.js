@@ -1,6 +1,6 @@
 // Bàn phím + chuột. Đang chơi: khoá con trỏ (Pointer Lock) → di chuột để xoay camera, con trỏ ẩn; mở hội thoại /
 // app / mini-game / menu thì nhả khoá để bấm được. Không khoá được (vd cảm ứng) → kéo để xoay như cũ.
-// `override` cho phép __game giả lập phím khi tự kiểm tra.
+// `override` cho phép __game giả lập phím khi tự kiểm tra; `fakeLock` giả lập khoá con trỏ (smoke: headless không khoá thật ổn định).
 const LOCK_SCALE = 0.5;    // độ nhạy chuột khi khoá so với kéo (camera nhân 0,005 rad/px)
 const MAX_MOVE = 200;      // bỏ cú nhảy movementX/Y bất thường (Chrome trên Windows thỉnh thoảng gửi)
 const typing = (e) => e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
@@ -18,6 +18,7 @@ export class Input {
     this.onUnlock = null;        // người chơi tự thoát khoá (Esc, chuyển cửa sổ) → main mở menu
     this.unlockedAt = -Infinity;
     this._releasing = false;     // nhả khoá do game (đổi chế độ), không phải người chơi
+    this.fakeLock = null;        // kiểm thử: true / false = giả lập đang / chưa khoá (lock() → khoá sau 30 ms như thật); null = thật
     addEventListener("keydown", (e) => {
       if (typing(e)) return;               // đang gõ vào ô chữ (vd mật khẩu ở mini-game Đăng nhập): không điều khiển game
       if (e.code === "Tab" || e.code.startsWith("Arrow") || e.code === "Space") e.preventDefault();
@@ -56,17 +57,21 @@ export class Input {
   }
   on(code, fn) { this.handlers[code] = fn; }
 
-  get locked() { return document.pointerLockElement === this.canvas; }
+  get locked() { return this.fakeLock ?? document.pointerLockElement === this.canvas; }
   // trình duyệt chỉ cho khoá sau thao tác của người chơi (click, phím); không được thì gợi ý "Click…" hiện ra
   lock() {
     if (!this.lockSupported || this.locked) return;
+    if (this.fakeLock !== null) { setTimeout(() => { if (this.lookActive && this.fakeLock === false) this.fakeLock = true; }, 30); return; }
     try { this.canvas.requestPointerLock()?.catch?.(() => {}); } catch { /* chưa được phép */ }
   }
   // game gọi khi đổi chế độ: chơi → khoá, còn lại → nhả để hiện con trỏ
   setLook(active) {
     this.lookActive = active;
     if (active) this.lock();
-    else if (this.locked) { this._releasing = true; document.exitPointerLock(); }
+    else if (this.locked) {
+      if (this.fakeLock !== null) this.fakeLock = false;
+      else { this._releasing = true; document.exitPointerLock(); }
+    }
   }
 
   // hướng di chuyển theo phím: x = phải, y = tới; run = Shift
@@ -80,5 +85,7 @@ export class Input {
       run: k("ShiftLeft", "ShiftRight"),
     };
   }
-  consumeDrag() { const d = { ...this.drag }; this.drag.dx = this.drag.dy = this.drag.wheel = 0; return this.enabled ? d : { dx: 0, dy: 0, wheel: 0 }; }
+  // all: lấy cả khi input đang tắt — ở bàn bi-a game ở chế độ "pool" (enabled = false: không đi lại) nhưng chuột vẫn phải xoay
+  // cơ / lăn chuột thu phóng (trước đây bị bỏ → ở bàn chỉ A/D xoay được cơ)
+  consumeDrag(all = false) { const d = { ...this.drag }; this.drag.dx = this.drag.dy = this.drag.wheel = 0; return this.enabled || all ? d : { dx: 0, dy: 0, wheel: 0 }; }
 }

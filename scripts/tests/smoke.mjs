@@ -363,6 +363,92 @@ async function runLook(browser, base, look) {
           `zone_05: bàn bi-a — "Play pool", xoay cơ (đi vòng ${bi.turn.moved} m, chân cách sàn tối đa ${Math.round(bi.turn.rise * 1000)} mm), phá bi (${bi.res?.pocketed?.length ?? 0} bi vào lỗ, ${bi.res?.time ?? "?"} s; camera cao ${bi.cam.maxY} m ≤ ${bi.cam.headroom} m dưới chao đèn, ${bi.cam.blocked}/${bi.cam.frames} khung bị che), bi dừng đúng chỗ, rời bàn`, JSON.stringify(bi));
         await check(bi.khang.minigames.includes("billiards") && bi.khang.played && bi.khang.potted && bi.khang.hit && !bi.khang.pool && bi.khang.mode === "play",
           "zone_05: anh Khang → Một cú bi-a trên bàn thật: bi vào lỗ, billiards_potted + billiards_played (gộp)", JSON.stringify(bi.khang));
+        // bi-a: ngắm bằng chuột (sự kiện chuột thật của trình duyệt). Không khoá con trỏ (smoke tắt khoá): cơ hướng tới điểm con
+        // trỏ trên mặt bàn, camera đứng yên; rời cửa sổ rồi bấm → chỉ lấy lại chuột; bấm giữ → nạp lực, thả → đánh đúng hướng đó.
+        // Khoá con trỏ (giả lập input.fakeLock — headless không khoá thật ổn định): cú bấm đầu chỉ để khoá, di chuột sang phải →
+        // cơ quay sang phải màn hình, giữ Shift → chậm ~4 lần, D cũng xoay, bấm giữ → nạp lực, thả → đánh
+        const tick = (n) => ev((n) => { for (let i = 0; i < n; i++) __game._game.update(1 / 30); }, n);
+        const settle = () => ev(async () => {
+          const g = __game._game;
+          for (let i = 0; i < 2000 && g.pool.playback; i++) { g.update(1 / 20); if (i % 20 === 0) await new Promise((r) => setTimeout(r, 0)); }
+          return { ...__game.pool };
+        });
+        const aimDir = () => ev(() => {
+          const g = __game._game, p = g.pool, V = g.camera.position.constructor;
+          const right = new V(1, 0, 0).applyQuaternion(g.camera.quaternion), o = p.root.localToWorld(new V(0, 0, 0));
+          const d = p.root.localToWorld(new V(Math.cos(p.angle), 0, Math.sin(p.angle))).sub(o);
+          return { angle: p.angle, right: [right.x, right.y, right.z], d: [d.x, d.y, d.z] };
+        });
+        const turnedRight = (a, b) => (b.d[0] - a.d[0]) * a.right[0] + (b.d[1] - a.d[1]) * a.right[1] + (b.d[2] - a.d[2]) * a.right[2] > 0;
+        const ma = {};
+        try {
+          // camera về ngay chỗ đứng (không trượt dần) — toạ độ màn hình tính trước khi di chuột phải còn đúng lúc chuột tới
+          await ev(async () => { await __game.approach("pool_table"); __game.pool.enter(); __game.pool.rerack(); __game._game.pool.snapCamera = true; });
+          await tick(3);
+          // không khoá: 2 điểm trước bi trắng (bên phải / trái), di chuột tới → góc cơ = hướng bi trắng → điểm đó
+          const s0 = await ev(() => { const p = __game._game.pool, c = p.state.balls[0]; return { mode: p.mouseMode, cue: [c.x, c.z], cam: +p.camAngle.toFixed(4) }; });
+          // điểm phải nằm trên khung vẽ (khung nhỏ 640 × 360: bảng bi-a góc trên che một phần bàn — con trỏ ở đó không ngắm)
+          const pick = (side) => ev(([cx, cz, side]) => {
+            for (const [dx, dz] of [[0.2, 0.7], [0.15, 0.5], [0.1, 0.4], [0.08, 0.3]]) {
+              const x = cx + side * dx, z = cz + dz, sc = __game.pool.screen(x, z);
+              if (sc?.visible && document.elementFromPoint(sc.x, sc.y)?.tagName === "CANVAS") return { x, z, sc };
+            }
+            return null;
+          }, [s0.cue[0], s0.cue[1], side]);
+          const aims = [];
+          for (const side of [1, -1]) {
+            const pt = await pick(side);
+            if (!pt) { aims.push({ side, error: "không có điểm trên khung vẽ" }); continue; }
+            await page.mouse.move(pt.sc.x, pt.sc.y);
+            await tick(2);
+            const i = await ev(() => __game.pool);
+            aims.push({ want: +Math.atan2(pt.z - s0.cue[1], pt.x - s0.cue[0]).toFixed(4), got: i.angle, cursorAim: i.cursorAim, cam: i.camAngle });
+          }
+          await ev(() => dispatchEvent(new Event("blur")));            // rời cửa sổ
+          await page.mouse.down(); await tick(4);
+          const regain = await ev(() => ({ phase: __game.pool.phase, pressing: __game.pool.pressing }));
+          await page.mouse.up(); await tick(2);
+          const shots0 = (await ev(() => __game.pool)).shots;
+          await page.mouse.down(); await tick(8);
+          const charging = (await ev(() => __game.pool)).phase;
+          await page.mouse.up(); await tick(1);
+          const shotAngle = (await ev(() => __game.pool)).angle;
+          const fin = await settle();
+          ma.free = { mode: s0.mode, aims, camStill: aims.every((a) => a.cam === s0.cam), regain, charging, shotAngle, shots: fin.shots - shots0, phase: fin.phase };
+          // khoá được nhưng chưa khoá: cú bấm đầu chỉ để khoá (không nạp lực)
+          await ev(() => { const i = __game._game.input; i.lockSupported = true; i.fakeLock = false; });
+          const mode0 = (await ev(() => __game.pool)).mouse;
+          await page.mouse.down(); await tick(4);
+          const first = await ev(() => ({ phase: __game.pool.phase, pressing: __game.pool.pressing }));
+          await page.mouse.up();
+          await page.waitForTimeout(150); await tick(2);
+          const mode1 = (await ev(() => __game.pool)).mouse;
+          // đang khoá: di chuột sang phải 40 px (movementX), rồi giữ Shift di thêm 40 px; giữ D 10 khung
+          const move = () => ev(() => document.dispatchEvent(new MouseEvent("mousemove", { movementX: 40, movementY: 0 })));
+          const d0 = await aimDir(); await move(); await tick(1);
+          const d1 = await aimDir();
+          await page.keyboard.down("Shift"); await move(); await tick(1); await page.keyboard.up("Shift");
+          const d2 = await aimDir();
+          await ev(() => __game._game.input.keys.add("KeyD")); await tick(10); await ev(() => __game._game.input.keys.delete("KeyD"));
+          const d3 = await aimDir();
+          const shots1 = (await ev(() => __game.pool)).shots;
+          await page.mouse.down(); await tick(8);
+          const charging2 = (await ev(() => __game.pool)).phase;
+          await page.mouse.up(); await tick(1);
+          const fin2 = await settle();
+          ma.lock = { mode0, first, mode1, mouseRight: turnedRight(d0, d1), turn: +(d1.angle - d0.angle).toFixed(4), fine: +(d2.angle - d1.angle).toFixed(4),
+            dRight: turnedRight(d2, d3), charging: charging2, shots: fin2.shots - shots1 };
+        } catch (e) { ma.error = e.message.split("\n")[0]; }
+        finally {
+          await ev(() => { __game._game.pool?.leave(); const i = __game._game.input; i.fakeLock = null; i.lockSupported = false; });
+        }
+        const f = ma.free, l = ma.lock;
+        await check(!ma.error && f?.mode === "free" && f.aims.every((a) => Math.abs(a.got - a.want) < 0.01 && a.cursorAim) && f.camStill
+          && f.regain.phase === "aim" && !f.regain.pressing && f.charging === "charge" && Math.abs(f.shotAngle - f.aims[1].want) < 0.01 && f.shots === 1
+          && l?.mode0 === "wait" && l.first.phase === "aim" && !l.first.pressing && l.mode1 === "lock" && l.mouseRight && l.turn > 0.03
+          && Math.abs(l.fine / l.turn - 0.25) < 0.05 && l.dRight && l.charging === "charge" && l.shots === 1,
+          `zone_05: bi-a ngắm bằng chuột — không khoá: cơ theo con trỏ (lệch ${f ? Math.max(...f.aims.map((a) => Math.abs(a.got - a.want))).toFixed(4) : "?"} rad, camera đứng yên), bấm sau khi rời cửa sổ không đánh, giữ → đánh; khoá: cú bấm đầu chỉ khoá, chuột phải → cơ quay phải (${l?.turn} rad / 40 px, Shift ${l?.fine}), D xoay, giữ → đánh`,
+          JSON.stringify(ma));
         // đi ngược khỏi zone 5 (bàn bi-a đã dựng cây cơ) → zone 4 → zone 5: trước đây rời zone 5 báo "Couldn't open …"
         // (t.map?.dispose is not a function — bản sao cây cơ mang userData chép qua JSON), cả cảnh kết sang bến xe cũng hỏng
         const back = await ev(async () => {

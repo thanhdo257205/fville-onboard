@@ -235,7 +235,7 @@ async function boot() {
     if (emotes?.open && game.mode !== "play") emotes.hide();
     game.render(dt);
     sound.update(dt, game.camera);            // tai nghe ở camera, tiếng nền, tiếng máy xe bus
-    hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t("hud.click_to_look") : null);
+    hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t(game.pool?.active ? "pool.click_to_aim" : "hud.click_to_look") : null);
     frames++; acc += dt;
     if (acc >= 0.5) {
       loop.fps = frames / acc; frames = 0; acc = 0;
