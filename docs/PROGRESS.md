@@ -1527,7 +1527,7 @@ tin nhắn HR (zone 0, zone 4, nhắc việc zone 3–5) vẫn là Ms. Nga; mode
   nhiệm vụ, phần thưởng, ô giá trị, lời nhắc bàn làm việc. Id nhiệm vụ (`z5_prajith`, `meet_prajith`…) giữ nguyên (bản lưu cũ).
   Tài liệu: `docs/GDD.md` (bảng nhân vật, zone 3, zone 5), `docs/dialogue_nga.md` viết lại (zone 3 chỉ còn tin nhắn, thêm zone 5).
 - Đo: test:data; smoke `--look intern_nam` (cả lượt điện thoại + mạng / bản lưu cũ); viewer so 4 vai (lễ tân, Ms. Nga, Prajith,
-  Minh). Chưa deploy gh-pages.
+  Minh). **Đã deploy** gh-pages 4d18b2e (từ main 28afb3d, sau khi gộp PR #28; smoke `--zone 3`, `--zone 5` đạt trên main mới).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
