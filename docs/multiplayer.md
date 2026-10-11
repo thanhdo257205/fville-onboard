@@ -368,3 +368,12 @@ npx wrangler deploy
 
 Rồi deploy bản web (`python scripts/deploy_site.py`). Nên deploy máy chủ và bản web gần nhau: trong lúc máy chủ đã mới mà
 bản web còn cũ, người chơi bản web cũ không ngồi được bàn chung (chỉ tập một mình / đứng xem).
+
+**Đã deploy (11/10/2026, máy Desktop):** bản web trước — gh-pages 6c15184 (từ `main` 048fa04, PR #14); rồi máy chủ
+`npx wrangler deploy` → version `e150c939-0569-43e6-8b68-a377d4296be6` (bản trước 3764cab6, để `wrangler rollback`). `/` →
+`F-Ville net: OK`, `/status` JSON, tin chào `features: ["pool", "pool_rules2"]`. `wrangler tail --format json` lúc người dùng
+chơi thử bàn chung 2 người (3 lượt ván, ~8 phút): 325 sự kiện của Durable Object, **mọi `outcome` = `ok`**, 0 exception, không
+`exceededCpu`. CPU mỗi tin: 296 tin 0 ms, cú đánh thường 1–4 ms, nhưng **7 cú 11–20 ms** (đi theo cặp ở đầu mỗi ván — cú phá
+và cú ngay sau, nhiều bi lăn nhất; nặng nhất 20 ms). Vượt mốc 10 ms/lần gọi của gói Free nhưng Cloudflare vẫn chạy (không
+`exceededCpu`); cần theo dõi dashboard → Workers & Pages → fville-net → Metrics, và cân nhắc giảm CPU máy chủ khi tự tính lại
+cú phá (vd bước mô phỏng thưa hơn / tính lười).

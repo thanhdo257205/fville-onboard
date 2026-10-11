@@ -1126,6 +1126,14 @@ Tập một mình và thử thách của anh Khang giữ luật cũ. **Máy ch�
   headless shell như CI (`--build --extra only`): 27/27. Xem bằng mắt 3 ảnh: lựa chọn sau cú phá (vi), bi trong tay cả bàn
   (en), gọi lỗ bi 8 + thẻ luật (vi).
 
+### Deploy luật 8 bi chuẩn (PR #14) lên trang thật + máy chủ thật (11/10/2026, máy Desktop)
+- `main` 048fa04 (đã có `applyShotV2`, `pool_rules2`); `npm ci` game + server; test:data, test:pool đạt.
+- Bản web: `deploy_site.py` → gh-pages **6c15184**. Máy chủ: `wrangler deploy` → version **e150c939-0569-43e6-8b68-a377d4296be6**
+  (trước: 3764cab6); `/`, `/status` đúng, tin chào `["pool", "pool_rules2"]` (lần đầu ngay sau deploy còn `["pool"]`, 8 s sau đúng).
+- `wrangler tail` lúc người dùng chơi thử 2 người: 325 sự kiện, mọi `outcome` ok, 0 exception, không `exceededCpu`; CPU cú
+  thường 0–4 ms, **7 cú 11–20 ms** (cú phá + cú sau ở đầu mỗi ván) — vượt mốc 10 ms gói Free nhưng chưa bị chặn → không
+  rollback; theo dõi Metrics, cân nhắc giảm CPU máy chủ khi tính lại cú phá. Chi tiết: `docs/multiplayer.md` mục cuối.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

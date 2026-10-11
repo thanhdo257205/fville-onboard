@@ -222,8 +222,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [ ] Kiểm thử: `test:pool` — 1.000 cú phá với xoáy ngẫu nhiên không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit,
     `spin = 0` khớp bản cũ, xoáy trái / phải làm góc bật băng lệch đúng chiều; smoke bi-a 2 người: cú có xoáy phát lại khớp
     bàn máy chủ
-- [ ] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: Claude — nhánh
-  `feat/pool-rules-8ball` — 6fff4f4 (còn `wrangler deploy` máy chủ thật)
+- [x] P2 Bi-a: luật chuẩn bi-a 8 bi "sọc trơn" cho bàn chung 2 người (thay luật rút gọn hiện nay) — Phụ trách: Claude — nhánh
+  `feat/pool-rules-8ball` — 6fff4f4 (PR #14, `main` 048fa04); gh-pages 6c15184, máy chủ version e150c939 (11/10/2026)
   - Hiện trạng (`game/src/pool/rules.js`, dùng chung với máy chủ): nhóm trơn 1–7 / sọc 9–15 nhận theo bi vào lỗ đầu tiên;
     lỗi duy nhất là bi trắng rơi lỗ → đối thủ đặt bi trắng ở khu đầu bàn; không phạt chạm sai bi trước / không chạm bi nào;
     bi 8 không phải gọi lỗ.
@@ -244,7 +244,10 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [x] Máy chủ (`server/src/pool.js`) áp đúng bộ luật mới (kiểm tra chỗ đặt bi trong tay, lỗ đã gọi); báo `features` mới (vd
     `"pool_rules2"`) — máy khách cũ không vào được bàn luật mới, không lệch bàn — 6fff4f4 (máy chủ tự tính lại cú; máy chủ cũ →
     máy khách mới dùng luật cũ)
-  - [ ] `npx wrangler deploy` ở máy Desktop (xem `docs/multiplayer.md` mục cuối; sau deploy kiểm CPU mỗi cú bằng `wrangler tail`)
+  - [x] `npx wrangler deploy` ở máy Desktop (xem `docs/multiplayer.md` mục cuối; sau deploy kiểm CPU mỗi cú bằng `wrangler tail`)
+    — 11/10/2026, version e150c939-0569-43e6-8b68-a377d4296be6; tin chào `["pool","pool_rules2"]`; `wrangler tail` lúc chơi thử
+    3 ván: 325 sự kiện đều `ok`, 0 exception; cú thường 0–4 ms CPU nhưng 7 cú 11–20 ms (vượt mốc 10 ms gói Free, Cloudflare
+    chưa chặn — theo dõi Metrics)
   - [x] Tập một mình và thử thách của anh Khang giữ như cũ (không áp luật thi đấu) — 6fff4f4
   - [x] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
     trong tay toàn bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi; ván 2 người giả chơi trọn; smoke bi-a 2 người với luật
