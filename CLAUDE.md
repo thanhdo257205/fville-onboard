@@ -239,6 +239,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   `-- --zone N` cho zone vừa sửa); sửa bi-a (`game/src/pool/physics.js`, `rules.js`, `server/src/pool.js`) thì chạy thêm `test:pool`. Kết quả in gọn: mỗi bước 1 dòng ✓/✗, dòng cuối tổng kết + thời gian; bước hỏng có ảnh
   trong `test-results/`. Smoke test luôn tắt mạng (`?net=off`) — không đụng máy chủ chơi nhiều người thật — trừ các test
   mạng dùng máy chủ local (`server/`, wrangler dev, cần `npm --prefix server ci`; chưa cài thì bỏ qua).
+- Mỗi zone, trước mỗi việc bắt buộc / lối ra zone (lúc đang đi lại tự do): phải có dấu "!" hoặc mũi tên chỉ đường
+  (`__game.guide` → `marker` / `arrow`) — 1 dòng mỗi zone.
 - Sau phần chơi theo ngoại hình, smoke chạy **lượt điện thoại giả lập** (Playwright `hasTouch` + `isMobile`, khung ngang 844 × 390,
   `--mobile off` bỏ, `--mobile only` chỉ chạy lượt này): giao diện cảm ứng tự bật, nấc Detail thấp; đẩy joystick (chạy), vuốt
   xoay camera, mở 2 ngón; chơi zone 0 → 2 bằng chạm (nút hành động ghi đúng tên việc, chạm qua hội thoại / lựa chọn, quiz Cuder
