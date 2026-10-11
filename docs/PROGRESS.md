@@ -1243,7 +1243,7 @@ xoáy ngang"). **Chưa deploy** (cần bản web + `npx wrangler deploy` máy ch
 ### Chơi trên trình duyệt điện thoại (11/10/2026, nhánh `feat/mobile-touch` ad43543)
 
 CHECKLIST P2 "Chơi trên trình duyệt điện thoại", mọi dòng trừ bi-a cảm ứng (phiên khác đang sửa `game/src/pool/*`, `server/`).
-**Chưa deploy.**
+**Đã deploy** (PR #19 gộp vào main eff445e → gh-pages e8a655f).
 
 - Nhận biết (`game/src/core/device.js`): `matchMedia("(pointer: coarse)")` → điện thoại / máy tính bảng, giao diện cảm ứng bật
   ngay; `navigator.maxTouchPoints` > 0 mà con trỏ chính là chuột (laptop cảm ứng) → chơi bàn phím như thường, lần chạm đầu mới
@@ -1283,7 +1283,7 @@ CHECKLIST P2 "Chơi trên trình duyệt điện thoại", mọi dòng trừ bi-
 ### Sửa giao diện màn thấp trên điện thoại (11/10/2026, nhánh `fix/mobile-short-screen` 5a819ba)
 
 Người dùng chơi thử Android Chrome cầm ngang: thanh địa chỉ chiếm ~1/4 chiều cao, vùng game chỉ ~230 px CSS — câu hỏi của NPC
-+ tiêu đề lựa chọn bị đẩy khỏi mép trên, không lướt lên được. **Chưa deploy.**
++ tiêu đề lựa chọn bị đẩy khỏi mép trên, không lướt lên được. **Đã deploy** (PR #20 gộp vào main e5439bb → gh-pages aa57479).
 
 - `body.short` (`ui/touch.js layout()`): giao diện cảm ứng đang bật hoặc khung cao ≤ 420 px; `--vvh` = chiều cao vùng nhìn thấy
   thật (`visualViewport`). Máy tính khung cao bình thường: không có lớp này → giữ nguyên.
@@ -1316,7 +1316,8 @@ Người dùng chơi thử Android Chrome cầm ngang: thanh địa chỉ chiế
 
 Trên máy cảm ứng (`body.touch`) chơi được bi-a trọn vẹn: tập một mình, bàn chung 2 người, người xem, thử thách của anh Khang.
 Bỏ dòng "Bi-a bằng cảm ứng sắp có". Máy tính giữ nguyên mọi điều khiển. **Không đổi** `physics.js`, `rules.js`, `server/`,
-định dạng tin nhắn — cú từ điện thoại giống hệt cú từ máy tính (góc, lực, spin, roll, chỗ đặt bi, lỗ gọi). **Chưa deploy.**
+định dạng tin nhắn — cú từ điện thoại giống hệt cú từ máy tính (góc, lực, spin, roll, chỗ đặt bi, lỗ gọi). **Đã deploy** (PR #21 gộp vào main 6757800 → gh-pages 4b4f5e3, 11/10/2026; CI main xanh; máy chủ không đổi, không cần
+`wrangler deploy`).
 
 - `pool/pointer.js`: nhận "mouse", "touch", "pen"; ngón tay giữ pointer capture; ≥ 2 ngón (chụm) → bỏ qua tới khi nhấc hết.
 - `pool/table.js` (`buildTouch`, `#pool-touch`, `body.pool-on`):
