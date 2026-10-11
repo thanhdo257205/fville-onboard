@@ -65,7 +65,7 @@ const I18N = { en: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "en.json")
 const ACH = JSON.parse(readFileSync(join(ROOT, "data", "achievements.json"), "utf8")).final.title;   // tên thành tựu cuối theo ngôn ngữ
 const QUESTS = JSON.parse(readFileSync(join(ROOT, "data", "quests.json"), "utf8")).quests;
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
-const NAMES = { intern_nam: ["Đỗ Minh Khôi", "do-minh-khoi"], intern_nam_kinh: ["Trần Đức Anh", "tran-duc-anh"], intern_nu: ["Nguyễn Thị Hà", "nguyen-thi-ha"] };
+const NAMES = { intern_nam: ["Đỗ Minh Khôi", "do-minh-khoi"], intern_nam_kinh: ["Trần Đức Anh", "tran-duc-anh"], intern_nu: ["Nguyễn Thị Hà", "nguyen-thi-ha"], intern_nu_buitoc: ["Phạm Thu Trang", "pham-thu-trang"] };
 // Tú khác giới với người chơi (roles.tu): model, bộ đồ trước cổng, chân dung theo bộ đồ, câu dẫn trên xe bus (bản tiếng Việt
 // gọi thẳng tên Tú, không cần đại từ; {tu_he} = cậu ấy / cô ấy)
 const tuOf = (look, lang = "en") => {
@@ -182,7 +182,7 @@ async function runLook(browser, base, look) {
       cr.ready = await wait(() => window.__creator?.ready, 90000);
       if (pick === "keys") {
         await page.focus("#creator .stage canvas");
-        for (let i = 0; i < looks.length + 1 && await ev(() => __creator.selected) !== look.id; i++) await page.keyboard.press("ArrowRight");
+        for (let i = 0; i < allLooks.length + 1 && await ev(() => __creator.selected) !== look.id; i++) await page.keyboard.press("ArrowRight");
       } else {
         const i = await ev((id) => __creator.looks.indexOf(id), look.id);
         const p = await ev((k) => __creator.screen(k), i);
@@ -691,13 +691,15 @@ async function runLook(browser, base, look) {
         if (!ok) { stepFail = `${goal}: ${r.why || (r.timeout ? "quá giờ" : "chưa xong")} ${JSON.stringify({ dialogues: r.dialogues, choices: r.choices, minigames: r.minigames })}`; break; }
       }
       // 1 dòng cho mỗi zone: việc bắt buộc, áo, chuyển zone, console
-      const st = await ev(() => ({ quests: __game.progress.quests, zone: __game.zone, outfit: __game.model.outfit ?? null, ao: __game.progress.rewards.includes("ao_cam"), complete: __game._game.complete }));
+      const st = await ev(() => ({ quests: __game.progress.quests, zone: __game.zone, outfit: __game.model.outfit ?? null, morph: __game.model.morph, ao: __game.progress.rewards.includes("ao_cam"), complete: __game._game.complete }));
       const missing = required.filter((q) => !st.quests.includes(q));
       const con = problems.splice(0);
       const bad = [stepFail, missing.length && `chưa xong ${missing.join(", ")}`, st.outfit !== (st.ao ? null : "dau_ngay") && `áo sai (outfit=${st.outfit}, ao_cam=${st.ao})`,
+        // bộ đồ khác hình khối (morph ao_cam: áo phông của intern_nu_buitoc) bật đúng theo áo đang mặc
+        "ao_cam" in st.morph && st.morph.ao_cam !== (st.ao ? 1 : 0) && `morph áo sai (ao_cam=${st.morph.ao_cam}, có Áo Cam=${st.ao})`,
         next && !st.complete && st.zone !== next && `đang ở ${st.zone}, không sang ${next}`, con.length && `console: ${con.slice(0, 5).join(" | ")}`].filter(Boolean);
       const where = st.complete ? "cảnh kết" : next ? `→ ${next}` : "";
-      await check(!bad.length, `${zone}: ${required.length} việc bắt buộc, áo ${st.ao ? "ao_cam" : "dau_ngay"}, ${where}, console sạch (${Math.round((Date.now() - zt) / 1000)} s)`, bad.join("; "));
+      await check(!bad.length, `${zone}: ${required.length} việc bắt buộc, áo ${st.ao ? "ao_cam" : "dau_ngay"}${"ao_cam" in st.morph ? ` (morph ${st.morph.ao_cam})` : ""}, ${where}, console sạch (${Math.round((Date.now() - zt) / 1000)} s)`, bad.join("; "));
       const noMark = marks.filter((m) => !m.shown);
       await check(marks.length > 0 && !noMark.length, `${zone}: dấu "!" hoặc mũi tên chỉ đường trước ${marks.length} việc bắt buộc / lối ra (${marks.map((m) => m.goal).join(", ")})`,
         JSON.stringify(noMark.length ? noMark : marks));

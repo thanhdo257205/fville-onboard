@@ -166,6 +166,7 @@ export class Character {
     // xương đầu ở tư thế nghỉ (toạ độ gốc nhân vật), lấy trước khi animation chạy — ướm phụ kiện (accessories.js)
     this.root.updateMatrixWorld(true);
     this.headRest = this.head ? this.head.matrixWorld.clone() : null;
+    this.outfitMorph(null);                 // hình khối của bộ trong GLB (vd áo phông ao_cam của intern_nu_buitoc)
     this.mixer = new THREE.AnimationMixer(object);
     this.actions = {};
     for (const c of clips) this.actions[c.name] = this.mixer.clipAction(c);
@@ -290,8 +291,20 @@ export class Character {
       o.userData.baseMap ??= o.material.map;
       o.material.map = tex ?? o.userData.baseMap;
     });
+    this.outfitMorph(name);
     this.outfit = name;
     return true;
+  }
+
+  // bộ đồ khác hình khối (morph target trùng tên bộ, vd "ao_cam": hoodie gốc → áo phông — scripts/blender/characters/
+  // tee_morph.py): bật morph của bộ đang mặc (null = bộ trong GLB = ao_cam), tắt các morph khác. Model không có morph → bỏ qua
+  outfitMorph(name) {
+    const want = name ?? "ao_cam";
+    this.root.traverse((o) => {
+      const dict = o.morphTargetDictionary;
+      if (!o.isMesh || !dict || !o.morphTargetInfluences) return;
+      for (const [k, i] of Object.entries(dict)) o.morphTargetInfluences[i] = k === want ? 1 : 0;
+    });
   }
 
   // --- phụ kiện trên đầu (game/src/characters/accessories.js): bật / tắt; tải GLB lần đầu → Promise<bool> ---

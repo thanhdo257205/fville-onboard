@@ -1467,6 +1467,31 @@ Người dùng gửi mô hình Meshy bác tài (áo sơ mi trắng, cà vạt, m
   có → hỏng trên laptop cảm ứng). Đo: test:data, smoke `--look intern_nam --mobile off --extra off` 53/53; xem bằng mắt zone 0
   (tài xế xe 1 đứng vỉa hè, nói chuyện). **Đã deploy** gh-pages 2bcd7e9 (từ main 4591a5c).
 
+### Nhân vật người chơi thứ 4: intern_nu_buitoc (12/10/2026, máy Desktop)
+
+Người dùng gửi mô hình Meshy nữ tóc búi, hoodie trắng, quần jeans + logo FPT; muốn làm lựa chọn thứ 4 ở màn tạo nhân vật,
+bộ ngày đầu giữ hoodie, bộ Áo Cam là **áo phông** có logo (hoodie không hợp dán logo).
+
+- `prepare_for_mixamo.py --height 1.60 --tris 25000 --protect-face` → Mixamo (No Fingers) → `build_character.py --tris 6000
+  --single`: 15 animation từ prajith, 22 xương, GLB 0,64 MB. Giảm 6k: vùng đầu (mặt + tóc búi) ~9.800 tam giác — chỉ giảm mặt thì
+  thân còn ~800 → `decimate_protect` thêm `back_of_head_keep` 0,3 (thân, tay, chân ~3.000).
+- `outfit_textures.py --original dau_ngay`: 2 sửa chung — `arm_cut` chỉ nhận mảng lệch hẳn sang 2 bên làm cánh tay (dây rút hoodie
+  dưới nách từng bị lấy làm "tay" → màu mẫu da = trắng, da bị tô cam); áo gần trung tính (trắng / xám) đổi cả mặt nạ áo (đo "độ
+  đậm màu áo" so với xám thành nhiễu → áo cam lốm đốm trắng). Logo: `chest_logo.json` x 0,08 (lệch khỏi dây rút), z 1,17.
+- Áo phông = morph target `ao_cam` trong GLB (`scripts/blender/characters/tee_morph.py`, gọi từ `build_character.py`): trên lưới
+  25k có xương — tay áo kéo về ống quanh trục vai → khuỷu → cổ tay, quá 42 % cánh tay trên thành tay trần; mũ trùm: đỉnh cao hơn vòng
+  cổ áo ghim vào vòng (lưới kín, mép mũ chỉ là nếp gấp), phần sau lưng giải Laplace → lưng trơn (ngực trước giữ nguyên: logo); dây
+  rút ép sát ngực. Độ dời chuyển sang lưới 6k (điểm gần nhất), tô texture theo tam giác lưới cuối, chỉ texel vùng áo: tay trần → màu
+  da, mũ / dây rút / lưng trên → cam đều (xoá bóng mũ nướng sẵn) → `textures/<id>_basecolor_tee.jpg` (texture trong GLB).
+- Game: `Character.outfitMorph` — bật morph trùng tên bộ đang mặc (null = ao_cam), gọi trong constructor + `setOutfit` (màn tạo
+  nhân vật, người chơi, người chơi khác qua mạng). `render_portrait.py` bật shape key theo `--outfit`. Dữ liệu: `models.intern_nu_buitoc`,
+  `roles.player.looks.nu`, `character_creation.looks` ("Creative" / "Sáng tạo").
+- Smoke: dòng mỗi zone kiểm tra morph theo áo (`__game.model.morph`); vòng bấm ←/→ chọn nhân vật theo tổng số ngoại hình (chạy
+  `--look` 1 ngoại hình chỉ bấm được 2 lần → không tới người thứ 4). Đo: test:data; smoke `--look intern_nu_buitoc --mobile off
+  --extra off` 53/53 (morph 0 ở zone 0–1, 1 từ zone 2); `--look intern_nam --extra off` 86/86; xem bằng mắt bục 4 người, xem
+  trước Áo Cam, áo phông trong game. Chưa deploy gh-pages.
+- Còn thô: vệt mờ chỗ dây rút cũ trên ngực, mép cổ áo sau gáy hơi răng cưa khi nhìn gần, túi trước của hoodie vẫn còn trên áo phông.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

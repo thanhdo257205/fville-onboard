@@ -169,8 +169,11 @@ export function installDebug(game, loop) {
     },
     get model() {
       const c = game.player.character, id = game.characters.modelId("player");
+      // morph bộ đồ (vd ao_cam = áo phông của intern_nu_buitoc): { tên: mức } — model không có morph → {}
+      const morph = {};
+      c.root.traverse((o) => { for (const [k, i] of Object.entries(o.morphTargetDictionary || {})) morph[k] = o.morphTargetInfluences[i]; });
       return { id, gender: game.characters.gender, look: game.characters.look, tier: c.tier, glb: game.characters.model(id).glb[c.tier], outfit: c.outfit ?? null,
-        accessories: c.accessoryList };
+        accessories: c.accessoryList, morph };
     },
     // phụ kiện (characters.json → accessories, vd "cap"): đội / bỏ (opts.force: bỏ qua điều kiện mở khoá) → Promise
     setAccessory(id, on = true, opts) { return game.setAccessory(id, on, opts); },
