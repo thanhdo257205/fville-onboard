@@ -1399,6 +1399,8 @@ trình duyệt cùng lúc trên 1 máy — tách máy.
   playwright); artifact `test-results-<phần>`. Không bỏ bước kiểm tra nào: 4 phần smoke phủ đúng những gì lượt cũ chạy.
 - `scripts/tests/smoke.mjs`: `--mobile ui` = lượt điện thoại trừ bi-a cảm ứng (zone 0 → 2 bằng chạm, màn thấp, toàn màn hình,
   nhắn tin) — để tách bi-a cảm ứng sang job riêng; dòng tổng kết ghi đúng phần đã chạy.
+- `__game.skyCheck()` (smoke bầu trời zone 0–2): vẽ mọi hướng trước rồi đọc điểm ảnh bất đồng bộ cùng lúc — lượt đầu CI song song cho
+  thấy job desktop 11 phút vì mỗi lần đọc trên máy CI không GPU chờ ~3,5 s (96 lần đọc lần lượt ≈ 6,5 phút).
 - `npm run test:quick` (máy local, mỗi lần sửa nhỏ): test:data + smoke 1 ngoại hình zone 0 → 5, bỏ điện thoại + test mạng — đo
   1 phút 45 giây. Đo các phần riêng: `--mobile ui` ~2,5 phút, `--mobile pool` ~3,8 phút.
 
