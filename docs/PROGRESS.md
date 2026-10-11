@@ -1543,7 +1543,7 @@ trồng quanh tượng Cuder theo luống chữ U, tượng ở giữa.
   lưng). 28 cây cao ~2,1 m (± 8 %), so le. Hộp va chạm thấp 1,2 m cho 2 cánh + hàng sau (`COL_luong_ngo_*`). Gợi ý H / Tú /
   tin nhắn đổi "giữa ruộng lúa" → "giữa luống ngô". Build lại zone_02 (GLB bản Thấp 599 KB).
 - Đo: test:data; smoke `--zone 2` 13/13 (84 cây / bụi / ngô gộp thành 5 mesh, quiz Cuder làm được); trong game đứng trước
-  tượng: 127 FPS, 49,8k tam giác, 16 lượt vẽ. Chưa deploy gh-pages.
+  tượng: 127 FPS, 49,8k tam giác, 16 lượt vẽ. **Đã deploy** gh-pages 667cddf (từ main 0e31d0f).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
