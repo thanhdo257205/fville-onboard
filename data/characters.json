@@ -47,7 +47,8 @@
           "intern_nam_kinh"
         ],
         "nu": [
-          "intern_nu"
+          "intern_nu",
+          "intern_nu_buitoc"
         ]
       },
       "_looks_ghi_chu": "Ngoại hình người chơi chọn được theo giới tính (id model; phần tử đầu = mặc định, trùng model_by_gender). Bản lưu → player.look; không hợp lệ với giới tính đang chọn (vd đổi giới tính) thì dùng model_by_gender. Màn tạo nhân vật CHƯA có mục chọn ngoại hình — thử khi phát triển: ?look=intern_nam_kinh (tự đặt giới tính theo model, ghi vào bản lưu) hoặc __game.setLook('intern_nam_kinh').",
@@ -378,9 +379,20 @@
           "en": "Neat bob and a light shirt — first to raise a hand when there's something new to try.",
           "vi": "Tóc bob gọn gàng, áo sơ mi sáng màu — có gì mới để thử là giơ tay đầu tiên."
         }
+      },
+      {
+        "id": "intern_nu_buitoc",
+        "name": {
+          "en": "Creative",
+          "vi": "Sáng tạo"
+        },
+        "desc": {
+          "en": "Hair in a bun and a cozy white hoodie — never without a notebook full of doodled ideas.",
+          "vi": "Tóc búi gọn, hoodie trắng ấm áp — lúc nào cũng kè kè cuốn sổ kín ý tưởng vẽ vội."
+        }
       }
     ],
-    "_looks_ghi_chu": "Màn chọn nhân vật (game/src/ui/creator.js): 3 nhân vật đứng trên bục theo thứ tự này, mặc bộ dau_ngay; name = tên gọi ngắn, desc = 1 dòng mô tả (trung tính, không nói về giới tính) trên thẻ thông tin. Giới tính suy ra từ roles.player.looks; bản lưu player.look + player.gender. Màn hẹp (< 700 px) hoặc Detail = Faster: 3 thẻ chân dung (models.<id>.outfit_portraits.dau_ngay) thay cảnh 3D.",
+    "_looks_ghi_chu": "Màn chọn nhân vật (game/src/ui/creator.js): các nhân vật (hiện 4) đứng trên bục theo thứ tự này, mặc bộ dau_ngay; name = tên gọi ngắn, desc = 1 dòng mô tả (trung tính, không nói về giới tính) trên thẻ thông tin. Giới tính suy ra từ roles.player.looks; bản lưu player.look + player.gender. Màn hẹp (< 700 px) hoặc Detail = Faster: thẻ chân dung (models.<id>.outfit_portraits.dau_ngay) thay cảnh 3D.",
     "positions": [
       {
         "id": "developer",
@@ -977,6 +989,105 @@
       "outfit_portraits": {
         "tu_dau_ngay": "assets/characters/intern_nu/intern_nu_portrait_tu_dau_ngay.png",
         "dau_ngay": "assets/characters/intern_nu/intern_nu_portrait_dau_ngay.png"
+      }
+    },
+    "intern_nu_buitoc": {
+      "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ thứ 2 (hư cấu, Meshy + Mixamo): tóc búi, cao 1,60 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Áo gốc Meshy là hoodie trắng = bộ dau_ngay (outfit_textures.dau_ngay). Bộ ao_cam (texture trong GLB) là ÁO PHÔNG cam có logo: hoodie không hợp dán logo → morph target 'ao_cam' trong GLB đổi hình khối (tay áo ngắn, mũ trùm xẹp thành cổ tròn, dây rút ép vào ngực — scripts/blender/characters/tee_morph.py, build_character.py khi actions.json có tee_morph); game bật morph trùng tên bộ đang mặc (Character.outfitMorph). outfit_portraits: chân dung theo bộ đang mặc.",
+      "gender": "female",
+      "height_m": 1.6,
+      "outfit_textures": {
+        "dau_ngay": "assets/characters/intern_nu_buitoc/intern_nu_buitoc_dau_ngay.webp"
+      },
+      "texture_sources": {
+        "ao_cam": "assets/characters/intern_nu_buitoc/textures/intern_nu_buitoc_basecolor_tee.jpg",
+        "dau_ngay": "assets/characters/intern_nu_buitoc/textures/intern_nu_buitoc_basecolor_dau_ngay.jpg",
+        "mask": "assets/characters/intern_nu_buitoc/textures/intern_nu_buitoc_mask.png"
+      },
+      "glb": {
+        "low": "assets/characters/intern_nu_buitoc/intern_nu_buitoc.glb"
+      },
+      "tris": {
+        "low": 6000
+      },
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.51,
+        "run": 3.96
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.358,
+        "offset_xz_m": [
+          -0.056,
+          -0.357
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.361
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/intern_nu_buitoc/intern_nu_buitoc_portrait.png",
+      "outfit_portraits": {
+        "dau_ngay": "assets/characters/intern_nu_buitoc/intern_nu_buitoc_portrait_dau_ngay.png"
       }
     },
     "intern_nam_kinh": {
