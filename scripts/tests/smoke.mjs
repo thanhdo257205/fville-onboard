@@ -824,6 +824,16 @@ const sameJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const poolSettle = (list, q, ms = 20000) => Promise.all(list.map((p) => p.wait((x) => __game.pool.net.seq === x && !__game.pool.rolling, ms, q)));
 // toast đang hiện + đang chờ (debug.js → toasts)
 const toastsOf = (p) => p.ev(() => { const t = __game.toasts; return [t.now, ...t.queued]; });
+// máy chủ nhận tối đa 10 tin / giây mỗi kết nối (data/net.json → server.max_msgs_per_s) và bỏ im lặng tin vượt mức. Người chơi
+// thật không đánh nhanh vậy, vòng tự đánh thì có: An từng gửi 7 cú + tin vị trí trong 1 giây → CI có lúc vượt 10, pool_shot bị
+// bỏ, bàn đứng (đã đo). Giữ mỗi trình duyệt cách nhau ≥ 0,4 s giữa 2 cú (≤ 2,5 cú / giây + tin vị trí ≤ 5 / giây)
+const SHOT_GAP_MS = 400;
+const shotAt = new WeakMap();
+async function poolPace(p) {
+  const wait = (shotAt.get(p) || 0) + SHOT_GAP_MS - Date.now();
+  if (wait > 0) await sleep(wait);
+  shotAt.set(p, Date.now());
+}
 
 // (c) bi-a 2 người (bi-a bước 3 + luật chuẩn 8 bi "sọc trơn") trên máy chủ local: An, Bình mở zone_05 ở 2 trình duyệt, máy
 // chủ báo features "pool" + "pool_rules2". An ngồi → tập một mình, cú của An phát lại (có hoạt cảnh) ở máy Bình; Bình ngồi →
@@ -959,6 +969,7 @@ async function runPoolNet(browser, base, srv) {
           callUi = { lit, call0: ci.call, status0: ci.status, id, name: after.callName, status1: after.status, marks: after.marks.length };
         }
       }
+      await poolPace(shooter);
       const r = await shooter.ev(() => __game.pool.autoShot());
       const live = [A, B, C].filter(Boolean);
       const ok = await poolSettle(live, n.seq + 1);
@@ -1099,6 +1110,7 @@ async function runPoolOld(browser, base, srv) {
       const n = await net(A);
       if (n.mode !== "match") break;
       const shooter = n.turn === 0 ? A : B;
+      await poolPace(shooter);
       const r = await shooter.ev(() => __game.pool.autoShot());
       const ok = await poolSettle([A, B], n.seq + 1);
       const ns = await Promise.all([A, B].map(net));
