@@ -450,6 +450,36 @@ async function runLook(browser, base, look) {
           && Math.abs(l.fine / l.turn - 0.25) < 0.05 && l.dRight && l.charging === "charge" && l.shots === 1,
           `zone_05: bi-a ngắm bằng chuột — không khoá: cơ theo con trỏ (lệch ${f ? Math.max(...f.aims.map((a) => Math.abs(a.got - a.want))).toFixed(4) : "?"} rad, camera đứng yên), bấm sau khi rời cửa sổ không đánh, giữ → đánh; khoá: cú bấm đầu chỉ khoá, chuột phải → cơ quay phải (${l?.turn} rad / 40 px, Shift ${l?.fine}), D xoay, giữ → đánh`,
           JSON.stringify(ma));
+        // bi-a: điểm chạm trên bi trắng (xoáy) ở bàn tập — kéo chấm bằng chuột thật (ô góc phải dưới, không phải khung vẽ: góc cơ
+        // không đổi, không nạp lực), phím Z / X / F / B 1 nấc, đường gợi ý hướng bi trắng sau chạm; đánh → cú dùng nấc đã chọn
+        // rồi chấm về giữa
+        const sp = {};
+        try {
+          await ev(async () => { await __game.approach("pool_table"); __game.pool.enter(); __game.pool.rerack(); __game._game.pool.snapCamera = true; });
+          await tick(3);
+          const i0 = await ev(() => __game.pool);
+          const dot = await ev(() => __game.pool.spinDot());
+          sp.start = { on: i0.spin.on, shown: i0.spin.shown, text: i0.spin.text, angle: i0.angle, hit: dot && (await ev(([x, y]) => !!document.elementFromPoint(x, y)?.closest("#pool-spin .ball"), [dot.x, dot.y])) };
+          await page.mouse.move(dot.x, dot.y); await page.mouse.down();
+          await page.mouse.move(dot.x + dot.r * 0.4, dot.y - dot.r * 0.4); await page.mouse.move(dot.x + dot.r * 0.75, dot.y - dot.r * 0.75);
+          await page.mouse.up(); await tick(2);
+          const i1 = await ev(() => __game.pool);
+          sp.drag = { spin: i1.spin.spin, roll: i1.spin.roll, text: i1.spin.text, angle: i1.angle, phase: i1.phase };
+          for (const k of ["KeyZ", "KeyZ", "KeyB"]) await page.keyboard.press(k);
+          await tick(2);
+          const i2 = await ev(() => __game.pool);
+          sp.keys = { spin: i2.spin.spin, roll: i2.spin.roll, text: i2.spin.text, path: !!i2.spin.path };
+          await ev(() => { __game.pool.shoot(undefined, 0.5); });
+          const fin = await settle();
+          sp.after = { last: fin.spin.last, spin: fin.spin.spin, roll: fin.spin.roll, shown: fin.spin.shown, phase: fin.phase };
+        } catch (e) { sp.error = e.message.split("\n")[0]; }
+        finally { await ev(() => __game._game.pool?.leave()); }
+        await check(!sp.error && sp.start.on && sp.start.shown && sp.start.hit && sp.start.text === "Center"
+          && sp.drag.spin === 2 && sp.drag.roll === 2 && sp.drag.angle === sp.start.angle && sp.drag.phase === "aim"
+          && sp.keys.spin === 0 && sp.keys.roll === 1 && sp.keys.path
+          && sp.after.last?.spin === 0 && sp.after.last?.roll === 1 && sp.after.last?.own && sp.after.spin === 0 && sp.after.roll === 0 && sp.after.shown && sp.after.phase === "aim",
+          `zone_05: bi-a xoáy — kéo chấm bằng chuột → "${sp.drag?.text}" (góc cơ không đổi, không nạp lực); Z Z B → "${sp.keys?.text}"; cú đánh dùng điểm chạm đã chọn, xong về giữa`,
+          JSON.stringify(sp));
         // đi ngược khỏi zone 5 (bàn bi-a đã dựng cây cơ) → zone 4 → zone 5: trước đây rời zone 5 báo "Couldn't open …"
         // (t.map?.dispose is not a function — bản sao cây cơ mang userData chép qua JSON), cả cảnh kết sang bến xe cũng hỏng
         const back = await ev(async () => {
@@ -858,8 +888,8 @@ async function runPoolNet(browser, base, srv) {
     const check = A.check;
     const [a0, b0] = await Promise.all([net(A), net(B)]);
     const f0 = await A.ev(() => __game.net.features);
-    await check(A.ready && B.ready && ["pool", "pool_rules2", "pool_facts"].every((f) => f0.includes(f)) && a0.mode === "idle" && same(a0.server, b0.server) && !A.problems.length && !B.problems.length,
-      `2 trình duyệt vào zone_05, máy chủ báo features "pool" + "pool_rules2" + "pool_facts", cùng một bàn (${Math.round((Date.now() - t1) / 1000)} s)`,
+    await check(A.ready && B.ready && ["pool", "pool_rules2", "pool_facts", "pool_spin"].every((f) => f0.includes(f)) && a0.mode === "idle" && same(a0.server, b0.server) && !A.problems.length && !B.problems.length,
+      `2 trình duyệt vào zone_05, máy chủ báo features "pool" + "pool_rules2" + "pool_facts" + "pool_spin", cùng một bàn (${Math.round((Date.now() - t1) / 1000)} s)`,
       JSON.stringify({ ready: [A.ready, B.ready], f0, a0: a0.mode, console: [...A.problems, ...B.problems].slice(0, 5) }));
     // An ngồi → tập một mình; cú của An phát lại ở máy Bình (có hoạt cảnh)
     await A.ev(() => __game.pool.enter());
@@ -875,6 +905,23 @@ async function runPoolNet(browser, base, srv) {
       && same(b1.shown, b1.server) && b1.seats.join() === "An,",
       "An ngồi → tập một mình; cú của An phát lại ở máy Bình (bi lăn rồi dừng), 2 bàn khớp bàn máy chủ",
       JSON.stringify({ solo, rolled, synced, a1: { seat: a1.seat, mode: a1.mode }, b1: { replays: b1.replays, mismatch: b1.mismatch, seats: b1.seats } }));
+    // xoáy ở bàn chung (máy chủ "pool_spin", bàn spin: true): An chọn điểm chạm phải 2 / kéo 1 (X X F… qua setSpin + phím), đánh →
+    // tin gửi kèm spin / roll, máy Bình phát lại đúng cú có xoáy, khớp bàn máy chủ; Bình (đang xem) không có ô chọn
+    const aSp0 = await A.ev(() => __game.pool.spin);
+    const bSp0 = await B.ev(() => __game.pool.spin);
+    await A.ev(() => __game.pool.setSpin(2, 0));
+    await A.page.keyboard.press("KeyB");
+    const aSp1 = await A.ev(() => __game.pool.spin);
+    await poolPace(A);
+    const seqS = (await net(A)).seq;
+    await A.ev(() => __game.pool.shoot(Math.PI / 2 - 0.2, 0.55));
+    const syncedS = await poolSettle([A, B], seqS + 1, 40000);
+    const [aS1, bS1, bSp1, aSp2] = await Promise.all([net(A), net(B), B.ev(() => __game.pool.spin), A.ev(() => __game.pool.spin)]);
+    await check(aSp0.on && aSp0.shown && !bSp0.shown && aS1.spin === true && aSp1.spin === 2 && aSp1.roll === -1 && syncedS.every(Boolean)
+      && bS1.replays === 2 && bS1.mismatch === 0 && same(bS1.shown, bS1.server) && same(aS1.shown, bS1.shown)
+      && bSp1.last?.spin === 2 && bSp1.last?.roll === -1 && !bSp1.last.own && aSp2.spin === 0 && aSp2.roll === 0,
+      `bàn chung có xoáy: An chọn "${aSp1.text}" (ô chọn chỉ hiện ở người tới lượt), cú phát lại ở máy Bình đúng spin / roll, 2 bàn khớp bàn máy chủ; chấm về giữa`,
+      JSON.stringify({ aSp0, bSp0: { shown: bSp0.shown }, aSp1, tbSpin: aS1.spin, syncedS, b: { replays: bS1.replays, mismatch: bS1.mismatch, last: bSp1.last }, aSp2 }));
     // Bình ngồi → ván 8 bi (luật chuẩn), An (ngồi trước) phá
     await Promise.all([A, B].map((p) => p.ev(() => __game.pool.setFast(true))));
     await B.ev(() => __game.pool.enter());
@@ -888,16 +935,20 @@ async function runPoolNet(browser, base, srv) {
     const ui = await B.ev(() => __game.pool.autoShot());
     await B.ev(() => __game.pool.forceShot(Math.PI / 2, 0.8));
     const blocked = await B.wait(() => __game.pool.net.log.some((l) => l.err === "turn"), 5000);
+    // nấc xoáy ngoài giới hạn (đúng lượt): máy chủ bỏ cú (err bad)
+    await poolPace(A);
+    await A.ev(() => __game.pool.forceShot(Math.PI / 2, 0.8, { spin: 3, roll: 0 }));
+    const badSpin = await A.wait(() => __game.pool.net.log.some((l) => l.err === "bad"), 5000);
     const aNow = await net(A);
-    await check(ui === null && blocked && aNow.seq === seqM && aNow.turn === 0, "chặn cú sai lượt: giao diện không cho đánh, gửi thẳng → máy chủ từ chối, bàn không đổi",
-      JSON.stringify({ ui, blocked, seq: [seqM, aNow.seq] }));
+    await check(ui === null && blocked && badSpin && aNow.seq === seqM && aNow.turn === 0, "chặn cú sai lượt: giao diện không cho đánh, gửi thẳng → máy chủ từ chối, bàn không đổi; nấc xoáy ngoài −2 … +2 → máy chủ bỏ cú",
+      JSON.stringify({ ui, blocked, badSpin, seq: [seqM, aNow.seq] }));
     // phím H: thẻ tóm tắt luật (6 dòng), bấm lại thì ẩn; đồng hồ lượt trên bảng
     await A.page.keyboard.press("KeyH");
     const rules = await A.ev(() => ({ open: __game.pool.net.rulesOpen, n: document.querySelectorAll("#pool-hud .rules p").length, text: document.querySelector("#pool-hud .rules")?.textContent || "" }));
     await A.page.keyboard.press("KeyH");
     const rulesOff = await A.ev(() => !__game.pool.net.rulesOpen && !document.querySelector("#pool-hud .rules"));
     const clock = (await net(A)).clock;
-    await check(rules.open && rules.n === 6 && rules.text.includes(L.rules_title) && rules.text.includes(L.rules_break) && rulesOff && /^⏱ \d+$/.test(clock || ""),
+    await check(rules.open && rules.n === 7 && rules.text.includes(L.rules_title) && rules.text.includes(L.rules_break) && rules.text.includes(L.rules_spin) && rulesOff && /^⏱ \d+$/.test(clock || ""),
       `phím H: thẻ tóm tắt luật (${rules.n} dòng), bấm lại thì ẩn; đồng hồ lượt trên bảng (${clock})`, JSON.stringify({ rules: { ...rules, text: rules.text.slice(0, 80) }, rulesOff, clock }));
     // cú phá không hợp lệ: An đánh rất nhẹ (không bi vào, < 4 bi chạm băng) → Bình chọn; chưa chọn thì không đánh được; phím R →
     // xếp lại bi, Bình phá
@@ -947,7 +998,7 @@ async function runPoolNet(browser, base, srv) {
       `lỗi "${L.foul_no_hit}" (toast + bảng) → Bình có bi trong tay cả bàn: đặt giữa bàn được, chồng bi thì không; đánh từ đó, An phát lại khớp`,
       JSON.stringify({ placeB, inHand: bF.inHand, status: bF.status, foul: bF.foul, foulEl: bF.foulEl, bT, onBall, center, cue2, mismatch: aF.mismatch, log: bF2.log.slice(-3) }));
     // chơi trọn ván; Cường vào xem sau cú thứ 3; lần đầu có người đánh bi 8: vòng sáng ở 6 lỗ + dòng nhắc gọi lỗ, C → gọi lỗ
-    let C = null, shots = 0, bad = null, cView = null, callUi = null;
+    let C = null, shots = 0, bad = null, cView = null, callUi = null, spunShots = 0;
     for (; shots < 200; shots++) {
       const n = await net(A);
       if (n.mode !== "match") break;
@@ -971,7 +1022,10 @@ async function runPoolNet(browser, base, srv) {
         }
       }
       await poolPace(shooter);
-      const r = await shooter.ev(() => __game.pool.autoShot());
+      // mỗi cú thứ 3: có xoáy (nấc theo số cú) — mọi máy phát lại phải khớp bàn máy chủ như cú đánh tâm
+      const spinOpt = shots % 3 === 1 ? { spin: (shots % 5) - 2, roll: ((shots * 3) % 5) - 2 } : {};
+      if (spinOpt.spin || spinOpt.roll) spunShots++;
+      const r = await shooter.ev((o) => __game.pool.autoShot(o), spinOpt);
       const live = [A, B, C].filter(Boolean);
       const ok = await poolSettle(live, n.seq + 1);
       const ns = await Promise.all(live.map(net));
@@ -988,7 +1042,7 @@ async function runPoolNet(browser, base, srv) {
     const fouls = aE.log.filter((l) => l.foul).map((l) => l.foul), calls = aE.log.filter((l) => l.call).length;
     const V2 = ["eight", "eight_early", "eight_scratch", "eight_foul", "eight_pocket", "eight_off"];
     await check(!bad && aE.mode === "over" && V2.includes(aE.reason) && bE.winner === aE.winner && cE?.winner === aE.winner && aE.mismatch + bE.mismatch + (cE?.mismatch ?? 0) === 0,
-      `chơi trọn ván (luật chuẩn): ${shots} cú, ${aE.seats[aE.winner] ?? "?"} thắng (${aE.reason}); ${fouls.length} lỗi (${[...new Set(fouls)].join(", ")}), gọi lỗ ${calls} lần; sau mỗi cú bàn của 2 người + người xem = bàn máy chủ, ${replays} lần phát lại khớp từng bit`,
+      `chơi trọn ván (luật chuẩn): ${shots} cú (${spunShots} cú có xoáy), ${aE.seats[aE.winner] ?? "?"} thắng (${aE.reason}); ${fouls.length} lỗi (${[...new Set(fouls)].join(", ")}), gọi lỗ ${calls} lần; sau mỗi cú bàn của 2 người + người xem = bàn máy chủ, ${replays} lần phát lại khớp từng bit`,
       JSON.stringify(bad || { mode: aE.mode, winner: [aE.winner, bE.winner, cE?.winner], groups: aE.groups, log: aE.log.slice(-4) }));
     // tên lỗ theo góc nhìn (lỗ góc xa / gần, trái / phải; lỗ giữa)
     const pocketName = callUi?.name && Object.entries(L).some(([k, v]) => k.startsWith("pocket_") && v === callUi.name) ? callUi.name : null;
@@ -1084,8 +1138,13 @@ async function runPoolOld(browser, base, srv) {
     const started = await Promise.all([A, B].map((p) => p.wait(() => { const n = __game.pool.net; return n.mode === "match" && n.turn === 0 && n.seats.join() === "An,Bình"; }, 10000)));
     const aS = await net(A);
     const noChat = await A.ev(() => !__game.chat.available && document.getElementById("chat").hidden);
-    await check(A.ready && B.ready && same(f0, ["pool"]) && started.every(Boolean) && !aS.rules2 && aS.phase === "aim" && noChat,
-      'máy chủ cũ: features chỉ "pool" (không "pool_rules2", không "chat") → máy khách mới ngồi được, ván 8 bi luật cũ; không có khung chat', JSON.stringify({ ready: [A.ready, B.ready], f0, started, rules: aS.rules, rules2: aS.rules2, noChat }));
+    // không có "pool_spin": không có ô chọn điểm chạm, phím X / F không đổi gì
+    await A.page.keyboard.press("KeyX"); await A.page.keyboard.press("KeyF");
+    const noSpin = await A.ev(() => { const s = __game.pool.spin; return { on: s.on, shown: s.shown, spin: s.spin, roll: s.roll, set: __game.pool.setSpin(2, 2).spin, hidden: document.getElementById("pool-spin")?.hidden }; });
+    await check(A.ready && B.ready && same(f0, ["pool"]) && started.every(Boolean) && !aS.rules2 && aS.phase === "aim" && noChat
+      && !noSpin.on && !noSpin.shown && noSpin.spin === 0 && noSpin.roll === 0 && noSpin.set === 0 && noSpin.hidden === true,
+      'máy chủ cũ: features chỉ "pool" (không "pool_rules2", "pool_spin", "chat") → máy khách mới ngồi được, ván 8 bi luật cũ; không có khung chat, không có chọn xoáy',
+      JSON.stringify({ ready: [A.ready, B.ready], f0, started, rules: aS.rules, rules2: aS.rules2, noChat, noSpin }));
     // An phá nhẹ: luật cũ không có lựa chọn — Bình đánh luôn; H: thẻ luật rút gọn (1 dòng)
     let q = aS.seq;
     await A.ev(() => __game.pool.shoot(Math.PI / 2, 0.05, { instant: true }));
@@ -1184,8 +1243,13 @@ async function runChat(browser, base, srv) {
     await Promise.all([free(A), free(B)]);
     const [a0, b0] = await Promise.all([chatOf(A), chatOf(B)]);
     // Enter mở khung chat: thẻ quy tắc lần đầu, game đứng yên ở chế độ "chat"
-    await A.page.keyboard.press("Enter");
-    const opened = await A.wait(() => __game.chat.open && __game._game.mode === "chat" && document.activeElement?.closest?.("#chat"), 3000);
+    // tin nhắn app của zone_05 có thể tự mở hội thoại đúng lúc bấm Enter (Enter khi đó là "nói tiếp") → giải xong rồi thử lại
+    let opened = false;
+    for (let k = 0; k < 3 && !opened; k++) {
+      await free(A);
+      await A.page.keyboard.press("Enter");
+      opened = await A.wait(() => __game.chat.open && __game._game.mode === "chat" && document.activeElement?.closest?.("#chat"), 3000);
+    }
     const rulesShown = (await chatOf(A)).rules;
     await A.ev(() => __game.chat.rulesOk());
     await A.page.keyboard.type("Xin chào cả zone!");

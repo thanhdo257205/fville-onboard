@@ -7,6 +7,10 @@
 //     quả + sự kiện cú hợp lý (factsFromWire), chỗ đặt bi trong tay (khu đầu bàn / cả bàn), lỗ đã gọi, áp luật chuẩn, rồi phát
 //     cho cả zone; sau cú phá không hợp lệ người tới lượt chọn (pool_choice); hết giờ lượt = lỗi (3 lần liên tiếp → mất ghế).
 //     Máy khách cũ (pool_join không kèm r: 2 + cf: 1 — chưa gửi sự kiện cú) không được ngồi.
+//     Xoáy (tin chào features "pool_spin"): cú gửi kèm spin / roll (số nguyên −2 … +2 — physics.js); máy chủ vẫn KHÔNG chạy
+//     vật lý, chỉ kiểm tra giới hạn (sai → bỏ cú, err "bad") rồi chuyển tiếp spin / roll cho người kia và người xem phát lại.
+//     pool_join kèm sp: 1 = máy khách hiểu xoáy; bàn cho đánh xoáy (view → spin: true) khi mọi người đang ngồi đều hiểu — có
+//     người ngồi bằng máy khách cũ thì spin: false, cú có xoáy bị bỏ (err "spin"), máy khách mới ẩn chọn xoáy.
 //   • 1 = luật rút gọn cũ (biến POOL_RULES = "1" trong wrangler — bản máy chủ cũ, để thử máy khách mới với máy chủ cũ): người
 //     đánh tự tính cú rồi gửi cả kết quả (vị trí bi khi dừng, bi vào lỗ theo thứ tự, thời gian lăn); máy chủ KHÔNG chạy vật
 //     lý, chỉ kiểm tra kết quả hợp lệ (đúng người, đúng lượt, đúng số thứ tự cú, bi trong bàn, bi đã vào lỗ không quay lại…),
@@ -18,11 +22,13 @@
 //     người chờ gửi pool_poke khi hết giờ). Đang giữa ván → người còn lại thắng.
 //   • snapshot() / restore(): giữ bàn qua lúc Durable Object ngủ (hibernation) — index.js cất vào attachment của người đang ngồi.
 // JS thuần, chạy cả trong Node (scripts/tests/pool_rules.mjs).
-import { makeTable, rackState, cloneState } from "../../game/src/pool/physics.js";
+import { makeTable, rackState, cloneState, SPIN_LEVELS } from "../../game/src/pool/physics.js";
 import { applyShot, applyShotV2, factsFromWire, onEight, newMatch, newMatchV2, idleMatch, packBalls, unpackBalls, validPacked, canPlaceCue,
   canPlaceCueIn, placeCue, roundState, round5, RULES_V2 } from "../../game/src/pool/rules.js";
 
 const fin = (v, lim) => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= lim;
+// nấc xoáy của cú: không gửi → 0; số nguyên −2 … +2; khác → null (cú bị bỏ)
+const level = (v) => (v == null ? 0 : Number.isInteger(v) && Math.abs(v) <= SPIN_LEVELS ? v : null);
 
 export class PoolRoom {
   constructor(cfg, { turnMs = 60000, rules = RULES_V2, maxTimeouts = 3 } = {}) {
@@ -32,7 +38,7 @@ export class PoolRoom {
     this.rules = rules === 1 ? 1 : RULES_V2;
     this.maxTimeouts = maxTimeouts;
     this.pocketIds = new Set(this.table.pockets.map((p) => p.id));
-    this.seats = [null, null];          // { id, name }
+    this.seats = [null, null];          // { id, name, sp: máy khách hiểu xoáy }
     this.state = roundState(rackState(this.table));
     this.m = idleMatch();
     this.seq = 0;                       // số thứ tự cú (không bao giờ quay về 0) — cú gửi lên phải đúng số này
@@ -43,6 +49,8 @@ export class PoolRoom {
   }
   seatOf(id) { return this.seats.findIndex((s) => s?.id === id); }
   get seated() { return (this.seats[0] ? 1 : 0) + (this.seats[1] ? 1 : 0); }
+  // bàn cho đánh xoáy: luật chuẩn và mọi người đang ngồi đều dùng máy khách hiểu xoáy (pool_join sp: 1)
+  get spinOn() { return this.rules === RULES_V2 && this.seats.every((s) => !s || s.sp); }
   touch(ev) { this.ver++; this.ev = ev || null; }
   rack() { this.state = roundState(rackState(this.table)); this.shots = 0; }
   startMatch(breaker, now) {
@@ -53,14 +61,14 @@ export class PoolRoom {
   }
 
   // ngồi vào ghế trống → { changed, seated }; hết ghế → seated false (người đó đứng xem). r: bộ luật máy khách hiểu, cf: máy
-  // khách gửi sự kiện cú (pool_join {r, cf}) — bàn luật chuẩn không nhận máy khách cũ (err "version": máy khách cũ hết giờ chờ
-  // → tập một mình, bàn không lệch)
-  join(id, name, now, r = null, cf = false) {
+  // khách gửi sự kiện cú, sp: máy khách hiểu xoáy (pool_join {r, cf, sp}) — bàn luật chuẩn không nhận máy khách cũ (err
+  // "version": máy khách cũ hết giờ chờ → tập một mình, bàn không lệch); máy khách chưa hiểu xoáy vẫn ngồi được (bàn tắt xoáy)
+  join(id, name, now, r = null, cf = false, sp = false) {
     if (this.seatOf(id) >= 0) return { changed: false, seated: true };
     if (this.rules === RULES_V2 && (r !== RULES_V2 || !cf)) return { changed: false, seated: false, err: "version" };
     const i = this.seats.indexOf(null);
     if (i < 0) return { changed: false, seated: false };
-    this.seats[i] = { id, name };
+    this.seats[i] = { id, name, sp: !!sp };
     if (this.seated === 2) this.startMatch(1 - i, now);         // người ngồi trước phá bi
     else { this.m = idleMatch("solo"); this.touch({ k: "sit", seat: i }); }
     return { changed: true, seated: true };
@@ -114,8 +122,9 @@ export class PoolRoom {
     return { ok: true };
   }
 
-  // cú đánh (luật chuẩn): m = { seq, a (góc), p (lực 0..1), cue: [x, z] | null (bi trong tay), call: id lỗ gọi cho bi 8, b / k / s
-  // / d: kết quả như luật cũ, f / r / rb / kp: sự kiện cú (rules.js wireFacts) } → { ok, shot } | { err }
+  // cú đánh (luật chuẩn): m = { seq, a (góc), p (lực 0..1), spin / roll (nấc xoáy −2 … +2, không gửi = 0), cue: [x, z] | null (bi
+  // trong tay), call: id lỗ gọi cho bi 8, b / k / s / d: kết quả như luật cũ, f / r / rb / kp: sự kiện cú (rules.js wireFacts) }
+  // → { ok, shot } | { err }
   shot(id, m, now) {
     if (this.rules !== RULES_V2) return this.shotV1(id, m, now);
     const i = this.seatOf(id);
@@ -126,6 +135,9 @@ export class PoolRoom {
     if (m.seq !== this.seq) return { err: "seq" };
     if (mode === "match" && this.m.choice) return { err: "choice" };
     if (!fin(m.a, 100) || !fin(m.p, 1) || m.p < 0) return { err: "bad" };
+    const spin = level(m.spin), roll = level(m.roll);
+    if (spin === null || roll === null) return { err: "bad" };
+    if ((spin || roll) && !this.spinOn) return { err: "spin" };
     const before = cloneState(this.state);
     let cue = null;
     if (m.cue != null) {
@@ -152,7 +164,7 @@ export class PoolRoom {
     this.shots++;
     this.turnAt = now + this.rollMs(m);                               // giờ lượt sau tính từ lúc bi dừng
     this.touch({ ...r.ev, by: id });
-    return { ok: true, shot: { seq, by: id, a: m.a, p: m.p, cue, call, b: m.b } };   // b: người xem đối chiếu cú phát lại
+    return { ok: true, shot: { seq, by: id, a: m.a, p: m.p, spin, roll, cue, call, b: m.b } };   // b: người xem đối chiếu cú phát lại
   }
 
   // kết quả cú máy khách gửi (b: vị trí bi khi dừng — packBalls, k: bi vào lỗ theo thứ tự, s: bi trắng rơi) → { after, k, scratch }
@@ -208,7 +220,7 @@ export class PoolRoom {
     return {
       v: this.ver, seq: this.seq, n: this.shots, mode: m.mode, seats: this.seats.map((s) => s && { id: s.id, name: s.name }),
       turn: m.turn, groups: m.groups, inHand: m.inHand, brk: m.brk, winner: m.winner, reason: m.reason, rules: this.rules,
-      choice: m.choice ?? null,
+      choice: m.choice ?? null, spin: this.spinOn,
       left: m.mode === "match" ? Math.max(0, Math.ceil((this.turnAt + this.turnMs - now) / 1000)) : null,
       b: packBalls(this.state), ev: this.ev,
     };
@@ -216,7 +228,7 @@ export class PoolRoom {
 
   // ---------- qua lúc Durable Object ngủ ----------
   snapshot() {
-    return { v: this.ver, q: this.seq, n: this.shots, s: this.seats.map((s) => s && [s.id, s.name]), m: this.m, b: packBalls(this.state), ta: this.turnAt, e: this.ev };
+    return { v: this.ver, q: this.seq, n: this.shots, s: this.seats.map((s) => s && [s.id, s.name, s.sp ? 1 : 0]), m: this.m, b: packBalls(this.state), ta: this.turnAt, e: this.ev };
   }
   // live: id người còn kết nối — ghế của người đã đi (đóng kết nối lúc DO ngủ) được giải phóng. → true nếu có ghế bị giải phóng
   restore(snap, live, now) {
@@ -224,7 +236,7 @@ export class PoolRoom {
     this.ver = snap.v | 0;
     this.seq = snap.q | 0;
     this.shots = snap.n | 0;
-    this.seats = [0, 1].map((i) => (Array.isArray(snap.s?.[i]) ? { id: snap.s[i][0], name: snap.s[i][1] } : null));
+    this.seats = [0, 1].map((i) => (Array.isArray(snap.s?.[i]) ? { id: snap.s[i][0], name: snap.s[i][1], sp: snap.s[i][2] === 1 } : null));
     this.m = { ...idleMatch(), ...snap.m, groups: [...(snap.m?.groups || [null, null])] };
     // bản chụp của ván luật khác (vừa đổi POOL_RULES / bản máy chủ) → không trộn 2 bộ luật: bỏ ván đó, xếp lại
     const stale = (this.m.mode === "match" || this.m.mode === "over") && (this.m.rules ?? 1) !== this.rules;

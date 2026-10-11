@@ -65,6 +65,8 @@ export class Net {
   stop() { if (this.enabled) this.client.stop(); }
   get connected() { return this.enabled && this.joined && this.client.open; }
   get poolOn() { return this.connected && this.features.includes("pool"); }
+  // cú bi-a có xoáy (máy chủ báo "pool_spin"; bàn còn phải báo tb.spin — mọi người ngồi đều dùng bản hiểu xoáy)
+  get poolSpin() { return this.connected && this.features.includes("pool_spin"); }
   // nhắn tin tự do: máy chủ có "chat" + người chơi không tắt chat (menu Esc)
   get chatOn() { return this.connected && this.features.includes("chat") && this.settings.chat !== false; }
   sendPool(msg) { return this.connected ? this.client.send(msg) : false; }

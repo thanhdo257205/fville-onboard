@@ -1178,6 +1178,37 @@ Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2
 - Xem bằng mắt (3 ảnh, không commit): tin xem trước khi đóng khung bị khung hội thoại đè (cùng ở mép dưới) → ẩn tin xem
   trước khi đang hội thoại / mini-game / app / cảnh chuyển (2033d1f), số tin chưa đọc vẫn đếm.
 
+### Bi-a: đánh xoáy ngang + đè / kéo (11/10/2026, nhánh `feat/pool-spin` 08cbdcc)
+
+Người dùng chốt: áp phê trái / phải 5 nấc (−2 … +2) và xoáy lên / xuống (đánh đè / đánh kéo) 5 nấc (CHECKLIST P2 "Bi-a: đánh
+xoáy ngang"). **Chưa deploy** (cần bản web + `npx wrangler deploy` máy chủ — web trước, máy chủ sau; `docs/multiplayer.md` →
+"Bi-a: đánh xoáy").
+- `game/src/pool/physics.js`: `simulateShot(…, { angle, power, spin, roll })`. Xoáy ngang: chạm băng → vận tốc dọc băng thêm
+  theo chiều xoáy, tỉ lệ lực nảy (nấc 2 đánh thẳng vào băng: bật lệch ~18°; thuận chiều lăn mở góc, ngược khép góc), mỗi lần
+  chạm băng còn 1/2; bi trắng lệch 1° ngược phía xoáy lúc đánh; va bi → bi kia lệch rất nhẹ (~1,6° ở cú gần) và nhận xoáy ngược
+  chiều; xoáy giảm theo thời gian lăn. Đè / kéo: ở lần va bi đầu của bi trắng, cộng 0,7 × nấc / 2 × tốc độ trước va chạm theo
+  hướng cũ (đè) hoặc ngược lại (kéo), giảm tuyến tính theo quãng đường đã lăn (hết sau 3 m). Trạng thái xoáy chỉ nằm trong cú
+  (không vào bàn); spin = roll = 0 → không tạo trạng thái xoáy, **giống từng bit** bản cũ. `cueAfter()`: hướng bi trắng sau
+  lần chạm đầu cho đường ngắm.
+- `game/src/pool/table.js`: ô "Điểm chạm" góc phải dưới (hình bi trắng + chấm; kéo bằng chuột / ngón tay — pointer events trên
+  chính ô đó, không đụng ngắm cơ trên khung vẽ / khoá con trỏ), phím Z / X (trái / phải), F / B (đè / kéo); về giữa sau mỗi
+  cú; đoạn gợi ý xanh nhạt hướng bi trắng sau chạm; dòng hướng dẫn + thẻ luật (H) thêm 1 dòng. Thử thách của anh Khang: luôn
+  đánh tâm (không ô chọn, không đoạn gợi ý). Bàn chung: chỉ khi máy chủ báo `"pool_spin"` và bàn `spin: true`; `pool_join` kèm
+  `sp: 1`; cú gửi kèm `spin` / `roll`, người kia + người xem phát lại theo đó. Phím Z / X / F / B không trùng phím đang dùng
+  (A/D/W/S, E, H, T, Tab, R, J, P, C, Space, Enter chat, Esc).
+- `server/src/pool.js`: không chạy vật lý; kiểm tra nấc (số nguyên −2 … +2, sai → `err: "bad"`), chuyển tiếp spin / roll;
+  ghế nhớ `sp`; bàn `spin: true` khi mọi người ngồi đều hiểu xoáy, không thì cú có xoáy bị bỏ (`err: "spin"`); bản chụp giữ
+  `sp`. `index.js`: features thêm `"pool_spin"` (không có khi `POOL_RULES = "1"`).
+- Kiểm thử:
+  - `test:pool`: dấu vân tay 300 cú không xoáy = bản cũ (`f97833fdcb8daa82`, ghi từ `main` 8327163) + cú gợi ý thử thách
+    không đổi; 1.000 cú phá có xoáy ngẫu nhiên: không NaN / chồng bi / ra ngoài bàn, chạy lại giống từng bit; chiều bật băng
+    (−18,1 / −9,3 / 0 / 9,3 / 18,1°), thuận mở / ngược khép góc; đè → bi trắng đi tiếp, kéo → lùi; squirt ±1°; máy chủ: 8 tình
+    huống xoáy (nấc sai, bàn có máy khách cũ, chuyển tiếp, bản chụp, luật cũ) + ván trọn có xoáy 2 người giả + người xem khớp
+    từng bit.
+  - smoke: bàn tập — kéo chấm bằng chuột thật (góc cơ không đổi), Z / X / F / B, cú dùng điểm chạm rồi về giữa; 2 trình duyệt —
+    cú có xoáy phát lại khớp bàn máy chủ, nấc 3 bị máy chủ bỏ, ván trọn có 1/3 cú xoáy; máy chủ giả bản cũ → không có chọn xoáy.
+- Sửa lỗi lúc làm: thuộc tính nấc đè / kéo đặt tên `roll` trùng hàm `roll(dt)` (phát lại bi lăn) → đổi `spinLv` / `rollLv`.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

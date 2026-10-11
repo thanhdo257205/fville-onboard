@@ -217,6 +217,10 @@ async function boot() {
   input.on("KeyJ", () => { if (game.pool?.active) game.pool.join(); });     // bi-a bàn chung: đang xem → ngồi vào ghế trống
   input.on("KeyP", () => { if (game.pool?.active) game.pool.choose("play"); });   // luật chuẩn: sau cú phá không hợp lệ → đánh tiếp
   input.on("KeyC", () => { if (game.pool?.active) game.pool.cycleCall(); });      // luật chuẩn: đổi lỗ gọi cho bi 8
+  // bi-a: điểm chạm trên bi trắng (xoáy) — Z / X: trái / phải, F / B: đè (trên) / kéo (dưới), mỗi lần 1 nấc
+  for (const [code, ds, dr] of [["KeyZ", -1, 0], ["KeyX", 1, 0], ["KeyF", 0, 1], ["KeyB", 0, -1]]) {
+    input.on(code, () => { if (game.pool?.active) game.pool.nudgeSpin(ds, dr); });
+  }
   input.on("Escape", () => {
     if (title?.open) return;
     if (chat?.isOpen) return chat.close();

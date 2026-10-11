@@ -8,9 +8,10 @@
 // Tin nhắn (JSON gọn):
 //   client → máy chủ: join {name, model, outfit, acc, zone} (gửi lại = cập nhật tên / model / bộ đồ / phụ kiện) · state {zone, pos, yaw, anim}
 //                      · emote {id} · phrase {id} · chat {ch: "zone" | "all" | "dm", to?, text} · leave · ping (tự trả lời)
-//                      · bi-a (chỉ ở zone của bàn, data/pool.json): pool_join {r, cf} (r: 2 = máy khách hiểu luật chuẩn, cf: 1 =
-//                        gửi sự kiện cú) · pool_leave · pool_shot {seq, a, p, cue, call, b, k, s, d, f, r, rb, kp} · pool_choice {c:
-//                        "rerack" | "play"} (sau cú phá không hợp lệ) · pool_rerack · pool_poke (người chờ báo hết giờ lượt)
+//                      · bi-a (chỉ ở zone của bàn, data/pool.json): pool_join {r, cf, sp} (r: 2 = máy khách hiểu luật chuẩn, cf: 1 =
+//                        gửi sự kiện cú, sp: 1 = hiểu xoáy) · pool_leave · pool_shot {seq, a, p, spin, roll, cue, call, b, k, s, d, f,
+//                        r, rb, kp} · pool_choice {c: "rerack" | "play"} (sau cú phá không hợp lệ) · pool_rerack · pool_poke (người
+//                        chờ báo hết giờ lượt)
 //   máy chủ → client: welcome {id, online, room, features} · zone {zone, players, online} (vừa vào zone: ai đang ở đó) ·
 //                      join {p} · state {id, pos, yaw, anim} · emote {id, e} · phrase {id, p} · leave {id} · online {n} ·
 //                      error {code, msg} · pool {tb, err?} (bàn bi-a; vừa vào zone của bàn cũng nhận) · pool_shot {shot, tb}
@@ -55,7 +56,8 @@ const FILTER = makeFilter(chatCfg);
 const poolRules = (env) => (String(env?.POOL_RULES ?? "2") === "1" ? 1 : 2);
 // "chat" = có nhắn tin tự do (máy chủ cũ: chỉ có câu chat soạn sẵn). POOL_RULES = "1" giả trọn máy chủ bản cũ: chỉ "pool"
 // (máy chủ vẫn nhận tin chat, nhưng máy khách thấy không có "chat" nên không hiện khung chat)
-const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts", "chat"] : ["pool"]);
+// "pool_spin" = cú bi-a có xoáy (spin / roll), máy chủ kiểm tra giới hạn rồi chuyển tiếp (server/src/pool.js)
+const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts", "pool_spin", "chat"] : ["pool"]);
 // phòng 1 giữ tên DO cũ "fville" (không đổi phòng của bản đã chạy)
 const roomName = (n) => (n <= 1 ? "fville" : `fville-${n}`);
 // request WebSocket kèm số phòng (header) — chuyển nguyên request sang DO khác vẫn giữ nâng cấp WebSocket
@@ -207,7 +209,7 @@ export class FVilleRoom extends DurableObject {
         return;
       }
       case "pool_join": {
-        const r = p.join(a.id, a.name, now, m.r, m.cf === 1);
+        const r = p.join(a.id, a.name, now, m.r, m.cf === 1, m.sp === 1);
         if (r.changed) this.poolChanged();
         else this.send(ws, { t: "pool", tb: p.view(now), ...(r.seated ? {} : { err: r.err || "full" }) });
         return;
