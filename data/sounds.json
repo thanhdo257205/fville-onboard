@@ -94,5 +94,25 @@
       { "src": "kenney_impact-sounds/Audio/impactSoft_medium_003.ogg" }] },
     "pool_pocket": { "bus": "world", "volume": 0.5, "pitch": 0.05, "rate": 0.8, "zones": ["zone_05"], "use": "bi-a: bi rơi vào lỗ", "files": [
       { "src": "kenney_impact-sounds/Audio/impactWood_medium_000.ogg" }, { "src": "kenney_impact-sounds/Audio/impactWood_medium_002.ogg" }] }
+  },
+  "music": {
+    "_ghi_chu": "Nhạc nền (game/src/core/music.js): phát lặp, chuyển bài êm khi đổi zone, nhỏ lại khi hội thoại / mini-game / app (duck), thanh Nhạc trong menu Esc (settings.sound.music). File: assets/music/<id>.mp3, phát bằng <audio> nối vào Web Audio (tải dần, không giải mã cả bài vào bộ nhớ). Chỉ nhận giấy phép CC0 (giống hiệu ứng); mỗi bài: nguồn (sources.<gói>: trang, giấy phép, ghi chú), SHA-256 của file gốc nhận được, ≤ 2 MB. default = bài cho mọi zone; zones.json → <zone>.audio.music ghi đè (id bài, hoặc null = im). volume = âm lượng riêng của bài (0..1).",
+    "sources": {
+      "blacis_fantasy_music_mega_pack": {
+        "title": "Fantasy Music Mega Pack (Royalty free, CC0, Public Domain)", "author": "Blacis (itch.io)",
+        "page": "https://blacis.itch.io/royalty-free-music-megapack", "license": "CC0-1.0",
+        "note": "Trang ghi: CC0 / Public Domain (Creative Commons Zero v1.0 Universal), 100+ bài; nhạc tạo bằng AI, chỉnh tay (\"AI generated/modified by hand\"). Người dùng tải gói và chọn bài (11/10/2026)."
+      }
+    },
+    "tracks": {
+      "piano_spiegel": {
+        "title": "Piano Spiegel", "artist": "Oliver Siimon", "source": "blacis_fantasy_music_mega_pack",
+        "original": "oliver_siimon_-_piano_spiegel.mp3", "original_sha256": "8dcf4e3f62c4f100058cd42b3e4154b776b12d02c9ab430ba1ce5abbd5fbb5d0",
+        "encode": "ffmpeg -map_metadata -1 -af volume=4dB -codec:a libmp3lame -q:a 7 (bỏ metadata, −24,7 → −20,7 LUFS, ~75 kbps, 2:51)",
+        "volume": 0.55
+      }
+    },
+    "default": "piano_spiegel",
+    "duck": 0.5
   }
 }

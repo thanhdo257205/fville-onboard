@@ -1,0 +1,12 @@
+Fantasy Music Mega Pack (Royalty free, CC0, Public Domain) — Blacis
+https://blacis.itch.io/royalty-free-music-megapack
+
+Giấy phép ghi trên trang (xem 11/10/2026): CC0 — Creative Commons Zero v1.0 Universal (Public Domain).
+Trang ghi: "Fantasy/Cinematic/Ambience/Cartoon Music for your project. This pack contains 100+ free songs."
+"*AI generated/modified by hand"
+
+Bài dùng trong game: "Piano Spiegel" — Oliver Siimon (file gốc trong gói: oliver_siimon_-_piano_spiegel.mp3,
+SHA-256 8dcf4e3f62c4f100058cd42b3e4154b776b12d02c9ab430ba1ce5abbd5fbb5d0) → assets/music/piano_spiegel.mp3
+(bỏ metadata, tăng 4 dB, nén lại MP3 ~75 kbps).
+
+Văn bản CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/legalcode

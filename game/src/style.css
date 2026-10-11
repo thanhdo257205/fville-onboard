@@ -41,6 +41,9 @@ body.overlay-open #hint { display: none; }   /* hộp thoại / mini-game / app 
 #menu .row.vol { min-height: 34px; }
 #menu .row.vol input[type=range] { width: 170px; accent-color: var(--orange); cursor: pointer; }
 #menu .row.vol input[type=range]:disabled { opacity: 0.4; cursor: default; }
+#menu .row.look .lookv { display: flex; align-items: center; gap: 6px; }
+#menu .row.look input[type=range] { width: 124px; }
+#menu .row.look output { width: 46px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; opacity: 0.8; }
 #menu .muted { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
 #menu .primary { margin-top: 16px; width: 100%; background: var(--orange); color: #fff; border: 0; border-radius: 10px; padding: 10px; font: 800 15px "Nunito"; cursor: pointer; }
 

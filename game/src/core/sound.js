@@ -6,12 +6,14 @@
 //   data/zones.json → <zone>.audio: { ambience, steps, reverb } (variants[].audio ghi đè, vd zone_01 lúc hoàng hôn).
 // - Trình duyệt chặn phát tiếng trước lần bấm / phím đầu tiên → AudioContext tạo ở unlock() (main.js gắn vào pointerdown /
 //   keydown). Chưa unlock, tắt tiếng (menu Esc), thiếu file, trình duyệt không có Web Audio → play() bỏ qua, không báo lỗi.
-// - Cài đặt (menu Esc, lưu ở settings.sound): on, sfx (hiệu ứng 0..1), amb (tiếng nền 0..1). Tab ẩn → tạm dừng.
+// - Nhạc nền: data/sounds.json → music, phát bằng core/music.js qua bus nhạc (bài theo zone: zones.json → audio.music).
+// - Cài đặt (menu Esc, lưu ở settings.sound): on, sfx (hiệu ứng 0..1), amb (tiếng nền 0..1), music (nhạc 0..1). Tab ẩn → tạm dừng.
 // sound.log ghi lại các lần gọi gần nhất (__game.sounds), sound.counts đếm theo tên; sound.info() → trạng thái (__game.audio).
 import { url } from "./assets.js";
 import { Ambience, Engine, impulse } from "./ambience.js";
+import { Music } from "./music.js";
 
-export const SOUND_DEFAULTS = { on: true, sfx: 0.8, amb: 0.6 };
+export const SOUND_DEFAULTS = { on: true, sfx: 0.8, amb: 0.6, music: 0.5 };
 const MAX_VOICES = 24;
 const REF_M = 3;              // tiếng theo vị trí: to nguyên ở khoảng cách này, xa hơn nhỏ dần
 const MAX_M = 60;
@@ -31,7 +33,7 @@ export const sound = {
   last: new Map(),        // tên → bản vừa phát (khỏi lặp lại liền)
   engines: new Set(),
 
-  configure(cfg) { this.defs = cfg?.sounds || {}; },
+  configure(cfg) { this.defs = cfg?.sounds || {}; this.musicCfg = cfg?.music || null; },
   files(name) {
     const d = this.defs[name];
     if (!d) return [];
@@ -43,15 +45,17 @@ export const sound = {
   apply(s = {}) {
     this.settings = { ...SOUND_DEFAULTS, ...s };
     if (!this.ctx) return;
-    const now = this.ctx.currentTime, { on, sfx, amb } = this.settings;
+    const now = this.ctx.currentTime, { on, sfx, amb, music } = this.settings;
     this.master.gain.setTargetAtTime(on ? 1 : 0, now, 0.05);
     this.sfxBus.gain.setTargetAtTime(sfx, now, 0.05);
     this.ambBus.gain.setTargetAtTime(amb, now, 0.05);
+    this.musicBus.gain.setTargetAtTime(music, now, 0.05);
+    this.music?.setAllowed(on && music > 0 && !document.hidden);
   },
 
   // ---------- khởi động (lần bấm / phím đầu tiên) ----------
   unlock() {
-    if (this.ctx) { if (this.ctx.state === "suspended" && !document.hidden) this.ctx.resume().catch(() => {}); return; }
+    if (this.ctx) { if (this.ctx.state === "suspended" && !document.hidden) this.ctx.resume().catch(() => {}); this.music?.resume(); return; }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     let ctx;
@@ -73,14 +77,19 @@ export const sound = {
     this.ambBus = ctx.createGain();
     this.ambBus.connect(this.master);
     this.ambience = new Ambience(ctx, this.ambBus);
+    this.musicBus = ctx.createGain();
+    this.musicBus.connect(this.master);
+    if (this.musicCfg) this.music = new Music(ctx, this.musicBus, this.musicCfg);
     this.apply(this.settings);
     if (ctx.state === "suspended") ctx.resume().catch(() => {});
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) ctx.suspend().catch(() => {});
       else ctx.resume().catch(() => {});
+      this.apply(this.settings);       // nhạc: dừng khi tab ẩn, phát tiếp khi hiện
     });
     this.preload();
     if (this.zone) this.setZone(this.zone.id, this.zone.audio);
+    else this.music?.set(this.music.pick(null));     // màn tiêu đề (chưa vào zone): bài mặc định
   },
 
   // tải trước: mọi tiếng không gắn zone + tiếng của zone đang ở
@@ -116,6 +125,7 @@ export const sound = {
     if (!this.ctx) return;
     this.preload();
     this.ambience.set(audio?.ambience ?? null);
+    this.music?.set(this.music.pick(audio));
     const r = audio?.reverb || 0, now = this.ctx.currentTime;
     if (r > 0) {
       const sec = audio.reverb_s ?? 0.6 + r * 2.4;
@@ -123,7 +133,7 @@ export const sound = {
     }
     this.wet.gain.setTargetAtTime(r * 0.6, now, 0.2);
   },
-  duck(on) { this.ambience?.duck(on); },
+  duck(on) { this.ducked = on; this.ambience?.duck(on); this.music?.duck(on); },
 
   // ---------- phát ----------
   play(name, { pos = null, gain = 1, rate = 1 } = {}) {
@@ -230,7 +240,7 @@ export const sound = {
     const c = this.ctx;
     return { state: c ? c.state : "locked", ...this.settings, zone: this.zone?.id ?? null, ambience: this.ambience?.id ?? null,
       reverb: this.zone?.audio?.reverb ?? 0, loaded: [...this.buffers.values()].filter(Boolean).length, voices: this.total,
-      engines: this.engines.size, ...this.stats, counts: { ...this.counts } };
+      engines: this.engines.size, ...this.stats, music: this.music?.info() ?? null, counts: { ...this.counts } };
   },
 };
 

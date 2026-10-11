@@ -318,6 +318,38 @@ for (const [z, cfg] of Object.entries(zones.zones)) for (const a of [cfg.audio, 
 }
 report("âm thanh", sfxErrs, `${want.size} file, ${(sfxBytes / 1024).toFixed(0)} KB, ${Object.keys(snd.sources).length} gói CC0, ${sfxCalls} lần gọi sound.play`);
 
+// 8b. nhạc nền: data/sounds.json → music; mỗi bài có file assets/music/<id>.mp3 (≤ 2 MB), nguồn CC0 (trang + bản ghi giấy phép
+// assets/music/licenses/<nguồn>.txt), SHA-256 file gốc, ghi trong CREDITS.md; không có file nhạc thừa; bài mặc định / zones.json →
+// audio.music là bài có thật
+const musErrs = [], MUS = join(ROOT, "assets", "music"), mus = snd.music, MUS_FILE_KB = 2048;
+const creditsMain = existsSync(join(ROOT, "CREDITS.md")) ? readFileSync(join(ROOT, "CREDITS.md"), "utf8") : "";
+let musBytes = 0;
+if (mus) {
+  const tracks = mus.tracks || {};
+  for (const [id, tr] of Object.entries(tracks)) {
+    const src = (mus.sources || {})[tr.source], path = join(MUS, `${id}.mp3`);
+    if (!src) musErrs.push(`music.tracks.${id}: nguồn "${tr.source}" chưa khai ở music.sources`);
+    else {
+      if (!LICENSES.has(src.license)) musErrs.push(`music.sources.${tr.source}: giấy phép ${src.license} chưa được chấp nhận (chỉ ${[...LICENSES]})`);
+      if (!src.page) musErrs.push(`music.sources.${tr.source}: thiếu page`);
+      if (!existsSync(join(MUS, "licenses", `${tr.source}.txt`))) musErrs.push(`thiếu assets/music/licenses/${tr.source}.txt`);
+    }
+    if (!/^[0-9a-f]{64}$/.test(tr.original_sha256 || "")) musErrs.push(`music.tracks.${id}: thiếu original_sha256 (file gốc nhận được)`);
+    if (!(tr.volume > 0 && tr.volume <= 1)) musErrs.push(`music.tracks.${id}.volume = ${tr.volume} (0..1)`);
+    if (!creditsMain.includes(`assets/music/${id}.mp3`)) musErrs.push(`assets/music/${id}.mp3 chưa ghi trong CREDITS.md`);
+    if (!existsSync(path)) { musErrs.push(`thiếu assets/music/${id}.mp3`); continue; }
+    const kb = statSync(path).size / 1024;
+    musBytes += statSync(path).size;
+    if (kb > MUS_FILE_KB) musErrs.push(`assets/music/${id}.mp3: ${kb.toFixed(0)} KB > ${MUS_FILE_KB} KB`);
+  }
+  if (existsSync(MUS)) for (const f of readdirSync(MUS)) if (f.endsWith(".mp3") && !tracks[f.slice(0, -4)]) musErrs.push(`assets/music/${f}: không có trong data/sounds.json → music (file thừa — không rõ nguồn / giấy phép)`);
+  if (mus.default != null && !tracks[mus.default]) musErrs.push(`music.default "${mus.default}" không có trong music.tracks`);
+  if (mus.duck != null && !(mus.duck >= 0 && mus.duck <= 1)) musErrs.push(`music.duck ngoài 0..1`);
+  for (const [z, cfg] of Object.entries(zones.zones)) for (const a of [cfg.audio, ...(cfg.variants || []).map((v) => v.audio)].filter(Boolean))
+    if (a.music != null && !tracks[a.music]) musErrs.push(`zones.${z}.audio.music "${a.music}" không có trong music.tracks`);
+} else if (existsSync(MUS) && readdirSync(MUS).some((f) => f.endsWith(".mp3"))) musErrs.push("có file trong assets/music/ nhưng data/sounds.json không có music");
+report("nhạc nền", musErrs, `${Object.keys(mus?.tracks || {}).length} bài (mặc định: ${mus?.default ?? "—"}), ${(musBytes / 1024).toFixed(0)} KB, chỉ CC0`);
+
 // ---------- nhắn tin: giới hạn + bộ lọc từ (data/chat.json, game/src/net/chatfilter.js — máy chủ dùng đúng module này) ----------
 const chatErrs = [];
 const chatCfg = JSON.parse(readFileSync(join(ROOT, "data", "chat.json"), "utf8"));

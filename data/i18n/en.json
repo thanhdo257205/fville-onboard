@@ -140,7 +140,11 @@
     "sound": "Sound",
     "sfx_volume": "Effects",
     "amb_volume": "Ambience",
-    "sound_note": "Effects: footsteps, doors, the pool table, app chimes. Ambience: birds, wind, the office hum.",
+    "music_volume": "Music",
+    "sound_note": "Effects: footsteps, doors, the pool table, app chimes. Ambience: birds, wind, the office hum. Music: the background piano piece.",
+    "look_mouse": "Mouse sensitivity",
+    "look_touch": "Touch sensitivity",
+    "look_note": "How fast the camera turns when you move the mouse or swipe the screen. 100% = default.",
     "chat": "Chat"
   },
   "lang": {

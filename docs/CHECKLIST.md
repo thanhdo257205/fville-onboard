@@ -351,6 +351,9 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     chạm lần đầu. Sửa GDD → "Ngoài phạm vi" + bảng điều khiển cảm ứng — ad43543
   - [x] Điều hướng: cần điều khiển ảo (joystick) góc trái dưới để đi (đẩy hết cỡ = chạy); vuốt nửa phải màn hình để xoay
     camera (độ nhạy 0,7); chụm 2 ngón để kéo camera xa / gần (thay con lăn chuột) — ad43543
+  - [x] Độ nhạy xoay camera trong menu Esc (11/10/2026, nhánh `feat/music-sensitivity` 2f79cb9): **Độ nhạy chuột** (máy có chuột)
+    và **Độ nhạy cảm ứng** (máy có màn cảm ứng), 20–300 %, 100 % = như cũ; đổi ngay khi kéo, lưu trong cài đặt; smoke kiểm tra
+    200 % → xoay gấp đôi (chuột + vuốt trên điện thoại)
   - [x] Nút tương tác góc phải dưới: nút lớn thay phím E, ghi tên việc như dòng nhắc "E: …", chỉ hiện khi đứng gần vật / người;
     nút App (Tab), Help (H), Emote / câu chat (T), Chat, Menu (Esc); hội thoại: chạm để nói tiếp, chạm vào lựa chọn (không cần
     phím 1–4) — ad43543
@@ -407,7 +410,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [ ] File `assets/voice/<ngôn ngữ>/<hội thoại>_<câu>.ogg` (OGG/Opus, mỗi câu khoảng ≤ 50 KB), tải theo zone; phát khi câu
     hiện, dừng khi sang câu; phụ đề giữ nguyên; thiếu file thì im lặng
   - [ ] Âm lượng giọng trong menu Esc; `test:data` báo câu thiếu file / file thừa
-- [ ] P2 Nhạc nền và hiệu ứng âm thanh — Phụ trách: Claude (hiệu ứng + tiếng nền, nhánh `feat/sfx`); nhạc nền: —
+- [ ] P2 Nhạc nền và hiệu ứng âm thanh — Phụ trách: Claude (hiệu ứng + tiếng nền, nhánh `feat/sfx`; nhạc nền, nhánh
+  `feat/music-sensitivity`)
   - [x] Chốt (người dùng, 10/10/2026): nguồn CC0 (gói Kenney) + tự tạo bằng code; đợt này làm hiệu ứng, bi-a / cửa / xe bus,
     bước chân + tiếng nền; nhạc nền để đợt sau
   - [x] Hiệu ứng: 58 file MP3, 286 KB (48 từ 5 gói Kenney CC0, 10 tự tạo bằng `scripts/blender/audio/synth.py`) —
@@ -428,7 +432,13 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     (mỗi ~0,8–1,3 m một tiếng) nên lệch lúc chân chạm đất; nay theo xương cổ chân của animation — chân nhấc lên rồi chạm lại = 1
     tiếng, mọi ngoại hình, cả Tú; smoke zone_02: đứng yên 0 tiếng, đi / chạy mỗi tiếng cách ~nửa chu kỳ animation
   - [ ] Người trong team nghe thử, chỉnh âm lượng / đổi file nghe chưa hợp (chọn file theo số đo, chưa ai nghe bằng tai)
-  - [ ] Nhạc nền theo zone / thời điểm (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc hoàng hôn)
+  - [x] Nhạc nền (11/10/2026, nhánh `feat/music-sensitivity` 2f79cb9): "Piano Spiegel" — Oliver Siimon, người dùng chọn trong
+    "Fantasy Music Mega Pack" của Blacis (itch.io, CC0; trang ghi nhạc tạo bằng AI, chỉnh tay) — khai ở `data/sounds.json` →
+    `music` (nguồn, giấy phép, SHA-256 file gốc), `assets/music/piano_spiegel.mp3` (1,6 MB, ~75 kbps), `CREDITS.md`. Phát lặp
+    mọi zone từ màn tiêu đề (`game/src/core/music.js`), nhỏ lại khi hội thoại / mini-game / app, dừng khi tab ẩn; thanh **Nhạc**
+    trong menu Esc; `zones.json` → `audio.music` đổi bài riêng từng zone (chuyển bài êm). Kiểm thử: `test:data` (CC0, file,
+    SHA-256, ghi công, file thừa), smoke (nhạc phát, thanh Nhạc 0 → dừng)
+  - [ ] Nhạc riêng theo zone / thời điểm — hiện 1 bài cho mọi zone (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc hoàng hôn)
     — nguồn CC0, khai ở `data/sounds.json` như hiệu ứng; chuyển bài êm khi đổi zone, nhỏ lại khi hội thoại, thanh âm lượng nhạc
     (và giọng) trong menu Esc; mỗi bài ≤ ~1,5 MB (MP3 ~128 kbps — Safari cũ không đọc OGG), tải lười theo zone, đo lại theo
     `docs/perf_report.md`
