@@ -1157,11 +1157,11 @@ Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms 
 ### Nhắn tin tự do giữa người chơi + bộ lọc từ (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` 35c3536 + 2033d1f, [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16))
 
 Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2 "Nhắn tin giữa người chơi"). Chi tiết: `docs/multiplayer.md` →
-"Nhắn tin tự do + bộ lọc từ". **Chưa lên trang thật:**
-1. bản web: `python scripts/deploy_site.py` — người dùng đã đồng ý, nhưng máy cloud bị chặn quyền chạy lệnh deploy
-   (11/10/2026) → chờ người dùng cho phép, hoặc tự chạy ở máy Desktop;
-2. máy chủ: `cd server && npx wrangler deploy` ở máy Desktop (người dùng tự làm) — sau bản web. Bản web mới với máy chủ
-   đang chạy: khung chat ẩn, mọi thứ khác như cũ.
+"Nhắn tin tự do + bộ lọc từ". **Đã gộp vào `main` (1195cb1) và đã deploy (11/10/2026, máy Desktop):** bản web gh-pages
+**c26234f** → máy chủ `npx wrangler deploy` version **c487c71a-f7fb-4692-a942-8bbe6f9d2305** (bản trước e7a013c0, để
+`wrangler rollback`). Lần deploy bản web đầu bị từ chối (non-fast-forward) vì `dist/` trên máy Desktop cũ hơn gh-pages (bản
+9de6c01 deploy từ máy cloud) → `cd dist`, `git fetch origin gh-pages`, `git reset --hard FETCH_HEAD`, chạy lại
+`deploy_site.py`. Máy cloud không tự deploy được (bị chặn quyền chạy `deploy_site.py`, không với tới Cloudflare).
 - `data/chat.json`: 120 ký tự, 5 tin dồn + 1 tin / giây, 50 tin mỗi kênh (máy khách), bong bóng 6 s, bộ lọc (`exact` giữ dấu
   tiếng Việt, `plain` bỏ dấu + leet + gộp chữ lặp, cụm nhiều từ, chữ tách rời, `allow`, che link).
 - `game/src/net/chatfilter.js`: bộ lọc theo từng từ, dùng chung máy chủ + `test:data` (~0,06 ms / tin).
@@ -1226,10 +1226,10 @@ Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2
 ## Việc tiếp theo
 Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLIST.md`.
 
-- **Nhắn tin tự do ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16)):** gộp PR → deploy bản web (`python scripts/deploy_site.py`) → máy chủ
-  (`cd server && npx wrangler deploy`, lời chào phải có `"chat"`) → nhắn thử giữa 2 cửa sổ trên trang thật, xem
-  `npx wrangler tail --format json` (mọi `outcome` = `ok`). Sau buổi chơi thử: xem có từ nào cần thêm / bỏ khỏi bộ lọc
-  (`data/chat.json`, sửa xong phải deploy lại máy chủ).
+- **Nhắn tin tự do ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16), đã deploy gh-pages c26234f + máy chủ
+  c487c71a):** kiểm tra lời chào có `"chat"`, nhắn thử giữa 2 cửa sổ trên trang thật, xem `npx wrangler tail --format json`
+  (mọi `outcome` = `ok`). Sau buổi chơi thử: xem có từ nào cần thêm / bỏ khỏi bộ lọc (`data/chat.json`, sửa xong phải deploy
+  lại máy chủ).
 
 0. ~~Đưa máy chủ chơi nhiều người lên Cloudflare~~ — **xong 10/10/2026** (`https://fville-net.fville-onboard.workers.dev`,
    xem "Chơi nhiều người đã lên mạng" ở trên). Còn: chơi thử 2–3 người trên bản deploy; đo FPS trên laptop thật với
