@@ -1357,7 +1357,7 @@ gh-pages c3ef40f).
 - `__game.player.pen`: độ lồng của capsule vào `COL_` (m).
 - Smoke zone 5: ngồi vào bàn rồi đứng dậy → lồng 0,256 → 0 m, đi được ≥ 4/8 hướng (code cũ: 0,256 m, 2/8 hướng → đỏ).
 
-### Smoke: dấu chỉ đường trước mỗi việc bắt buộc + dọn checklist (11/10/2026, nhánh `test/guide-markers`)
+### Smoke: dấu chỉ đường trước mỗi việc bắt buộc + dọn checklist (11/10/2026, nhánh `test/guide-markers` 14ae65c)
 
 - `scripts/tests/smoke.mjs`: mỗi zone, trước mỗi việc bắt buộc / lối ra zone (lúc đang đi lại tự do, chờ tối đa 2,5 s) phải có dấu
   "!" hoặc mũi tên (`__game.guide` → `marker` / `arrow`); 1 dòng mỗi zone. Lượt 1 ngoại hình zone 0 → 5: 20 mục tiêu, đều có.

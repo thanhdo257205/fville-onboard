@@ -432,8 +432,8 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   ngoại hình — biểu thức `== 'workflow_dispatch' && '' || '--look …'` luôn ra vế sau vì chuỗi rỗng bị coi là sai — Phụ trách:
   Claude
 - [x] P2 Cập nhật `docs/PROGRESS.md` → "Việc tiếp theo": mục 0 (đưa máy chủ lên Cloudflare) đã xong — Phụ trách: Claude — nhánh `ci/pr-tests`
-- [ ] P3 `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 kiểm tra có dấu "!" hoặc mũi tên (`__game.guide` → `marker` /
-  `arrow`), để lỗi mất dấu không quay lại mà không ai biết — Phụ trách: —
+- [x] P3 `test:smoke`: trước mỗi mục tiêu bắt buộc zone 0–5 kiểm tra có dấu "!" hoặc mũi tên (`__game.guide` → `marker` /
+  `arrow`), để lỗi mất dấu không quay lại mà không ai biết — Phụ trách: Claude — nhánh `test/guide-markers` — 14ae65c
 - [ ] P3 Theo dõi Cloudflare: Workers & Pages → fville-net → Metrics (hạn miễn phí 100.000 lượt/ngày) — Phụ trách: —
 - [x] P3 zone 4: lan can thật ở mép chiếu nghỉ, COL_ vách trên cửa quẹt thẻ, dời `SPAWN_zone_04_from_zone_03` vào trong (sửa
   trong `scripts/blender/zone_04.py`, build lại GLB bản Thấp, bỏ bản vá dữ liệu) — Phụ trách: Claude — nhánh `zone04/rebuild`
