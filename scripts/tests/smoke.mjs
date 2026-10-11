@@ -1311,7 +1311,7 @@ async function runRooms(srv) {
 const server = await startServer();
 const browser = await chromium.launch({ headless: !arg("headed"), ...(chromePath ? { executablePath: chromePath } : {}),
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
-console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
+console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
   if (extra !== "only") for (const look of looks) await runLook(browser, server.base, look);
@@ -1340,5 +1340,5 @@ try {
 }
 const bad = results.filter((r) => !r.ok).length;
 const sec = Math.round((Date.now() - t0) / 1000), dur = sec >= 60 ? `${Math.floor(sec / 60)} phút ${sec % 60} giây` : `${sec} giây`;
-console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng (zone 4, bi-a 2 người, chia phòng, máy chủ cũ)"} (${dur})`);
+console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ)"} (${dur})`);
 process.exit(bad ? 1 : 0);

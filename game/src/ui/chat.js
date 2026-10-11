@@ -204,6 +204,9 @@ export class ChatPanel {
     if (this.isOpen && this.game.mode !== "chat") this.close(false);
     const on = this.available;
     if (this.el.hidden === on) this.draw();
+    // đang hội thoại / mini-game / app / cảnh chuyển: ẩn phần tin xem trước (khung hội thoại cùng ở mép dưới), tin vẫn đếm chưa đọc
+    const busy = !["play", "pool", "chat"].includes(this.game.mode) || !!this.game.cutscene;
+    if (this.el.classList.contains("busy") !== busy) this.el.classList.toggle("busy", busy);
     if (!this.isOpen && this.recent.length) {
       const now = performance.now(), before = this.recent.length;
       this.recent = this.recent.filter((e) => now - e.shownAt < FADE_MS);
