@@ -1679,8 +1679,14 @@ async function runShort(browser, base) {
       // né đè: gắn tạm thêm 2 bảng tên đúng chỗ bảng của Ms. Huyền (3 bảng trùng nhau) → phải dời ra, không cái nào đè
       const dodge = await ev(async () => { const g = __game._game, n = g.npc("thao"), h = n.character.model.height_m;
         const extra = ["Test A", "Test B"].map((x) => g.nametags.add(n.character.root, x, h));
-        await new Promise((r) => setTimeout(r, 600));   // xếp lại 5 lần / giây (ui/nametags.js DODGE_HZ)
-        const r = __game.tags;
+        // xếp lại 5 lần / giây theo thời gian game (ui/nametags.js DODGE_HZ) — CI chậm (khung thưa) cần lâu hơn: chờ tới khi hết đè, tối đa 4 s
+        const ov = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+        let r = __game.tags;
+        for (let t0 = performance.now(); performance.now() - t0 < 4000; ) {
+          await new Promise((res) => setTimeout(res, 200));
+          r = __game.tags;
+          if (r.length >= 2 && !r.some((a, i) => r.some((b, j) => j > i && ov(a, b)))) break;
+        }
         for (const t of extra) { t.element.remove(); t.parent?.remove(t); g.nametags.tags.splice(g.nametags.tags.indexOf(t), 1); }
         return r; });
       const dodgeHit = dodge.some((a, i) => dodge.some((b, j) => j > i && overlap(a, b)));

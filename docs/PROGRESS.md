@@ -1340,7 +1340,7 @@ Bỏ dòng "Bi-a bằng cảm ứng sắp có". Máy tính giữ nguyên mọi �
   góc lệch 0 rad, chạm nhẹ không đánh, thanh lực đánh / hủy, chụm đổi camera, kéo chấm áp phê, gọi lỗ bằng chạm (thế bi dựng
   sẵn `__game.pool.setState`), ✕ rời bàn, thử thách anh Khang; 2 người máy tính + điện thoại qua máy chủ local: 5 cú, bi trong
   tay kéo + "Đặt bi", bàn khớp máy chủ); ô chat máy tính (bấm mở, `/`, Esc không mở menu). Test bi-a máy tính chờ hội thoại
-  on_enter của zone 5 trước khi tới bàn (lỗi chạy đua thỉnh thoảng). `__game.pool.touch()`, `__game.pool.setState()`.
+  on_enter của zone 5 trước khi tới bàn (lỗi chạy đua thỉnh thoảng); test né đè bảng tên (màn thấp) chờ tới khi hết đè, tối đa 4 s, thay vì 600 ms cố định (CI khung thưa → đỏ ở main sau PR #20). `__game.pool.touch()`, `__game.pool.setState()`.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
