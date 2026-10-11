@@ -174,7 +174,9 @@ async function boot() {
       sound: { ...SOUND_DEFAULTS, ...settings.sound },
       // độ nhạy xoay: chuột (máy có chuột — không phải điện thoại), cảm ứng (máy có màn cảm ứng)
       look: lookSens(settings.look), lookMouse: !device.phone, lookTouch: device.touchCapable,
-      complete: game.complete, wardrobe: !!chars.wardrobe }),
+      complete: game.complete, wardrobe: !!chars.wardrobe,
+      // đã xong ngày đầu: đi thẳng tới zone bất kỳ (giờ theo zone — zone_01 lúc hoàng hôn sau cảnh kết)
+      travel: game.complete ? zones.order.map((id) => ({ id, title: t(`zones.${id}.title`), time: game.zoneClock(id) ?? t(`zones.${id}.time`), here: id === game.state.zone })) : null }),
     // tủ đồ (áo, phụ kiện): đóng menu rồi mở bảng tủ đồ
     onWardrobe: () => { menu.hide(true); game.setMode("play"); game.toggleWardrobe(); },
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
@@ -196,6 +198,7 @@ async function boot() {
       input.sens = { ...settings.look };
       if (store) saveSettings(settings);
     },
+    onTravel: async (id) => { menu.hide(true); if (!await game.travel(id)) game.setMode("play"); },
     onSummary: () => { menu.hide(true); game.openSummary(); },   // chỉ hiện khi đã xong game
     onClose: () => game.setMode("play"),
     onPlayAgain: playAgain,

@@ -413,6 +413,8 @@ export function installDebug(game, loop) {
     },
 
     // file: tải zone ngoài phạm vi chơi để thử (vd goto("zone_05", "SPAWN_zone_05_start", "zone_05_office"))
+    // đã xong ngày đầu: đi thẳng tới zone (như menu Esc → Đi tới) → true nếu đã vào zone
+    travel(zone) { return game.travel(zone); },
     async goto(zone, spawn, file) { await game.enterZone(zone, spawn ?? game.zoneCfg(zone)?.start, { fade: false, file }); return api.player; },
     // NPC: nói chuyện (ngồi → đứng dậy → quay về phía người chơi → talk) / kết thúc (quay lại → ngồi lại)
     async talk(nodeOrRole) {

@@ -7,9 +7,9 @@ import { TIERS } from "../core/quality.js";
 import { sound } from "../core/sound.js";
 
 export class Menu {
-  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info }) {
+  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onTravel, onSummary, onClose, onPlayAgain, info }) {
     this.el = document.getElementById("menu");
-    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info });
+    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onTravel, onSummary, onClose, onPlayAgain, info });
     this.open = false;
     // tiếng bấm nút (nút Resume: tiếng đóng menu)
     this.el.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && b.dataset.act !== "resume") sound.play("tap"); });
@@ -47,6 +47,7 @@ export class Menu {
     this.el.innerHTML = `
       <div class="panel">
         <h2>${t("menu.title")}</h2>
+        ${i.travel ? `<div class="travel-h first">${t("menu.travel")}</div><div class="travel">${i.travel.map((z) => `<button data-zone="${z.id}"${z.here ? ` class="on" disabled title="${t("menu.travel_here")}"` : ""}><span class="tm">${z.time}</span><span class="nm">${z.title}</span></button>`).join("")}</div><p class="muted">${t("menu.travel_note")}</p>` : ""}
         <div class="row"><span>${t("menu.language")}</span><div class="seg">${LANGS.map(lbtn).join("")}</div></div>
         <div class="row"><span>${t("menu.sound")}</span><div class="seg">${sbtn(true)}${sbtn(false)}</div></div>
         <div class="row vol"><span>${t("menu.sfx_volume")}</span>${vol("sfx")}</div>
@@ -84,6 +85,7 @@ export class Menu {
       r.addEventListener("input", () => { out.textContent = `${r.value}%`; this.onLook?.({ [r.dataset.look]: r.value / 100 }, { store: false }); });
       r.addEventListener("change", () => this.onLook?.({ [r.dataset.look]: r.value / 100 }));
     });
+    this.el.querySelectorAll("[data-zone]").forEach((b) => b.addEventListener("click", () => { clearInterval(this._tick); this.onTravel?.(b.dataset.zone); }));
     this.el.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.lang !== lang) this.onLang?.(b.dataset.lang); }));
     this.el.querySelector("[data-act=wardrobe]")?.addEventListener("click", () => { clearInterval(this._tick); this.onWardrobe?.(); });
     this.el.querySelector("[data-act=resume]").addEventListener("click", () => this.hide());

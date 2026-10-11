@@ -62,6 +62,7 @@ const zoneIsLast = (z) => z === order[order.length - 1];
 const langArg = arg("lang");
 const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
 const I18N = { en: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "en.json"), "utf8")), vi: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "vi.json"), "utf8")) };
+const SCENE_FIXES = JSON.parse(readFileSync(join(ROOT, "data", "scene_fixes.json"), "utf8"));
 const ACH = JSON.parse(readFileSync(join(ROOT, "data", "achievements.json"), "utf8")).final.title;   // tên thành tựu cuối theo ngôn ngữ
 const QUESTS = JSON.parse(readFileSync(join(ROOT, "data", "quests.json"), "utf8")).quests;
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
@@ -267,7 +268,7 @@ async function runLook(browser, base, look) {
         document.dispatchEvent(new MouseEvent("mousemove", { movementX: 40, movementY: 0 })); const d = inp.consumeDrag(true).dx; inp.fakeLock = keep; return d; });
       const slide = (sel, v) => ev(([sel, v]) => { const r = document.querySelector(sel); r.value = v; r.dispatchEvent(new Event("input")); r.dispatchEvent(new Event("change")); return document.querySelector(sel.replace("data-look=", "data-look-out=").replace("input", "output"))?.textContent ?? null; }, [sel, v]);
       // thanh độ nhạy cảm ứng có khi máy có màn cảm ứng (device.touchCapable) — máy CI không có, laptop cảm ứng có
-      mu.rows = await ev(() => ({ music: !!document.querySelector("#menu [data-vol=music]"), mouse: !!document.querySelector("#menu [data-look=mouse]"), touch: !!document.querySelector("#menu [data-look=touch]"),
+      mu.rows = await ev(() => ({ travel: !!document.querySelector("#menu [data-zone]"), music: !!document.querySelector("#menu [data-vol=music]"), mouse: !!document.querySelector("#menu [data-look=mouse]"), touch: !!document.querySelector("#menu [data-look=touch]"),
         touchCapable: matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0 }));
       mu.d1 = await drag();
       mu.label = await slide("#menu [data-look=mouse]", 200);
@@ -281,7 +282,7 @@ async function runLook(browser, base, look) {
       await page.keyboard.press("Escape");
       mu.closed = await wait(() => document.getElementById("menu").hidden && __game._game.mode === "play", 5000);
       await check(mu.start?.id === "piano_spiegel" && mu.start.playing && mu.later.time > mu.start.time && !mu.later.failed.length
-        && mu.menu && mu.rows.music && mu.rows.mouse && mu.rows.touch === mu.rows.touchCapable && mu.d1 > 0 && Math.abs(mu.d2 - 2 * mu.d1) < 1e-6 && mu.label === "200%"
+        && mu.menu && !mu.rows.travel && mu.rows.music && mu.rows.mouse && mu.rows.touch === mu.rows.touchCapable && mu.d1 > 0 && Math.abs(mu.d2 - 2 * mu.d1) < 1e-6 && mu.label === "200%"
         && mu.saved?.mouse === 2 && mu.off && mu.on && mu.closed,
         `nhạc nền "${mu.start?.id}" đang phát (${mu.start?.time} → ${mu.later?.time} s); menu Esc: thanh Nhạc (0 → dừng, kéo lại → phát), độ nhạy chuột 200 % → xoay ×2 (${mu.d1} → ${mu.d2}), lưu cài đặt`,
         JSON.stringify(mu));
@@ -582,6 +583,11 @@ async function runLook(browser, base, look) {
           const rooms = []; __game._game.zone.root.traverse((o) => { if (o.userData.fix === "room") rooms.push(o.name); });
           return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), rooms, top: r.gaps.slice(0, 5) }; });
         const strict = GAP_FREE.includes(zone), flatFree = FLAT_FREE.includes(zone);
+        // chậu cây thay chậu cọ cũ (scene_fixes → remove_parts + props): mọi hộp gỡ đúng 1 cây (≥ 3 mảnh), đủ số chậu mới
+        const fxz = SCENE_FIXES[zone] || {}, zf = await ev(() => __game._game.zone.fixes);
+        const parts = (zf.remove_parts || []).flatMap((r) => r.parts_per_box);
+        if (fxz.props || fxz.remove_parts) await check((zf.props || []).length === (fxz.props || []).length && parts.length && parts.every((n) => n >= 3),
+          `${zone}: ${(zf.props || []).length} chậu cây mới (props), gỡ chậu cũ: ${parts.join(" / ")} mảnh mỗi chậu`, JSON.stringify(zf));
         await check(gp.spots > 50 && (!strict || gp.down === 0) && (!flatFree || gp.flat === 0),
           `${zone}: chỗ hở mô hình — ${gp.spots} chỗ đứng, ${gp.rays} tia: ${gp.down} tia nhìn xuống lọt ra trời, ${gp.flat} tia ngang ra ngoài${strict ? "" : " (chưa build lại, chỉ ghi số)"}${gp.rooms.length ? `; phòng giả sau cửa: ${gp.rooms.join(", ")}` : ""}`,
           JSON.stringify(gp));
@@ -789,6 +795,26 @@ async function runLook(browser, base, look) {
           && shut && btn && reopen && orange && done && !con3.length,
           `tủ đồ: menu Esc → Tủ đồ → đội mũ (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), mặc lại Đồ ngày đầu${"ao_cam" in (d1.morph || {}) ? ` (morph ${d1.morph.ao_cam})` : ""}, lưu; I đóng → nút 👕 mở → phím 2 Áo Cam → Esc`,
           JSON.stringify({ mbtn, wopen, worn, cap, day1, d1, shut, btn, reopen, orange, done, console: con3.slice(0, 5) }));
+        // đã xong ngày đầu → menu Esc có mục "Đi tới" (6 zone, zone đang đứng khoá nút): bấm zone_02 → sang zone_02, về chế độ
+        // chơi, không tự mở hội thoại / cảnh chuyển; rồi __game.travel về zone đã đứng; console sạch
+        {
+          const from = await ev(() => __game.state.zone);
+          await page.keyboard.press("Escape");
+          const tv = { menu: await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-zone]"), 5000) };
+          tv.list = await ev(() => [...document.querySelectorAll("#menu [data-zone]")].map((b) => [b.dataset.zone, b.disabled]));
+          const to = from === "zone_02" ? "zone_03" : "zone_02";
+          if (tv.menu) await page.click(`#menu [data-zone=${to}]`);
+          tv.arrived = await wait((z) => window.__game?.state.zone === z && __game.state.phase === "playing", 30000, to);
+          await page.waitForTimeout(1200);
+          tv.after = await ev(() => ({ mode: __game._game.mode, dlg: __game._game.runner.active?.id ?? null, cut: !!__game._game.cutscene, menu: !document.getElementById("menu").hidden }));
+          tv.back = await ev((z) => __game.travel(z), from);
+          tv.zone = await ev(() => __game.state.zone);
+          const con4 = problems.splice(0);
+          await check(tv.menu && tv.list.length === order.length && tv.list.filter(([, d]) => d).map(([z]) => z).join() === from && tv.arrived
+            && tv.after.mode === "play" && !tv.after.dlg && !tv.after.cut && !tv.after.menu && tv.back && tv.zone === from && !con4.length,
+            `xong ngày đầu → menu Esc "Đi tới": ${tv.list.length} zone (đang ở ${from}), bấm ${to} → sang ${to}, chơi tiếp (không hội thoại / cảnh chuyển), về lại ${from}`,
+            JSON.stringify({ ...tv, console: con4.slice(0, 5) }));
+        }
         // tải lại trang (không ?lang): ngôn ngữ đã chọn ở màn tạo nhân vật nằm trong cài đặt → vẫn tiếng Việt
         if (lang !== "en") {
           await page.goto(`${base}/?debug&net=off&title=off`);

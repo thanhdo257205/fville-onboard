@@ -3,7 +3,7 @@
 // tương tác (interactables.json) → hội thoại (dialogues.json) / mini-game / nhặt vật; hiệu ứng → tiến trình (lưu trình duyệt).
 import * as THREE from "three";
 import { device } from "../core/device.js";
-import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, prefetchZone, pendingPrefetch } from "../world/zone.js";
+import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, placeProps, prefetchZone, pendingPrefetch } from "../world/zone.js";
 import { buildCollider } from "../world/collision.js";
 import { createLights, DETAIL_LEVELS } from "../render/renderer.js";
 import { Sky } from "../render/sky.js";
@@ -159,6 +159,7 @@ export class Game {
   async _prepareZone(zoneId, file) {
     const zone = await loadZone(zoneId, file, this.state.tier, this.data.collision?.[zoneId]);
     applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
+    await placeProps(zone, this.data.sceneFixes?.[zoneId]?.props);   // vật từ GLB riêng (vd chậu cây) — trước BVH camera
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
     // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
     const plantRe = new RegExp(this.seeThrough.cfg.meshes), blockers = [];
@@ -711,6 +712,14 @@ export class Game {
     }
   }
   get complete() { return this.progress.flags.has("game_complete"); }
+
+  // đã xong ngày đầu (game_complete): đi thẳng tới zone bất kỳ — menu Esc → Đi tới (__game.travel). Xuất hiện ở điểm bắt đầu
+  // của zone (zones.json → start), như lần đầu vào zone; việc của zone đã làm xong nên không lặp lại hội thoại / cảnh chuyển
+  async travel(zoneId) {
+    if (!this.complete || !this.zoneCfg(zoneId) || zoneId === this.state.zone || this.state.phase !== "playing" || this.cutscene) return false;
+    this.setMode("play");
+    return this.enterZone(zoneId, this.zoneCfg(zoneId).start);
+  }
 
   // tải game khi đã xong (game_complete) mà chưa thấy màn tổng kết (tải lại giữa cảnh kết / trước khi tổng kết hiện):
   // thẻ thành tựu cuối rồi màn tổng kết, như cuối cảnh kết

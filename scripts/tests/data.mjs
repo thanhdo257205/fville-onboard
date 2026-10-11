@@ -460,6 +460,36 @@ for (const [z, cfg] of Object.entries(fx)) {
 }
 report("phòng giả sau cửa (scene_fixes → rooms)", roomErrs, `${roomN} phòng (${Object.entries(fx).filter(([, c]) => c?.rooms).map(([z]) => z).join(", ") || "—"})`);
 
+// 11. vật từ GLB riêng (scene_fixes → props) + gỡ vật cũ dựng chung mesh (remove_parts): file assets/props/<model>/<model>.glb có
+// thật (≤ 300 KB, nén Draco), ghi nguồn trong CREDITS.md; at 3 số, height_m > 0; remove_parts: regex mesh hợp lệ, hộp hợp lệ
+const propErrs = [], propFiles = new Set(), PROP_KB = 300;
+const creditsTxt = existsSync(join(ROOT, "CREDITS.md")) ? readFileSync(join(ROOT, "CREDITS.md"), "utf8") : "";
+let propN = 0, removeN = 0;
+for (const [z, cfg] of Object.entries(fx)) {
+  for (const [i, pr] of (cfg?.props || []).entries()) {
+    propN++;
+    const w = `scene_fixes.${z}.props[${i}]`, f = `assets/props/${pr.model}/${pr.model}.glb`;
+    if (!(Array.isArray(pr.at) && pr.at.length === 3 && pr.at.every(Number.isFinite))) propErrs.push(`${w}: at phải là [x, y, z]`);
+    if (pr.height_m != null && !(pr.height_m > 0 && pr.height_m < 10)) propErrs.push(`${w}.height_m = ${pr.height_m}`);
+    if (propFiles.has(f)) continue;
+    propFiles.add(f);
+    if (!existsSync(join(ROOT, f))) { propErrs.push(`${w}: thiếu ${f} (scripts/tools/make_prop.sh ${pr.model})`); continue; }
+    const kb = statSync(join(ROOT, f)).size / 1024;
+    if (kb > PROP_KB) propErrs.push(`${f}: ${kb.toFixed(0)} KB > ${PROP_KB} KB`);
+    if (!creditsTxt.includes(f)) propErrs.push(`${f} chưa ghi nguồn trong CREDITS.md`);
+    const buf = readFileSync(join(ROOT, f)), gj = JSON.parse(buf.subarray(20, 20 + buf.readUInt32LE(12)).toString("utf8"));
+    if (!(gj.extensionsUsed || []).includes("KHR_draco_mesh_compression")) propErrs.push(`${f}: chưa nén Draco`);
+  }
+  for (const [i, r] of (cfg?.remove_parts || []).entries()) {
+    removeN++;
+    const w = `scene_fixes.${z}.remove_parts[${i}]`;
+    try { new RegExp(r.mesh); } catch { propErrs.push(`${w}.mesh: regex lỗi`); }
+    if (names[z] && ![...names[z]].some((n) => new RegExp(r.mesh).test(n))) propErrs.push(`${w}.mesh ${r.mesh}: không có node nào trong GLB zone`);
+    for (const b of r.boxes || []) if (!(b.center?.length === 3 && b.size?.length === 3 && b.size.every((v) => v > 0))) propErrs.push(`${w}: hộp sai`);
+  }
+}
+report("vật từ GLB riêng (scene_fixes → props, remove_parts)", propErrs, `${propN} vật (${[...propFiles].map((f) => f.split("/").pop()).join(", ") || "—"}), ${removeN} mục gỡ vật cũ`);
+
 const ms = Math.round(performance.now() - t0);
 console.log(failed ? `✗ test:data: ${failed} mục lỗi (${ms} ms)` : `✓ test:data: đạt hết (${ms} ms)`);
 process.exit(failed ? 1 : 0);
