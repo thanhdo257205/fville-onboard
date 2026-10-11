@@ -1,7 +1,7 @@
 {
   "zone": "zone_02_campus",
   "quality": "low",
-  "triangles_visible": 149683,
+  "triangles_visible": 149659,
   "triangles_collision": 480,
   "materials": [
     "M_bamboo_leaf",
