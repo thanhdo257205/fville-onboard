@@ -1857,7 +1857,7 @@ async function runShort(browser, base) {
   }
 }
 
-// (f1c) camera hội thoại trên màn thấp: nói chuyện với Ms. Nga (zone 3, camera qua vai dựng được) ở khung 844 × 230 → mặt người
+// (f1c) camera hội thoại trên màn thấp: nói chuyện với lễ tân (zone 3, camera qua vai dựng được) ở khung 844 × 230 → mặt người
 // đối thoại và người chơi nằm phía trên mép trên khung thoại (player/talkcam.js đo khung sau khi thu nhỏ)
 async function runShortCam(browser, base) {
   const view = { width: 844, height: 230 }, label = "điện thoại 844 × 230 · camera hội thoại";

@@ -1509,6 +1509,26 @@ z −1,6 … 1,5); zone 3 lối sang zone 4 ở đầu tây sảnh cũng lọt (
 - Build lại zone_03, zone_05 thì bỏ 2 mục `rooms` này (ghi trong CHECKLIST).
 - Gộp main qua PR #28 (774230c), đã deploy gh-pages fe401b2 (cùng bản này lên trang thật: nhân vật thứ 4 `intern_nu_buitoc`).
 
+### Đổi kịch bản: quản lý = Prajith, mentor = Ms. Nga; 2 nhân vật mới (12/10/2026, máy Desktop)
+
+Người dùng gửi 2 mô hình Meshy (nam văn phòng, nữ tiếp tân — sơ mi trắng, quần đen, giữ nguyên trang phục, không logo) và
+chốt kịch bản: **quản lý team ở zone 5 là Prajith, mentor là Ms. Nga**; quầy lễ tân zone 3 là "Lễ tân" (không tên riêng);
+tin nhắn HR (zone 0, zone 4, nhắc việc zone 3–5) vẫn là Ms. Nga; model nam văn phòng cho Minh, Người lạ, Hành khách.
+
+- Model: `van_phong_nam` (1,70 m) và `tiep_tan_nu` (1,60 m) — `prepare_for_mixamo --tris 25000 --protect-face` → Mixamo →
+  `build_character --tris 6000 --single` (15 animation từ prajith, 22 xương, 0,57 / 0,60 MB) + chân dung. `decimate_protect`:
+  mặt ~2.000, tóc sau gáy 40 % (tóc dài của tiếp tân: thân còn ~1.500 tam giác).
+- Vai: `mentor` → model `nga` (giữ quần xanh than), `manager` → `prajith` (bỏ tint, có chân dung), `le_tan` → `tiep_tan_nu`,
+  `dong_nghiep_2` / `nguoi_la` / `hanh_khach` → `van_phong_nam` (bỏ tint tạm; Minh có chân dung). `speaker_as.hr` → `mentor`;
+  `guidance.phone_from` zone 3–4 → `mentor`. Tên: le_tan Receptionist / Lễ tân, mentor Ms. Nga / Chị Nga, manager Prajith.
+- Lời thoại (en + vi): lễ tân chào mới ("Chị Nga bên Tuyển dụng có dặn chị đón em", bỏ "chị em mình mặc giống nhau"); mentor
+  Ms. Nga xưng "chị" ("Bất ngờ chưa — … giờ chị là mentor của em"), lời nhắn tổng kết ký "— Nga" (khoá i18n `summary.prajith` →
+  `summary.mentor_note`); Prajith quản lý xưng "anh", góp ý ở mini-game Sắp xếp ưu tiên. Đổi theo: gợi ý H, nhắc việc,
+  nhiệm vụ, phần thưởng, ô giá trị, lời nhắc bàn làm việc. Id nhiệm vụ (`z5_prajith`, `meet_prajith`…) giữ nguyên (bản lưu cũ).
+  Tài liệu: `docs/GDD.md` (bảng nhân vật, zone 3, zone 5), `docs/dialogue_nga.md` viết lại (zone 3 chỉ còn tin nhắn, thêm zone 5).
+- Đo: test:data; smoke `--look intern_nam` (cả lượt điện thoại + mạng / bản lưu cũ); viewer so 4 vai (lễ tân, Ms. Nga, Prajith,
+  Minh). Chưa deploy gh-pages.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

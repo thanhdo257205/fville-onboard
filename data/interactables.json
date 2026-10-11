@@ -219,8 +219,8 @@
       "area": "TRIGGER_quay_le_tan",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to Ms. Nga",
-        "vi": "Nói chuyện với chị Nga"
+        "en": "Talk to the receptionist",
+        "vi": "Nói chuyện với chị lễ tân"
       },
       "action": "dialogue:le_tan_main"
     },
@@ -316,19 +316,19 @@
       "node": "NPC_mentor",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to Prajith",
-        "vi": "Nói chuyện với anh Prajith"
+        "en": "Talk to Ms. Nga",
+        "vi": "Nói chuyện với chị Nga"
       },
       "action": "dialogue:mentor_main",
-      "_ly_do": "GDD zone 5: Gặp Prajith — 4 câu định hướng nghề nghiệp (minigames.career_compass) → La bàn nghề nghiệp; Kết nối +5."
+      "_ly_do": "GDD zone 5: Gặp mentor (Ms. Nga) — 4 câu định hướng nghề nghiệp (minigames.career_compass) → La bàn nghề nghiệp; Kết nối +5."
     },
     {
       "zone": "zone_05",
       "node": "NPC_manager",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the manager",
-        "vi": "Nói chuyện với chị quản lý"
+        "en": "Talk to Prajith",
+        "vi": "Nói chuyện với anh Prajith"
       },
       "action": "dialogue:manager_main",
       "requires": {
@@ -336,15 +336,15 @@
           "z5_prajith"
         ]
       },
-      "_ly_do": "GDD zone 5: gặp Prajith rồi mới tới Manager — mục tiêu team [DRAFT] + mini-game Sắp xếp ưu tiên (minigames.priorities), nhiệm vụ đầu tiên, rồi màn mờ ăn trưa (hiệu ứng time_skip)."
+      "_ly_do": "GDD zone 5: gặp mentor (Ms. Nga) rồi mới tới quản lý (Prajith) — mục tiêu team [DRAFT] + mini-game Sắp xếp ưu tiên (minigames.priorities), nhiệm vụ đầu tiên, rồi màn mờ ăn trưa (hiệu ứng time_skip)."
     },
     {
       "zone": "zone_05",
       "node": "NPC_manager",
       "radius": 2.2,
       "prompt": {
-        "en": "Talk to the manager",
-        "vi": "Nói chuyện với chị quản lý"
+        "en": "Talk to Prajith",
+        "vi": "Nói chuyện với anh Prajith"
       },
       "action": "dialogue:manager_wait",
       "hide_if": {
@@ -352,7 +352,7 @@
           "z5_prajith"
         ]
       },
-      "_ly_do": "Chưa gặp Prajith: Manager nhắc gặp Prajith trước."
+      "_ly_do": "Chưa gặp mentor: quản lý (Prajith) nhắc gặp chị Nga trước."
     },
     {
       "zone": "zone_05",
@@ -1166,8 +1166,8 @@
         "vi": "La bàn nghề nghiệp"
       },
       "line": {
-        "en": "Four quick questions from Prajith — there are no right or wrong answers. Click an answer or press 1 or 2.",
-        "vi": "Bốn câu hỏi nhanh của anh Prajith — không có câu trả lời đúng hay sai. Bấm chọn câu trả lời hoặc nhấn phím 1, 2."
+        "en": "Four quick questions from Ms. Nga — there are no right or wrong answers. Click an answer or press 1 or 2.",
+        "vi": "Bốn câu hỏi nhanh của chị Nga — không có câu trả lời đúng hay sai. Bấm chọn câu trả lời hoặc nhấn phím 1, 2."
       },
       "questions": [
         {
@@ -1380,8 +1380,8 @@
         "vi": "La bàn nghề nghiệp của bạn"
       },
       "card_note": {
-        "en": "Saved in My FPT → Bag. Prajith will go through it with you again in a month.",
-        "vi": "Đã lưu trong My FPT → Túi đồ. Một tháng nữa anh Prajith sẽ cùng bạn xem lại."
+        "en": "Saved in My FPT → Bag. Ms. Nga will go through it with you again in a month.",
+        "vi": "Đã lưu trong My FPT → Túi đồ. Một tháng nữa chị Nga sẽ cùng bạn xem lại."
       },
       "done": {
         "en": "Career Compass saved!",
@@ -1393,26 +1393,26 @@
       },
       "messages": {
         "builder": {
-          "en": "{player}, you light up when you're building something. Pick one small thing next week and take it all the way to done — I'll be right behind you. — Prajith",
-          "vi": "{player} này, em hào hứng hẳn lên mỗi khi được tự tay làm ra thứ gì đó. Tuần sau em chọn một việc nhỏ và làm tới nơi tới chốn nhé — anh sẽ hỗ trợ em. — Prajith"
+          "en": "{player}, you light up when you're building something. Pick one small thing next week and take it all the way to done — I'll be right behind you. — Nga",
+          "vi": "{player} này, em hào hứng hẳn lên mỗi khi được tự tay làm ra thứ gì đó. Tuần sau em chọn một việc nhỏ và làm tới nơi tới chốn nhé — chị sẽ hỗ trợ em. — Nga"
         },
         "solver": {
-          "en": "{player}, you like getting to the bottom of things — that's a superpower here. Bring me your trickiest question next week! — Prajith",
-          "vi": "{player} này, em thích truy đến tận gốc vấn đề — ở team mình, đó là siêu năng lực đấy. Tuần sau mang câu hỏi hóc búa nhất tới hỏi anh nhé! — Prajith"
+          "en": "{player}, you like getting to the bottom of things — that's a superpower here. Bring me your trickiest question next week! — Nga",
+          "vi": "{player} này, em thích truy đến tận gốc vấn đề — ở team mình, đó là siêu năng lực đấy. Tuần sau mang câu hỏi hóc búa nhất tới hỏi chị nhé! — Nga"
         },
         "people": {
-          "en": "{player}, you think best with others around you. Don't be shy in meetings — your questions will help the whole team. — Prajith",
-          "vi": "{player} này, em làm việc tốt nhất khi có mọi người cùng bàn bạc. Đừng ngại lên tiếng trong các buổi họp — câu hỏi của em sẽ giúp cả team. — Prajith"
+          "en": "{player}, you think best with others around you. Don't be shy in meetings — your questions will help the whole team. — Nga",
+          "vi": "{player} này, em làm việc tốt nhất khi có mọi người cùng bàn bạc. Đừng ngại lên tiếng trong các buổi họp — câu hỏi của em sẽ giúp cả team. — Nga"
         },
         "explorer": {
-          "en": "{player}, you learn by trying. Keep experimenting, and share what you find with the team — we'll all learn from it. — Prajith",
-          "vi": "{player} này, em học qua việc làm thử. Cứ thử nghiệm tiếp, rồi chia sẻ điều em tìm ra với team — ai cũng sẽ học được từ đó. — Prajith"
+          "en": "{player}, you learn by trying. Keep experimenting, and share what you find with the team — we'll all learn from it. — Nga",
+          "vi": "{player} này, em học qua việc làm thử. Cứ thử nghiệm tiếp, rồi chia sẻ điều em tìm ra với team — ai cũng sẽ học được từ đó. — Nga"
         }
       },
       "result": {
         "reward": "la_ban_nghe_nghiep"
       },
-      "_ly_do": "GDD zone 5: 4 câu không đúng / sai; mỗi phương án nghiêng về 1 xu hướng (builder, solver, people, explorer). Xu hướng chính = nhiều nhất (bằng nhau → câu trả lời sớm hơn). Thẻ = vị trí intern × xu hướng (directions); lời nhắn của Prajith ở màn tổng kết theo xu hướng (messages)."
+      "_ly_do": "GDD zone 5: 4 câu không đúng / sai; mỗi phương án nghiêng về 1 xu hướng (builder, solver, people, explorer). Xu hướng chính = nhiều nhất (bằng nhau → câu trả lời sớm hơn). Thẻ = vị trí intern × xu hướng (directions); lời nhắn của mentor (Ms. Nga) ở màn tổng kết theo xu hướng (messages)."
     },
     "priorities": {
       "kind": "priorities",
@@ -1492,12 +1492,12 @@
         "vi": "Chưa gấp"
       },
       "feedback_first": {
-        "en": "Manager: \"Check the tags — one of these is due today. That one should come first.\"",
-        "vi": "Chị quản lý: \"Em xem các nhãn nhé — có một việc hạn hôm nay. Việc đó phải làm trước.\""
+        "en": "Prajith: \"Check the tags — one of these is due today. That one should come first.\"",
+        "vi": "Anh Prajith: \"Em xem các nhãn nhé — có một việc hạn hôm nay. Việc đó phải làm trước.\""
       },
       "feedback_last": {
-        "en": "Manager: \"The sports club is fun, but it can wait until you've settled in — put it at the bottom.\"",
-        "vi": "Chị quản lý: \"Câu lạc bộ thể thao vui đấy, nhưng đợi em quen việc rồi hẵng tính — để xuống cuối nhé.\""
+        "en": "Prajith: \"The sports club is fun, but it can wait until you've settled in — put it at the bottom.\"",
+        "vi": "Anh Prajith: \"Câu lạc bộ thể thao vui đấy, nhưng đợi em quen việc rồi hẵng tính — để xuống cuối nhé.\""
       },
       "retry": {
         "en": "You can reorder once more, then press Check.",

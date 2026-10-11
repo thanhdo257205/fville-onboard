@@ -1,6 +1,6 @@
 // Màn tổng kết (GDD mục Kết thúc và màn tổng kết) — thẻ đứng: thành tựu cuối đứng đầu ("ACHIEVEMENT UNLOCKED: Welcome to
 // the F-Ville Family"), ảnh thẻ (nhân vật mặc áo cam) + huy hiệu đã nhận + ảnh check-in, danh hiệu chính / phụ, Hiểu biết,
-// Kết nối, hạt lúa, 6 ô giá trị (ô trống kèm gợi ý ngắn), tiến độ 4 Act, lời nhắn của Prajith (theo La bàn nghề nghiệp).
+// Kết nối, hạt lúa, 6 ô giá trị (ô trống kèm gợi ý ngắn), tiến độ 4 Act, lời nhắn của mentor — Ms. Nga (theo La bàn nghề nghiệp).
 // Nút: Close (Esc, chơi tiếp), Download card (PNG — vẽ lại thẻ bằng canvas), Play again.
 // Mở bằng Game.finishGame() sau cảnh kết (hiệu ứng "finish" ở bàn làm việc zone 5; __game.finish() khi thử).
 import { t } from "../i18n.js";
@@ -55,7 +55,7 @@ export class Summary {
         ${d.subtitles.length ? `<ul>${d.subtitles.map((x) => `<li><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></li>`).join("")}</ul>` : ""}</div>` : ""}
       <div class="stats">${stat("hieu_biet")}${stat("ket_noi")}<p>🌾 ${esc(t("summary.grains", { n: d.grains, total: d.grainsTotal }))}</p></div>
       <div class="values">${d.values.map((v) => `<span class="${v.lit ? "lit" : ""}"><b>${esc(v.name)}</b>${v.lit ? "" : `<small>${esc(v.hint)}</small>`}</span>`).join("")}</div>
-      ${d.note ? `<div class="note"><b>${t("summary.prajith")}</b><p>${esc(d.note)}</p></div>` : ""}
+      ${d.note ? `<div class="note"><b>${t("summary.mentor_note")}</b><p>${esc(d.note)}</p></div>` : ""}
       <ol class="acts">${d.acts.map((a) => `<li class="${a.done === a.total ? "done" : ""}">${esc(t("acts.label", { n: a.number }))} · ${esc(a.title)}<em>${a.done}/${a.total}</em></li>`).join("")}</ol>
       <p class="dl-msg" aria-live="polite" hidden></p>
       <footer><button class="ghost" data-a="close">${t("summary.close")} <kbd>Esc</kbd></button>
@@ -142,11 +142,11 @@ export class Summary {
       g.fillStyle = v.lit ? "#fff" : "#8a8f98"; g.font = font(800, 19); g.textAlign = "center";
       g.fillText(`${v.lit ? "✓ " : ""}${v.name}`, x + 100, yy + 29); g.textAlign = "left";
     });
-    // lời nhắn của Prajith
+    // lời nhắn của mentor (Ms. Nga)
     y = 780;
     if (d.note) {
       round(40, y, 640, 150, 18); g.fillStyle = "#fff"; g.fill();
-      g.fillStyle = "#c4520f"; g.font = font(800, 20); g.fillText(t("summary.prajith"), 62, y + 34);
+      g.fillStyle = "#c4520f"; g.font = font(800, 20); g.fillText(t("summary.mentor_note"), 62, y + 34);
       g.fillStyle = "#1d1f23"; g.font = font(700, 21); wrap(d.note, 62, y + 66, 596, 28, 3);
     }
     // ảnh check-in nhỏ + 4 Act

@@ -34,7 +34,7 @@
     },
     {
       "id": "wisdom", "vi": "Sáng suốt", "name": { "en": "Wisdom", "vi": "Sáng suốt" }, "active": true, "zone": "zone_05", "draft": true,
-      "how": { "en": "Put your first-week tasks in a sensible order with the manager.", "vi": "Sắp xếp việc tuần đầu cho hợp lý cùng chị quản lý." },
+      "how": { "en": "Put your first-week tasks in a sensible order with Prajith, your manager.", "vi": "Sắp xếp việc tuần đầu cho hợp lý cùng anh Prajith." },
       "hint": { "en": "Deadlines first, nice-to-haves last.", "vi": "Việc có deadline làm trước, việc không bắt buộc để sau." }
     }
   ]
