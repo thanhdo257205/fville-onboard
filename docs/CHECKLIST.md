@@ -424,6 +424,9 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [x] Kiểm thử: `test:data` (file thiếu / thừa, chỉ nhận gói CC0, mọi file có trong `audio_credits.md`, tên trong
     `sound.play("…")` / `sfx` / `zones.json` có thật, dung lượng); `test:smoke` (AudioContext chạy, file tải được, tiếng nền đúng
     zone, đi bộ có tiếng bước chân, các tiếng chính đã phát qua zone 0 → 4, console sạch)
+  - [x] Tiếng bước chân khớp nhịp chân khi đi / chạy (11/10/2026, nhánh `fix/footstep-sync` a9b3d1b): trước đếm theo quãng đường
+    (mỗi ~0,8–1,3 m một tiếng) nên lệch lúc chân chạm đất; nay theo xương cổ chân của animation — chân nhấc lên rồi chạm lại = 1
+    tiếng, mọi ngoại hình, cả Tú; smoke zone_02: đứng yên 0 tiếng, đi / chạy mỗi tiếng cách ~nửa chu kỳ animation
   - [ ] Người trong team nghe thử, chỉnh âm lượng / đổi file nghe chưa hợp (chọn file theo số đo, chưa ai nghe bằng tai)
   - [ ] Nhạc nền theo zone / thời điểm (sáng sớm ở điểm đón, nhộn nhịp ở campus, nhẹ ở văn phòng, ấm ở cảnh kết lúc hoàng hôn)
     — nguồn CC0, khai ở `data/sounds.json` như hiệu ứng; chuyển bài êm khi đổi zone, nhỏ lại khi hội thoại, thanh âm lượng nhạc
