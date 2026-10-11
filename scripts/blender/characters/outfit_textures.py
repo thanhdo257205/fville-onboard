@@ -176,8 +176,12 @@ def arm_cut(M, H):
         big = ids[cnt > 0.003 * M.n]
         if len(big) >= 3:
             body = ids[cnt.argmax()]
-            arms = sorted([i for i in big if i != body], key=lambda i: -abs(M.co[lab == i, 0].mean()))[:2]
-            return float(zc), lab, arms
+            # cánh tay phải nằm lệch hẳn sang 2 bên (|x| tb > 0,08 × cao): dây rút mũ hoodie (intern_nu_buitoc) cũng là
+            # mảng rời dưới nách nhưng nằm giữa ngực — tay áo phồng còn dính thân thì hạ mặt cắt tiếp
+            arms = sorted([i for i in big if i != body and abs(M.co[lab == i, 0].mean()) > 0.08 * H],
+                          key=lambda i: -abs(M.co[lab == i, 0].mean()))[:2]
+            if len(arms) == 2 and M.co[lab == arms[0], 0].mean() * M.co[lab == arms[1], 0].mean() < 0:
+                return float(zc), lab, arms
     raise RuntimeError("không tìm được mặt cắt tách 2 cánh tay khỏi thân (tư thế không phải chữ A?)")
 
 
@@ -387,6 +391,10 @@ def recolor_shirt(px, lab, covered, ref, target, near3d, ring=3):
     sl = S[None, None] * (lum / (S @ LUMA))[..., None]
     v = sl - g
     a_in = np.clip(((rgb - g) * v).sum(-1) / np.maximum((v * v).sum(-1), 1e-9), 0, 1)
+    if S.max() - S.min() < 0.06:
+        # áo gần trung tính (trắng / xám / đen, vd hoodie trắng intern_nu_buitoc): không có "hướng màu áo" để đo → đổi
+        # cả mặt nạ áo (nếp vải vẫn theo độ sáng)
+        a_in = np.ones_like(lum)
     shirt = lab == SHIRT
     near = np.zeros_like(shirt)
     for dy in range(-ring, ring + 1):

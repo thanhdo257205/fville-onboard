@@ -879,6 +879,24 @@ def face_check(arm, mesh, idle, tag=None):
     print(f"[render] mặt: {p}")
 
 
+def tee_check(arm, mesh, idle):
+    """Ảnh kiểm tra morph áo phông (shape key ao_cam = 1) ở frame đầu idle: trước, sau, nghiêng, cận vai sau."""
+    key = mesh.data.shape_keys.key_blocks["ao_cam"]
+    cam = preview_setup()
+    set_action(arm, idle)
+    bpy.context.scene.frame_set(frames_of(idle)[0])
+    out = os.path.join(ROOT, "renders", "characters", "check", f"{CID}_tee")
+    for v, tag in ((1.0, "tee"), (0.0, "hoodie")):
+        key.value = v
+        for name, d in (("front", (0, -1, 0.05)), ("back", (0, 1, 0.1)), ("side", (1, 0.15, 0.05))):
+            shoot(cam, f"{out}_{tag}_{name}.png", (0, 0, HEIGHT * 0.62), d, HEIGHT * 0.8, res=(500, 640))
+    key.value = 1.0
+    shoot(cam, f"{out}_tee_shoulder.png", (0, 0, HEIGHT * 0.76), (0.6, 1, 0.5), 0.5, res=(600, 600))
+    key.value = 0.0
+    preview_teardown()
+    print(f"[áo phông] ảnh: {out}_*.png")
+
+
 def main():
     cfg = dict(ACTIONS)
     override = os.path.join(MIX_DIR, "actions.json")
@@ -909,12 +927,21 @@ def main():
     idle.use_fake_user = True
     dz = ground_at_first_idle_frame(arm, mesh, idle)
     setup_material(mesh)
+    tee = None
+    if "tee_morph" in cfg:        # hoodie gốc → áo phông cho bộ ao_cam (morph + tô da): tee_morph.py
+        import tee_morph
+        tee = tee_morph.prepare(arm, mesh, cfg["tee_morph"], CHAR_DIR, CID)
+        report["tee"] = tee["info"]
     if TRIS:
         face_check(arm, mesh, idle, f"_{tri_count(mesh) // 1000}k")      # trước khi giảm, để so
         report["decimate"] = decimate_skinned(mesh, TRIS, strength=cfg.get("protect_strength", 6.0),
                                               opts=dict(cfg.get("decimate_protect", {}), _dz=dz) if cfg.get("decimate_protect") else None)
     report["influences_before"], report["influences_after"] = limit_weights(mesh)
     report["removed_bones"] = remove_unused_bones(arm, mesh)
+    if tee:
+        import tee_morph
+        report["tee"].update(tee_morph.apply(mesh, tee))
+        tee_check(arm, mesh, idle)
     report["bones"] = len(arm.data.bones)
     if DECIMATE_ONLY:
         face_check(arm, mesh, idle, f"_{TRIS // 1000 if TRIS else 'full'}k_thu")

@@ -14,7 +14,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | --- | --- |
 | `scripts/blender/zone_00.py` … `zone_05.py` | Dựng từng zone (chạy trong Blender không giao diện) |
 | `scripts/blender/lib/` | Thư viện dựng chung: kit modular, chất liệu, bảng màu, đồ vật, nội thất, phố, marker đối tượng game, lightmap, render |
-| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục; `--glasses`: vùng kính), `render_portrait.py`, `texture_fix.py`, `char_render.py`, `char_data.py` (ghi `models.<id>` vào `data/characters.json` mà không định dạng lại cả file) |
+| `scripts/blender/characters/` | Pipeline nhân vật: `prepare_for_mixamo.py`, `build_character.py`, `apply_chest_logo.py`, `outfit_textures.py` (mặt nạ vùng + bộ texture trang phục; `--glasses`: vùng kính), `render_portrait.py`, `texture_fix.py`, `char_render.py`, `char_data.py` (ghi `models.<id>` vào `data/characters.json` mà không định dạng lại cả file), `tee_morph.py` (áo gốc là hoodie → bộ Áo Cam là áo phông: morph target `ao_cam` + tô da tay, `build_character.py` gọi khi `mixamo/actions.json` có `tee_morph`) |
 | `scripts/blender/lib/cuder.py`, `scripts/blender/props/cuder_preview.py` | Tượng Cuder zone 2 từ mô hình Meshy (zone_02.py gọi khi build); xem trước riêng tượng |
 | `scripts/blender/lib/pool_table.py` | Bàn bi-a zone 5 từ mô hình Sketchfab (zone_05.py gọi khi build): bỏ đèn treo, gộp texture, giảm lưới, đo mặt chơi / lỗ / bi → `data/pool.json` |
 | `scripts/blender/lib/bus.py`, `lib/trees.py`, `lib/bamboo.py` | Xe bus (zone 0–1), cây ngoài trời (zone 0–3), bụi tre (zone 2) từ mô hình Sketchfab (zone gọi khi build): xe đổi sơn trắng–đỏ, tách cánh cửa khách, đặt cửa trùng chỗ cửa cũ (`props.BUS_DOOR_X`); cây giữ chỗ / chiều cao của `kit.tree` (`kit.TREES`); tre dựng lại low-poly. Bản sao dùng chung lưới, custom property `batch` → game gộp lượt vẽ (`world/zone.js batchInstances`) |
@@ -231,7 +231,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   `?gender=nu` hoặc `__game.setGender("nu")`; ngoại hình khác cùng giới tính: `roles.player.looks`, bản lưu `player.look`, dev
   `?look=intern_nam_kinh` hoặc `__game.setLook(...)`; màn tạo nhân vật `game/src/ui/creator.js` chọn ngoại hình theo
   `character_creation.looks`); bộ đồ đổi bằng texture (`dau_ngay` → texture trong GLB khi nhận Áo Cam), chân dung theo bộ đồ
-  (`models.<id>.outfit_portraits`). **Tú khác giới với người chơi** (`roles.tu.model_by_gender`: nam → `intern_nu`, nữ →
+  (`models.<id>.outfit_portraits`); bộ đồ khác hình khối (vd `intern_nu_buitoc`: hoodie ngày đầu → áo phông cam) dùng morph target trùng tên bộ trong GLB, game bật theo bộ đang mặc (`Character.outfitMorph`; smoke kiểm tra `__game.model.morph`). **Tú khác giới với người chơi** (`roles.tu.model_by_gender`: nam → `intern_nu`, nữ →
   `intern_nam_kinh`; áo ngày đầu `outfit.texture_by_model`); mọi chữ nói về Tú dùng `{tu_he}` `{tu_his}` `{tu_him}`
   `{tu_himself}` (`{Tu_he}`… đầu câu), không viết cứng he/his/him — `test:data` kiểm tra. Lời thoại
   nhân vật dựa trên người thật (Ms. Huyền, Ms. Nga, Prajith): tự viết chi tiết cá nhân, giữ nhẹ nhàng, thân thiện, không nói chuyện

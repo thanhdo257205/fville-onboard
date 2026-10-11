@@ -1,0 +1,22 @@
+{
+  "_ghi_chu": "intern_nu_buitoc (người chơi nữ thứ 2 — tóc búi, hoodie trắng, quần jeans): file gốc intern_nu_buitoc_rigged.fbx tải từ Mixamo (tư thế chữ A tĩnh) → idle và 13 animation lấy từ file của prajith (retarget), như huyen, nga. speed_mps: tốc độ chơi như intern_nu. Bộ dau_ngay = hoodie gốc (textures/intern_nu_buitoc_basecolor_dau_ngay.jpg); bộ ao_cam = áo phông cam có logo: texture trong GLB + morph target 'ao_cam' (tee_morph).",
+  "base": [
+    "intern_nu_buitoc_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "fold_missing_bones": true,
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "back_of_head_keep": 0.3,
+    "face_keep_tris": 1800,
+    "face_detail_pct": 0.12
+  },
+  "tee_morph": {},
+  "_tee_ghi_chu": "Hoodie không hợp dán logo → bộ ao_cam là áo phông: tee_morph.py tính hình áo phông (tay áo ngắn, tay trần tô da, mũ trùm xẹp thành lưng áo, dây rút lùi vào ngực) trên lưới đầy đủ rồi chuyển sang lưới 6k thành shape key 'ao_cam'; tham số mặc định ở TEE_DEFAULTS.",
+  "_decimate_ghi_chu": "Bản 6k: vùng đầu ~9.800 tam giác (mặt trước 6.600 do prepare_for_mixamo --protect-face, tóc + búi sau gáy 3.300) — chỉ giảm mặt thì thân, tay, chân còn ~800 tam giác. Lượt 0: phần phẳng mặt trước còn ~1.800, giữ 12% đỉnh nét (mắt, lông mày, miệng); lượt 1: tóc sau gáy còn 30%; lượt 2: giữ đầu, giảm thân."
+}

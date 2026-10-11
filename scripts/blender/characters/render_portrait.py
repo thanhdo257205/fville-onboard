@@ -33,6 +33,12 @@ if OUTFIT:   # thay ảnh màu của chất liệu bằng texture bộ đồ (c�
         for n in (mat.node_tree.nodes if mat.node_tree else []):
             if n.type == "TEX_IMAGE":
                 n.image = img
+# bộ đồ khác hình khối (shape key trùng tên bộ, vd ao_cam = áo phông của intern_nu_buitoc — tee_morph.py): bật key của bộ
+# đang vẽ (không --outfit = bộ trong GLB = ao_cam), tắt key khác
+for ob in bpy.data.objects:
+    if ob.type == "MESH" and ob.data.shape_keys:
+        for kb in ob.data.shape_keys.key_blocks[1:]:
+            kb.value = 1.0 if kb.name == (OUTFIT or "ao_cam") else 0.0
 cam = preview_setup()
 bpy.context.scene.render.film_transparent = True          # nền trong suốt
 bpy.context.scene.render.image_settings.color_mode = "RGBA"
