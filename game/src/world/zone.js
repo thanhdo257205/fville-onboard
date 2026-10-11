@@ -131,6 +131,43 @@ export function applySceneFixes(zone, fixes = {}) {
     out.chairs = { mode: c.mode, drop_m: c.drop_m, meshes, verts, lowest_m: +minY.toFixed(3) };
     zone.chairDrop = c.drop_m;
   }
+  // phòng giả sau cửa / lối sang zone khác (rooms): zone kia nằm ở file GLB khác → nhìn qua cửa kính / lối mở chỉ thấy phông
+  // nền ngoài trời. Mỗi phòng = 1 hộp chỉ vẽ mặt trong (BackSide): đứng ngoài nhìn qua cửa thấy sàn, tường, trần như một khoảng
+  // phòng; mặt hướng về cửa tự ẩn. Màu sàn / trần / tường theo zone bên kia; không va chạm, không viền nét, dọn cùng zone.root
+  if (fixes.rooms?.length) {
+    out.rooms = fixes.rooms.map((r, i) => {
+      const geo = new THREE.BoxGeometry(...r.size);
+      const col = (k) => new THREE.Color(r[k] ?? r.wall);
+      // thứ tự mặt của BoxGeometry: +x, −x, +y (trần), −y (sàn), +z, −z — mỗi mặt 4 đỉnh
+      const faces = ["wall", "wall", "ceiling", "floor", "wall", "wall"].map(col);
+      const colors = new Float32Array(geo.attributes.position.count * 3);
+      for (let v = 0; v < geo.attributes.position.count; v++) faces[Math.floor(v / 4)].toArray(colors, v * 3);
+      geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      const { material } = makeZoneMaterial({ color: new THREE.Color(1, 1, 1), side: THREE.BackSide, opacity: 1, transparent: false,
+        emissive: new THREE.Color(0, 0, 0), emissiveIntensity: 1, userData: { outline: false } });
+      const mesh = new THREE.Mesh(geo, material);
+      mesh.name = `FIX_room_${r.id ?? i}`;
+      mesh.position.set(...r.center);
+      // tấm sàn rộng hơn hộp `pad_m` mỗi phía, thấp hơn đáy hộp 1 mm: sàn zone thường dừng trước mặt cửa → khe ở ngưỡng nhìn
+      // xuống thấy trời; nằm dưới sàn zone nên chỗ có sàn thì bị che, chỉ lấp khe
+      const pad = r.pad_m ?? 0.6;
+      if (pad > 0) {
+        const pg = new THREE.PlaneGeometry(r.size[0] + 2 * pad, r.size[2] + 2 * pad).rotateX(-Math.PI / 2);
+        const fc = col("floor"), pc = new Float32Array(pg.attributes.position.count * 3);
+        for (let v = 0; v < pg.attributes.position.count; v++) fc.toArray(pc, v * 3);
+        pg.setAttribute("color", new THREE.BufferAttribute(pc, 3));
+        const { material: pm } = makeZoneMaterial({ color: new THREE.Color(1, 1, 1), side: THREE.FrontSide, opacity: 1, transparent: false,
+          emissive: new THREE.Color(0, 0, 0), emissiveIntensity: 1, userData: { outline: false } });
+        const plate = new THREE.Mesh(pg, pm);
+        plate.name = `${mesh.name}_san`;
+        plate.position.y = -r.size[1] / 2 - 0.001;
+        mesh.add(plate);
+      }
+      mesh.userData.fix = "room";
+      zone.root.add(mesh);
+      return mesh.name;
+    });
+  }
   zone.fixes = out;
   return out;
 }

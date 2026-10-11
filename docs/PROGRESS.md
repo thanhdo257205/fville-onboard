@@ -1492,6 +1492,22 @@ bộ ngày đầu giữ hoodie, bộ Áo Cam là **áo phông** có logo (hoodie
   trước Áo Cam, áo phông trong game. Chưa deploy gh-pages.
 - Còn thô: vệt mờ chỗ dây rút cũ trên ngực, mép cổ áo sau gáy hơi răng cưa khi nhìn gần, túi trước của hoodie vẫn còn trên áo phông.
 
+### Cửa kính zone 5 nhìn ra trời → phòng giả sau cửa (11/10/2026, nhánh `fix/door-see-through` 2867b81)
+
+Người dùng gửi ảnh: cửa kính vào văn phòng zone 5 (đầu đọc thẻ bên phải) nhìn ra ngoài thấy cỏ, đồi, trời. Nguyên nhân: bên kia
+cửa là sảnh tầng trên của zone 4 — file GLB khác, không tải cùng zone 5 → sau cửa không có gì, chỉ còn phông nền (mặt đất xa, đồi,
+trời của `render/sky.js` làm chỗ hở này lộ rõ hơn). Dò bằng `__game.gaps()`: zone 5 ~260 tia nhìn ngang lọt ra ở ô cửa (x 0,2–0,3;
+z −1,6 … 1,5); zone 3 lối sang zone 4 ở đầu tây sảnh cũng lọt (x −14, z −23 … −20); zone 4 không có.
+
+- Script Blender đã sửa 2 chỗ này từ trước (`fix/scene-gaps`), chưa build lại được (thiếu file gốc Sketchfab trên máy làm việc) →
+  vá tạm bằng dữ liệu, không sửa GLB: `data/scene_fixes.json` → `<zone>.rooms` — hộp chỉ vẽ mặt trong (BackSide) đặt sau cửa,
+  màu sàn / tường / trần theo zone 4 (sảnh FSA: sàn gạch xanh xám, tường xám, trần be; hành lang đầu đông: sàn be, trần tối),
+  rộng hơn ô cửa (tường zone che phần thừa) + tấm sàn rộng hơn hộp 0,6 m, thấp hơn sàn zone (sàn zone dừng trước mặt cửa → khe ở
+  ngưỡng nhìn xuống thấy trời). Không va chạm, không viền nét, dọn cùng zone (`game/src/world/zone.js applySceneFixes`).
+- Kiểm thử: `test:data` mục "phòng giả sau cửa"; smoke: zone_04, zone_05 không có tia nhìn ngang ra ngoài (`FLAT_FREE`), zone_03
+  còn 308 tia đều ở cửa trước sảnh mở ra sân (đúng). Đo: test:data, smoke `--zone 3`, `--zone 5`, test:quick 53/53.
+- Build lại zone_03, zone_05 thì bỏ 2 mục `rooms` này (ghi trong CHECKLIST).
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

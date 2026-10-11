@@ -575,10 +575,15 @@ async function runLook(browser, base, look) {
       // số. GAP_FREE: zone đã build lại sau khi sửa script; zone_03, zone_05 thêm vào khi build lại trên máy có file gốc Sketchfab
       if (/^zone_0[345]$/.test(zone) && look === looks[0]) {
         const GAP_FREE = ["zone_04"];
-        const gp = await ev(() => { const r = __game.gaps(); const n = (k) => r.gaps.filter((g) => g.kind === k).reduce((a, g) => a + g.rays, 0); return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), top: r.gaps.slice(0, 5) }; });
-        const strict = GAP_FREE.includes(zone);
-        await check(gp.spots > 50 && (!strict || gp.down === 0),
-          `${zone}: chỗ hở mô hình — ${gp.spots} chỗ đứng, ${gp.rays} tia: ${gp.down} tia nhìn xuống lọt ra trời, ${gp.flat} tia ngang ra ngoài${strict ? "" : " (chưa build lại, chỉ ghi số)"}`,
+        // FLAT_FREE: zone không có cửa nào mở ra ngoài trời — tia ngang lọt ra = nhìn qua cửa sang zone khác thấy phông nền
+        // (thiếu phòng giả scene_fixes → rooms; zone_05: cửa kính vào văn phòng, trước đây ~260 tia)
+        const FLAT_FREE = ["zone_04", "zone_05"];
+        const gp = await ev(() => { const r = __game.gaps(); const n = (k) => r.gaps.filter((g) => g.kind === k).reduce((a, g) => a + g.rays, 0);
+          const rooms = []; __game._game.zone.root.traverse((o) => { if (o.userData.fix === "room") rooms.push(o.name); });
+          return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), rooms, top: r.gaps.slice(0, 5) }; });
+        const strict = GAP_FREE.includes(zone), flatFree = FLAT_FREE.includes(zone);
+        await check(gp.spots > 50 && (!strict || gp.down === 0) && (!flatFree || gp.flat === 0),
+          `${zone}: chỗ hở mô hình — ${gp.spots} chỗ đứng, ${gp.rays} tia: ${gp.down} tia nhìn xuống lọt ra trời, ${gp.flat} tia ngang ra ngoài${strict ? "" : " (chưa build lại, chỉ ghi số)"}${gp.rooms.length ? `; phòng giả sau cửa: ${gp.rooms.join(", ")}` : ""}`,
           JSON.stringify(gp));
       }
       // app My FPT → tab Bản đồ (đã có app từ zone 1): ảnh zone nhìn từ trên tải được, dấu bạn + mục tiêu nằm trong ảnh,

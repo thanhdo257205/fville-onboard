@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục; 'see_through' ở gốc = cấu hình chung. doors: cửa mở được (cánh = node có custom property hinge, xoay quanh bản lề theo góc độ; col = hộp COL_ bỏ khi mở; open_if = điều kiện như quests.json).",
+  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục; 'see_through' ở gốc = cấu hình chung. doors: cửa mở được (cánh = node có custom property hinge, xoay quanh bản lề theo góc độ; col = hộp COL_ bỏ khi mở; open_if = điều kiện như quests.json). rooms: phòng giả sau cửa / lối sang zone khác (zone kia ở file GLB khác → nhìn qua cửa chỉ thấy trời, cỏ, đồi của phông nền): hộp chỉ vẽ mặt trong (center, size — toạ độ glTF; màu floor / wall / ceiling theo zone bên kia), không va chạm, không viền nét (game/src/world/zone.js applySceneFixes).",
   "see_through": {
     "_ghi_chu": "Cây cối không che người chơi (game/src/render/seethrough.js): cây nằm giữa camera và người chơi, hoặc bọc lấy / quẹt sát camera, mờ dần bằng dither rồi hiện lại khi hết che. meshes = regex tên node có cây (mesh gộp chung, code chia thành từng cây lúc tải zone). rays = [lệch ngang m, cao m] các điểm trên người chơi để dò che khuất từ camera. fade_s = thời gian mờ/hiện, hold_s = giữ mờ thêm sau khi hết che (khỏi nhấp nháy), max = mức mờ tối đa (1 = ẩn hẳn), near_m = lá cách camera dưới mức này thì mờ, min_height_m = cụm cây thấp hơn (hàng rào, bụi, cỏ — zone_01 có hàng rào dài 100 m cao 0,9 m) không bao giờ mờ. Zone có mesh gộp lẫn đồ khác: <zone>.see_through.add = [{ mesh, boxes }] (chỉ lấy mảnh có tâm trong hộp, toạ độ glTF).",
     "meshes": "^ENV_(vegetation|cay_)",
@@ -11,6 +11,10 @@
     "min_height_m": 1.2
   },
   "zone_03": {
+    "rooms": [
+      { "id": "hanh_lang_zone_04", "center": [-17.55, 1.695, -21.5], "size": [7, 3.4, 5], "floor": "#c9c1b0", "wall": "#8f8b84", "ceiling": "#2a2a2a",
+        "_ly_do": "Lối sang zone 4 ở đầu tây sảnh (TRIGGER_zone_04_enter x −13,2; __game.gaps: tia nhìn ngang lọt ra trời ở x −14, z −23 … −20). Bên kia là hành lang đầu đông zone 4 (sàn be, tường xám, trần tối). Hộp từ x −14,05 (sát lối đi, không hở khe ở ngưỡng), sàn thấp hơn sàn zone 5 mm, rộng hơn lối đi (tường zone che phần thừa). TẠM: script Blender đã sửa chỗ này (docs/CHECKLIST.md → 'mô hình bối cảnh bị hở'), build lại zone thì bỏ mục này." }
+    ],
     "see_through": {
       "add": [
         {
@@ -43,6 +47,10 @@
     ]
   },
   "zone_05": {
+    "rooms": [
+      { "id": "sanh_fsa_zone_04", "center": [3.25, 1.695, 0], "size": [6, 3.4, 6], "floor": "#8f9c7c", "wall": "#8e8a82", "ceiling": "#ece6d6",
+        "_ly_do": "Cửa kính vào văn phòng (COL_cua_fsa x 0,1; ô cửa z −1,6 … 1,5 — __game.gaps: ~260 tia nhìn ngang lọt ra trời ở x 0,2–0,3). Bên kia là sảnh tầng trên zone 4 trước cửa phòng FSA (sàn gạch xanh xám, tường xám, trần be). Hộp từ x 0,25 (sát ô cửa, không hở khe ở ngưỡng), sàn thấp hơn sàn zone 5 mm, rộng hơn ô cửa (tường zone che phần thừa). TẠM: script Blender đã sửa chỗ này (docs/CHECKLIST.md → 'mô hình bối cảnh bị hở'), build lại zone thì bỏ mục này." }
+    ],
     "chairs": {
       "_ghi_chu": "Ghế văn phòng nằm chung mesh với bàn (ENV_ban_XX dùng chung ENV_ban_mau/_cay; bàn intern ban_lam_viec_mesh). Đỉnh ghế = phần mesh có z cục bộ (glTF) > 0.69 m (sau mép bàn). Mặt ghế trong GLB cao 0.51 m, animation ngồi cần 0.376 m. mode 'whole' = hạ cả ghế; 'seat' = chỉ hạ phần trên seat_from_m (mặt, lưng ghế) và rút ngắn trụ, đế giữ trên sàn.",
       "nodes": "^(ENV_ban_\\d+|ban_lam_viec_mesh)$",

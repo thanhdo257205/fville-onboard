@@ -99,7 +99,12 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
       tây sảnh, tường + cửa cuối hành lang sang zone_04. zone_05 — đoạn sàn / tường / trần phía sau cửa FSA (nhìn ra thấy trời).
   - [ ] Build lại zone_03, zone_05 bản Thấp trên máy có file gốc Sketchfab (cây; bàn bi-a + máy tính — máy làm việc hiện tại
     không có; đã dựng thử bản thiếu các mô hình đó: 0 tia nhìn xuống lọt ra trời ở cả hai zone), rồi thêm 2 zone vào
-    `GAP_FREE` trong `scripts/tests/smoke.mjs`; build zone_05 ghi lại `data/pool.json` (phải giống bản cũ)
+    `GAP_FREE` trong `scripts/tests/smoke.mjs`; build zone_05 ghi lại `data/pool.json` (phải giống bản cũ); bỏ 2 phòng giả
+    tạm trong `data/scene_fixes.json` → `zone_03.rooms`, `zone_05.rooms` (mô hình mới đã có sàn / tường / trần ở đó)
+  - [x] Vá tạm khi chưa build lại (11/10/2026, nhánh `fix/door-see-through` 2867b81; người dùng gửi ảnh): cửa kính vào văn phòng
+    zone 5 nhìn ra thấy cỏ, đồi, trời (zone 4 ở file GLB khác; `__game.gaps`: ~260 tia nhìn ngang lọt ra), lối sang zone 4 ở đầu
+    tây sảnh zone 3 cũng vậy → phòng giả sau cửa (`scene_fixes.json` → `rooms`: hộp chỉ vẽ mặt trong, màu sàn / tường / trần
+    theo zone 4, tấm sàn lấp khe ở ngưỡng); smoke: zone_05 0 tia nhìn ngang ra ngoài, zone_03 hết tia ở lối tây
   - [x] Rà các zone còn lại tìm chỗ hở tương tự bằng công cụ tự dò (chạy trong game / viewer, không cần Blender): từ các điểm
     đi được bắn tia ngang và chéo xuống, tia trong nhà mà không chạm lưới nào (lọt ra trời) → ghi toạ độ → danh sách chỗ hở
     — `__game.gaps()` (`game/src/world/gaps.js`); trước khi sửa: zone_03 399, zone_04 118, zone_05 304 tia nhìn xuống lọt ra
