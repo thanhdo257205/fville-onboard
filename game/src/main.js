@@ -25,6 +25,8 @@ import { MyFptApp } from "./ui/app.js";
 import { Summary } from "./ui/summary.js";
 import { EmotePanel } from "./ui/emotes.js";
 import { ChatPanel } from "./ui/chat.js";
+import { TouchControls } from "./ui/touch.js";
+import { device } from "./core/device.js";
 import { Net } from "./net/net.js";
 import { confirmBox } from "./ui/panels.js";
 import { characterCreator } from "./ui/creator.js";
@@ -128,6 +130,8 @@ async function boot() {
   const netUrl = params.get("net");
   if (netUrl === "off") netCfg.url = "";
   else if (netUrl && testParams) netCfg.url = netUrl;
+  // điện thoại / máy tính bảng (core/device.js): hiện ít người chơi khác hơn (mỗi người một nhân vật có xương — tốn GPU)
+  if (device.phone) netCfg.max_visible = Math.min(netCfg.max_visible ?? 10, 6);
   const net = new Net({ game, cfg: { ...netCfg, chat: chatCfg }, settings });
   game.net = net;
   const emotes = net.enabled ? new EmotePanel(net) : null;
@@ -200,11 +204,12 @@ async function boot() {
   });
   const digit = (i) => () => { if (emotes?.open) emotes.pick(i - 1); else if (i <= 4) ui.dialogue.choose(i - 1); };
   for (let i = 1; i <= 9; i++) { input.on(`Digit${i}`, digit(i)); input.on(`Numpad${i}`, digit(i)); }
-  if (emotes) input.on("KeyT", () => {
-    if (game.mode !== "play" || game.state.phase !== "playing") return;
+  const emote = () => {
+    if (!emotes || game.mode !== "play" || game.state.phase !== "playing") return;
     if (!net.connected) { emotes.hide(); hud.toast(t("net.offline")); return; }
     emotes.toggle();
-  });
+  };
+  if (emotes) input.on("KeyT", emote);
   input.on("Tab", () => game.toggleApp());
   // Esc khi đang khoá con trỏ: trình duyệt tự nhả khoá → mở menu ở onUnlock (bỏ qua phím Esc đi kèm nếu có)
   const pause = () => { if (!menu.open) { menu.show(); game.setMode("menu"); } };
@@ -221,7 +226,7 @@ async function boot() {
   for (const [code, ds, dr] of [["KeyZ", -1, 0], ["KeyX", 1, 0], ["KeyF", 0, 1], ["KeyB", 0, -1]]) {
     input.on(code, () => { if (game.pool?.active) game.pool.nudgeSpin(ds, dr); });
   }
-  input.on("Escape", () => {
+  const escape = () => {
     if (title?.open) return;
     if (chat?.isOpen) return chat.close();
     if (game.cutscene) return game.cutscene.skip();
@@ -234,7 +239,12 @@ async function boot() {
     if (ui.dialogue.open) return;
     menu.toggle();
     game.setMode(menu.open ? "menu" : "play");
-  });
+  };
+  input.on("Escape", escape);
+  // cảm ứng (ui/touch.js — chỉ hiện khi device.touch): cần điều khiển ảo, nút hành động thay E, hàng nút cùng việc với phím
+  const touch = new TouchControls({ game, input, ui, emotes, chat, actions: {
+    interact: () => game.interact(), chat: () => chat?.open(), emote, help: () => game.help(), app: () => game.toggleApp(), menu: escape } });
+  game.touch = touch;
 
   document.getElementById("skip").textContent = t("cutscene.skip");
   addEventListener("resize", () => game.resize(innerWidth, innerHeight));
@@ -254,9 +264,10 @@ async function boot() {
     try { net.update(dt); } catch (e) { if (netErr !== e.message) { netErr = e.message; console.error("[mạng]", e); } }
     if (emotes?.open && game.mode !== "play") emotes.hide();
     chat?.update();
+    touch.update();
     game.render(dt);
     sound.update(dt, game.camera);            // tai nghe ở camera, tiếng nền, tiếng máy xe bus
-    hud.lockHint(input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t(game.pool?.active ? "pool.click_to_aim" : "hud.click_to_look") : null);
+    hud.lockHint(!device.touch && input.lockSupported && input.lookActive && !input.locked && game.state.phase === "playing" ? t(game.pool?.active ? "pool.click_to_aim" : "hud.click_to_look") : null);
     frames++; acc += dt;
     if (acc >= 0.5) {
       loop.fps = frames / acc; frames = 0; acc = 0;

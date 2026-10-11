@@ -1,7 +1,11 @@
 // HUD: màn mờ chuyển zone, thẻ tên zone, dòng mục tiêu, gợi ý phím E, gợi ý điều khiển, thông báo (xếp hàng), màn tải,
 // tin nhắn điện thoại ngắn + thẻ gợi ý phím H (game/guide.js).
+// Cảm ứng (core/device.js → device.touch): dòng hướng dẫn điều khiển đổi sang bản cảm ứng (hud.controls_touch*); chữ "press
+// E" / "nhấn E" trong gợi ý, tin nhắn, thông báo đổi thành cách chạm (touchText); gợi ý E hiện thành nút lớn (ui/touch.js đọc
+// hud.promptText).
 import { t } from "../i18n.js";
 import { sound } from "../core/sound.js";
+import { device, touchText } from "../core/device.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -125,8 +129,10 @@ export const hud = {
     el.style.opacity = alpha ? String(alpha) : "";
     return new Promise((r) => setTimeout(r, ms));
   },
+  promptText: null,
   prompt(text) {
     const el = $("#prompt");
+    this.promptText = text || null;
     if (el.dataset.text === (text || "")) return;
     el.dataset.text = text || "";
     el.innerHTML = text ? `<kbd>E</kbd> ${text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c])}` : "";
@@ -137,6 +143,12 @@ export const hud = {
     if (el.textContent !== (text || "")) el.textContent = text || "";
   },
   hint(text, seconds = 10) {
+    // dòng hướng dẫn điều khiển bàn phím (gọi ở nhiều nơi, vd rời bàn bi-a) → bản cảm ứng khi đang chơi bằng cảm ứng
+    if (device.touch) {
+      if (text === t("hud.controls")) text = t("hud.controls_touch");
+      else if (text === t("hud.controls_net")) text = t("hud.controls_touch_net");
+      else text = touchText(text);
+    }
     const el = $("#hint");
     el.textContent = text;
     el.classList.add("show");
@@ -177,9 +189,10 @@ export const hud = {
     this.last = next;
     setTimeout(() => this._pump(), 2400);
   },
-  toast(text) { this.notify([text]); },
+  toast(text) { this.notify([touchText(text)]); },
   // tin nhắn điện thoại ngắn (game/guide.js: nhắc khi đứng yên, không có Tú đi cùng) — không dừng game, tự ẩn
   phone({ name, portrait, label, text }, seconds = 7) {
+    text = touchText(text);
     const el = slot("phone-msg");
     el.innerHTML = `${portrait ? `<img src="${portrait}" alt="">` : ""}<div><small>${esc(label)} · <b>${esc(name)}</b></small><p>${esc(text)}</p></div>`;
     el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
@@ -195,7 +208,7 @@ export const hud = {
     clearTimeout(this._help);
     if (el.classList.contains("show") && el.dataset.text === key) { el.classList.remove("show"); return false; }
     el.dataset.text = key;
-    el.innerHTML = `<b>${esc(title)} <kbd>H</kbd></b>${lines.map((l) => `<p>${esc(l)}</p>`).join("")}`;
+    el.innerHTML = `<b>${esc(title)} <kbd>H</kbd></b>${lines.map((l) => `<p>${esc(touchText(l))}</p>`).join("")}`;
     el.classList.add("show");
     this._help = setTimeout(() => el.classList.remove("show"), seconds * 1000);
     this.lastHelp = lines;

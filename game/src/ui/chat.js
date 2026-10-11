@@ -4,8 +4,11 @@
 //     (người cùng zone — kèm bong bóng trên đầu người gửi) / All (cả phòng) / Private (nhắn riêng: chọn người trong danh sách,
 //     hoặc bấm vào tên trong tin / bảng tên người chơi); Enter gửi, Enter khi ô trống hoặc Esc đóng.
 //   • Bấm tên người gửi → nhắn riêng / tắt nhận tin (mute) / bật lại. Lần đầu mở: thẻ quy tắc ứng xử (lưu settings.chat_rules).
+//   • Cảm ứng (core/device.js): mở bằng nút Chat (ui/touch.js), gửi bằng nút Gửi, gửi xong thì cất bàn phím ảo (blur); khung chat
+//     nâng lên trên bàn phím ảo (CSS --kb, visualViewport — ui/touch.js); chữ hướng dẫn bản cảm ứng.
 //   • Tin bị lọc ở máy chủ (data/chat.json → filter); mọi chữ hiện bằng textContent (không chèn HTML của người khác).
 import { t } from "../i18n.js";
+import { device } from "../core/device.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const TABS = ["zone", "all", "dm"];
@@ -75,7 +78,9 @@ export class ChatPanel {
     document.body.classList.add("chat-open");
     this.unread[this.tab] = 0;
     this.draw();
-    setTimeout(() => this.input.focus(), 0);
+    // cảm ứng: focus ngay trong lượt chạm (iOS chỉ mở bàn phím ảo khi focus từ thao tác của người chơi)
+    if (device.touch) this.input.focus();
+    else setTimeout(() => this.input.focus(), 0);
     return true;
   }
   // restore: trả game về chế độ trước (đi lại / bàn bi-a); false khi game đã tự đổi chế độ (vd hội thoại bắt đầu)
@@ -103,7 +108,7 @@ export class ChatPanel {
     if (!text.trim()) { this.close(); return; }
     if (this.tab === "dm" && !this.dmWith) { this.showError("pick"); return; }
     const r = this.net.chat(this.tab, text, this.dmWith);
-    if (r === true) { this.input.value = ""; this.setError(""); }
+    if (r === true) { this.input.value = ""; this.setError(""); if (device.touch) this.input.blur(); }   // cảm ứng: cất bàn phím ảo
     else this.showError(r);
   }
   onMessage(entry) {
@@ -172,6 +177,7 @@ export class ChatPanel {
     });
     this.el.querySelector(".rules").hidden = !!this.settings.chat_rules;
     // nhắn riêng: chọn người
+    this.el.querySelector(".help").textContent = t(device.touch ? "chat.help_touch" : "chat.help");
     const bar = this.el.querySelector(".dmbar");
     bar.hidden = this.tab !== "dm";
     if (this.tab === "dm") {
@@ -196,7 +202,7 @@ export class ChatPanel {
       const now = performance.now();
       for (const e of this.recent) if (now - e.shownAt < FADE_MS) peek.append(this.line(e, true));
       const total = this.unread.zone + this.unread.all + this.unread.dm;
-      if (total) { const p = document.createElement("p"); p.className = "sys"; p.textContent = t("chat.unread", { n: total }); peek.append(p); }
+      if (total) { const p = document.createElement("p"); p.className = "sys"; p.textContent = t(device.touch ? "chat.unread_touch" : "chat.unread", { n: total }); peek.append(p); }
     }
   }
   // mỗi khung: tin cũ mờ đi khi đóng; game tự đổi chế độ (hội thoại, cảnh chuyển, menu) → đóng khung

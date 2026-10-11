@@ -172,6 +172,31 @@ thanh trạng thái giả, xoay ngang ẩn thêm 2 thanh chỉ số để còn c
 | Emote, câu chat soạn sẵn (chỉ khi bật chơi nhiều người) | T, rồi 1–9 |
 | Nhắn tin tự do (khi máy chủ có chat): mở / gửi, đóng | Enter, Esc |
 
+**Điều khiển cảm ứng (điện thoại, máy tính bảng)**
+
+Nhận biết bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoints`, không dựa vào user agent (`game/src/core/device.js`).
+Điện thoại / máy tính bảng: giao diện cảm ứng bật ngay. Laptop có màn cảm ứng + chuột: chơi phím / chuột như thường, lần chạm
+đầu tiên mới hiện nút, bấm phím thì ẩn lại. Thử khi dev: `?touch=1` (ép bật), `?touch=0` (ép tắt).
+
+| Thao tác | Cảm ứng |
+| --- | --- |
+| Di chuyển | Cần điều khiển ảo: đặt ngón ở nửa trái dưới màn hình rồi kéo; đẩy hết cỡ = chạy |
+| Xoay camera / camera xa – gần | Vuốt phần còn lại của màn hình / chụm – mở 2 ngón |
+| Tương tác | Nút cam lớn góc phải, ghi tên việc (như dòng nhắc "E: …"), chỉ hiện khi đứng gần |
+| Tiếp lời thoại / chọn đáp án | Chạm hộp thoại hoặc chạm màn hình / chạm vào lựa chọn |
+| App My FPT, Help, Emote, Chat, Menu, toàn màn hình | Hàng nút tròn góc phải dưới (📱 ? 👋 💬 ☰ ⛶); nút chỉ hiện khi dùng được |
+| Bi-a | Chưa có (làm sau): ở bàn bi-a hiện "Bi-a bằng cảm ứng sắp có" + nút Rời bàn |
+
+- Cầm dọc: màn nhắc xoay ngang. Nút ≥ 44 px, chừa tai thỏ / thanh điều hướng (`env(safe-area-inset-*)`); không phóng to,
+  không kéo xuống làm mới, không hiện menu khi giữ ngón.
+- Nhắn tin: bàn phím ảo không che ô nhập (khung chat dời lên theo `visualViewport`), gửi bằng nút, gửi xong cất bàn phím;
+  đang gõ thì nhân vật không đi.
+- Mini-game: mọi bước bấm phím đều có nút để chạm; kéo thả thẻ bằng ngón tay; màn thấp (cầm ngang) thì bảng mini-game rộng
+  ra và cuộn được; bàn phím ảo không che ô mật khẩu.
+- Hiệu năng: mặc định nấc Detail thấp nhất (pixelRatio 1, không viền nét), hiện tối đa 6 người chơi khác.
+- Android: nút toàn màn hình (khoá xoay ngang nếu được); iOS Safari không có — hướng dẫn "Thêm vào màn hình chính". Âm
+  thanh phát sau lần chạm đầu. Ảnh thẻ PNG ở màn tổng kết: iOS mở ảnh ở tab mới để lưu.
+
 ## Chơi nhiều người (mức "thấy nhau")
 
 Mọi người chơi vào một phòng chung, không mã phòng. Mỗi người vẫn tự làm nhiệm vụ của mình; phần chung chỉ là thấy nhau khi ở cùng zone. Chi tiết kỹ thuật, cách đưa máy chủ lên Cloudflare và cách kiểm tra: `docs/multiplayer.md`.
@@ -470,7 +495,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
 
 **Cắt được nếu thiếu thời gian**, theo thứ tự cắt trước: Đừng ngủ gật, Một cú bi-a, cảnh hoàng hôn, hạt lúa vàng. Tú là phần đắt nhất nhưng cũng giữ mạch cảm xúc; nếu phải bỏ Tú, chuyển tình huống thẻ báo đỏ sang một intern khác do code đặt tạm ở cửa.
 
-**Ngoài phạm vi:** chơi nhiều người đầy đủ (làm nhiệm vụ cùng nhau, phòng riêng — hiện có mức "thấy nhau", bi-a 2 người, nhắn tin), điều khiển cảm ứng trên điện thoại, lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
+**Ngoài phạm vi:** chơi nhiều người đầy đủ (làm nhiệm vụ cùng nhau, phòng riêng — hiện có mức "thấy nhau", bi-a 2 người, nhắn tin), bi-a bằng cảm ứng (làm sau), lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
 
 ## Phụ lục: dữ liệu JSON cho Claude Code
 

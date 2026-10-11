@@ -21,6 +21,10 @@
 //     luật chuẩn 8 bi (2 trình duyệt chơi trọn một ván + người xem vào giữa ván), chia phòng ~30 người; rồi máy chủ giả bản cũ
 //     (wrangler dev --var POOL_RULES:1): bi-a 2 người luật cũ. Bản lưu cũ + zone 4 đặt sẵn cài đặt cũ tier "high"
 //   --lang vi | en: mọi ngoại hình chơi bằng 1 ngôn ngữ (mặc định: ngoại hình thứ 2 tiếng Việt, còn lại tiếng Anh)
+//   Lượt điện thoại (Playwright hasTouch + isMobile, khung ngang 844 × 390): giao diện cảm ứng tự bật, đi bằng cần điều khiển
+//     ảo, vuốt xoay camera, chụm 2 ngón thu phóng, chạm nút hành động / qua hội thoại / lựa chọn, chơi zone 0 → 2 (--zone N:
+//     chỉ zone đó) kể cả mini-game bằng chạm (Cài app, Ảnh check-in); máy chủ local: mở chat bằng nút, gửi 1 tin bằng nút Gửi.
+//     --mobile off | only: bỏ / chỉ chạy lượt điện thoại
 //   --headed: mở cửa sổ trình duyệt · --verbose: in thêm chi tiết từng bước
 // In gọn: mỗi bước 1 dòng ✓/✗, cuối cùng 1 dòng tổng kết + thời gian. Ảnh chụp chỉ khi bước hỏng: test-results/ (không commit).
 import { spawn, spawnSync } from "node:child_process";
@@ -51,6 +55,7 @@ if (!startZone) throw new Error(`--zone ${zoneArg}: không có zone này`);
 const onlyZone = zoneArg != null;
 const verbose = !!arg("verbose");
 const extra = arg("extra");
+const mobile = arg("mobile");      // off: bỏ lượt điện thoại · only: chỉ lượt điện thoại (+ nhắn tin bằng cảm ứng nếu có máy chủ local)
 const zoneIsLast = (z) => z === order[order.length - 1];
 const langArg = arg("lang");
 const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
@@ -212,6 +217,11 @@ async function runLook(browser, base, look) {
     await check(crOk, `màn chọn nhân vật (${wantMode === "3d" ? `3D, ${pick === "keys" ? "phím ←/→" : "bấm chuột"}` : "thẻ ảnh, màn hẹp"}): chọn ${look.id}, xem trước áo FPT, giải phóng cảnh 3D${lang !== "en" ? `, đổi sang ${I18N[lang].lang[lang]} ("${I18N[lang].creator.title}")` : ""}`, JSON.stringify(cr));
     const m = booted ? await ev(() => __game.model) : null;
     if (!await check(booted && m.id === look.id && m.look === look.id && m.gender === look.gender, `${startZone}: vào game "${name}", model ${look.id}${onlyZone ? `, bản lưu mẫu ?start=${startZone}` : ""}`, JSON.stringify(m))) return;
+    // máy tính thường (chuột + bàn phím, không màn cảm ứng): không bật giao diện cảm ứng, dòng hướng dẫn vẫn ghi phím
+    const nt = await ev(() => { const t = __game.touch, el = document.getElementById("touch");
+      return { on: t?.on, phone: t?.phone, body: document.body.classList.contains("touch"), shown: !!el && getComputedStyle(el).display !== "none" && el.offsetParent !== null,
+        detail: __game._game.state.detailLevel }; });
+    await check(nt.on === false && !nt.phone && !nt.body && !nt.shown && nt.detail === 0, "máy tính thường: không hiện nút cảm ứng, nấc Detail cao", JSON.stringify(nt));
     // đứng vững trên sàn ngay khi vào zone (khung đầu tiên sau lúc tải zone từng có dt âm → rơi xuyên sàn zone 5 khi vào
     // thẳng ?start=zone_05); rơi khỏi bản đồ → về chỗ đứng vững gần nhất (trước đây rơi mãi quanh y −9 … −10)
     const fall = await ev(() => {
@@ -1383,14 +1393,237 @@ async function runRooms(srv) {
   }
 }
 
+// ---------- (f) điện thoại: cảm ứng ----------
+// khung ngang 844 × 390, hasTouch + isMobile (matchMedia "(pointer: coarse)" → giao diện cảm ứng tự bật, không cần ?touch=1).
+// Chạm: page.touchscreen.tap; kéo / chụm nhiều ngón: CDP Input.dispatchTouchEvent (trình duyệt sinh pointer events như ngón thật)
+const MOBILE_VIEW = { width: 844, height: 390 };
+async function mobilePage(browser, base, { query = "", name = "Mai", look = "intern_nu", gender = "nu", label = "điện thoại" } = {}) {
+  const ctx = await browser.newContext({ viewport: MOBILE_VIEW, hasTouch: true, isMobile: true, deviceScaleFactor: 1, acceptDownloads: true });
+  await ctx.addInitScript(INIT_ONCE, { settings: { tier: "low", lang: "en" }, save: { v: 1, created: true, player: { name, position: "developer", gender, look } } });
+  const page = await ctx.newPage();
+  const problems = watch(page);
+  const ev = (fn, a) => page.evaluate(fn, a);
+  const wait = async (fn, ms, a) => { try { await page.waitForFunction(fn, a, { timeout: ms, polling: 100 }); return true; } catch { return false; } };
+  const cdp = await ctx.newCDPSession(page);
+  // ngón tay: fingers = [[x, y], …] lúc đặt, to = [[x, y], …] lúc nhấc (cùng số ngón); đi qua `steps` bước, giữ `holdMs` ở cuối
+  const touch = async (fingers, to = fingers, { steps = 8, holdMs = 0 } = {}) => {
+    const pts = (k) => fingers.map(([x, y], i) => ({ x: x + (to[i][0] - x) * k, y: y + (to[i][1] - y) * k, id: i + 1 }));
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(0) });
+    for (let n = 1; n <= steps; n++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(n / steps) }); await sleep(16); }
+    for (let tms = 0; tms < holdMs; tms += 100) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(1) }); await sleep(100); }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  };
+  const tap = (x, y) => page.touchscreen.tap(x, y);
+  const check = async (ok, text, extra = "") => {
+    results.push({ look: label, ok, text });
+    line(ok, `${label} · ${text}${extra && (verbose || !ok) ? ` — ${extra}` : ""}`);
+    if (!ok) {
+      mkdirSync(OUT, { recursive: true });
+      const f = join(OUT, `mobile-${++shots}.png`);
+      await page.screenshot({ path: f }).catch(() => {});
+      console.log(`    ảnh: ${f.replace(ROOT + "/", "")}`);
+    }
+    return ok;
+  };
+  await page.goto(`${base}/?debug&title=off${query}`);
+  const ready = await wait(() => window.__game?.state.phase === "playing", 120000);
+  return { ctx, page, problems, ev, wait, touch, tap, check, ready };
+}
+// tâm của phần tử (selector) trên màn hình, hoặc null khi ẩn
+// (nằm ngoài khung nhìn — vd bảng mini-game cao hơn màn điện thoại cầm ngang — thì cuộn tới như người chơi vuốt)
+const centerOf = (p, sel) => p.ev((s) => { const el = typeof s === "string" ? document.querySelector(s) : null; if (!el || !el.offsetParent) return null;
+  let r = el.getBoundingClientRect();
+  if (r.top < 0 || r.bottom > innerHeight) { el.scrollIntoView({ block: "nearest" }); r = el.getBoundingClientRect(); }
+  return r.width && r.top >= 0 && r.bottom <= innerHeight ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; }, sel);
+// giải mọi thứ đang mở bằng chạm: hội thoại (chạm hộp thoại / chạm khung vẽ để nói tiếp; lựa chọn: chạm dòng mà resolve() sẽ
+// chọn — autoplay.pickChoice), mini-game (Cài app: chạm đúng thứ tự; Ảnh check-in / thẻ: chạm Chụp rồi Giữ; trò khác: debug
+// solve), cảnh chuyển (để resolve chạy nhanh). → số lần chạm theo loại
+async function touchThrough(p, stats, maxMs = 60000) {
+  const t1 = Date.now();
+  let calm = 0;
+  while (Date.now() - t1 < maxMs) {
+    const st = await p.ev(() => {
+      const g = __game._game, d = g.ui.dialogue, a = g.ui.minigame.active;
+      return { wait: d.waiting?.kind ?? null, pick: __game.touchPick(), mg: a?.id ?? null, kind: a?.data.kind ?? a?.id ?? null,
+        cut: !!g.cutscene || !!g.timeSkipping, busy: g.state.phase !== "playing" || !!g.runner.active || !!g.finishing, mode: g.mode,
+        app: a && (a.data.kind || a.id) === "install_app" ? a.ctx.debug.state() : null,
+        quiz: a && a.ctx.body.querySelector(".quiz") ? a.ctx.debug.state() : null };
+    });
+    if (st.cut) { await p.ev(() => __game.resolve({ maxMs: 20000 })); calm = 0; continue; }
+    if (st.wait === "next") {
+      // xen kẽ: chạm vào hộp thoại / chạm vào khung vẽ phía trên (input.onTap)
+      const box = await centerOf(p, "#dialogue .text");
+      if (stats.dialogueTaps % 2 === 1 || !box) await p.tap(MOBILE_VIEW.width / 2, 110); else await p.tap(box.x, box.y);
+      stats.dialogueTaps++;
+      await sleep(120); calm = 0; continue;
+    }
+    if (st.wait === "choice" && st.pick != null) {
+      const li = await p.ev((i) => { const el = document.querySelectorAll("#dialogue .choices li")[i]; if (!el) return null; el.scrollIntoView({ block: "nearest" });
+        const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; }, st.pick);
+      if (li) { await p.tap(li.x, li.y); stats.choiceTaps++; }
+      await sleep(150); calm = 0; continue;
+    }
+    if (st.mg) {
+      stats.minigames.add(st.mg);
+      if (st.app) {
+        // Cài app: chạm bước đúng thứ tự (mỗi bước chạy thanh tải ~1,1 s)
+        const k = st.app.order.indexOf(st.app.next);
+        const li = k >= 0 && await p.ev((k) => { const el = document.querySelectorAll("#minigame .steps li")[k]; const r = el?.getBoundingClientRect(); return r ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; }, k);
+        if (li) { await p.tap(li.x, li.y); stats.mgTaps++; stats.touchMg.add(st.mg); }
+        await sleep(1350); calm = 0; continue;
+      }
+      if (st.quiz) {
+        // Quiz tượng Cuder: chạm "Bắt đầu", chạm đáp án đúng, chạm "Tiếp"
+        const btn = (await centerOf(p, "#minigame .quiz .go")) || (await centerOf(p, "#minigame .explain .next"))
+          || (st.quiz.answerAt != null && await centerOf(p, `#minigame .opts li[data-k="${st.quiz.answerAt}"]`));
+        if (btn) { await p.tap(btn.x, btn.y); stats.mgTaps++; stats.touchMg.add(st.mg); await sleep(250); calm = 0; continue; }
+      }
+      if (/^photo/.test(st.kind)) {
+        const btn = (await centerOf(p, "#minigame .shoot")) || (await centerOf(p, "#minigame .keep"));
+        if (btn) { await p.tap(btn.x, btn.y); stats.mgTaps++; stats.touchMg.add(st.mg); await sleep(700); calm = 0; continue; }
+      }
+      await p.ev(() => __game._game.ui.minigame.active?.ctx.debug.solve?.());
+      await sleep(400); calm = 0; continue;
+    }
+    if (st.busy || st.mode !== "play") { await sleep(120); calm = 0; continue; }
+    if (++calm >= 4) return;
+    await sleep(120);
+  }
+  stats.timeouts++;
+}
+
+async function runMobile(browser, base) {
+  const label = "điện thoại";
+  const from = onlyZone ? startZone : order[0], until = onlyZone ? startZone : "zone_02";
+  const P = await mobilePage(browser, base, { query: `&net=off${onlyZone ? `&start=${startZone}` : ""}`, label });
+  const { page, ev, check } = P;
+  const stats = { dialogueTaps: 0, choiceTaps: 0, actTaps: 0, mgTaps: 0, minigames: new Set(), touchMg: new Set(), timeouts: 0, steps: [] };
+  try {
+    if (!await check(P.ready, `vào game ở ${from} (844 × 390, cảm ứng)`)) return;
+    // 1. giao diện cảm ứng tự bật (pointer: coarse), nấc Detail thấp, không gợi ý phím / "Click to look"
+    await touchThrough(P, stats, 30000);
+    const ui = await ev(() => ({ touch: __game.touch, body: document.body.classList.contains("touch"), detail: __game._game.renderer.detail,
+      pr: __game._game.renderer.three.getPixelRatio(), prompt: getComputedStyle(document.getElementById("prompt")).display, lock: document.getElementById("lockhint").textContent,
+      hint: document.getElementById("hint").textContent, pinch: navigator.maxTouchPoints }));
+    await check(ui.body && ui.touch.on && ui.touch.phone && ui.detail === 2 && ui.pr <= 1 && ui.prompt === "none" && !ui.lock && ui.hint === I18N.en.hud.controls_touch
+      && ui.touch.buttons.menu && ui.touch.buttons.help && ui.touch.zone.w > 200,
+      `giao diện cảm ứng tự bật: cần điều khiển, nút Help / Menu, nấc Detail thấp (pixelRatio ${ui.pr}), dòng hướng dẫn bản cảm ứng, không gợi ý phím E / "Click to look"`,
+      JSON.stringify(ui));
+    // 2. cần điều khiển: đẩy hết cỡ lên trên 1,2 s → chạy tới; vuốt nửa phải → camera xoay; chụm / mở 2 ngón → camera xa / gần
+    // (tin nhắn đầu zone tới sau vài giây → chạm qua hết rồi đợi yên 1,5 s mới thử)
+    for (let k = 0; k < 5; k++) {
+      await touchThrough(P, stats, 20000);
+      await sleep(1500);
+      if (await ev(() => __game._game.mode === "play" && !__game._game.ui.dialogue.waiting && !!__game.touch.zone.w)) break;
+    }
+    const z = (await ev(() => __game.touch)).zone;
+    const p0 = await ev(() => __game.player.pos);
+    // ghi trong trang (máy kiểm thử vẽ chậm: lệnh hỏi giữa chừng có thể tới sau khi đã thả)
+    await ev(() => { window.__stickMax = null; window.__stickRec = setInterval(() => { const s = __game._game.input.stick; if (s && (!__stickMax || s.y > __stickMax.y)) __stickMax = { ...s }; }, 30); });
+    await P.touch([[z.x, z.y]], [[z.x, z.y - 80]], { steps: 6, holdMs: 1200 });
+    const during = await ev(() => { clearInterval(__stickRec); return __stickMax; });
+    await sleep(200);
+    const p1 = await ev(() => __game.player.pos), after = await ev(() => __game.touch.stick);
+    const moved = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]);
+    const yaw0 = await ev(() => __game._game.cam.yaw);
+    await P.touch([[640, 170]], [[440, 170]], { steps: 10 });
+    await sleep(150);
+    const yaw1 = await ev(() => __game._game.cam.yaw), d0 = await ev(() => __game._game.cam.distance);
+    await P.touch([[480, 190], [580, 190]], [[380, 190], [700, 190]], { steps: 10 });
+    await sleep(200);
+    const d1 = await ev(() => __game._game.cam.distance);
+    await check(during?.run && during.y > 0.9 && moved > 0.8 && after === null && Math.abs(yaw1 - yaw0) > 0.3 && d1 < d0 - 0.5,
+      `cần điều khiển: đẩy hết cỡ = chạy (đi ${moved.toFixed(1)} m), thả → đứng; vuốt xoay camera ${(Math.abs(yaw1 - yaw0) * 57.3).toFixed(0)}°; mở 2 ngón → camera lại gần ${d0.toFixed(1)} → ${d1.toFixed(1)} m`,
+      JSON.stringify({ during, after, moved, yaw: [yaw0, yaw1], dist: [d0, d1] }));
+    // 3. chơi các mục tiêu tới hết zone `until`: việc bấm E → dịch chuyển tới gần rồi CHẠM nút hành động (ghi đúng tên việc),
+    // hội thoại / lựa chọn / mini-game bằng chạm; vùng / lối ra → __game.step()
+    const firstAct = {};
+    for (let i = 0; i < 60; i++) {
+      const g = await ev(() => { const c = __game._game.guide.current(); return { key: c.key, target: c.target ?? null, zone: __game.zone }; });
+      if (g.key === "complete" || order.indexOf(g.zone) > order.indexOf(until)) break;
+      const ap = g.target ? await ev((t) => __game.approach(t), g.target) : { ok: false };
+      if (ap.ok && ap.kind === "interact") {
+        await ev(() => { for (let k = 0; k < 4; k++) __game._game.update(1 / 30); });
+        // nút hành động cập nhật mỗi khung vẽ (vòng lặp chính), dòng nhắc "E: …" cập nhật trong update() → chờ hai bên khớp
+        const act = await P.wait(() => !!__game.touch?.act && __game.touch.act.text === document.getElementById("prompt").dataset.text, 3000) ? await ev(() => ({ ...__game.touch.act, prompt: __game._game.interaction.current?.label ?? null, want: document.getElementById("prompt").dataset.text })) : null;
+        if (act) {
+          if (!firstAct.text) Object.assign(firstAct, act);
+          await P.tap(act.x, act.y);
+          stats.actTaps++;
+          await sleep(250);
+          await touchThrough(P, stats);
+          stats.steps.push(`${g.key}:tap`);
+          continue;
+        }
+      }
+      const r = await ev(() => __game.step());
+      stats.steps.push(`${g.key}:step${r.ok ? "" : "!"}`);
+      await touchThrough(P, stats, 30000);
+    }
+    const end = await ev(() => ({ zone: __game.zone, done: __game._game.progress.quests.size, mode: __game._game.mode }));
+    const reached = onlyZone ? end.zone !== from || (await ev(() => __game._game.guide.current().key)) === "complete" : order.indexOf(end.zone) > order.indexOf(until);
+    await check(reached && firstAct.text && firstAct.text === firstAct.want && stats.actTaps >= (onlyZone ? 1 : 3) && stats.dialogueTaps >= (onlyZone ? 1 : 5) && (onlyZone || stats.choiceTaps >= 1) && (onlyZone || stats.touchMg.size >= 1) && !stats.timeouts,
+      `chơi ${from}${until !== from ? ` → ${until}` : ""} bằng chạm: ${stats.actTaps} lần nút hành động ("${firstAct.text}"), ${stats.dialogueTaps} lần chạm qua hội thoại, ${stats.choiceTaps} lựa chọn, mini-game bằng chạm: ${[...stats.touchMg].join(", ") || "không"} → ${end.zone}`,
+      JSON.stringify({ end, firstAct, stats: { ...stats, minigames: [...stats.minigames], touchMg: [...stats.touchMg] } }));
+    // 4. bàn bi-a cần chạm (chưa có): không có ở zone 0–2 → chỉ kiểm tra ở zone 5 (lượt máy tính); cầm dọc → nhắc xoay ngang
+    await page.setViewportSize({ width: 390, height: 844 });
+    await sleep(300);
+    const rot = await ev(() => ({ shown: getComputedStyle(document.getElementById("rotate")).display !== "none", text: document.querySelector("#rotate p").textContent }));
+    await page.setViewportSize(MOBILE_VIEW);
+    await sleep(200);
+    const rot2 = await ev(() => getComputedStyle(document.getElementById("rotate")).display === "none");
+    const con = P.problems.splice(0);
+    await check(rot.shown && rot.text === I18N.en.touch.rotate && rot2 && !con.length, "cầm dọc → nhắc xoay ngang, xoay lại thì ẩn; console sạch", JSON.stringify({ rot, rot2, console: con.slice(0, 6) }));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally { await P.ctx.close().catch(() => {}); }
+}
+
+// (f2) nhắn tin bằng cảm ứng (máy chủ local): nút Chat mở khung chat (ô nhập được focus), gõ, chạm nút Gửi → tin tới máy chủ
+// (bản đã lọc quay về), gửi xong cất bàn phím (ô nhập hết focus), đang mở chat thì cần điều khiển ẩn; chạm Menu → menu Esc
+async function runMobileChat(browser, base, srv) {
+  const label = "điện thoại · nhắn tin";
+  const P = await mobilePage(browser, base, { query: `&net=${encodeURIComponent(srv.url)}&start=zone_02`, label, name: "Linh" });
+  try {
+    const on = P.ready && await P.wait(() => __game.chat?.available && !!__game.touch?.buttons.chat, 20000);
+    await P.ev(() => (__game._game.mode === "play" ? null : __game.resolve({ maxMs: 20000 })));
+    await P.wait(() => __game._game.mode === "play" && !!__game.touch?.buttons.chat, 20000);
+    const b = await P.ev(() => __game.touch.buttons.chat);
+    await P.tap(b.x, b.y);
+    const opened = await P.wait(() => __game._game.chat?.isOpen && document.activeElement?.closest?.("#chat") && getComputedStyle(document.querySelector("#touch .stick-zone")).display === "none", 5000);
+    await P.ev(() => __game.chat.rulesOk());
+    await P.page.keyboard.type("Hello from my phone");
+    const send = await centerOf(P, "#chat form button");
+    if (send) await P.tap(send.x, send.y);
+    const echo = await P.wait(() => (__game.net.chat.channels.zone || []).some((e) => e.mine && e.text === "Hello from my phone"), 5000);
+    const blurred = await P.ev(() => document.activeElement?.tagName !== "INPUT" && __game._game.chat.isOpen);
+    await P.ev(() => __game.chat.close());
+    const m = await P.wait(() => !!__game.touch.buttons.menu, 3000) && await P.ev(() => __game.touch.buttons.menu);
+    if (m) await P.tap(m.x, m.y);
+    const menu = await P.wait(() => !document.getElementById("menu").hidden, 3000);
+    const con = P.problems.splice(0);
+    await P.check(on && opened && !!send && echo && blurred && menu && !con.length,
+      "nút Chat → khung chat (ô nhập sẵn sàng, cần điều khiển ẩn), gõ + chạm Gửi → tin tới máy chủ, gửi xong cất bàn phím; nút Menu → menu Esc; console sạch",
+      JSON.stringify({ on, opened, send: !!send, echo, blurred, menu, console: con.slice(0, 6) }));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally { await P.ctx.close().catch(() => {}); }
+}
+
 const server = await startServer();
 const browser = await chromium.launch({ headless: !arg("headed"), ...(chromePath ? { executablePath: chromePath } : {}),
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
 console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
-  if (extra !== "only") for (const look of looks) await runLook(browser, server.base, look);
-  if (extra !== "off") {
+  if (extra !== "only" && mobile !== "only") for (const look of looks) await runLook(browser, server.base, look);
+  if (extra !== "only" && mobile !== "off") await runMobile(browser, server.base);
+  if (extra !== "off" && mobile === "only") {
+    const srv = await startNetServer();
+    if (!srv.skip && !srv.error) { try { await runMobileChat(browser, server.base, srv); } finally { srv.stop(); } }
+  } else if (extra !== "off") {
     await runOldSave(browser, server.base);
     // các test mạng dùng chung 1 máy chủ local; chia phòng chạy cuối (cần phòng 1 trống)
     const srv = await startNetServer();
@@ -1401,6 +1634,7 @@ try {
         await runNetZone4(browser, server.base, srv);
         await runPoolNet(browser, server.base, srv);
         await runChat(browser, server.base, srv);
+        if (mobile !== "off") await runMobileChat(browser, server.base, srv);
         await runRooms(srv);
       } finally { srv.stop(); }
       // máy chủ bản cũ (luật bi-a rút gọn, không báo "pool_rules2") — wrangler dev thứ 2, kho dữ liệu riêng
