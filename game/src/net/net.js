@@ -2,7 +2,9 @@
 // mỗi phòng, welcome.room). url trống = tắt mạng (game y như chơi một mình). Kết nối sau khi bấm "Start my first day"; lỗi
 // mạng thì vẫn chơi bình thường, tự thử lại. Gửi: join {name, model, outfit, zone} (gửi lại khi đổi bộ đồ), state {zone,
 // pos, yaw, anim} tối đa send_hz lần/giây và chỉ khi có thay đổi, emote {id}, phrase {id}; bi-a (game/src/pool/table.js):
-// pool_* khi máy chủ báo features "pool". Góc màn hình: "N online · M in this zone" (phòng 2 trở đi: "Room 2 · …").
+// pool_* khi máy chủ báo features "pool"; nhắn tin tự do chat {ch, to, text} khi máy chủ báo "chat" (data/chat.json — máy chủ
+// lọc từ, người gửi nhận lại bản đã lọc; khung chat: ../ui/chat.js). Góc màn hình: "N online · M in this zone" (phòng 2 trở
+// đi: "Room 2 · …").
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { NetClient } from "./client.js";
 import { RemotePlayers } from "./remotes.js";
@@ -28,6 +30,15 @@ export class Net {
     this.profileSent = null;
     this.cooldown = 0;
     this.log = [];              // emote / câu chat đã nhận (để __game kiểm tra)
+    // nhắn tin: lịch sử mỗi kênh trong lượt chơi (không vào bản lưu) — zone, all, dm:<id người kia>; người đã mute (id phiên)
+    this.chatCfg = this.cfg.chat || {};
+    this.chats = new Map();
+    this.muted = new Set();
+    this.people = new Map();    // id → tên người từng nhắn / đang cùng zone (chọn người nhắn riêng)
+    this.chatTokens = this.chatCfg.burst ?? 5;
+    this.chatAt = 0;
+    this.onChat = null;         // (entry) → khung chat vẽ lại
+    this.onChatError = null;    // (code)
     if (!this.enabled) return;
     this.remotes = new RemotePlayers({ game, cfg: this.cfg, phrases: this.phrases });
     this.remotes.show = settings.players !== false;
@@ -54,6 +65,8 @@ export class Net {
   stop() { if (this.enabled) this.client.stop(); }
   get connected() { return this.enabled && this.joined && this.client.open; }
   get poolOn() { return this.connected && this.features.includes("pool"); }
+  // nhắn tin tự do: máy chủ có "chat" + người chơi không tắt chat (menu Esc)
+  get chatOn() { return this.connected && this.features.includes("chat") && this.settings.chat !== false; }
   sendPool(msg) { return this.connected ? this.client.send(msg) : false; }
 
   // ---------- gửi ----------
@@ -114,13 +127,51 @@ export class Net {
     this.client.send({ t: "phrase", id });
     return true;
   }
-  sayMine(text) {
+  // nhắn tin: ch "zone" | "all" | "dm" (to = id người nhận). Kiểm tra trước như máy chủ (độ dài, chống spam) để báo ngay →
+  // true | mã lỗi ("off" | "empty" | "long" | "rate" | "nobody"). Tin hiện khi máy chủ gửi lại bản đã lọc
+  chat(ch, text, to = null) {
+    if (!this.chatOn) return "off";
+    const s = String(text ?? "").replace(/\s+/g, " ").trim();
+    if (!s) return "empty";
+    if ([...s].length > (this.chatCfg.max_len ?? 120)) return "long";
+    if (ch === "dm" && (!to || to === this.myId)) return "nobody";
+    const now = performance.now(), rate = this.chatCfg.rate_per_s ?? 1, burst = this.chatCfg.burst ?? 5;
+    this.chatTokens = Math.min(burst, this.chatTokens + ((now - (this.chatAt || now)) / 1000) * rate);
+    this.chatAt = now;
+    if (this.chatTokens < 1) return "rate";
+    this.chatTokens -= 1;
+    this.client.send({ t: "chat", ch, text: s, ...(ch === "dm" ? { to } : {}) });
+    return true;
+  }
+  chatKey(m) { return m.ch === "dm" ? `dm:${m.id === this.myId ? m.to : m.id}` : m.ch; }
+  history(key) { return this.chats.get(key) || []; }
+  mute(id, on = true) { if (on) this.muted.add(id); else this.muted.delete(id); }
+  onChatMessage(m) {
+    if (this.settings.chat === false || typeof m.text !== "string" || !["zone", "all", "dm"].includes(m.ch)) return;
+    const mine = m.id === this.myId;
+    if (!mine && this.muted.has(m.id)) return;
+    if (!mine && m.name) this.people.set(m.id, m.name);
+    if (m.ch === "dm") this.people.set(mine ? m.to : m.id, mine ? m.toName || this.people.get(m.to) || "?" : m.name);
+    const key = this.chatKey(m), list = this.chats.get(key) || [];
+    const entry = { key, ch: m.ch, id: m.id, name: m.name || "?", text: m.text, mine, to: m.to ?? null, at: Date.now() };
+    list.push(entry);
+    const keep = this.chatCfg.history ?? 50;
+    if (list.length > keep) list.splice(0, list.length - keep);
+    this.chats.set(key, list);
+    // tin cùng zone: bong bóng trên đầu người gửi (người khác: ẩn theo "Show other players")
+    if (m.ch === "zone" && m.zone === this.g.state.zone && !this.inTransit) {
+      if (mine) this.sayMine(m.text, this.chatCfg.bubble_s); else this.remotes.say(m.id, m.text, this.chatCfg.bubble_s);
+    }
+    if (!mine) sound.play("nudge");
+    this.onChat?.(entry);
+  }
+  sayMine(text, seconds = null) {
     sound.play("nudge");
     const el = this.myBubble.element;
     el.querySelector("span").textContent = text;
     this.myBubble.visible = true;
     el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
-    this.myBubbleLeft = this.cfg.bubble_s ?? 4;
+    this.myBubbleLeft = seconds ?? this.cfg.bubble_s ?? 4;
   }
 
   // ---------- nhận ----------
@@ -153,6 +204,8 @@ export class Net {
         if (p) { r.say(m.id, tx(p.text)); this.log.push({ from: m.id, phrase: m.p }); }
         break;
       }
+      case "chat": this.onChatMessage(m); break;
+      case "chat_err": this.chatErrors = (this.chatErrors || 0) + 1; this.onChatError?.(m.code); break;
       case "error": this.lastError = m.code; break;
       default: break;
     }
@@ -210,6 +263,8 @@ export class Net {
     return { enabled: true, status: c.status, connected: this.connected, id: this.myId, online: this.online, room: this.room, features: [...this.features], inZone: this.remotes.list.size + 1,
       show: this.remotes.show, retryIn: c.retryIn ?? null, attempt: c.attempt, stats: { ...c.stats }, hud: this.hudEl.hidden ? null : this.hudEl.textContent,
       sent: this.sent, myBubble: this.myBubble.visible ? this.myBubble.element.textContent : null, myEmote: this.myEmote ? this.myEmote.getClip().name : null,
-      log: [...this.log], remotes: this.remotes.info(), lastError: this.lastError ?? null };
+      log: [...this.log], remotes: this.remotes.info(), lastError: this.lastError ?? null,
+      chat: { on: this.chatOn, muted: [...this.muted], errors: this.chatErrors || 0, people: [...this.people].map(([id, name]) => ({ id, name })),
+        channels: Object.fromEntries([...this.chats].map(([k, v]) => [k, v.map((e) => ({ id: e.id, name: e.name, text: e.text, mine: e.mine }))])) } };
   }
 }

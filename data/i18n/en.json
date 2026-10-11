@@ -49,7 +49,7 @@
   },
   "hud": {
     "controls": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · H: help · Esc: menu",
-    "controls_net": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · T: wave & chat · H: help · Esc: menu",
+    "controls_net": "WASD / Arrow keys: move · Hold Shift: run · Mouse: look around · T: wave & quick phrases · Enter: chat · H: help · Esc: menu",
     "click_to_look": "Click to look around with the mouse",
     "objective_explore": "Explore the {zone}",
     "zone_locked": "This way opens in the next update.",
@@ -137,7 +137,8 @@
     "sound": "Sound",
     "sfx_volume": "Effects",
     "amb_volume": "Ambience",
-    "sound_note": "Effects: footsteps, doors, the pool table, app chimes. Ambience: birds, wind, the office hum."
+    "sound_note": "Effects: footsteps, doors, the pool table, app chimes. Ambience: birds, wind, the office hum.",
+    "chat": "Chat"
   },
   "lang": {
     "en": "English",
@@ -346,5 +347,35 @@
     "panel_title": "Say something",
     "panel_help": "1–9: choose · T: close · keep walking anytime",
     "offline": "Can't reach other players right now — you can keep playing."
+  },
+  "chat": {
+    "tab_zone": "Zone",
+    "tab_all": "All",
+    "tab_dm": "Private",
+    "to": "To:",
+    "to_name": "→ {name}",
+    "you": "You",
+    "pick_person": "Choose a player…",
+    "no_people": "No one to message yet",
+    "rules_title": "Chat rules",
+    "rules": "Be kind and respectful. Rude words and links are hidden automatically. Never share passwords or personal information. Click a name to message privately or mute someone.",
+    "rules_ok": "Got it",
+    "send": "Send",
+    "help": "Enter: send · Esc: close · click a name: private message / mute",
+    "err_empty": "Type a message first.",
+    "err_long": "That message is too long.",
+    "err_rate": "You're sending messages too fast — wait a moment.",
+    "err_nobody": "That player isn't online anymore.",
+    "err_off": "Chat is off.",
+    "err_pick": "Choose who to message first.",
+    "dm": "Message privately",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "muted": "{name} is muted — you won't see their messages.",
+    "unmuted": "{name} is unmuted.",
+    "empty_zone": "No messages in this zone yet. Say hi!",
+    "empty_all": "No messages yet.",
+    "empty_dm": "Choose a player to start a private chat.",
+    "unread": "{n} new — press Enter to read"
   }
 }

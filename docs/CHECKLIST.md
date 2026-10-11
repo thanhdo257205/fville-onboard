@@ -283,22 +283,29 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 - [x] P3 Chơi nhiều người: tự chia phòng khoảng 30 người khi đông (`room_size` 30, tối đa 6 phòng; cần `wrangler deploy`) —
   Phụ trách: Claude — nhánh `feat/pool-step3`; [x] đã `wrangler deploy` (10/10/2026, version 3764cab6): `/status` có
   `room_size` 30, `max_rooms` 6, danh sách `rooms`
-- [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: —
-  - [ ] Chốt với nhóm / HR: cho gõ chữ tự do hay chỉ mở rộng câu soạn sẵn (hiện có câu chat soạn sẵn ở phím T); quy tắc ứng xử
-    hiện khi mở khung chat lần đầu
-  - [ ] Máy chủ (`server/`): tin nhắn `chat` với kênh `zone` (người cùng zone), `all` (mọi người đang online), `dm` (một người,
-    theo id phiên); giới hạn độ dài (~120 ký tự), chống spam (vd 1 tin / giây, tối đa 5 tin dồn), lọc từ ngữ thô tục cơ bản;
-    không lưu lịch sử trên máy chủ; tin chào báo `features: ["chat"]` — máy chủ bản cũ thì chỉ có câu soạn sẵn
-  - [ ] Game: khung chat (Enter mở / gửi, Esc đóng; đang gõ không điều khiển nhân vật), 3 tab Zone / All / Private kèm số tin
-    chưa đọc; tin cùng zone hiện thêm bong bóng trên đầu người gửi; nhắn riêng bằng cách bấm vào bảng tên người chơi hoặc
-    chọn trong danh sách người online; giữ ~50 tin gần nhất mỗi kênh trong lượt chơi (không vào bản lưu)
-  - [ ] An toàn: tắt nhận tin từ một người (mute), tắt hẳn chat trong menu Esc; "Show other players" tắt thì ẩn cả bong bóng chat;
-    tên người chơi trong tin là tên tự đặt, không hiện thông tin khác
-  - [ ] Chữ giao diện trong `data/i18n/en.json`; tính lại số lượt Cloudflare (mỗi tin = 1 tin nhắn WebSocket) với hạn miễn phí
-    100.000 lượt / ngày, ghi vào `docs/multiplayer.md`
-  - [ ] Kiểm thử: 3 trình duyệt headless + máy chủ local — tin zone chỉ tới người cùng zone, tin all tới mọi người, tin dm chỉ
-    tới đúng người; chặn tin quá dài / gửi quá nhanh; máy chủ bản cũ không có chat thì không lỗi; thêm vào `test:smoke`
-  - [ ] Build, push `main`, deploy `gh-pages`; bật trên máy chủ thật (`npx wrangler deploy` ở máy Desktop)
+- [ ] P2 Nhắn tin giữa người chơi: cùng zone, tất cả mọi người, nhắn riêng — Phụ trách: Claude — nhánh `claude/lucid-hamilton-t2xq2l`
+  ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16), 11/10/2026; chi tiết: `docs/multiplayer.md` → Nhắn tin tự do); còn gộp PR, deploy bản web, bật trên máy chủ thật
+  - [x] Chốt: người dùng chốt cho gõ chữ tự do + bộ lọc từ (11/10/2026); câu soạn sẵn phím T vẫn giữ; thẻ quy tắc ứng xử hiện
+    khi mở khung chat lần đầu
+  - [x] Máy chủ (`server/`): tin nhắn `chat` với kênh `zone` (người cùng zone), `all` (mọi người trong phòng), `dm` (một người,
+    theo id phiên); tối đa 120 ký tự, chống spam (5 tin dồn, hồi 1 tin / giây), bộ lọc từ thô tục Việt + Anh và link
+    (`data/chat.json`, `game/src/net/chatfilter.js`), lọc cả tên tự đặt; không lưu lịch sử; tin chào báo `features: [..., "chat"]`
+    — máy chủ bản cũ thì không hiện khung chat, chỉ có câu soạn sẵn
+  - [x] Game (`game/src/ui/chat.js`): khung chat (Enter mở / gửi, Esc đóng; đang gõ không điều khiển nhân vật), 3 tab Zone / All /
+    Private kèm số tin chưa đọc; tin cùng zone hiện thêm bong bóng trên đầu người gửi; nhắn riêng bằng cách bấm vào bảng tên
+    người chơi / tên trong tin hoặc chọn trong danh sách người online; giữ 50 tin gần nhất mỗi kênh trong lượt chơi (không vào
+    bản lưu)
+  - [x] An toàn: tắt nhận tin từ một người (mute), tắt hẳn chat trong menu Esc; "Show other players" tắt thì ẩn cả bong bóng chat;
+    tên người chơi trong tin là tên tự đặt (đã lọc), không hiện thông tin khác; chữ người khác gửi hiện bằng `textContent`
+  - [x] Chữ giao diện en + vi (`chat.*`, `menu.chat`); số lượt Cloudflare (mỗi tin = 1 tin WebSocket gửi lên, 20 tin = 1
+    request): 21 người × 1 tin / phút ≈ 63 request / giờ (tin vị trí ~11.800) — ghi trong `docs/multiplayer.md`
+  - [x] Kiểm thử: 2 trình duyệt headless + 1 bot WebSocket + máy chủ local — tin zone chỉ tới người cùng zone, tin all tới mọi
+    người, tin dm chỉ tới đúng người; chặn tin quá dài / gửi quá nhanh; lọc từ + link + tên; mute; tắt chat; máy chủ bản cũ
+    không có chat thì không lỗi (`test:smoke`, nhóm "nhắn tin"); `test:data`: 17 câu mẫu của bộ lọc
+  - [x] Build, push nhánh, mở [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) (test đạt: smoke 112/112)
+  - [ ] Gộp PR vào `main`; deploy `gh-pages` (người dùng đã đồng ý 11/10/2026 — máy cloud bị chặn quyền chạy
+    `deploy_site.py`, chờ cho phép hoặc chạy ở máy Desktop); bật trên máy chủ thật (`cd server && npx wrangler deploy` ở máy
+    Desktop — người dùng tự làm, **web trước máy chủ sau**; tin chào phải có `"chat"`)
 - [ ] P2 Chơi trên trình duyệt điện thoại: tối ưu cho điện thoại + nút điều hướng và tương tác trên màn hình — Phụ trách: —
   - [ ] Nhận biết máy cảm ứng bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoints` (không dựa vào user agent);
     khi dev thử bằng `?touch=1` hoặc chế độ giả lập điện thoại của Chrome DevTools. Sửa GDD → "Ngoài phạm vi" (đang ghi

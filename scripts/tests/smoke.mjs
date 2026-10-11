@@ -1083,8 +1083,9 @@ async function runPoolOld(browser, base, srv) {
     await B.ev(() => __game.pool.enter());
     const started = await Promise.all([A, B].map((p) => p.wait(() => { const n = __game.pool.net; return n.mode === "match" && n.turn === 0 && n.seats.join() === "An,Bình"; }, 10000)));
     const aS = await net(A);
-    await check(A.ready && B.ready && same(f0, ["pool"]) && started.every(Boolean) && !aS.rules2 && aS.phase === "aim",
-      'máy chủ cũ: features chỉ "pool" (không "pool_rules2") → máy khách mới ngồi được, ván 8 bi luật cũ', JSON.stringify({ ready: [A.ready, B.ready], f0, started, rules: aS.rules, rules2: aS.rules2 }));
+    const noChat = await A.ev(() => !__game.chat.available && document.getElementById("chat").hidden);
+    await check(A.ready && B.ready && same(f0, ["pool"]) && started.every(Boolean) && !aS.rules2 && aS.phase === "aim" && noChat,
+      'máy chủ cũ: features chỉ "pool" (không "pool_rules2", không "chat") → máy khách mới ngồi được, ván 8 bi luật cũ; không có khung chat', JSON.stringify({ ready: [A.ready, B.ready], f0, started, rules: aS.rules, rules2: aS.rules2, noChat }));
     // An phá nhẹ: luật cũ không có lựa chọn — Bình đánh luôn; H: thẻ luật rút gọn (1 dòng)
     let q = aS.seq;
     await A.ev(() => __game.pool.shoot(Math.PI / 2, 0.05, { instant: true }));
@@ -1139,6 +1140,142 @@ async function runPoolOld(browser, base, srv) {
   }
 }
 
+
+// người chơi giả cho test nhắn tin (WebSocket của Node): nhận mọi tin chat / chat_err
+function chatBot(url, name, zone) {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(url);
+    const bot = { id: null, chats: [], errs: [], name };
+    bot.send = (m) => { if (ws.readyState === 1) ws.send(JSON.stringify(m)); };
+    bot.close = () => { try { bot.send({ t: "leave" }); ws.close(1000); } catch { /* đã đóng */ } };
+    bot.until = async (fn, ms = 5000) => { const t1 = Date.now(); while (Date.now() - t1 < ms) { if (fn()) return true; await sleep(50); } return false; };
+    ws.onopen = () => { bot.send({ t: "join", name, model: "intern_nam", outfit: "", zone }); bot.send({ t: "state", zone, pos: [0, 0, 0], yaw: 0, anim: "idle" }); };
+    ws.onmessage = (e) => {
+      const m = JSON.parse(e.data);
+      if (m.t === "welcome") { bot.id = m.id; bot.features = m.features; resolve(bot); }
+      if (m.t === "chat") bot.chats.push(m);
+      if (m.t === "chat_err") bot.errs.push(m.code);
+    };
+    ws.onerror = () => reject(new Error(`bot chat: không kết nối được ${url}`));
+  });
+}
+
+// (e) nhắn tin tự do + bộ lọc từ: An, Bình (2 trình duyệt, zone_05) + Cường (bot WebSocket, zone_02) trên máy chủ local.
+// Enter mở khung chat (thẻ quy tắc lần đầu), gõ + Enter gửi; tin zone tới người cùng zone (kèm bong bóng trên đầu), không tới
+// Cường; tin all tới cả phòng; từ thô tục / link bị che ở máy chủ (cả bản người gửi nhận lại); tên tự đặt cũng lọc; nhắn riêng
+// chỉ tới đúng người (bấm bảng tên → tab Private); tin quá dài / gửi quá nhanh bị chặn; mute; tắt chat ở menu Esc; máy chủ
+// không có "chat" → không có khung chat, không lỗi
+async function runChat(browser, base, srv) {
+  const label = "nhắn tin";
+  const pages = [];
+  const bots = [];
+  try {
+    const [A, B] = await Promise.all([poolPage(browser, base, srv.url, label, "An", "intern_nam", "nam"), poolPage(browser, base, srv.url, label, "Bình", "intern_nu", "nu")]);
+    pages.push(A, B);
+    const check = A.check;
+    const C = await chatBot(srv.url, "Cường", "zone_02");
+    bots.push(C);
+    const chatOf = (p) => p.ev(() => ({ ...__game.chat, net: __game.net.chat, myId: __game.net.id }));
+    // zone_05 có thể tự mở hội thoại sau một lúc → giải xong trước khi bấm phím
+    const free = async (p) => {
+      await p.ev(() => (__game._game.mode === "play" ? null : __game.resolve({ maxMs: 20000 })));
+      return p.wait(() => __game._game.mode === "play" && !__game._game.runner?.active, 20000);
+    };
+    await Promise.all([free(A), free(B)]);
+    const [a0, b0] = await Promise.all([chatOf(A), chatOf(B)]);
+    // Enter mở khung chat: thẻ quy tắc lần đầu, game đứng yên ở chế độ "chat"
+    await A.page.keyboard.press("Enter");
+    const opened = await A.wait(() => __game.chat.open && __game._game.mode === "chat" && document.activeElement?.closest?.("#chat"), 3000);
+    const rulesShown = (await chatOf(A)).rules;
+    await A.ev(() => __game.chat.rulesOk());
+    await A.page.keyboard.type("Xin chào cả zone!");
+    await A.page.keyboard.press("Enter");
+    const bGot = await B.wait(() => (__game.net.chat.channels.zone || []).some((e) => e.text === "Xin chào cả zone!"), 5000);
+    const bubble = await B.wait(() => __game.net.remotes.some((r) => r.bubble === "Xin chào cả zone!"), 5000);
+    const aEcho = await A.wait(() => (__game.net.chat.channels.zone || []).some((e) => e.mine && e.text === "Xin chào cả zone!"), 5000);
+    await check(C.features?.includes("chat") && a0.available && b0.available && opened && rulesShown && bGot && bubble && aEcho && !C.chats.some((m) => m.ch === "zone"),
+      `máy chủ báo "chat"; Enter mở khung chat (thẻ quy tắc lần đầu), gõ + Enter gửi → Bình (cùng zone) nhận + bong bóng trên đầu An, Cường (zone khác) không nhận`,
+      JSON.stringify({ features: C.features, opened, rulesShown, bGot, bubble, aEcho, cZone: C.chats.filter((m) => m.ch === "zone").length }));
+    // kênh All: cả phòng; bộ lọc từ + link (máy chủ che, người gửi nhận lại bản đã che)
+    await A.ev(() => __game.chat.chat("all", "Chào cả phòng, đồ lồn fuck, xem www.lua-dao.com nhé"));
+    const want = "Chào cả phòng, đồ *** ****, xem [link] nhé";
+    const cAll = await C.until(() => C.chats.some((m) => m.ch === "all" && m.text === want));
+    const bAll = await B.wait((w) => (__game.net.chat.channels.all || []).some((e) => e.text === w), 5000, want);
+    const aAll = await A.wait((w) => (__game.net.chat.channels.all || []).some((e) => e.mine && e.text === w), 5000, want);
+    await check(cAll && bAll && aAll && !C.chats.some((m) => /lồn|fuck|lua-dao/i.test(m.text)),
+      `kênh All tới cả phòng (cả Cường ở zone khác); từ thô tục + link bị che ở máy chủ: "${want}"`, JSON.stringify({ cAll, bAll, aAll, c: C.chats.map((m) => m.text) }));
+    // nhắn riêng: Cường → An; An trả lời ở tab Private (bấm bảng tên không có vì Cường ở zone khác → chọn trong danh sách)
+    const aId = (await A.ev(() => __game.net.id)), bId = (await B.ev(() => __game.net.id));
+    C.send({ t: "chat", ch: "dm", to: aId, text: "An ơi, chiều nay chơi bi-a không?" });
+    const aDm = await A.wait((id) => (__game.net.chat.channels[`dm:${id}`] || []).some((e) => e.text.startsWith("An ơi")), 5000, C.id);
+    await A.ev((id) => __game.chat.open("dm", id), C.id);
+    await A.ev(() => __game.chat.send("Ok, 3 giờ nhé"));
+    const cDm = await C.until(() => C.chats.some((m) => m.ch === "dm" && m.text === "Ok, 3 giờ nhé" && m.id === aId));
+    await sleep(300);
+    const bDm = await B.ev(() => Object.keys(__game.net.chat.channels).filter((k) => k.startsWith("dm:")).length);
+    // bấm bảng tên của Bình (khung chat đang mở) → tab Private với Bình
+    const tagClick = await A.ev((name) => { const el = [...document.querySelectorAll(".nametag.player-tag")].find((x) => x.textContent === name); el?.click(); return !!el; }, "Bình");
+    const aState = await chatOf(A);
+    await check(aDm && cDm && bDm === 0 && tagClick && aState.tab === "dm" && aState.dmWith === bId,
+      "nhắn riêng chỉ tới đúng người (Cường → An, An trả lời ở tab Private; Bình không nhận); bấm bảng tên Bình → tab Private với Bình",
+      JSON.stringify({ aDm, cDm, bDm, tagClick, tab: aState.tab, dmWith: aState.dmWith, bId }));
+    // tin quá dài / gửi quá nhanh: máy khách báo ngay, máy chủ cũng chặn
+    const longLocal = await A.ev(() => __game.chat.chat("zone", "x".repeat(121)));
+    C.send({ t: "chat", ch: "all", text: "y".repeat(121) });
+    const longSrv = await C.until(() => C.errs.includes("long"));
+    const before = C.chats.filter((m) => m.id === C.id).length;
+    for (let i = 0; i < 8; i++) C.send({ t: "chat", ch: "all", text: `spam ${i}` });
+    const rateSrv = await C.until(() => C.errs.includes("rate"));
+    await sleep(300);
+    const passed = C.chats.filter((m) => m.id === C.id).length - before;
+    await check(longLocal === "long" && longSrv && rateSrv && passed <= 5,
+      `chặn tin quá dài (> 120 ký tự) và gửi quá nhanh (8 tin liền → ${passed} tin qua, còn lại "rate")`, JSON.stringify({ longLocal, longSrv, rateSrv, passed, errs: C.errs }));
+    // tên tự đặt cũng qua bộ lọc; mute: An tắt nhận tin từ Cường (chờ hồi lượt sau đợt spam: giới hạn tin / giây của kết nối + lượt chat)
+    await sleep(2500);
+    C.send({ t: "join", name: "fuck boy", model: "intern_nam", outfit: "", zone: "zone_02" });
+    await sleep(500);
+    const errsBefore = C.errs.length;
+    C.send({ t: "chat", ch: "all", text: "tên mới" });
+    const masked = await B.wait(() => (__game.net.chat.channels.all || []).some((e) => e.text === "tên mới" && e.name === "**** boy"), 5000);
+    if (!masked) console.log("  (tên mới)", JSON.stringify({ errs: C.errs.slice(errsBefore), all: C.chats.filter((m) => m.ch === "all").slice(-3) }));
+    await A.ev((id) => __game._game.net.mute(id, true), C.id);
+    await sleep(1100);
+    C.send({ t: "chat", ch: "all", text: "An có thấy không?" });
+    const bSees = await B.wait(() => (__game.net.chat.channels.all || []).some((e) => e.text === "An có thấy không?"), 5000);
+    await sleep(300);
+    const aSees = await A.ev(() => (__game.net.chat.channels.all || []).some((e) => e.text === "An có thấy không?"));
+    await check(masked && bSees && !aSees, 'tên tự đặt cũng lọc ("fuck boy" → "**** boy"); An mute Cường → An không nhận, Bình vẫn nhận', JSON.stringify({ masked, bSees, aSees }));
+    // tắt chat ở menu Esc (Bình): không còn khung chat, không nhận tin, Enter không mở
+    await A.ev(() => __game.chat.close());
+    await free(B);
+    await B.page.keyboard.press("Escape");
+    await B.wait(() => !!document.querySelector('#menu [data-chat="0"]'), 3000);
+    await B.ev(() => document.querySelector('#menu [data-chat="0"]').click());
+    await B.page.keyboard.press("Escape");
+    await sleep(1100);
+    C.send({ t: "chat", ch: "all", text: "Bình tắt chat rồi" });
+    await sleep(800);
+    await B.page.keyboard.press("Enter");
+    const bOff = await B.ev(() => ({ available: __game.chat.available, open: __game.chat.open, got: (__game.net.chat.channels.all || []).some((e) => e.text === "Bình tắt chat rồi"), hidden: document.getElementById("chat").hidden, saved: JSON.parse(localStorage.getItem("fville.settings") || "{}").chat }));
+    // máy chủ không có "chat" (bản cũ): An không có khung chat, Enter không làm gì, không lỗi
+    const aOld = await A.ev(() => { const n = __game._game.net; const f = n.features; n.features = f.filter((x) => x !== "chat"); __game._game.chat.update(); const r = { available: __game.chat.available, hidden: document.getElementById("chat").hidden }; return { ...r, f }; });
+    await A.page.keyboard.press("Enter");
+    const aOldOpen = await A.ev(() => __game.chat.open);
+    await A.ev((f) => { __game._game.net.features = f; }, aOld.f);
+    await check(!bOff.available && !bOff.open && !bOff.got && bOff.hidden && bOff.saved === false && !aOld.available && aOld.hidden && !aOldOpen,
+      "tắt chat ở menu Esc → không khung chat, không nhận tin, Enter không mở, lưu cài đặt; máy chủ không có \"chat\" → không có khung chat",
+      JSON.stringify({ bOff, aOld: { available: aOld.available, hidden: aOld.hidden }, aOldOpen }));
+    const con = pages.flatMap((p) => p.problems.splice(0));
+    await check(!con.length, "console sạch", JSON.stringify(con.slice(0, 6)));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally {
+    for (const b of bots) b.close();
+    for (const p of pages) await p.ctx.close().catch(() => {});
+  }
+}
+
 // (d) chia phòng: room_size + 1 kết nối → người cuối sang phòng 2; /status cộng mọi phòng; ?room=3 vào thẳng phòng 3
 async function runRooms(srv) {
   const label = "chia phòng";
@@ -1174,7 +1311,7 @@ async function runRooms(srv) {
 const server = await startServer();
 const browser = await chromium.launch({ headless: !arg("headed"), ...(chromePath ? { executablePath: chromePath } : {}),
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
-console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
+console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
   if (extra !== "only") for (const look of looks) await runLook(browser, server.base, look);
@@ -1188,6 +1325,7 @@ try {
       try {
         await runNetZone4(browser, server.base, srv);
         await runPoolNet(browser, server.base, srv);
+        await runChat(browser, server.base, srv);
         await runRooms(srv);
       } finally { srv.stop(); }
       // máy chủ bản cũ (luật bi-a rút gọn, không báo "pool_rules2") — wrangler dev thứ 2, kho dữ liệu riêng
@@ -1202,5 +1340,5 @@ try {
 }
 const bad = results.filter((r) => !r.ok).length;
 const sec = Math.round((Date.now() - t0) / 1000), dur = sec >= 60 ? `${Math.floor(sec / 60)} phút ${sec % 60} giây` : `${sec} giây`;
-console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng (zone 4, bi-a 2 người, chia phòng, máy chủ cũ)"} (${dur})`);
+console.log(bad ? `✗ smoke: ${bad} / ${results.length} bước hỏng (${dur})` : `✓ smoke: ${results.length} bước đạt, ${extra === "only" ? 0 : looks.length} ngoại hình${extra === "off" ? "" : " + bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ)"} (${dur})`);
 process.exit(bad ? 1 : 0);
