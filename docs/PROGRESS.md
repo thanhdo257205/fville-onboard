@@ -1343,6 +1343,19 @@ Bỏ dòng "Bi-a bằng cảm ứng sắp có". Máy tính giữ nguyên mọi �
   tay kéo + "Đặt bi", bàn khớp máy chủ); ô chat máy tính (bấm mở, `/`, Esc không mở menu). Test bi-a máy tính chờ hội thoại
   on_enter của zone 5 trước khi tới bàn (lỗi chạy đua thỉnh thoảng); test né đè bảng tên (màn thấp) chờ tới khi hết đè, tối đa 4 s, thay vì 600 ms cố định (CI khung thưa → đỏ ở main sau PR #20). `__game.pool.touch()`, `__game.pool.setState()`.
 
+### Sửa lỗi kẹt sau khi đứng dậy khỏi bàn làm việc zone 5 (11/10/2026, nhánh `fix/desk-stand-up`)
+
+Người dùng chơi thử trên điện thoại: ngồi vào bàn làm việc (hội thoại `desk_main`) rồi đứng dậy thì kẹt trong bàn, không đi ra
+được. Nguyên nhân: điểm ngồi (chỗ ghế − `seat.offset_xz_m`) lọt giữa bàn và ghế — capsule lồng 0,26 m vào `COL_` bàn / ghế; đứng
+dậy vẫn ở nguyên chỗ đó nên va chạm đẩy qua lại, đi hướng nào cũng kẹt. Chỉ gặp khi đứng dậy (còn việc khác chưa xong); làm bàn
+làm việc là việc cuối thì vào thẳng cảnh kết (ngồi nguyên) nên smoke cũ không gặp. **Chưa deploy.**
+
+- `player/player.js`: lúc ngồi nhớ chỗ đứng trước đó; đứng dậy (`standUp`) tìm chỗ trống (`exitSpot`: điểm ngồi nếu trống → điểm
+  trống đầu tiên trên đường về chỗ đứng trước khi ngồi → vòng quanh điểm ngồi 0,3 … 1,5 m), trong lúc `stand_up` nhân vật trượt
+  dần ra đó, xong thì capsule đặt ở chỗ trống. Không đổi GLB / va chạm.
+- `__game.player.pen`: độ lồng của capsule vào `COL_` (m).
+- Smoke zone 5: ngồi vào bàn rồi đứng dậy → lồng 0,256 → 0 m, đi được ≥ 4/8 hướng (code cũ: 0,256 m, 2/8 hướng → đỏ).
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

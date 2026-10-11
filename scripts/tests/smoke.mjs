@@ -543,6 +543,36 @@ async function runLook(browser, base, look) {
         await check(opened && drawn && m.img?.[0] > 100 && m.img[1] > 100 && inside(m.me) && inside(m.goal) && m.line && m.closed,
           `${zone}: app → tab Bản đồ — ảnh ${m.map?.w}×${m.map?.h} (${m.map?.ms} ms), dấu bạn + mục tiêu "${m.line}" trong ảnh, đóng app`, JSON.stringify(m));
       }
+      // zone_05: ngồi vào bàn làm việc rồi đứng dậy (hội thoại desk_main khi còn việc khác chưa xong) → ra chỗ trống, đi được.
+      // Lỗi cũ: đứng dậy tại điểm ngồi, lọt giữa bàn và ghế (capsule lồng vào COL_) → đi đâu cũng kẹt
+      if (zone === "zone_05" && look === looks[0]) {
+        const sd = await ev(async () => {
+          const g = __game._game, P = g.player, V = P.position.constructor;
+          const tr = g.zone.triggers.find((x) => x.name === "TRIGGER_ban_lam_viec");
+          const home = P.position.clone(), yaw = g.cam.yaw;
+          P.body.teleport(tr.node.getWorldPosition(new V()).add(new V(0, 0.05, 0))); P.velocity.set(0, 0, 0);
+          g.triggersOff = true;
+          __game.simulate(0.3, undefined, { render: false });
+          await g.sitAt("SPAWN_ban_lam_viec");
+          const seated = __game.player.seated, seatPen = __game.player.pen;
+          await P.standUp();
+          const at = P.position.clone(), pen = __game.player.pen, moved = [];
+          for (let k = 0; k < 8; k++) {
+            P.body.teleport(at.clone().add(new V(0, 0.05, 0))); P.velocity.set(0, 0, 0);
+            __game.simulate(0.3, undefined, { render: false });
+            g.cam.yaw = (k / 8) * Math.PI * 2;
+            const s0 = P.position.clone();
+            __game.simulate(1, { x: 0, y: 1 }, { render: false });
+            moved.push(+Math.hypot(P.position.x - s0.x, P.position.z - s0.z).toFixed(2));
+          }
+          P.body.teleport(home.add(new V(0, 0.05, 0))); P.velocity.set(0, 0, 0); g.cam.yaw = yaw;
+          __game.simulate(0.3, undefined, { render: false });
+          g.triggersOff = false;
+          return { seated, seatPen, pen, stood: !P.seated, moved, free: moved.filter((m) => m > 0.8).length };
+        });
+        await check(sd.seated === "seated" && sd.stood && sd.pen < 0.02 && sd.free >= 4,
+          `zone_05: ngồi vào bàn làm việc rồi đứng dậy → ra chỗ trống (điểm ngồi lồng vào bàn / ghế ${sd.seatPen} m → ${sd.pen} m), đi được ${sd.free}/8 hướng`, JSON.stringify(sd));
+      }
       let steps = 0, stepFail = null;
       while (steps++ < 40) {
         const g = await ev(() => ({ key: __game._game.guide.current().key, zone: __game.zone }));
@@ -571,7 +601,7 @@ async function runLook(browser, base, look) {
               const p = __game.player;
               return { ...p, anim: g.player.character.current?.getClip().name, dist: +Math.hypot(p.pos[0] - s.x, p.pos[2] - s.z).toFixed(2), offset: g.player.character.model.seat?.offset_xz_m };
             });
-            await check(seat.seated === "seated" && seat.sits === 1 && seat.rootY > 0.02 && /sit/.test(seat.anim || "") && Math.abs(seat.dist - Math.hypot(...(seat.offset || [0, 0]))) < 0.05,
+            await check(seat.seated === "seated" && seat.sits >= 1 && seat.rootY > 0.02 && /sit/.test(seat.anim || "") && Math.abs(seat.dist - Math.hypot(...(seat.offset || [0, 0]))) < 0.05,
               `zone_05: ngồi vào ghế bàn làm việc (${seat.anim}, nâng ${Math.round(seat.rootY * 100)} cm, cách chỗ ghế ${seat.dist} m)`, JSON.stringify(seat));
           } else if (r.paused === "ending:lan") {
             ps.reloaded = true;
