@@ -1408,6 +1408,25 @@ trình duyệt cùng lúc trên 1 máy — tách máy.
 - `npm run test:quick` (máy local, mỗi lần sửa nhỏ): test:data + smoke 1 ngoại hình zone 0 → 5, bỏ điện thoại + test mạng — đo
   1 phút 45 giây. Đo các phần riêng: `--mobile ui` ~2,5 phút, `--mobile pool` ~3,8 phút.
 
+### Nhạc nền + độ nhạy xoay (11/10/2026, nhánh `feat/music-sensitivity` 2f79cb9)
+
+Người dùng gửi bài "Piano Spiegel" (Oliver Siimon), lấy từ "Fantasy Music Mega Pack (Royalty free, CC0, Public Domain)" của Blacis
+(https://blacis.itch.io/royalty-free-music-megapack — trang ghi CC0, nhạc tạo bằng AI, chỉnh tay), và muốn thêm độ nhạy khi xoay
+(chuột, điện thoại) trong cài đặt.
+
+- Nhạc: `game/src/core/music.js` — `<audio>` (tải dần, lặp) nối vào Web Audio, bus nhạc riêng trong `sound.js`
+  (`SOUND_DEFAULTS.music = 0,5`); bài theo zone (`zones.json` → `audio.music`, không có → `music.default`), đổi bài lên / xuống
+  êm; nhỏ còn `music.duck` khi hội thoại / mini-game / app / tổng kết; tắt tiếng, thanh Nhạc = 0, tab ẩn → tạm dừng; bắt đầu từ
+  lần bấm đầu tiên (màn tiêu đề). File: nén lại từ bản gốc (SHA-256 ghi trong `data/sounds.json`), bỏ metadata, +4 dB
+  (−24,7 → −20,7 LUFS, nghe được dưới tiếng nền), MP3 ~75 kbps, 1,6 MB; ghi chú giấy phép `assets/music/licenses/`, `CREDITS.md`.
+  Không tải lại được gói zip để đối chiếu (máy cloud bị chặn itch.io) — SHA-256 là của file người dùng gửi.
+- Độ nhạy xoay: `input.sens` = { mouse, touch } (`settings.look`, 0,2 … 3, `lookSens` sửa giá trị hỏng) nhân vào chuột (khoá con
+  trỏ + kéo) và vuốt ngón tay; không đổi chụm 2 ngón / con lăn. Menu Esc: Độ nhạy chuột (máy không phải điện thoại), Độ nhạy cảm
+  ứng (máy có màn cảm ứng), 20–300 %, hiện số %. Chữ mới `menu.music_volume`, `look_mouse`, `look_touch`, `look_note` (en + vi).
+- Kiểm thử: `test:data` mục "nhạc nền"; smoke máy tính (zone 0, ngoại hình đầu): nhạc đang phát + thời gian chạy, thanh Nhạc 0 →
+  dừng / kéo lại → phát, độ nhạy chuột 200 % → xoay ×2, lưu cài đặt; điện thoại (844 × 230): menu có độ nhạy cảm ứng, không có độ
+  nhạy chuột, 200 % → vuốt xoay ×2. Đo: test:data, test:quick 52/52, `--mobile ui` 20/20, build chép `assets/music/`.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
