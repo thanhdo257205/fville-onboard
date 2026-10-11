@@ -244,17 +244,21 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [ ] Kiểm thử: `scripts/tests/pool_rules.mjs` thêm từng trường hợp — cú phá không hợp lệ, bàn mở sau phá, từng loại lỗi, bi
     trong tay toàn bàn, gọi lỗ bi 8 đúng / sai, bi 8 vào sớm / kèm lỗi; ván 2 người giả chơi trọn; smoke bi-a 2 người với luật
     mới
-- [ ] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: —
+- [x] P2 Bi-a: ngắm cơ bằng chuột, không chỉ phím A / D — Phụ trách: Claude — nhánh `feat/pool-mouse-aim` — 2e53a25
   - Hiện trạng: chuột chỉ xoay cơ khi con trỏ đang bị khoá (Pointer Lock, `game/src/core/input.js`: không khoá thì bỏ qua di
     chuột và kéo chuột). Khoá không được (vừa bấm Esc, trình duyệt từ chối) thì chuột không làm gì; bấm chuột để khoá lại thì
     cú bấm đó cũng bắt đầu lấy lực (`mouseButton` trong `game/src/pool/table.js`).
-  - [ ] Không khoá con trỏ: cơ chỉ theo con trỏ — chiếu con trỏ xuống mặt bàn, cơ hướng từ bi trắng tới điểm đó; giữ chuột
-    trái để lấy lực, thả để đánh (hoặc kéo lùi chuột để chỉnh lực)
-  - [ ] Đang khoá con trỏ: di chuột ngang xoay cơ như hiện nay; giữ Shift để ngắm tinh (chậm lại); A / D vẫn dùng được
-  - [ ] Cú bấm đầu tiên chỉ để khoá con trỏ / lấy lại chuột, không bắt đầu lấy lực
-  - [ ] Dùng cho cả tập một mình, bàn chung 2 người, thử thách của anh Khang; dòng hướng dẫn trên bảng bi-a ghi cách ngắm bằng
+  - [x] Không khoá con trỏ: cơ chỉ theo con trỏ — chiếu con trỏ xuống mặt bàn, cơ hướng từ bi trắng tới điểm đó; giữ chuột
+    trái để lấy lực, thả để đánh (hoặc kéo lùi chuột để chỉnh lực) — 2e53a25 (`game/src/pool/pointer.js`; camera giữ hướng
+    khi ngắm bằng con trỏ; chưa làm kéo lùi chỉnh lực)
+  - [x] Đang khoá con trỏ: di chuột ngang xoay cơ như hiện nay; giữ Shift để ngắm tinh (chậm lại); A / D vẫn dùng được —
+    2e53a25 (lỗi gốc: ở bàn `input.enabled = false` nên chuột khoá chưa bao giờ xoay được cơ)
+  - [x] Cú bấm đầu tiên chỉ để khoá con trỏ / lấy lại chuột, không bắt đầu lấy lực — 2e53a25
+  - [x] Dùng cho cả tập một mình, bàn chung 2 người, thử thách của anh Khang; dòng hướng dẫn trên bảng bi-a ghi cách ngắm bằng
     chuột (`data/i18n/en.json` + `vi.json`); trên điện thoại: kéo ngón tay để ngắm (xem mục "Chơi trên trình duyệt điện thoại")
-  - [ ] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
+    — 2e53a25 (cảm ứng: chưa viết, `TablePointer` đã tách để thêm "touch" sau)
+  - [x] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
+    — 2e53a25
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: —
 - [x] P3 Tab Bản đồ trong app My FPT — Phụ trách: Claude — nhánh `feat/map-tab` (PR #7, `main` 1a79739; đã deploy `gh-pages` a9a3dcc). Ảnh zone chụp từ trên xuống
   (cắt bỏ trần / mái ở sàn + 2,4 m, nét tường tối), mũi tên "Bạn" theo hướng mặt, chấm Tú, dấu "!" + dòng mục tiêu (khác tầng:

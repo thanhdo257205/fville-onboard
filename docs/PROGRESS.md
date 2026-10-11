@@ -1058,6 +1058,34 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   bước bi-a zone 5 kiểm tra mọi khung lúc bi lăn: camera ≤ giới hạn, 0 khung bị che (bản cũ: camera 1,69 m, bị kéo sát chao).
   Thử tay 4 hướng đánh: camera 1,41–1,60 m, 0 khung bị che.
 
+### Bi-a: ngắm cơ bằng chuột (11/10/2026, nhánh `feat/pool-mouse-aim`)
+
+- **Lỗi gốc "ở bàn chỉ A/D xoay được cơ":** ở bàn game chuyển sang chế độ `"pool"` → `input.enabled = false` (không đi lại) →
+  `Input.consumeDrag()` trả 0 → mọi chuyển động chuột (kể cả khi đã khoá con trỏ) và lăn chuột thu phóng bị bỏ từ trước tới
+  nay. Sửa: `consumeDrag(all)`, `Game.update` lấy drag khi đang ở bàn (camera đi lại chỉ dùng drag ở chế độ `"play"`).
+- `game/src/pool/pointer.js` (`TablePointer`): pointer events trên khung vẽ → điểm trên mặt bàn (toạ độ cục bộ, mặt phẳng tâm
+  bi), callback move / down / up; nhả nút ngoài khung vẫn nhận (`pointerup` trên window). Hiện chỉ nhận chuột; cảm ứng sau này
+  chỉ cần thêm `"touch"` vào `types` (đã giữ pointer capture cho loại không phải chuột).
+- `game/src/pool/table.js` — 3 chế độ chuột (`mouseMode`):
+  - `lock` (con trỏ đang khoá): di chuột ngang xoay cơ 0,0032 rad / đơn vị (40 px → 0,064 rad), Shift chậm 4 lần, A/D như cũ.
+  - `wait` (khoá được nhưng chưa khoá): con trỏ ngắm; cú bấm chỉ để khoá (core/input.js xin khoá), không nạp lực; dòng nhắc
+    giữa màn hình đổi thành "Click to aim with the mouse (the first click doesn't shoot)".
+  - `free` (trình duyệt không hỗ trợ / từ chối khoá — `pointerlockerror`, vd bấm Esc rời bàn rồi vào lại ngay): con trỏ ngắm,
+    giữ chuột trái nạp lực, thả để đánh; cú bấm đầu sau khi cửa sổ mất focus chỉ để lấy lại chuột. Thôi xin khoá ở mỗi cú bấm.
+  - Ngắm bằng con trỏ thì camera giữ hướng (`camAngle`) — camera xoay theo góc ngắm thì điểm dưới con trỏ chạy theo, góc trôi
+    mãi; phím / chuột khoá thì camera lại theo góc ngắm. Đang nạp lực: con trỏ không đổi hướng (thả tay không lệch cú). Bi
+    trong tay (bàn chung): bi trắng theo con trỏ trong khu đầu bàn, bấm để đặt.
+  - Bấm vào bảng bi-a / khung mini-game không còn nạp lực (trước nghe `mousedown` trên cả window).
+  - Áp dụng cho tập một mình, bàn chung 2 người, thử thách của anh Khang. Không đổi `physics.js`, `rules.js`, `server/` — cú gửi
+    đi vẫn là góc + lực.
+- Chữ en + vi: `pool.hint_aim_mouse`, `pool.hint_aim_free`, `pool.click_to_aim`; `pool.controls*` bỏ phần ngắm (dòng hướng
+  dẫn ghép: cách ngắm theo chế độ chuột + phím của chế độ chơi).
+- Kiểm thử: `input.fakeLock` (giả lập khoá con trỏ — headless không khoá thật ổn định), `__game.pool.screen(x, z)`, `info.mouse`.
+  Smoke zone 5 (ngoại hình đầu), sự kiện chuột thật của trình duyệt: không khoá — cơ theo con trỏ ở 2 điểm (lệch 0 rad), camera
+  đứng yên, bấm sau khi rời cửa sổ không đánh, giữ → nạp lực → thả đánh đúng hướng con trỏ; khoá — cú bấm đầu chỉ khoá (không
+  nạp lực), chuột sang phải → cơ quay sang phải màn hình (0,064 rad / 40 px), Shift 0,016, D xoay sang phải, giữ → đánh.
+  test:data, test:pool đạt (vật lý không đổi); `test:smoke -- --zone 5` 3 ngoại hình + bản lưu cũ, mạng: 62/62 bước.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
