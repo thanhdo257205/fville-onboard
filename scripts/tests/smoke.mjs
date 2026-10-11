@@ -1299,11 +1299,14 @@ async function runChat(browser, base, srv) {
     await sleep(300);
     const bDm = await B.ev(() => Object.keys(__game.net.chat.channels).filter((k) => k.startsWith("dm:")).length);
     // bấm bảng tên của Bình (khung chat đang mở) → tab Private với Bình
-    const tagClick = await A.ev((name) => { const el = [...document.querySelectorAll(".nametag.player-tag")].find((x) => x.textContent === name); el?.click(); return !!el; }, "Bình");
+    // bảng tên chỉ có khi nhân vật của Bình đã dựng xong ở máy An (tải GLB — CI chậm có khi mất vài giây) → chờ rồi mới bấm
+    const tagReady = await A.wait((name) => [...document.querySelectorAll(".nametag.player-tag")].some((x) => x.textContent === name), 8000, "Bình");
+    const tagClick = tagReady && await A.ev((name) => { const el = [...document.querySelectorAll(".nametag.player-tag")].find((x) => x.textContent === name); el?.click(); return !!el; }, "Bình");
+    const remotesA = tagClick ? null : await A.ev(() => __game.net.remotes);
     const aState = await chatOf(A);
     await check(aDm && cDm && bDm === 0 && tagClick && aState.tab === "dm" && aState.dmWith === bId,
       "nhắn riêng chỉ tới đúng người (Cường → An, An trả lời ở tab Private; Bình không nhận); bấm bảng tên Bình → tab Private với Bình",
-      JSON.stringify({ aDm, cDm, bDm, tagClick, tab: aState.tab, dmWith: aState.dmWith, bId }));
+      JSON.stringify({ aDm, cDm, bDm, tagClick, tab: aState.tab, dmWith: aState.dmWith, bId, remotesA }));
     // tin quá dài / gửi quá nhanh: máy khách báo ngay, máy chủ cũng chặn
     const longLocal = await A.ev(() => __game.chat.chat("zone", "x".repeat(121)));
     C.send({ t: "chat", ch: "all", text: "y".repeat(121) });
