@@ -2,12 +2,15 @@
 // Ngồi ghế (bàn làm việc zone 5, hành động hội thoại "sit:<SPAWN_>"): như NPC ngồi (game/src/characters/npc.js) — điểm
 // đứng = chỗ ghế − models.<id>.seat.offset_xz_m (animation đưa mông lùi về ghế), sit_down rồi sit_type, nâng dần cho mông
 // chạm mặt ghế thật (chair_height_m − seat.height_m); đang ngồi thì không đi lại được, stand_up để đứng dậy.
+// Đứng dậy: điểm ngồi nằm lọt giữa bàn và ghế (capsule lồng vào COL_ bàn / ghế → đi đâu cũng kẹt — lỗi cũ) → trong lúc stand_up
+// trượt dần ra chỗ trống gần nhất, ưu tiên trên đường về chỗ đứng trước khi ngồi (exitSpot).
 import * as THREE from "three";
-import { CapsuleBody } from "../world/collision.js";
+import { CapsuleBody, penetration } from "../world/collision.js";
 
 const ACCEL = 10;          // m/s² — tăng/giảm tốc mượt
 // chờ animation ngồi / đứng tối đa chừng này (giây) — khung trình duyệt ẩn thì mixer không chạy, vẫn không treo hội thoại
 const SIT_WAIT_S = 4;
+const FREE_PEN = 0.02;     // capsule lồng vào COL_ dưới chừng này (m) = chỗ trống (đứng trên sàn cũng chạm sàn ~0)
 
 export class Player {
   constructor(character) {
@@ -50,6 +53,7 @@ export class Player {
   async sit(chair, yaw, chairHeight = null) {
     if (this.seated) return;
     const ch = this.character, seat = ch.model.seat || {};
+    const from = this.body.position.clone();          // chỗ đứng trước khi ngồi (đi tới được) → đứng dậy thì lùi về phía này
     const root = chair.clone();
     if (seat.offset_xz_m) {
       const [ox, oz] = seat.offset_xz_m, c = Math.cos(yaw), s = Math.sin(yaw);
@@ -61,7 +65,7 @@ export class Player {
     this.speed = 0;
     ch.root.rotation.y = yaw;
     const lift = chairHeight != null && seat.height_m != null ? chairHeight - seat.height_m : 0;
-    const s = (this.seated = { baseY: root.y, lift, state: "sitting_down" });
+    const s = (this.seated = { baseY: root.y, lift, state: "sitting_down", from, seat: root.clone(), exit: null });
     this.sits = (this.sits || 0) + 1;
     this.sync();
     await waitMax(ch.playOnce("sit_down"));
@@ -73,13 +77,32 @@ export class Player {
     const s = this.seated;
     if (!s || s.state === "standing_up") return;
     s.state = "standing_up";
+    s.exit = this.exitSpot(s);
     await waitMax(this.character.playOnce("stand_up"));
     if (this.seated === s) this.leaveSeat();
+  }
+  // chỗ đứng dậy: điểm ngồi nếu trống; không thì điểm trống đầu tiên trên đường về chỗ đứng trước khi ngồi, rồi vòng quanh
+  // điểm ngồi (0,3 … 1,5 m, 16 hướng); không có collider / không tìm được → về chỗ đứng trước khi ngồi
+  exitSpot(s) {
+    const col = this.collider, r = this.body.radius, h = this.body.height;
+    if (!col) return s.from.clone();
+    const free = (p) => penetration(col, p, r, h) < FREE_PEN;
+    if (free(s.seat)) return s.seat.clone();
+    const p = new THREE.Vector3();
+    for (let t = 0.05; t <= 1.0001; t += 0.05) if (free(p.lerpVectors(s.seat, s.from, t))) return p.clone();
+    for (let d = 0.3; d <= 1.5001; d += 0.1) for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2;
+      p.set(s.seat.x + Math.sin(a) * d, s.seat.y, s.seat.z + Math.cos(a) * d);
+      if (free(p)) return p.clone();
+    }
+    return s.from.clone();
   }
   // thôi ngồi ngay (không animation) — đổi zone, cảnh chuyển đặt lại người chơi
   leaveSeat() {
     if (!this.seated) return;
+    const exit = this.seated.exit;
     this.seated = null;
+    if (exit) { this.body.teleport(exit); this.body.onGround = true; }
     this.character.enableLocomotion(0.2);
     this.character.setSpeed(0);
     this.sync();
@@ -93,6 +116,7 @@ export class Player {
   }
 
   update(dt, input, cam, collider, obstacles = null) {
+    this.collider = collider;
     if (this.seated) { this.character.update(dt); this.sync(); return; }      // đang ngồi: không đi lại, không trọng lực
     const { walk, run } = this.character.model.speed_mps;
     const want = new THREE.Vector3()
@@ -129,6 +153,12 @@ export class Player {
     this.character.root.position.copy(this.body.position);
     const s = this.seated;
     if (s?.lift) this.character.root.position.y = s.baseY + s.lift * THREE.MathUtils.smoothstep(this.seatedness(), 0, 1);
+    // đang đứng dậy: trượt dần từ điểm ngồi ra chỗ trống
+    if (s?.exit && s.state === "standing_up") {
+      const k = THREE.MathUtils.smoothstep(1 - this.seatedness(), 0, 1);
+      this.character.root.position.x = THREE.MathUtils.lerp(s.seat.x, s.exit.x, k);
+      this.character.root.position.z = THREE.MathUtils.lerp(s.seat.z, s.exit.z, k);
+    }
   }
 }
 
