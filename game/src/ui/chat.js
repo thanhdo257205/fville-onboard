@@ -1,5 +1,9 @@
 // Khung chat (nhắn tin tự do giữa người chơi — máy chủ báo features "chat", ../net/net.js → chat()). Góc trái dưới.
-//   • Đóng: chỉ hiện vài tin mới nhất (mọi kênh, mờ dần sau ~12 s) + số tin chưa đọc. Enter (đang đi lại / ở bàn bi-a) → mở.
+//   • Đóng: chỉ hiện vài tin mới nhất (mọi kênh, mờ dần sau ~12 s) + số tin chưa đọc + ô nhắn tin ở góc trái dưới (máy tính):
+//     bấm vào ô / Enter (đang đi lại / ở bàn bi-a) → mở khung đầy đủ; "/" → gõ nhanh 1 tin (chỉ ô nhập, gửi vào tab đang chọn,
+//     gửi xong tự đóng — lần đầu chưa đọc quy tắc thì mở khung đầy đủ).
+//   • Esc đóng khung: không xin khoá con trỏ lại ngay (core/input.js noLockUntil) — Esc cũng là phím trình duyệt dùng để nhả
+//     khoá: khoá vừa xin trong lúc bấm Esc bị nhả ngay → game tưởng người chơi tự thoát → mở menu (lỗi cũ). Bấm vào game để khoá lại.
 //   • Mở: game chuyển chế độ "chat" (nhân vật đứng yên, hiện con trỏ, phím gõ vào ô chữ không điều khiển game); 3 tab Zone
 //     (người cùng zone — kèm bong bóng trên đầu người gửi) / All (cả phòng) / Private (nhắn riêng: chọn người trong danh sách,
 //     hoặc bấm vào tên trong tin / bảng tên người chơi); Enter gửi, Enter khi ô trống hoặc Esc đóng.
@@ -38,6 +42,7 @@ export class ChatPanel {
         <small class="err"></small>
         <small class="help">${esc(t("chat.help"))}</small>
       </div>
+      <button type="button" class="bar" tabindex="-1"><span>💬</span><em></em></button>
       <div class="who" hidden></div>`;
     document.getElementById("hud").appendChild(el);
     this.el = el;
@@ -45,8 +50,14 @@ export class ChatPanel {
     this.select = el.querySelector("select");
     el.querySelector("form").addEventListener("submit", (e) => { e.preventDefault(); this.send(); });
     this.input.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); this.close(); }
+      if (e.key !== "Escape") return;
+      e.preventDefault(); e.stopPropagation();
+      this.game.input.noLockUntil = performance.now() + 500;   // trình duyệt đang nhả khoá con trỏ bằng phím Esc này
+      this.close();
     });
+    const barEl = el.querySelector(".bar");
+    barEl.addEventListener("mousedown", (e) => e.preventDefault());   // không giữ focus ở nút (Space / Enter lúc đi lại không bấm lại nút)
+    barEl.addEventListener("click", () => this.open());
     el.addEventListener("click", (e) => {
       const tab = e.target.closest("[data-tab]")?.dataset.tab;
       if (tab) { this.setTab(tab); return; }
@@ -65,8 +76,11 @@ export class ChatPanel {
   get available() { return this.net.chatOn; }
 
   // ---------- mở / đóng ----------
-  open(tab = null, dmWith = null) {
+  // quick: "/" — chỉ ô nhập, gửi 1 tin vào tab đang chọn rồi đóng (chưa đọc quy tắc → khung đầy đủ)
+  open(tab = null, dmWith = null, { quick = false } = {}) {
     if (!this.available) return false;
+    this.quick = quick && !!this.settings.chat_rules && !tab && !dmWith && !device.touch;
+    this.el.classList.toggle("quick", this.quick);
     if (tab) this.tab = tab;
     if (dmWith) { this.tab = "dm"; this.dmWith = dmWith; }
     if (!this.isOpen) {
@@ -87,7 +101,8 @@ export class ChatPanel {
   close(restore = true) {
     if (!this.isOpen) return;
     this.isOpen = false;
-    this.el.classList.remove("open");
+    this.quick = false;
+    this.el.classList.remove("open", "quick");
     document.body.classList.remove("chat-open");
     this.el.querySelector(".who").hidden = true;
     this.input.blur();
@@ -108,7 +123,11 @@ export class ChatPanel {
     if (!text.trim()) { this.close(); return; }
     if (this.tab === "dm" && !this.dmWith) { this.showError("pick"); return; }
     const r = this.net.chat(this.tab, text, this.dmWith);
-    if (r === true) { this.input.value = ""; this.setError(""); if (device.touch) this.input.blur(); }   // cảm ứng: cất bàn phím ảo
+    if (r === true) {
+      this.input.value = ""; this.setError("");
+      if (device.touch) this.input.blur();                 // cảm ứng: cất bàn phím ảo
+      if (this.quick) this.close();                         // gõ nhanh ("/"): gửi xong thì đóng
+    }
     else this.showError(r);
   }
   onMessage(entry) {
@@ -168,6 +187,7 @@ export class ChatPanel {
   draw() {
     const on = this.available;
     if (this.el.hidden === on) this.el.hidden = !on;
+    document.body.classList.toggle("chat-bar", on && !device.touch);
     if (!on) { if (this.isOpen) this.close(); return; }
     // tab + số chưa đọc
     this.el.querySelectorAll("[data-tab]").forEach((b) => {
@@ -178,6 +198,8 @@ export class ChatPanel {
     this.el.querySelector(".rules").hidden = !!this.settings.chat_rules;
     // nhắn riêng: chọn người
     this.el.querySelector(".help").textContent = t(device.touch ? "chat.help_touch" : "chat.help");
+    this.el.querySelector(".bar em").textContent = t("chat.bar");
+    this.input.placeholder = this.quick ? t("chat.quick", { tab: t(`chat.tab_${this.tab}`) }) : "";
     const bar = this.el.querySelector(".dmbar");
     bar.hidden = this.tab !== "dm";
     if (this.tab === "dm") {
@@ -220,7 +242,8 @@ export class ChatPanel {
     }
   }
   info() {
-    return { available: this.available, open: this.isOpen, tab: this.tab, dmWith: this.dmWith, unread: { ...this.unread },
+    const bar = this.el.querySelector(".bar");
+    return { available: this.available, open: this.isOpen, quick: !!this.quick, bar: !!bar.offsetParent && getComputedStyle(bar).display !== "none", tab: this.tab, dmWith: this.dmWith, unread: { ...this.unread },
       rules: !this.el.querySelector(".rules").hidden && this.isOpen, error: this.el.querySelector(".err").textContent,
       log: [...this.el.querySelectorAll(".log p")].map((p) => p.textContent), peek: [...this.el.querySelectorAll(".peek p")].map((p) => p.textContent) };
   }

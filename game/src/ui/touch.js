@@ -6,7 +6,7 @@
 //   • Nút góc phải dưới: nút lớn thay phím E — ghi đúng tên việc như dòng nhắc "E: …" (hud.promptText), chỉ hiện khi đứng gần;
 //     hàng nút tròn ≥ 48 px: Chat, Emote / câu nhanh (T), Help (H), App My FPT (Tab), Menu (Esc), toàn màn hình (Android; iOS:
 //     hướng dẫn "Thêm vào màn hình chính"). Hội thoại: chạm vào màn hình để nói tiếp (input.onTap), chạm vào lựa chọn.
-//   • Ở bàn bi-a (chưa chơi bằng cảm ứng được — làm sau): dòng "Bi-a bằng cảm ứng sắp có" + nút Rời bàn.
+//   • Ở bàn bi-a: cần điều khiển / hàng nút ẩn, bàn tự có điều khiển cảm ứng (../pool/table.js: kéo ngắm, thanh lực, nút).
 //   • Cầm dọc: nhắc xoay ngang (CSS, #rotate). Bàn phím ảo (visualViewport): --kb = chiều cao bàn phím, ô đang gõ cuộn vào giữa
 //     phần còn thấy (khung chat, ô mật khẩu mini-game Đăng nhập, ô tên).
 //   • Chặn menu khi giữ ngón (contextmenu), phóng to bằng 2 ngón trên iOS (gesturestart); phóng to / kéo xuống làm mới: CSS
@@ -81,8 +81,7 @@ export class TouchControls {
     el.id = "touch";
     el.innerHTML = `<div class="stick-zone"><div class="stick"><i></i></div></div>
       <button type="button" class="act" hidden><span></span></button>
-      <div class="pad">${BUTTONS.map(([id, icon]) => `<button type="button" class="round" data-a="${id}" hidden>${icon}</button>`).join("")}</div>
-      <div class="pool-note" hidden><p></p><button type="button" class="primary" data-a="leave"></button></div>`;
+      <div class="pad">${BUTTONS.map(([id, icon]) => `<button type="button" class="round" data-a="${id}" hidden>${icon}</button>`).join("")}</div>`;
     document.body.appendChild(el);
     const rot = document.createElement("div");
     rot.id = "rotate";
@@ -94,7 +93,6 @@ export class TouchControls {
     this.stick = el.querySelector(".stick");
     this.knob = el.querySelector(".stick i");
     this.actBtn = el.querySelector(".act");
-    this.poolEl = el.querySelector(".pool-note");
     // nút: chạm (click — trình duyệt cảm ứng gửi click sau khi nhấc ngón) — không để lọt xuống khung vẽ
     el.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) e.stopPropagation(); });
     this.actBtn.addEventListener("click", () => { sound.play("tap"); this.actions.interact(); });
@@ -104,7 +102,6 @@ export class TouchControls {
       if (a === "full") this.fullscreen();
       else this.actions[a]?.();
     });
-    el.querySelector("[data-a=leave]").addEventListener("click", () => this.leavePool());
     // cần điều khiển
     this.zone.addEventListener("pointerdown", (e) => {
       if (this.stickAt || this.game.mode !== "play") return;
@@ -165,8 +162,6 @@ export class TouchControls {
       b.setAttribute("aria-label", t(key));
       b.title = t(key);
     }
-    this.poolEl.querySelector("p").textContent = t("touch.pool_soon");
-    this.poolEl.querySelector("button").textContent = t("touch.pool_leave");
     this.rotEl.querySelector("p").textContent = t("touch.rotate");
     this.shownKey = "";
   }
@@ -189,13 +184,6 @@ export class TouchControls {
       .catch(() => { if (!auto) hud.toast(t("touch.fullscreen_failed")); });
   }
 
-  leavePool() {
-    const p = this.game.pool;
-    if (!p?.active) return;
-    if (p.challenge) this.ui.minigame.close(false);            // thử thách của anh Khang: đóng khung mini-game
-    else p.leave();
-  }
-
   // bàn phím ảo: phần bị che (px) → --kb; ô đang gõ cuộn vào giữa phần còn thấy
   keyboard(vv) {
     const kb = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop));
@@ -215,20 +203,17 @@ export class TouchControls {
     const free = playing && g.mode === "play";
     if (!free && (this.stickAt || this.input.stick)) this.stickRelease();
     const act = free ? g.interaction?.current && hud.promptText : null;
-    const pool = playing && !!g.pool?.active;
     const vis = {
       chat: free && !!this.chat?.available, emote: free && !!this.emotes && !!g.net?.connected, help: free,
       app: free && g.progress.hasReward("app_my_fpt"), menu: free, full: free && (device.ios || !!document.fullscreenEnabled),
     };
-    const key = `${on}|${free}|${act}|${pool}|${Object.values(vis).map(Number).join("")}`;
+    const key = `${on}|${free}|${act}|${Object.values(vis).map(Number).join("")}`;
     if (key === this.shownKey) return;
     this.shownKey = key;
     this.el.classList.toggle("free", free);
     this.actBtn.hidden = !act;
     if (act) this.actBtn.querySelector("span").textContent = act;
     for (const [id, v] of Object.entries(vis)) this.el.querySelector(`[data-a=${id}]`).hidden = !v;
-    this.poolEl.hidden = !pool;
-    document.body.classList.toggle("touch-pool", pool);   // ẩn dòng hướng dẫn phím của bàn bi-a (chuột / A, D / Space)
   }
 
   // __game.touch: trạng thái + tâm các nút (toạ độ màn hình) — smoke test chạm đúng chỗ
@@ -240,7 +225,6 @@ export class TouchControls {
       zone: { x: Math.round(z.left + z.width * 0.35), y: Math.round(z.top + z.height * 0.6), w: Math.round(z.width), h: Math.round(z.height) },
       act: this.actBtn.hidden ? null : { ...c(this.actBtn), text: this.actBtn.textContent },
       buttons: Object.fromEntries(BUTTONS.map(([id]) => [id, c(this.el.querySelector(`[data-a=${id}]`))]).filter(([, v]) => v)),
-      pool: this.poolEl.hidden ? null : { text: this.poolEl.querySelector("p").textContent, leave: c(this.poolEl.querySelector("button")) },
     };
   }
 }

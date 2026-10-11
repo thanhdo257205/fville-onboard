@@ -96,6 +96,9 @@ export class Input {
   lock() {
     // giao diện cảm ứng: không khoá (đang khoá thì mọi sự kiện con trỏ — cả ngón tay — báo toạ độ cố định → cần điều khiển hỏng)
     if (!this.lockSupported || this.locked || device.touch) return;
+    // vừa đóng khung chat bằng Esc: trình duyệt dùng chính phím đó để nhả khoá → khoá xin lúc này bị nhả ngay, game tưởng người
+    // chơi tự thoát (mở menu). Chờ người chơi bấm vào game (gợi ý "Click to look")
+    if (performance.now() < (this.noLockUntil || 0)) return;
     if (this.fakeLock !== null) { setTimeout(() => { if (this.lookActive && this.fakeLock === false) this.fakeLock = true; }, 30); return; }
     try { this.canvas.requestPointerLock()?.catch?.(() => {}); } catch { /* chưa được phép */ }
   }

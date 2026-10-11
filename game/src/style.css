@@ -621,7 +621,7 @@ body.overlay-open #emotes { display: none; }
 @media (prefers-reduced-motion: reduce) { #title .hero > * { animation: none; } #title .hero { transition: none; } }
 
 /* khung chat (game/src/ui/chat.js): góc trái dưới — đóng: vài tin mới nhất mờ dần; mở: tab Zone / All / Private, ô gõ */
-#chat { position: absolute; left: 16px; bottom: 60px; width: min(380px, calc(100vw - 32px)); pointer-events: none; font: 600 13px/1.35 "Nunito", sans-serif; }
+#chat { position: absolute; left: 16px; bottom: 16px; width: min(380px, calc(100vw - 32px)); pointer-events: none; font: 600 13px/1.35 "Nunito", sans-serif; }
 #chat .peek p { margin: 3px 0 0; padding: 3px 9px; border-radius: 8px; background: rgba(18, 20, 24, .6); color: #fff; width: fit-content; max-width: 100%;
   overflow-wrap: anywhere; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
 #chat .peek p.sys { color: #ffd27a; }
@@ -659,6 +659,17 @@ body.overlay-open #emotes { display: none; }
 #chat .help { display: block; color: var(--muted); margin-top: 2px; }
 #chat .who { position: absolute; pointer-events: auto; display: grid; gap: 4px; padding: 8px; border-radius: 10px; background: #23262d; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
 #chat .who[hidden] { display: none; }
+/* ô nhắn tin góc trái dưới (máy tính, khung đóng): bấm / Enter → khung đầy đủ, "/" → gõ nhanh (ui/chat.js) */
+#chat .bar { pointer-events: auto; display: flex; align-items: center; gap: 8px; margin-top: 6px; width: min(300px, 100%); box-sizing: border-box;
+  padding: 7px 11px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .2); background: rgba(18, 20, 24, .6); color: var(--muted);
+  font: 700 12px "Nunito", sans-serif; text-align: left; cursor: text; }
+#chat .bar em { font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#chat .bar:hover { border-color: rgba(243, 112, 33, .7); color: var(--fg); }
+#chat.open .bar, #chat.busy .bar, body.touch #chat .bar { display: none; }
+/* gõ nhanh ("/"): chỉ ô nhập */
+#chat.quick .tabs, #chat.quick .dmbar, #chat.quick .log, #chat.quick .help, #chat.quick .rules { display: none; }
+/* dòng hướng dẫn giữa đáy không đè ô nhắn tin góc trái */
+body.chat-bar #hint { max-width: max(calc(100vw - 680px), 46vw); }
 #chat .who b { color: #fff; }
 #chat .who button { border: 0; border-radius: 8px; padding: 4px 10px; background: rgba(255, 255, 255, .1); color: var(--fg); font: 700 12px "Nunito"; cursor: pointer; text-align: left; }
 body.chat-open .nametag.player-tag { pointer-events: auto; cursor: pointer; }
@@ -709,12 +720,6 @@ body.cinematic #touch { display: none; }
 #touch .act[hidden] { display: none; }
 #touch .act span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 #touch .act:active { filter: brightness(1.1); transform: scale(.97); }
-#touch .pool-note { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
-  padding: 8px 10px 8px 16px; border-radius: 14px; background: var(--panel); pointer-events: auto; max-width: calc(100vw - 32px); }
-#touch .pool-note[hidden] { display: none; }
-body.touch-pool #hint { display: none; }
-#touch .pool-note p { margin: 0; font-weight: 800; }
-#touch .pool-note button { min-height: 44px; white-space: nowrap; }
 /* HUD khi chơi bằng cảm ứng: không gợi ý phím (nút hành động thay #prompt), dòng điều khiển ở giữa đáy (giữa cần điều khiển và
    hàng nút), số người online lên góc trên phải, tin chat xem trước lên trên cần điều khiển */
 body.touch kbd, body.touch #prompt, body.touch #lockhint { display: none !important; }
@@ -810,3 +815,50 @@ body.short.talking #ach-card .title { font-size: 16px; }
 /* thoát toàn màn hình → nút ⛶ nhấp nháy 1 lần (ui/touch.js) */
 #touch .round.pulse { animation: full-pulse 1.2s ease-in-out 1; }
 @keyframes full-pulse { 0%, 100% { transform: scale(1); box-shadow: none; } 40% { transform: scale(1.18); box-shadow: 0 0 0 6px rgba(243, 112, 33, .45); } }
+
+/* ---------- bi-a bằng cảm ứng (pool/table.js buildTouch — chỉ body.touch; máy tính giữ nguyên) ----------
+   Mép phải: thanh lực dọc (kéo xuống chọn lực, thả đánh). Cạnh trái thanh: cột nút tròn (Luật / Xếp lại / Ngồi / Rời bàn) ở
+   trên, nút theo lúc (◀ ▶ ngắm tinh · Đặt bi · Xếp lại và phá / Đánh tiếp) ở dưới. Góc trái trên: bảng (ghế, đồng hồ, trạng
+   thái — nút trong bảng ẩn, đã có ở cột nút). Góc trái dưới: ô áp phê. Giữa màn để trống cho bi trắng + đường ngắm. */
+#pool-touch { display: none; }
+body.touch #pool-touch { display: block; position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+body.touch #pool-touch [hidden] { display: none !important; }
+#pool-touch .tpower { position: absolute; right: calc(10px + env(safe-area-inset-right)); top: calc(8px + env(safe-area-inset-top));
+  bottom: calc(8px + env(safe-area-inset-bottom)); width: 52px; box-sizing: border-box; padding: 6px 0 20px; display: grid; grid-template-rows: auto 1fr;
+  justify-items: center; gap: 20px; border-radius: 14px; background: var(--panel); pointer-events: auto; touch-action: none; user-select: none; }
+#pool-touch .tpower span { font: 800 11px "Nunito", sans-serif; color: var(--muted); }
+#pool-touch .tpower .track { position: relative; width: 12px; height: 100%; border-radius: 999px; background: rgba(38, 42, 49, .9); }
+#pool-touch .tpower .track i { position: absolute; left: 0; right: 0; top: 0; height: 0; border-radius: 999px; background: linear-gradient(180deg, #8fe0a8, #ffd27a, #f37021); }
+#pool-touch .tpower .track b { position: absolute; left: 50%; top: 0; width: 32px; height: 32px; transform: translate(-50%, -50%); border-radius: 50%;
+  box-sizing: border-box; background: #fff; border: 3px solid var(--orange); box-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
+#pool-touch .icons { position: absolute; right: calc(70px + env(safe-area-inset-right)); top: calc(8px + env(safe-area-inset-top)); display: flex; flex-direction: column; gap: 6px; }
+#pool-touch .ctx { position: absolute; right: calc(70px + env(safe-area-inset-right)); bottom: calc(8px + env(safe-area-inset-bottom)); display: flex; gap: 6px; align-items: flex-end; }
+#pool-touch .round { width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .35); background: var(--panel); color: #fff;
+  font: 800 18px/1 "Nunito", sans-serif; display: grid; place-items: center; pointer-events: auto; touch-action: none; user-select: none; }
+#pool-touch .round:active { background: var(--orange); }
+#pool-touch .ctx .primary, #pool-touch .ctx .ghost { min-height: 44px; padding: 0 14px; white-space: nowrap; pointer-events: auto; touch-action: manipulation; }
+/* bảng, ô áp phê, thẻ luật, dòng "còn N cú" (thử thách) ở chế độ cảm ứng */
+body.touch #pool-hud .panel { left: calc(8px + env(safe-area-inset-left)); top: calc(8px + env(safe-area-inset-top)); padding: 6px 10px; gap: 2px;
+  max-width: min(300px, 36vw); max-height: calc(var(--vvh, 100dvh) - 114px); overflow-y: auto; box-sizing: border-box; }
+body.touch #pool-hud .panel .row { display: none; }
+body.touch #pool-hud .seats { gap: 2px; }
+body.touch #pool-hud .seat { padding: 2px 6px; }
+body.touch #pool-hud .seat .nm { font-size: 12px; }
+body.touch #pool-hud .seat em, body.touch #pool-hud .panel span, body.touch #pool-hud .panel .status, body.touch #pool-hud .panel .foul { font-size: 11.5px; }
+body.touch #pool-hud .power { bottom: calc(8px + env(safe-area-inset-bottom)); width: auto; }
+body.touch #pool-hud .power .bar, body.touch #pool-hud .power > span { display: none; }
+body.touch #pool-hud .rules { right: auto; left: 50%; transform: translateX(-50%); top: calc(8px + env(safe-area-inset-top)); max-width: min(420px, calc(100vw - 260px));
+  max-height: calc(var(--vvh, 100dvh) - 16px); overflow-y: auto; box-sizing: border-box; }
+body.touch #pool-spin { right: auto; left: calc(8px + env(safe-area-inset-left)); bottom: calc(8px + env(safe-area-inset-bottom)); padding: 4px 8px; gap: 2px; }
+body.touch #pool-spin b, body.touch #pool-spin .keys { display: none; }
+body.touch #pool-spin .ball { width: 56px; height: 56px; }
+body.touch #pool-spin .cross::after { top: calc(-56px * .32); height: calc(56px * .64); }
+body.touch #pool-spin .val { font-size: 11px; }
+/* ở bàn: dòng mục tiêu / đồng hồ / "N online" / tin chat xem trước nhường chỗ cho bảng, thanh lực, cột nút */
+body.touch.pool-on #objective, body.touch.pool-on #clock, body.touch.pool-on #net-online, body.touch.pool-on #chat:not(.open) { display: none; }
+/* thử thách của anh Khang trên máy cảm ứng: khung mini-game hẹp lại (không đè thanh lực mép phải), thấp (≤ 40 % vùng nhìn, cuộn
+   được) để còn thấy bi trắng + đường ngắm */
+body.touch #minigame.mg-pool .panel, body.touch.short #minigame.mg-pool .panel.mg { width: min(520px, calc(100vw - 180px)); margin-top: 8px; padding: 6px 12px;
+  max-height: max(84px, calc(var(--vvh, 100dvh) * .4)); overflow-y: auto; box-sizing: border-box; }
+body.touch #minigame.mg-pool .mg header h2 { font-size: 14px; }
+body.touch #minigame.mg-pool .mg .line { font-size: 12px; margin: 0 0 4px; }

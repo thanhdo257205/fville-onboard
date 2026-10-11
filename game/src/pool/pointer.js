@@ -2,8 +2,9 @@
 // rồi báo cho bàn (./table.js) qua 3 callback:
 //   move(pt, e)  di chuyển (chưa bấm hoặc đang giữ) · down(pt, e)  bấm nút chính / chạm · up(pt, e)  thả / nhấc / huỷ
 // pt = { x, z } hoặc null (tia không cắt mặt bàn, vd chỉ lên trên đường chân trời).
-// Hiện chỉ nhận chuột (types = ["mouse"]). Cảm ứng sau này: thêm "touch" / "pen" vào types — cùng một luồng (chạm = down, kéo
-// = move, nhấc = up; giữ pointer capture để kéo ra ngoài khung vẫn nhận move / up), bàn chỉ cần quyết cử chỉ nào ngắm / nạp lực.
+// types: loại con trỏ nhận (bàn bi-a: chuột + ngón tay + bút). Ngón tay / bút cùng một luồng (chạm = down, kéo = move, nhấc
+// = up; giữ pointer capture để kéo ra ngoài khung vẫn nhận move / up); bàn quyết cử chỉ nào ngắm / đặt bi / gọi lỗ (lực: thanh
+// kéo riêng, không qua đây). Hai ngón trở lên (chụm thu phóng — core/input.js): bỏ qua mọi điểm tới khi nhấc hết ngón.
 // Khi con trỏ đang khoá (Pointer Lock) trình duyệt vẫn gửi pointerdown / up vào canvas nhưng clientX đứng yên — bàn tự bỏ
 // qua điểm chiếu lúc đó (xoay cơ theo movementX như cũ, core/input.js).
 import * as THREE from "three";
@@ -14,6 +15,8 @@ export class TablePointer {
     Object.assign(this, { canvas, camera, root, y, onMove, onDown, onUp, types });
     this.lastType = null;     // loại con trỏ vừa dùng ("mouse" / "touch"…) — bàn phân biệt kéo chuột với kéo ngón tay
     this.down = false;
+    this.touches = new Set();   // ngón tay / bút đang đặt trên khung vẽ
+    this.multi = false;         // đang có ≥ 2 ngón (chụm): không ngắm
     this.ray = new THREE.Raycaster();
     this.ndc = new THREE.Vector2();
     this.plane = new THREE.Plane();
@@ -21,10 +24,15 @@ export class TablePointer {
     const wrap = (fn, kind) => (e) => {
       if (!this.types.includes(e.pointerType)) return;
       this.lastType = e.pointerType;
+      if (e.pointerType !== "mouse") {
+        if (kind === "down") { this.touches.add(e.pointerId); if (this.touches.size > 1) this.multi = true; }
+        else if (kind === "up") { this.touches.delete(e.pointerId); if (!this.touches.size) { const was = this.multi; this.multi = false; if (was) { this.down = false; return; } } }
+        if (this.multi) { this.down = false; return; }
+      }
       if (kind === "down") {
         if (e.button !== 0) return;
         this.down = true;
-        if (e.pointerType !== "mouse") this.canvas.setPointerCapture?.(e.pointerId);
+        if (e.pointerType !== "mouse") try { this.canvas.setPointerCapture(e.pointerId); } catch { /* chạm giả lập */ }
       } else if (kind === "up") {
         if (!this.down) return;
         this.down = false;
@@ -39,7 +47,7 @@ export class TablePointer {
     ];
   }
   attach() { for (const [el, type, fn] of this.handlers) el.addEventListener(type, fn); return this; }
-  detach() { for (const [el, type, fn] of this.handlers) el.removeEventListener(type, fn); this.down = false; }
+  detach() { for (const [el, type, fn] of this.handlers) el.removeEventListener(type, fn); this.down = false; this.touches.clear(); this.multi = false; }
 
   // toạ độ màn hình (clientX / Y) → điểm trên mặt phẳng tâm bi, toạ độ cục bộ của bàn; null nếu tia không cắt mặt phẳng
   point(cx, cy) {

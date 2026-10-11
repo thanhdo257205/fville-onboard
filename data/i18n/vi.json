@@ -253,7 +253,23 @@
     "net_status_choosing": "{name} đang chọn sau cú phá không hợp lệ.",
     "net_status_place_table": "Bi trong tay: đặt bi trắng ở đâu trên bàn cũng được (chuột hoặc W/A/S/D), rồi bấm chuột hoặc Space.",
     "net_status_call": "Đánh bi số 8: gọi lỗ trước. Bấm vào lỗ hoặc nhấn C.",
-    "net_status_called": "Đã gọi: {pocket}. C: đổi lỗ."
+    "net_status_called": "Đã gọi: {pocket}. C: đổi lỗ.",
+    "hint_touch": "Kéo trên bàn: ngắm · Kéo thanh lực xuống rồi thả: đánh (kéo về đỉnh: hủy) · ◀ ▶: ngắm tinh · Chụm 2 ngón: gần / xa",
+    "hint_spin_touch": "Kéo chấm trên bi trắng: xoáy",
+    "power_touch": "Kéo xuống để lấy lực, thả ra để đánh. Kéo về đỉnh để hủy.",
+    "aim_left": "Xoay cơ sang trái (chậm)",
+    "aim_right": "Xoay cơ sang phải (chậm)",
+    "place": "Đặt bi",
+    "cleared_touch": "Sạch bàn sau {n} cú! Chạm ↻ để xếp lại bi.",
+    "net_status_free_touch": "Còn ghế trống. Chạm 🪑 để chơi.",
+    "net_status_place_touch": "Bi trong tay: kéo bi trắng trong khu đầu bàn, rồi chạm Đặt bi.",
+    "net_status_place_table_touch": "Bi trong tay: kéo bi trắng tới đâu trên bàn cũng được, rồi chạm Đặt bi.",
+    "net_rematch_hint_touch": "Chạm ↻ để đấu lại.",
+    "net_status_choice_touch": "Phá bi không hợp lệ. Xếp lại và phá, hoặc đánh tiếp.",
+    "net_status_call_touch": "Đánh bi số 8: gọi lỗ trước — chạm vào lỗ.",
+    "rules_eight_touch": "Hết bi nhóm mình thì gọi lỗ cho bi số 8: chạm vào lỗ (hoặc kéo thanh lực để gọi lỗ bạn đang ngắm tới).",
+    "rules_practice_touch": "Tập một mình: không chia lượt, không tính lỗi, vào bi nào cũng được. Bi trắng vào lỗ thì được đặt lại ở đầu bàn. ↻: xếp lại bi.",
+    "rules_spin_touch": "Xoáy: kéo chấm trên bi trắng. Xoáy trái/phải làm bi bật băng lệch đi; đánh đè cho bi trắng chạy tiếp sau khi chạm bi, đánh kéo cho bi trắng lùi lại. Sau mỗi cú, chấm về giữa."
   },
   "tiers": {
     "low": "Thấp",
@@ -391,7 +407,9 @@
     "empty_dm": "Chọn một người để bắt đầu nhắn riêng.",
     "unread": "{n} tin mới — nhấn Enter để đọc",
     "help_touch": "Gửi: gửi tin · chạm vào tên: nhắn riêng / tắt nhận tin",
-    "unread_touch": "{n} tin mới — chạm 💬 để đọc"
+    "unread_touch": "{n} tin mới — chạm 💬 để đọc",
+    "bar": "Enter: mở chat · /: nhắn nhanh",
+    "quick": "Gửi tới {tab} · Enter: gửi · Esc: hủy"
   },
   "touch": {
     "_note": "Nút cảm ứng (game/src/ui/touch.js): nút là biểu tượng, đây là tên nút (trình đọc màn hình, giữ ngón để xem). say_from / say_to: gợi ý trong game ghi \"nhấn E\" sẽ đọc thành say_to khi chơi bằng cảm ứng.",
@@ -404,8 +422,6 @@
     "fullscreen_failed": "Trình duyệt này không cho chơi toàn màn hình.",
     "ios_home": "Trên iPhone / iPad: chạm nút Chia sẻ ⬆ rồi chọn \"Thêm vào MH chính\" để chơi toàn màn hình.",
     "ios_tip": "Mẹo: Chia sẻ ⬆ → \"Thêm vào MH chính\" để chơi toàn màn hình.",
-    "pool_soon": "Bi-a bằng cảm ứng sắp có.",
-    "pool_leave": "Rời bàn",
     "rotate": "Xoay ngang điện thoại để chơi nhé.",
     "say_from": "nhấn E",
     "say_to": "chạm nút hành động"

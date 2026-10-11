@@ -202,6 +202,11 @@ async function boot() {
     if (free && chat?.open()) return;
     ui.dialogue.next();
   });
+  // "/": gõ nhanh 1 tin nhắn (ô nhập ở góc trái dưới, gửi vào tab đang chọn rồi đóng); chặn ký tự "/" lọt vào ô vừa mở
+  for (const k of ["Slash", "NumpadDivide"]) input.on(k, (e) => {
+    const free = !ui.dialogue.open && (game.mode === "play" || game.mode === "pool") && game.state.phase === "playing";
+    if (free && chat?.open(null, null, { quick: true })) e?.preventDefault();
+  });
   const digit = (i) => () => { if (emotes?.open) emotes.pick(i - 1); else if (i <= 4) ui.dialogue.choose(i - 1); };
   for (let i = 1; i <= 9; i++) { input.on(`Digit${i}`, digit(i)); input.on(`Numpad${i}`, digit(i)); }
   const emote = () => {
@@ -228,7 +233,7 @@ async function boot() {
   }
   const escape = () => {
     if (title?.open) return;
-    if (chat?.isOpen) return chat.close();
+    if (chat?.isOpen) { input.noLockUntil = performance.now() + 500; return chat.close(); }   // Esc cũng là phím trình duyệt nhả khoá → đừng xin khoá ngay
     if (game.cutscene) return game.cutscene.skip();
     if (game.timeSkipping) return;            // màn mờ chuyển giờ (vd "12:00 · lunch"): không mở menu giữa chừng
     if (game.mode === "pool") return game.pool?.leave();

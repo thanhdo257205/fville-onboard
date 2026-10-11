@@ -170,7 +170,7 @@ thanh trạng thái giả, xoay ngang ẩn thêm 2 thanh chỉ số để còn c
 | Bỏ qua cảnh chuyển | Nút Skip hoặc Esc |
 | Bi-a: điểm chạm trên bi trắng (xoáy trái / phải, đánh đè / kéo) | Z / X, F / B, hoặc kéo chấm trên ô bi trắng |
 | Emote, câu chat soạn sẵn (chỉ khi bật chơi nhiều người) | T, rồi 1–9 |
-| Nhắn tin tự do (khi máy chủ có chat): mở / gửi, đóng | Enter, Esc |
+| Nhắn tin tự do (khi máy chủ có chat): mở khung đầy đủ / gõ nhanh 1 tin / gửi, đóng | Enter hoặc bấm ô 💬 góc trái dưới / phím `/` (gửi xong tự đóng) / Enter, Esc (chỉ đóng khung chat, không mở menu) |
 
 **Điều khiển cảm ứng (điện thoại, máy tính bảng)**
 
@@ -185,7 +185,11 @@ Nhận biết bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoin
 | Tương tác | Nút cam lớn góc phải, ghi tên việc (như dòng nhắc "E: …"), chỉ hiện khi đứng gần |
 | Tiếp lời thoại / chọn đáp án | Chạm hộp thoại hoặc chạm màn hình / chạm vào lựa chọn |
 | App My FPT, Help, Emote, Chat, Menu, toàn màn hình | Hàng nút tròn góc phải dưới (📱 ? 👋 💬 ☰ ⛶); nút chỉ hiện khi dùng được |
-| Bi-a | Chưa có (làm sau): ở bàn bi-a hiện "Bi-a bằng cảm ứng sắp có" + nút Rời bàn |
+| Bi-a: ngắm | Chạm và kéo 1 ngón trên bàn → cơ hướng từ bi trắng tới ngón tay (chạm nhẹ không đánh); ngắm tinh: giữ nút ◀ ▶ (xoay chậm) |
+| Bi-a: lực, đánh | Thanh lực dọc mép phải: kéo xuống chọn lực (cơ lùi theo), thả = đánh; kéo về đỉnh rồi thả = hủy cú |
+| Bi-a: camera, áp phê | Chụm – mở 2 ngón; kéo chấm trên ô bi trắng góc trái dưới |
+| Bi-a: bi trong tay, gọi lỗ bi 8 | Kéo bi trắng bằng ngón tay (vòng đỏ = chỗ không hợp lệ) rồi chạm "Đặt bi"; chạm vào lỗ (vùng chạm rộng hơn lỗ) |
+| Bi-a: sau cú phá không hợp lệ; nút khác | "Xếp lại & phá" / "Đánh tiếp"; cột nút ? (Luật) ↻ (Xếp lại) 🪑 (Ngồi, khi có ghế trống) ✕ (Rời bàn) |
 
 - Cầm dọc: màn nhắc xoay ngang. Nút ≥ 44 px, chừa tai thỏ / thanh điều hướng (`env(safe-area-inset-*)`); không phóng to,
   không kéo xuống làm mới, không hiện menu khi giữ ngón.
@@ -213,7 +217,7 @@ Mọi người chơi vào một phòng chung, không mã phòng. Mỗi người 
 - Người khác có model và bộ đồ của họ (Áo Cam FPT khi đã nhận), bảng tên viền xanh ngọc (NPC viền cam), đi / chạy / đứng mượt. Chỉ hiện 10 người gần nhất cùng zone, không va chạm.
 - Góc dưới phải: "N online · M in this zone".
 - Phím T: 3 emote (Wave, Nod, Cheer) và 6 câu chat soạn sẵn ("Hi!", "Good luck!", "Follow me!", "Thank you!", "See you at lunch!", "Welcome to F-Ville!") hiện thành bong bóng trên đầu.
-- Nhắn tin tự do (Enter): 3 tab Zone (người cùng zone, kèm bong bóng trên đầu) / All (cả phòng) / Private (nhắn riêng: bấm bảng tên hoặc chọn người); tối đa 120 ký tự, chống spam, từ thô tục và link bị che ở máy chủ (`data/chat.json`); bấm tên để mute; thẻ quy tắc ứng xử lần đầu; tắt hẳn trong menu Esc. Máy chủ không lưu lịch sử.
+- Nhắn tin tự do (Enter, ô 💬 góc trái dưới, hoặc `/` để gõ nhanh 1 tin vào tab đang chọn): 3 tab Zone (người cùng zone, kèm bong bóng trên đầu) / All (cả phòng) / Private (nhắn riêng: bấm bảng tên hoặc chọn người); tối đa 120 ký tự, chống spam, từ thô tục và link bị che ở máy chủ (`data/chat.json`); bấm tên để mute; thẻ quy tắc ứng xử lần đầu; tắt hẳn trong menu Esc. Máy chủ không lưu lịch sử.
 - Menu Esc: "Show other players: On / Off", "Chat: On / Off".
 - Người khác không ảnh hưởng nhiệm vụ: dấu "!", gợi ý E, camera hội thoại vẫn như chơi một mình. Đang hội thoại thì ẩn người đứng sát; đang mini-game thì ẩn hết.
 
@@ -502,7 +506,7 @@ Làm theo ba giai đoạn, và chỉ sang giai đoạn sau khi giai đoạn trư
 
 **Cắt được nếu thiếu thời gian**, theo thứ tự cắt trước: Đừng ngủ gật, Một cú bi-a, cảnh hoàng hôn, hạt lúa vàng. Tú là phần đắt nhất nhưng cũng giữ mạch cảm xúc; nếu phải bỏ Tú, chuyển tình huống thẻ báo đỏ sang một intern khác do code đặt tạm ở cửa.
 
-**Ngoài phạm vi:** chơi nhiều người đầy đủ (làm nhiệm vụ cùng nhau, phòng riêng — hiện có mức "thấy nhau", bi-a 2 người, nhắn tin), bi-a bằng cảm ứng (làm sau), lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
+**Ngoài phạm vi:** chơi nhiều người đầy đủ (làm nhiệm vụ cùng nhau, phòng riêng — hiện có mức "thấy nhau", bi-a 2 người, nhắn tin), lồng tiếng, bản tiếng Việt (chữ trong game là tiếng Anh, đã tách theo mã ngôn ngữ trong `data/i18n/` nên thêm bản tiếng Việt sau được).
 
 ## Phụ lục: dữ liệu JSON cho Claude Code
 
