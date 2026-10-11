@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục; 'see_through' ở gốc = cấu hình chung. doors: cửa mở được (cánh = node có custom property hinge, xoay quanh bản lề theo góc độ; col = hộp COL_ bỏ khi mở; open_if = điều kiện như quests.json). rooms: phòng giả sau cửa / lối sang zone khác (zone kia ở file GLB khác → nhìn qua cửa chỉ thấy trời, cỏ, đồi của phông nền): hộp chỉ vẽ mặt trong (center, size — toạ độ glTF; màu floor / wall / ceiling theo zone bên kia), không va chạm, không viền nét (game/src/world/zone.js applySceneFixes).",
+  "_ghi_chu": "Chỉnh bối cảnh khi game chạy (KHÔNG sửa file GLB). Mỗi zone một mục; 'see_through' ở gốc = cấu hình chung. doors: cửa mở được (cánh = node có custom property hinge, xoay quanh bản lề theo góc độ; col = hộp COL_ bỏ khi mở; open_if = điều kiện như quests.json). remove_parts: gỡ vật dựng chung mesh với đồ khác (mảnh lưới rời có tâm trong hộp — vd chậu cọ cũ); props: vật từ GLB riêng assets/props/<model>/<model>.glb (at = điểm đáy, height_m, yaw_deg) — game/src/world/zone.js. rooms: phòng giả sau cửa / lối sang zone khác (zone kia ở file GLB khác → nhìn qua cửa chỉ thấy trời, cỏ, đồi của phông nền): hộp chỉ vẽ mặt trong (center, size — toạ độ glTF; màu floor / wall / ceiling theo zone bên kia), không va chạm, không viền nét (game/src/world/zone.js applySceneFixes).",
   "see_through": {
     "_ghi_chu": "Cây cối không che người chơi (game/src/render/seethrough.js): cây nằm giữa camera và người chơi, hoặc bọc lấy / quẹt sát camera, mờ dần bằng dither rồi hiện lại khi hết che. meshes = regex tên node có cây (mesh gộp chung, code chia thành từng cây lúc tải zone). rays = [lệch ngang m, cao m] các điểm trên người chơi để dò che khuất từ camera. fade_s = thời gian mờ/hiện, hold_s = giữ mờ thêm sau khi hết che (khỏi nhấp nháy), max = mức mờ tối đa (1 = ẩn hẳn), near_m = lá cách camera dưới mức này thì mờ, min_height_m = cụm cây thấp hơn (hàng rào, bụi, cỏ — zone_01 có hàng rào dài 100 m cao 0,9 m) không bao giờ mờ. Zone có mesh gộp lẫn đồ khác: <zone>.see_through.add = [{ mesh, boxes }] (chỉ lấy mảnh có tâm trong hộp, toạ độ glTF).",
     "meshes": "^ENV_(vegetation|cay_)",
@@ -15,21 +15,26 @@
       { "id": "hanh_lang_zone_04", "center": [-17.55, 1.695, -21.5], "size": [7, 3.4, 5], "floor": "#c9c1b0", "wall": "#8f8b84", "ceiling": "#2a2a2a",
         "_ly_do": "Lối sang zone 4 ở đầu tây sảnh (TRIGGER_zone_04_enter x −13,2; __game.gaps: tia nhìn ngang lọt ra trời ở x −14, z −23 … −20). Bên kia là hành lang đầu đông zone 4 (sàn be, tường xám, trần tối). Hộp từ x −14,05 (sát lối đi, không hở khe ở ngưỡng), sàn thấp hơn sàn zone 5 mm, rộng hơn lối đi (tường zone che phần thừa). TẠM: script Blender đã sửa chỗ này (docs/CHECKLIST.md → 'mô hình bối cảnh bị hở'), build lại zone thì bỏ mục này." }
     ],
-    "see_through": {
-      "add": [
-        {
-          "mesh": "^ENV_noi_that$",
-          "boxes": [
-            { "center": [-8.625, 1.15, -3.0], "size": [1.45, 2.3, 1.9] },
-            { "center": [-8.625, 1.15, -5.6], "size": [1.45, 2.3, 1.9] },
-            { "center": [-8.625, 1.15, -8.0], "size": [1.45, 2.3, 1.9] }
-          ],
-          "_ly_do": "3 chậu cọ sảnh (scripts/blender/zone_03.py build_furniture: potted_palm tại x0 + 1,2 = −8,8; y Blender 3,0 / 5,6 / 8,0 → z glTF −3,0 / −5,6 / −8,0) gộp chung mesh nội thất với vách lam, cầu thang, đôn, TV. Hộp chỉ ôm chậu + lá (x từ −9,35: chừa vách lam x −9,6 và dây trầu bà rủ x ≈ −9,5)."
-        }
-      ]
-    }
+    "remove_parts": [
+      { "mesh": "^ENV_noi_that$", "boxes": [{ "center": [-8.8, 0.95, -3.0], "size": [1.0, 2.0, 1.0] }, { "center": [-8.8, 0.95, -5.6], "size": [1.0, 2.0, 1.0] }, { "center": [-8.8, 0.95, -8.0], "size": [1.0, 2.0, 1.0] }],
+        "_ly_do": "3 chậu cọ sảnh cũ (scripts/blender/zone_03.py build_furniture → interior.potted_palm tại x −8,8; z −3,0 / −5,6 / −8,0) gộp chung mesh nội thất → thay bằng chậu cây Sketchfab (props). Hộp chỉ ôm tâm chậu / thân / lá (lá tâm cách thân ≤ 0,35 m), x từ −9,3: chừa vách lam (x −9,6) và dây trầu bà rủ (tâm x −9,52 … −9,42)." }
+    ],
+    "props": [
+      { "model": "potted_plant", "at": [-8.8, 0, -3.0], "height_m": 1.9, "yaw_deg": 0 },
+      { "model": "potted_plant", "at": [-8.8, 0, -5.6], "height_m": 1.9, "yaw_deg": 140 },
+      { "model": "potted_plant", "at": [-8.8, 0, -8.0], "height_m": 1.9, "yaw_deg": 250 }
+    ]
   },
   "zone_04": {
+    "remove_parts": [
+      { "mesh": "^ENV_tang_tren$", "boxes": [{ "center": [-0.5, 5.2, 2.5], "size": [0.9, 2.2, 0.9] }, { "center": [-9.5, 5.2, 1.0], "size": [0.9, 2.2, 0.9] }, { "center": [8.0, 5.2, 8.0], "size": [0.9, 2.2, 0.9] }],
+        "_ly_do": "3 chậu cọ tầng trên cũ (scripts/blender/zone_04.py build_upper_floor: Blender (−0,5, −2,5), (−9,5, −1), (8, −8) ở UP 4,2 → glTF (x, 4,2, −y); chậu + thân + 10 lá tâm cách thân 0,3 m) → thay bằng chậu cây Sketchfab (props). COL_chau_cay_* giữ nguyên (0,8 × 0,8 m, ôm chậu mới)." }
+    ],
+    "props": [
+      { "model": "potted_plant", "at": [-0.5, 4.2, 2.5], "height_m": 1.9, "yaw_deg": 30 },
+      { "model": "potted_plant", "at": [-9.5, 4.2, 1.0], "height_m": 1.9, "yaw_deg": 170 },
+      { "model": "potted_plant", "at": [8.0, 4.2, 8.0], "height_m": 1.9, "yaw_deg": 290 }
+    ],
     "doors": [
       {
         "_ghi_chu": "Cửa quẹt thẻ (kính khung đen 2 cánh, bản lề ở mép ngoài: canh_trai x 1,0, canh_phai x 3,6). Quẹt thẻ xong (quest z4_card_gate) → 2 cánh xoay 90° mở vào phía cầu thang (−Z), bỏ hộp COL_cua_quet_the khỏi va chạm.",
@@ -47,6 +52,14 @@
     ]
   },
   "zone_05": {
+    "remove_parts": [
+      { "mesh": "^ENV_khu_nghi$", "boxes": [{ "center": [-1.0, 0.8, -5.2], "size": [1.0, 1.8, 1.0] }, { "center": [-7.2, 0.8, -5.2], "size": [1.0, 1.8, 1.0] }],
+        "_ly_do": "2 chậu cọ chậu trắng khu nghỉ cũ (scripts/blender/zone_05.py build_break_area → interior.potted_palm h 1,4 tại Blender (−1, 5,2), (−7,2, 5,2) → glTF (x, 0, −5,2)) → thay bằng chậu cây Sketchfab (props). COL_chau_cay_* giữ nguyên." }
+    ],
+    "props": [
+      { "model": "potted_plant", "at": [-1.0, 0, -5.2], "height_m": 1.6, "yaw_deg": 60 },
+      { "model": "potted_plant", "at": [-7.2, 0, -5.2], "height_m": 1.6, "yaw_deg": 200 }
+    ],
     "rooms": [
       { "id": "sanh_fsa_zone_04", "center": [3.25, 1.695, 0], "size": [6, 3.4, 6], "floor": "#8f9c7c", "wall": "#8e8a82", "ceiling": "#ece6d6",
         "_ly_do": "Cửa kính vào văn phòng (COL_cua_fsa x 0,1; ô cửa z −1,6 … 1,5 — __game.gaps: ~260 tia nhìn ngang lọt ra trời ở x 0,2–0,3). Bên kia là sảnh tầng trên zone 4 trước cửa phòng FSA (sàn gạch xanh xám, tường xám, trần be). Hộp từ x 0,25 (sát ô cửa, không hở khe ở ngưỡng), sàn thấp hơn sàn zone 5 mm, rộng hơn ô cửa (tường zone che phần thừa). TẠM: script Blender đã sửa chỗ này (docs/CHECKLIST.md → 'mô hình bối cảnh bị hở'), build lại zone thì bỏ mục này." }
