@@ -10,7 +10,18 @@
 //
 // Mô hình: bi–bi đàn hồi (hệ số phục hồi 0,95, khối lượng bằng nhau, đẩy tách khi chồng), bi–băng 0,8 (băng là các đoạn
 // thẳng chừa miệng lỗ; đầu đoạn = "hàm lỗ"), ma sát lăn giảm tốc dần (a + k·v), bi vào lỗ khi tâm bi lọt bán kính lỗ
-// (pool.json → pockets[].radius) hoặc đã qua hẳn mép băng ở miệng lỗ. Chưa có xoáy (spin).
+// (pool.json → pockets[].radius) hoặc đã qua hẳn mép băng ở miệng lỗ.
+//
+// Xoáy (điểm chạm trên bi trắng, simulateShot → shot.spin / shot.roll, số nguyên −2 … +2; 0 = đánh tâm):
+//   • spin (ngang, + = phải): mỗi bi có một số xoáy s (bi trắng lúc đánh: spin / 2, tức −1 … 1). Chạm băng → cộng vận tốc dọc
+//     băng theo chiều xoáy, tỉ lệ với lực nảy (thuận chiều lăn thì mở góc, ngược thì khép góc), xoáy giảm còn RAIL_SPIN_KEEP;
+//     bi trắng lệch nhẹ ngược phía xoáy lúc vừa đánh (SQUIRT, ~1° ở nấc 2); va bi → bi kia bị đẩy lệch rất nhẹ (THROW, ngược
+//     phía xoáy) và nhận một phần xoáy ngược chiều (SPIN_XFER); xoáy giảm dần theo thời gian lăn (SPIN_DECAY), bi dừng thì hết.
+//   • roll (lên / xuống, + = đánh đè, − = đánh kéo): ở lần va bi đầu tiên của bi trắng, bi trắng được cộng vận tốc theo hướng
+//     nó đang chạy trước va chạm (đè: đi tiếp) hoặc ngược lại (kéo: lùi), tỉ lệ roll / 2 · FOLLOW_K · tốc độ trước va chạm, giảm
+//     tuyến tính theo quãng đường đã lăn trước khi chạm (hết hẳn sau ROLL_DIST m).
+//   • spin = roll = 0: không tạo trạng thái xoáy, mọi phép tính như bản trước khi có xoáy → giống từng bit (ván cũ, phát lại,
+//     thử thách của anh Khang; scripts/tests/pool_physics.mjs so dấu vân tay).
 
 export const DT = 1 / 240;
 export const FRAME_STEPS = 4;           // ghi 1 khung mỗi 4 bước = 60 khung/giây (để vẽ)
@@ -18,10 +29,21 @@ export const MAX_SPEED = 5.5;           // m/s ở power = 1
 export const MIN_SPEED = 0.15;          // m/s ở power = 0
 export const BALL_E = 0.95;             // phục hồi bi–bi
 export const RAIL_E = 0.8;              // phục hồi bi–băng
-export const ROLL_A = 0.4;             // giảm tốc không đổi (m/s²)             // giảm tốc không đổi (m/s²)             // giảm tốc không đổi (m/s²)
-export const ROLL_K = 0.1;             // giảm tốc theo vận tốc (1/s)             // giảm tốc theo vận tốc (1/s)             // giảm tốc theo vận tốc (1/s)
+export const ROLL_A = 0.4;             // giảm tốc không đổi (m/s²)
+export const ROLL_K = 0.1;             // giảm tốc theo vận tốc (1/s)
 export const STOP_V = 0.01;             // dưới mức này thì bi dừng (m/s)
 export const MAX_TIME = 30;             // giới hạn thời gian một cú (s) — quá thì dừng hết (không xảy ra với số liệu trên)
+// xoáy (đầu file)
+export const SPIN_LEVELS = 2;           // nấc −2 … +2 (ngang và lên / xuống)
+export const SQUIRT = 0.01745;          // bi trắng lệch ngược phía xoáy lúc vừa đánh (rad ở nấc 2 ≈ 1°)
+export const RAIL_SPIN = 0.2;           // chạm băng: vận tốc dọc băng thêm = RAIL_SPIN · s · lực nảy ((1 + RAIL_E) · vận tốc vào)
+export const RAIL_SPIN_KEEP = 0.5;      // xoáy còn lại sau mỗi lần chạm băng
+export const THROW = 0.03;              // va bi: đẩy lệch dọc tiếp tuyến = THROW · (s_a + s_b) · xung lực (≈ 1,7° ở nấc 2)
+export const SPIN_XFER = 0.15;          // va bi: mỗi bi bớt SPIN_XFER · (s_a + s_b) (bi kia nhận xoáy ngược chiều)
+export const SPIN_DECAY = 0.5;          // xoáy giảm theo thời gian lăn (1/s)
+export const SPIN_MIN = 0.005;          // xoáy nhỏ hơn mức này coi như hết
+export const FOLLOW_K = 0.7;            // đè / kéo ở nấc 2: cộng 0,7 × tốc độ trước va chạm
+export const ROLL_DIST = 3.0;           // đè / kéo hết hẳn sau chừng ấy m lăn trước khi chạm bi
 
 // ---------- sin / cos tất định ----------
 const PI = 3.141592653589793;
@@ -137,11 +159,14 @@ export function respotCue(table, state, at = table.head) {
 }
 
 // ---------- một bước ----------
-// trả số sự kiện đã ghi; ev(type, a, b, extra)
-function step(table, balls, dt, ev) {
+// → còn bi nào lăn không; ev(type, a, b, extra) ghi sự kiện. sp: trạng thái xoáy của cú (null = không xoáy — mọi phép tính như
+// bản trước khi có xoáy): { s: Float64Array xoáy ngang mỗi bi (theo b.n), roll: đè / kéo của bi trắng (−1 … 1, 0 = đã dùng),
+// dist: quãng đường bi trắng đã lăn trước lần va bi đầu tiên }
+function step(table, balls, dt, ev, sp = null) {
   const r = table.r, rx = table.rx, rz = table.rz;
   // 1. di chuyển
   for (const b of balls) if (b.on && (b.vx !== 0 || b.vz !== 0)) { b.x += b.vx * dt; b.z += b.vz * dt; }
+  if (sp && sp.roll !== 0) { const c = balls[0]; if (c.on) sp.dist += Math.sqrt(c.vx * c.vx + c.vz * c.vz) * dt; }
   // 2. bi–bi (thứ tự cặp cố định)
   const d2min = 4 * r * r;
   for (let i = 0; i < balls.length; i++) {
@@ -161,7 +186,23 @@ function step(table, balls, dt, ev) {
       const vrel = (b.vx - a.vx) * nx + (b.vz - a.vz) * nz;
       if (vrel < 0) {
         const J = ((1 + BALL_E) * vrel) / 2;
+        // đè / kéo: vận tốc bi trắng ngay trước lần va bi đầu tiên (bi trắng luôn là a: chỉ số 0)
+        const roll = sp && sp.roll !== 0 && a.n === 0 ? sp.roll : 0, ux = a.vx, uz = a.vz;
         a.vx += J * nx; a.vz += J * nz; b.vx -= J * nx; b.vz -= J * nz;
+        if (sp) {
+          // xoáy ngang: đẩy lệch dọc tiếp tuyến (bi b sang trái hướng a → b khi xoáy phải), bớt xoáy cả hai bi
+          const S = sp.s[a.n] + sp.s[b.n];
+          if (S !== 0) {
+            const k = -THROW * S * J, tx = nz, tz = -nx;      // −J > 0 (xung lực)
+            b.vx += k * tx; b.vz += k * tz; a.vx -= k * tx; a.vz -= k * tz;
+            sp.s[a.n] -= SPIN_XFER * S; sp.s[b.n] -= SPIN_XFER * S;
+          }
+          if (roll !== 0) {
+            const keep = 1 - sp.dist / ROLL_DIST;
+            if (keep > 0) { const f = roll * FOLLOW_K * keep; a.vx += ux * f; a.vz += uz * f; }
+            sp.roll = 0;
+          }
+        }
         ev("ball", a.n, b.n, -vrel);
       }
     }
@@ -188,6 +229,13 @@ function step(table, balls, dt, ev) {
       const vn = b.vx * nx + b.vz * nz;
       if (vn < 0) {
         b.vx -= (1 + RAIL_E) * vn * nx; b.vz -= (1 + RAIL_E) * vn * nz;
+        // xoáy ngang: vận tốc dọc băng thêm theo chiều xoáy (tiếp tuyến (nz, −nx): xoáy phải đánh thẳng vào băng → bật sang phải)
+        const sv = sp ? sp.s[b.n] : 0;
+        if (sv !== 0) {
+          const k = -RAIL_SPIN * sv * (1 + RAIL_E) * vn;
+          b.vx += k * nz; b.vz -= k * nx;
+          sp.s[b.n] = sv * RAIL_SPIN_KEEP;
+        }
         ev("rail", b.n, -1, -vn);
       }
     }
@@ -203,6 +251,7 @@ function step(table, balls, dt, ev) {
     }
     if (out || bd < best.r * best.r) {
       b.on = false; b.pocket = best.id; b.vx = 0; b.vz = 0;
+      if (sp) sp.s[b.n] = 0;
       ev("pocket", b.n, -1, best.id);
     }
   }
@@ -212,9 +261,13 @@ function step(table, balls, dt, ev) {
     if (!b.on || (b.vx === 0 && b.vz === 0)) continue;
     const s = Math.sqrt(b.vx * b.vx + b.vz * b.vz);
     const ns = s - (ROLL_A + ROLL_K * s) * dt;
-    if (ns <= STOP_V) { b.vx = 0; b.vz = 0; continue; }
+    if (ns <= STOP_V) { b.vx = 0; b.vz = 0; if (sp) sp.s[b.n] = 0; continue; }
     const k = ns / s;
     b.vx *= k; b.vz *= k;
+    if (sp && sp.s[b.n] !== 0) {
+      const sv = sp.s[b.n] * (1 - SPIN_DECAY * dt);
+      sp.s[b.n] = sv > SPIN_MIN || sv < -SPIN_MIN ? sv : 0;
+    }
     moving = true;
   }
   return moving;
@@ -231,16 +284,26 @@ function settle(table, balls, ev) {
   }
 }
 
+// nấc xoáy hợp lệ: số nguyên −2 … +2 (khác → 0 ở máy khách; máy chủ từ chối cú — server/src/pool.js)
+export const spinLevel = (v) => (Number.isInteger(v) && v >= -SPIN_LEVELS && v <= SPIN_LEVELS ? v : 0);
+
 // ---------- một cú ----------
 // → { frames: Float32Array[] (mỗi khung [x0, z0, x1, z1, …], 60 khung/giây), events: [{ frame, type, a, b, v }],
 //     finalState, pocketed: [n], firstContact: n | null, cueScratch, steps, time, stoppedNaturally }
+// shot.spin / shot.roll: nấc xoáy ngang / đè – kéo (−2 … +2, mặc định 0 = đánh tâm; đầu file)
 // opts.frames = false: không ghi khung (tính nhanh — kiểm thử, tìm cú gợi ý)
-export function simulateShot(table, state, { angle, power }, { frames: keepFrames = true } = {}) {
+export function simulateShot(table, state, { angle, power, spin = 0, roll = 0 }, { frames: keepFrames = true } = {}) {
   const s = cloneState(state);
   const balls = s.balls, cue = balls[0];
   const p = power < 0 ? 0 : power > 1 ? 1 : power;
   const speed = MIN_SPEED + (MAX_SPEED - MIN_SPEED) * p;
-  if (cue.on) { cue.vx = speed * dcos(angle); cue.vz = speed * dsin(angle); }
+  const sl = spinLevel(spin), rl = spinLevel(roll);
+  // có xoáy: trạng thái xoáy riêng của cú (không ghi vào bi — bàn sau cú vẫn chỉ có vị trí); không xoáy: null → như bản cũ
+  const sp = sl !== 0 || rl !== 0 ? { s: new Float64Array(balls.length), roll: rl / SPIN_LEVELS, dist: 0 } : null;
+  if (sp) sp.s[0] = sl / SPIN_LEVELS;
+  // bi trắng lệch nhẹ ngược phía xoáy (xoáy phải → lệch trái: góc nhỏ đi)
+  const a0 = sl !== 0 ? angle - (SQUIRT * sl) / SPIN_LEVELS : angle;
+  if (cue.on) { cue.vx = speed * dcos(a0); cue.vz = speed * dsin(a0); }
   const frames = [], events = [], pocketed = [];
   let firstContact = null, cueScratch = false, n = 0;
   const snap = () => {
@@ -257,7 +320,7 @@ export function simulateShot(table, state, { angle, power }, { frames: keepFrame
   const maxSteps = Math.floor(MAX_TIME / DT);
   let moving = cue.on;
   while (moving && n < maxSteps) {
-    moving = step(table, balls, DT, ev);
+    moving = step(table, balls, DT, ev, sp);
     n++;
     if (keepFrames && n % FRAME_STEPS === 0) snap();
   }
@@ -294,6 +357,31 @@ export function aimInfo(table, state, angle) {
   const gx = cue.x + dx * best, gz = cue.z + dz * best;
   const ox = hit.x - gx, oz = hit.z - gz, ol = Math.sqrt(ox * ox + oz * oz) || 1;
   return { contact: { x: gx, z: gz }, ball: hit.n, dist: best, objDir: { x: ox / ol, z: oz / ol } };
+}
+
+// hướng bi trắng ngay sau lần chạm đầu tiên theo đường ngắm thẳng (gợi ý cho giao diện, không tất định, không mô phỏng): chạm
+// bi → hướng trượt theo tiếp tuyến (va chạm đàn hồi) + đè / kéo; chạm băng → bật lại + xoáy ngang. → { from: {x, z} (tâm bi
+// trắng lúc chạm), dir: {x, z} (đơn vị), speed: tốc độ sau chạm so với trước chạm } | null
+export function cueAfter(table, state, angle, spin = 0, roll = 0) {
+  const cue = state.balls[0], r = table.r;
+  if (!cue.on) return null;
+  const info = aimInfo(table, state, angle);
+  const dx = dcos(angle), dz = dsin(angle), sl = spinLevel(spin) / SPIN_LEVELS, rl = spinLevel(roll) / SPIN_LEVELS;
+  let vx, vz;
+  if (info.ball != null) {
+    const nx = info.objDir.x, nz = info.objDir.z, vn = dx * nx + dz * nz, k = ((1 + BALL_E) / 2) * vn;
+    const keep = Math.max(0, 1 - info.dist / ROLL_DIST), f = rl * FOLLOW_K * keep;
+    vx = dx - k * nx + dx * f; vz = dz - k * nz + dz * f;
+  } else {
+    const lim = (p, d, m) => (d > 0 ? (m - p) / d : d < 0 ? (-m - p) / d : Infinity);
+    const onX = lim(cue.x, dx, table.rx - r) < lim(cue.z, dz, table.rz - r);
+    const nx = onX ? (dx > 0 ? -1 : 1) : 0, nz = onX ? 0 : dz > 0 ? -1 : 1, vn = dx * nx + dz * nz;
+    const k = RAIL_SPIN * sl * (1 + RAIL_E) * -vn;
+    vx = dx - (1 + RAIL_E) * vn * nx + k * nz; vz = dz - (1 + RAIL_E) * vn * nz - k * nx;
+  }
+  const sp = Math.sqrt(vx * vx + vz * vz);
+  if (sp < 1e-6) return { from: info.contact, dir: { x: dx, z: dz }, speed: 0 };
+  return { from: info.contact, dir: { x: vx / sp, z: vz / sp }, speed: sp };
 }
 
 // tìm một cú đưa bi `target` vào lỗ (không làm rơi bi trắng): quét góc quanh hướng nhắm thẳng vào bi đó, vài mức lực.

@@ -1,6 +1,6 @@
 # Chơi nhiều người mức "thấy nhau"
 
-Cập nhật: 11/10/2026 (nhắn tin tự do + bộ lọc từ — mục cuối; bi-a: máy khách tính cú, máy chủ chỉ áp luật; luật chuẩn 8 bi "sọc trơn"; 10/10: chia phòng ~30 người, bi-a 2 người)
+Cập nhật: 11/10/2026 (bi-a đánh xoáy — mục cuối; nhắn tin tự do + bộ lọc từ; bi-a: máy khách tính cú, máy chủ chỉ áp luật; luật chuẩn 8 bi "sọc trơn"; 10/10: chia phòng ~30 người, bi-a 2 người)
 
 Không mã phòng, không tạo phòng: máy chủ tự xếp người vào phòng (mỗi phòng ~30 người, xem "Chia phòng"). Mỗi người vẫn
 chơi phần của mình: nhiệm vụ, hội thoại, Tú, NPC đều riêng từng máy. Phần chung là **thấy nhau** khi ở cùng phòng và cùng
@@ -72,11 +72,11 @@ tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ �
 | | `state {zone, pos, yaw, anim}` | Tối đa 5 lần/giây và chỉ khi có thay đổi (> 2 cm, > 2°, đổi anim hoặc zone). Đổi zone cũng bằng tin này |
 | | `emote {id}` · `phrase {id}` · `leave` | |
 | | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
-| | `pool_join {r, cf}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn, `cf: 1` = gửi sự kiện cú), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
+| | `pool_join {r, cf, sp}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn, `cf: 1` = gửi sự kiện cú, `sp: 1` = hiểu xoáy), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
 | | `pool_choice {c}` | Luật chuẩn, sau cú phá không hợp lệ của đối thủ: `"rerack"` (xếp lại và tự phá) / `"play"` (đánh tiếp) |
 | | `chat {ch, to?, text}` | Nhắn tin tự do (`ch`: `zone` / `all` / `dm`; `to`: id phiên người nhận khi `dm`), tối đa 120 ký tự |
-| | `pool_shot {seq, a, p, cue, call, b, k, s, d, f, r, rb, kp}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), lỗ gọi cho bi 8 (luật chuẩn), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn; sự kiện cú cho luật chuẩn (`rules.js` → `wireFacts`): bi trắng chạm bi nào trước, có bi chạm băng sau lần chạm đó, số bi chạm băng, lỗ của từng bi vào lỗ |
-| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi; `"pool_facts"`: máy chủ không chạy vật lý, dùng kết quả + sự kiện cú máy khách gửi; `"chat"`: có nhắn tin tự do |
+| | `pool_shot {seq, a, p, spin, roll, cue, call, b, k, s, d, f, r, rb, kp}` | Cú đánh: số thứ tự, góc, lực, nấc xoáy ngang / đè – kéo (số nguyên −2 … +2, chỉ gửi khi có xoáy), chỗ đặt bi trắng (bi trong tay), lỗ gọi cho bi 8 (luật chuẩn), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn; sự kiện cú cho luật chuẩn (`rules.js` → `wireFacts`): bi trắng chạm bi nào trước, có bi chạm băng sau lần chạm đó, số bi chạm băng, lỗ của từng bi vào lỗ |
+| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi; `"pool_facts"`: máy chủ không chạy vật lý, dùng kết quả + sự kiện cú máy khách gửi; `"pool_spin"`: cú có xoáy; `"chat"`: có nhắn tin tự do |
 | | `zone {zone, players, online}` | Vừa vào zone: danh sách người cùng zone |
 | | `join {p}` · `state {id, pos, yaw, anim}` · `emote {id, e}` · `phrase {id, p}` · `leave {id}` | **Chỉ gửi cho người cùng zone** |
 | | `online {n}` | Số người online, gửi cho cả phòng |
@@ -84,7 +84,7 @@ tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ �
 | | `chat_err {code}` | Tin bị từ chối: `empty`, `long` (quá 120 ký tự), `rate` (gửi quá nhanh), `nobody` (người nhận không còn online) |
 | | `error {code, msg}` | Vd phòng đầy |
 | | `pool {tb, err?}` | Bàn bi-a hiện tại (vừa vào zone của bàn cũng nhận); `err`: `full`, `turn`, `seq`, `cue`, `bad`, `call`, `choice`, `version` (máy khách cũ xin ghế ở bàn luật chuẩn)… khi máy chủ từ chối |
-| | `pool_shot {shot, tb}` | Một cú vừa được nhận (`shot`: người đánh, góc, lực, chỗ đặt bi trắng, vị trí bi) + bàn sau cú |
+| | `pool_shot {shot, tb}` | Một cú vừa được nhận (`shot`: người đánh, góc, lực, `spin` / `roll`, chỗ đặt bi trắng, vị trí bi) + bàn sau cú; `tb.spin`: bàn cho đánh xoáy |
 
 ## Máy chủ: giới hạn và kiểm tra đầu vào
 
@@ -493,3 +493,37 @@ npx wrangler tail --format json        # 3. 2 cửa sổ nhắn thử: mọi out
 Máy Desktop: nếu `deploy_site.py` báo `rejected … (non-fast-forward)` khi push gh-pages (có bản deploy từ máy khác, vd máy
 cloud), `dist/` đang cũ hơn GitHub → `cd dist`, `git fetch origin gh-pages`, `git log --oneline FETCH_HEAD..HEAD` (chỉ còn commit
 build vừa tạo), `git reset --hard FETCH_HEAD`, `cd ..`, chạy lại `python scripts/deploy_site.py`.
+
+## Bi-a: đánh xoáy (11/10/2026, nhánh `feat/pool-spin`)
+
+Người dùng chốt: áp phê trái / phải 5 nấc (−2 … +2) và xoáy lên / xuống (đánh đè / đánh kéo) 5 nấc. Chi tiết vật lý: đầu
+`game/src/pool/physics.js`; giao diện: `game/src/pool/table.js` (ô chọn điểm chạm góc phải dưới, phím Z / X / F / B).
+
+- **Máy khách** tính cú có xoáy như cú thường (`simulateShot(table, state, { angle, power, spin, roll })`, tất định — chỉ + − × ÷,
+  `Math.sqrt`, `dsin` / `dcos`), gửi `pool_shot` kèm `spin`, `roll` (chỉ khi khác 0). Sự kiện cú (`wireFacts`: bi chạm trước,
+  chạm băng, lỗ của từng bi) lấy từ cùng danh sách sự kiện của vật lý nên vẫn đúng khi có xoáy. `spin = roll = 0` cho kết quả
+  **giống từng bit** bản trước (test:pool so dấu vân tay 300 cú ghi từ bản cũ) — ván cũ, phát lại, thử thách của anh Khang không
+  đổi.
+- **Máy chủ** (`server/src/pool.js`) vẫn **không chạy vật lý**: kiểm tra `spin` / `roll` là số nguyên −2 … +2 (không gửi = 0; sai →
+  bỏ cú, `err: "bad"`), giữ nguyên `factsFromWire`, chuyển tiếp `spin` / `roll` trong `pool_shot.shot` để người kia và người xem
+  phát lại đúng cú. Tin chào thêm `"pool_spin"`. CPU mỗi cú không đổi (~0,1 ms trong Node).
+- **Tương thích:** `pool_join` kèm `sp: 1` = máy khách hiểu xoáy; bàn báo `tb.spin: true` khi mọi người đang ngồi đều hiểu xoáy.
+  Có người ngồi bằng bản web chưa có xoáy (vd gh-pages c26234f) → `tb.spin: false`, cú có xoáy bị bỏ (`err: "spin"`), máy khách
+  mới ẩn ô chọn và gửi như cũ. Máy chủ cũ (không có `"pool_spin"`, kể cả `POOL_RULES = "1"`) → máy khách mới ẩn ô chọn, luôn
+  đánh tâm. Người xem dùng bản web cũ (không ngồi) phát lại cú có xoáy như đánh tâm → lệch hoạt cảnh, nhưng cuối cú vẫn chốt
+  theo bàn máy chủ (bàn không lệch).
+
+| Máy chủ | Bản web người ngồi | Kết quả |
+| --- | --- | --- |
+| mới (`pool_spin`) | cả 2 bản mới | đánh xoáy được |
+| mới | có 1 người bản cũ | bàn chung luật chuẩn như trước, không xoáy |
+| cũ (c487c71a, chưa có `pool_spin`) | mới | như trước, không xoáy (máy chủ cũ bỏ qua `sp`) |
+
+**Thứ tự deploy: bản web trước, máy chủ sau** (bản web mới chạy được với máy chủ đang chạy):
+
+```bash
+git pull
+python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trước)
+cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "pool_spin"
+```
+

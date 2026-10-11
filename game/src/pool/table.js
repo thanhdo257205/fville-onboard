@@ -25,9 +25,15 @@
 //     "pool_rules2") → luật cũ như trên, giao diện cũ.
 //   • Thử thách (enter({ challenge })): thế bi cho sẵn, đưa bi vào lỗ trong N cú; kết quả qua ctx của khung mini-game. Luôn là
 //     bàn riêng (bàn chung vẫn cập nhật ngầm, hiện lại khi xong).
-// __game.pool: trạng thái + enter / shoot(angle, power) / leave / rerack / join / autoShot (smoke test).
+//   • Điểm chạm trên bi trắng (xoáy — physics.js đầu file): hình bi trắng ở góc phải dưới, kéo chấm (chuột / ngón tay, chỉ trên
+//     ô đó nên không đụng ngắm cơ bằng chuột trên khung vẽ) hoặc phím Z / X (trái / phải), F / B (đè / kéo); 5 nấc mỗi chiều,
+//     mặc định giữa, về giữa sau mỗi cú. Đường ngắm thêm một đoạn ngắn hướng bi trắng sau lần chạm đầu (physics.js cueAfter).
+//     Thử thách của anh Khang: luôn đánh tâm, không có ô chọn. Bàn chung: chỉ khi máy chủ báo "pool_spin" và bàn báo spin: true
+//     (mọi người ngồi đều dùng bản hiểu xoáy — pool_join sp: 1); không thì ẩn ô chọn, cú gửi spin = roll = 0.
+// __game.pool: trạng thái + enter / shoot(angle, power, { spin, roll }) / setSpin / leave / rerack / join / autoShot (smoke test).
 import * as THREE from "three";
-import { makeTable, rackState, customState, simulateShot, aimInfo, findPottingShot, respotCue, cloneState, angleTo, FRAME_STEPS, DT, MAX_SPEED } from "./physics.js";
+import { makeTable, rackState, customState, simulateShot, aimInfo, cueAfter, findPottingShot, respotCue, cloneState, angleTo, spinLevel,
+  SPIN_LEVELS, FRAME_STEPS, DT, MAX_SPEED } from "./physics.js";
 import { packBalls, unpackBalls, placeCue, ballsLeft, targets, handArea, canPlaceCueIn, onEight, shotFacts, wireFacts, RULES_V2 } from "./rules.js";
 import { pickShot } from "./auto.js";
 import { TablePointer } from "./pointer.js";
@@ -46,6 +52,7 @@ const POKE_S = 1.5;               // hết giờ lượt của đối thủ + ch
 const OWN = ["aim", "charge", "place", "strike"];
 // thứ tự đổi lỗ bằng phím C (đi vòng quanh bàn)
 const POCKET_ORDER = ["head_left", "side_left", "foot_left", "foot_right", "side_right", "head_right"];
+const SPIN_R = 0.6;               // ô chọn điểm chạm: nấc 2 cách tâm 0,6 bán kính hình bi (cả nấc chéo 2 / 2 vẫn nằm trong hình)
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
 
@@ -90,6 +97,8 @@ export class PoolTable {
     this.choiceV = -1;            // đã gửi lựa chọn sau cú phá không hợp lệ cho bàn phiên bản này (không gửi 2 lần)
     this.foul = null;             // lỗi gần nhất (chữ hiện trên bảng) — hết khi có cú mới
     this.rulesOpen = false;       // thẻ tóm tắt luật (phím H)
+    this.spinLv = 0;              // điểm chạm trên bi trắng: ngang −2 (trái) … +2 (phải)
+    this.rollLv = 0;              //   dọc: +2 (trên, đánh đè) … −2 (dưới, đánh kéo)
   }
 
   // ---------- gắn vào zone ----------
@@ -130,6 +139,12 @@ export class PoolTable {
   get rules2() { return this.netActive && this.tb?.rules === RULES_V2; }
   // bi trong tay của người tới lượt: "kitchen" (khu đầu bàn) | "table" (cả bàn) | null — luật cũ gửi true = khu đầu bàn
   get hand() { const h = this.tb?.mode === "match" ? this.tb.inHand : false; return h === true ? "kitchen" : h || null; }
+  // được chọn điểm chạm (xoáy)? thử thách: không; bàn chung: máy chủ có "pool_spin" và bàn báo spin: true
+  get spinOn() {
+    if (this.challenge) return false;
+    if (!this.netActive) return true;
+    return !!this.game.net?.poolSpin && this.tb?.spin === true;
+  }
   // tới lượt mình đánh bi 8 (luật chuẩn: phải gọi lỗ trước)
   get needCall() {
     const tb = this.tb;
@@ -151,6 +166,8 @@ export class PoolTable {
     this.aimLine = line(0xffffff, 0.85);
     this.objLine = line(0xffe08a, 0.85);
     this.assistLine = line(0x5ce08a, 0.95);
+    this.pathLine = line(0x8fd8ff, 0.8);          // hướng bi trắng sau lần chạm đầu (có tính xoáy) — đoạn ngắn
+    this.pathLine.visible = false;
     this.ghost = new THREE.Mesh(new THREE.SphereGeometry(this.table.r, 20, 14),
       new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false }));
     this.ghost.userData.dynamic = true;
@@ -228,6 +245,8 @@ export class PoolTable {
     this.call = null;
     this.foul = null;
     this.rulesOpen = false;
+    this.spinLv = this.rollLv = 0;
+    this.buildSpin();
     addEventListener("blur", this.onBlur);
     document.addEventListener("pointerlockerror", this.onLockError);
     document.addEventListener("pointerlockchange", this.onLockChange);
@@ -235,7 +254,7 @@ export class PoolTable {
       this.phase = "wait";
       this.waitT = 0;
       this.hideAim();
-      this.net.sendPool({ t: "pool_join", r: RULES_V2, cf: 1 });   // r: hiểu luật chuẩn, cf: gửi sự kiện cú (máy chủ cũ bỏ qua)
+      this.net.sendPool({ t: "pool_join", r: RULES_V2, cf: 1, sp: 1 });   // r: hiểu luật chuẩn, cf: gửi sự kiện cú, sp: hiểu xoáy (máy chủ cũ bỏ qua)
     } else {
       this.phase = "aim";
       this.aimAtTarget();
@@ -272,6 +291,9 @@ export class PoolTable {
     document.removeEventListener("pointerlockchange", this.onLockChange);
     this.hudEl?.remove();
     this.hudEl = null;
+    this.spinEl?.remove();
+    this.spinEl = null;
+    this.spinLv = this.rollLv = 0;
     this.helpers.visible = false;
     for (const m of this.pocketMarks) m.visible = false;
     const wasChallenge = !!this.challenge;
@@ -404,7 +426,7 @@ export class PoolTable {
     if (!this.active || !this.netActive || this.seat >= 0 || !this.tb?.seats.includes(null) || this.phase === "wait") return;
     this.phase = "wait";
     this.waitT = 0;
-    this.net?.sendPool({ t: "pool_join", r: RULES_V2, cf: 1 });
+    this.net?.sendPool({ t: "pool_join", r: RULES_V2, cf: 1, sp: 1 });
     this.drawHud();
   }
   // luật chuẩn, sau cú phá không hợp lệ của đối thủ: "rerack" (R) xếp lại và tự phá · "play" (P) đánh tiếp từ bàn đang có
@@ -486,8 +508,9 @@ export class PoolTable {
     if (target) this.angle = angleTo(cue.x, cue.z, target.x, target.z);
   }
 
-  // đánh: lực 0..1. Trả Promise khi bi đã dừng (kết quả cú). instant: bỏ qua hoạt cảnh (kiểm thử)
-  shoot(angle = this.angle, power = this.power, { instant = false } = {}) {
+  // đánh: lực 0..1; spin / roll: điểm chạm (mặc định điểm đang chọn; không được chọn xoáy → 0). Trả Promise khi bi đã dừng (kết
+  // quả cú). instant: bỏ qua hoạt cảnh (kiểm thử)
+  shoot(angle = this.angle, power = this.power, { instant = false, spin = this.spinLv, roll = this.rollLv } = {}) {
     if (!this.active || this.playback || this.phase === "strike") return Promise.resolve(null);
     if (this.netActive && (!this.myTurn || !OWN.includes(this.phase))) return Promise.resolve(null);
     if (this.netActive && this.tb?.choice) return Promise.resolve(null);       // chờ chọn sau cú phá không hợp lệ
@@ -496,19 +519,24 @@ export class PoolTable {
     const start = this.state;
     // đánh bi 8 mà chưa gọi lỗ (vd __game.pool.shoot): gọi lỗ bi 8 đang hướng tới theo góc này
     const call = this.needCall ? this.call || ((this.aim = aimInfo(this.table, start, angle)), this.predictPocket()) : null;
-    const res = simulateShot(this.table, start, { angle, power });
+    if (!this.spinOn) spin = roll = 0;
+    spin = spinLevel(spin); roll = spinLevel(roll);
+    const res = simulateShot(this.table, start, { angle, power, spin, roll });
     this.phase = "strike";
     this.strikeT = 0;
     this.pull = 0.04 + 0.22 * power;
-    this.playback = { res, t: 0, frame: 0, prev: res.frames[0], hidden: new Set(), own: true, net: this.netActive, tb: null, call };
+    this.playback = { res, t: 0, frame: 0, prev: res.frames[0], hidden: new Set(), own: true, net: this.netActive, tb: null, call, spin, roll };
     if (this.netActive) {
       // bàn chung: gửi thông số + kết quả (vị trí đã làm tròn — mọi bên lấy bàn máy chủ gửi về làm điểm xuất phát cú sau) + sự
       // kiện cú cho luật chuẩn (f / r / rb / kp — máy chủ không chạy vật lý, chỉ kiểm tra rồi áp luật; máy chủ cũ bỏ qua)
       const tb = this.tb, cue = tb.mode === "match" && tb.inHand ? [start.balls[0].x, start.balls[0].z] : null;
       this.playback.seq = tb.seq;
-      this.net.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue, call, b: packBalls(res.finalState), k: res.pocketed,
-        s: res.cueScratch, d: +res.time.toFixed(2), ...wireFacts(res) });
+      // spin / roll chỉ gửi khi có xoáy (máy chủ cũ / bàn chưa cho xoáy: tin như cũ)
+      this.net.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, ...(spin || roll ? { spin, roll } : {}), cue, call,
+        b: packBalls(res.finalState), k: res.pocketed, s: res.cueScratch, d: +res.time.toFixed(2), ...wireFacts(res) });
     }
+    this.spinLv = this.rollLv = 0;                   // về giữa sau mỗi cú
+    this.drawSpin();
     this.hideAim();   // tiếng đầu cơ: lúc bi cái bắt đầu lăn (cueSound)
     return new Promise((resolve) => {
       this.playback.resolve = resolve;
@@ -519,6 +547,7 @@ export class PoolTable {
     const pb = this.playback;
     if (!pb) return;
     this.playback = null;
+    this.lastSpin = { spin: pb.spin ?? 0, roll: pb.roll ?? 0, own: !!pb.own };    // kiểm thử: điểm chạm của cú vừa xong
     const res = pb.res;
     const summary = { pocketed: res.pocketed, firstContact: res.firstContact, cueScratch: res.cueScratch, time: +res.time.toFixed(2), frames: res.frames.length };
     if (pb.net) {
@@ -570,11 +599,12 @@ export class PoolTable {
         // phát lại đúng cú đó từ bàn của mình (vật lý tất định → giống hệt người đánh), cuối cú chốt theo bàn máy chủ
         let before = cloneState(base.state);
         if (shot.cue) before = placeCue(before, shot.cue[0], shot.cue[1]);
-        const res = simulateShot(this.table, before, { angle: shot.a, power: shot.p });
+        const res = simulateShot(this.table, before, { angle: shot.a, power: shot.p, spin: shot.spin ?? 0, roll: shot.roll ?? 0 });
         if (Array.isArray(shot.b) && !same(packBalls(res.finalState), shot.b)) this.replayMismatch++;
         this.replays++;
         this.apply(before);
-        this.playback = { res, t: 0, frame: 0, prev: res.frames[0], hidden: new Set(), own: false, net: true, seq: shot.seq, tb: m.tb, call: shot.call ?? null };
+        this.playback = { res, t: 0, frame: 0, prev: res.frames[0], hidden: new Set(), own: false, net: true, seq: shot.seq, tb: m.tb, call: shot.call ?? null,
+          spin: shot.spin ?? 0, roll: shot.roll ?? 0 };
         if (this.active && this.netActive) { this.phase = "watch"; this.hideAim(); this.drawHud(); }
         if (this.fast) this.finishPlayback(true);        // kiểm thử: vẫn tính + đối chiếu, chỉ bỏ hoạt cảnh
         return;
@@ -596,6 +626,7 @@ export class PoolTable {
     this.refreshRole(instant);
     if (this.showsShared) this.apply(this.state);
     else this.updateCues();
+    if (!this.spinOn && (this.spinLv || this.rollLv)) this.spinLv = this.rollLv = 0;     // bàn vừa tắt xoáy (có người ngồi bằng bản cũ)
     this.drawHud();
   }
   // tới lượt mình → ngắm (bi trong tay: đặt bi trắng trước; luật chuẩn sau cú phá không hợp lệ: chọn trước); không → xem
@@ -767,6 +798,7 @@ export class PoolTable {
     this.drawCue();
     this.drawPower();
     this.drawMarks();
+    this.drawSpin();
   }
   // bi trắng trong tay: W/S dọc bàn, A/D ngang (chuột kéo cũng được), trong khu đầu bàn (luật chuẩn sau lỗi: cả bàn), không
   // chồng bi; Space / nhấp: đặt
@@ -853,7 +885,7 @@ export class PoolTable {
   ballPos(i) { return this.balls?.[i]?.getWorldPosition(new THREE.Vector3()) ?? this.root?.getWorldPosition(new THREE.Vector3()) ?? null; }
 
   // ---------- vẽ: đường ngắm, bi ma, cơ, thanh lực ----------
-  hideAim() { this.aimLine.visible = this.objLine.visible = this.ghost.visible = this.assistLine.visible = false; }
+  hideAim() { this.aimLine.visible = this.objLine.visible = this.ghost.visible = this.assistLine.visible = this.pathLine.visible = false; }
   drawAim() {
     const s = this.state, cue = s.balls[0], y = this.table.ballY;
     if (!cue.on) { this.hideAim(); return; }
@@ -868,6 +900,14 @@ export class PoolTable {
       setLine(this.objLine, from, from.clone().add(new THREE.Vector3(info.objDir.x, 0, info.objDir.z).multiplyScalar(0.3)));
       this.objLine.visible = true;
     } else this.objLine.visible = false;
+    // hướng bi trắng sau lần chạm đầu, có tính xoáy (gợi ý ngắn; thử thách: không vẽ — giữ như cũ)
+    const after = this.challenge ? null : cueAfter(this.table, s, this.angle, this.spinOn ? this.spinLv : 0, this.spinOn ? this.rollLv : 0);
+    this.pathLine.visible = !!after && after.speed > 0.02;
+    if (this.pathLine.visible) {
+      const from = new THREE.Vector3(after.from.x, y, after.from.z), len = 0.08 + 0.22 * Math.min(1, after.speed);
+      setLine(this.pathLine, from, from.clone().add(new THREE.Vector3(after.dir.x, 0, after.dir.z).multiplyScalar(len)));
+    }
+    this.after = after;
     this.aim = info;
     if (this.challenge) this.drawAssist();
   }
@@ -991,11 +1031,89 @@ export class PoolTable {
       clock.classList.toggle("low", s != null && s <= 10);
     }
   }
+  // ---------- điểm chạm trên bi trắng (xoáy) ----------
+  // ô góc phải dưới: hình bi trắng + chấm điểm chạm. Kéo / bấm chấm bằng chuột hoặc ngón tay (pointer events trên chính ô đó,
+  // giữ pointer capture → kéo ra ngoài vẫn nhận; không đụng khung vẽ nên không lẫn với ngắm cơ / khoá con trỏ). Con trỏ đang
+  // khoá (ẩn) thì dùng phím Z / X / F / B.
+  buildSpin() {
+    this.spinEl?.remove();
+    const el = document.createElement("div");
+    el.id = "pool-spin";
+    el.hidden = true;
+    el.innerHTML = `<b>${esc(t("pool.spin"))}</b><div class="ball" role="slider" tabindex="-1" aria-label="${esc(t("pool.spin"))}"><span class="cross"></span><i></i></div>
+      <small class="val"></small><small class="keys">Z X · F B</small>`;
+    document.body.appendChild(el);
+    const ball = el.querySelector(".ball");
+    let id = null;
+    const at = (e) => {
+      const r = ball.getBoundingClientRect(), R = r.width / 2;
+      if (!R) return;
+      const ux = (e.clientX - (r.left + R)) / R, uy = -(e.clientY - (r.top + R)) / R;
+      const lv = (u) => Math.max(-SPIN_LEVELS, Math.min(SPIN_LEVELS, Math.round((u / SPIN_R) * SPIN_LEVELS)));
+      this.setSpin(lv(ux), lv(uy), { quiet: true });
+    };
+    ball.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0 || !this.spinShown) return;
+      e.preventDefault(); e.stopPropagation();
+      id = e.pointerId;
+      ball.setPointerCapture?.(id);
+      at(e);
+    });
+    ball.addEventListener("pointermove", (e) => { if (e.pointerId === id) at(e); });
+    const up = (e) => { if (e.pointerId !== id) return; id = null; ball.releasePointerCapture?.(e.pointerId); sound.play("tap"); };
+    ball.addEventListener("pointerup", up);
+    ball.addEventListener("pointercancel", up);
+    ball.addEventListener("dblclick", () => this.setSpin(0, 0));
+    this.spinEl = el;
+    this.spinKey = null;
+    this.drawSpin();
+  }
+  // đặt điểm chạm (nấc −2 … +2) — không được chọn xoáy thì giữ giữa
+  setSpin(spin, roll, { quiet = false } = {}) {
+    if (!this.active || !this.spinOn) return false;
+    const s = spinLevel(Math.round(spin)), r = spinLevel(Math.round(roll));
+    if (s === this.spinLv && r === this.rollLv) return true;
+    this.spinLv = s; this.rollLv = r;
+    if (!quiet) sound.play("tap");
+    this.drawSpin();
+    return true;
+  }
+  // phím Z / X (trái / phải), F / B (đè / kéo): dời chấm 1 nấc — chỉ lúc đang ngắm / đặt bi trắng của mình
+  nudgeSpin(ds, dr) {
+    if (!this.spinShown) return false;
+    return this.setSpin(this.spinLv + ds, this.rollLv + dr);
+  }
+  // ô chọn hiện khi: được chọn xoáy và đang tới lượt mình ngắm / nạp lực / đặt bi trắng
+  get spinShown() {
+    return this.active && this.spinOn && ["aim", "charge", "place"].includes(this.phase) && (!this.netActive || this.myTurn);
+  }
+  spinText() {
+    const parts = [];
+    if (this.spinLv) parts.push(t(this.spinLv > 0 ? "pool.spin_right" : "pool.spin_left", { n: Math.abs(this.spinLv) }));
+    if (this.rollLv) parts.push(t(this.rollLv > 0 ? "pool.spin_follow" : "pool.spin_draw", { n: Math.abs(this.rollLv) }));
+    return parts.length ? parts.join(" · ") : t("pool.spin_center");
+  }
+  // vẽ lại khi đổi (gọi mỗi khung; chỉ đụng DOM khi khác lần trước)
+  drawSpin() {
+    const el = this.spinEl;
+    if (!el) return;
+    const shown = this.spinShown, key = `${shown}|${this.spinLv}|${this.rollLv}`;
+    if (key === this.spinKey) return;
+    this.spinKey = key;
+    el.hidden = !shown;
+    const dot = el.querySelector(".ball i");
+    dot.style.left = `${50 + (this.spinLv / SPIN_LEVELS) * SPIN_R * 50}%`;
+    dot.style.top = `${50 - (this.rollLv / SPIN_LEVELS) * SPIN_R * 50}%`;
+    el.classList.toggle("off", !this.spinLv && !this.rollLv);
+    el.querySelector(".val").textContent = this.spinText();
+  }
+
   // ---------- phím H: tóm tắt luật (bàn chung luật chuẩn / luật cũ / tập một mình) ----------
   rulesKeys() {
-    if (this.rules2) return ["rules_break", "rules_open", "rules_foul", "rules_eight", "rules_lose", "rules_clock"];
+    const spin = this.spinOn ? ["rules_spin"] : [];
+    if (this.rules2) return ["rules_break", "rules_open", "rules_foul", "rules_eight", "rules_lose", "rules_clock", ...spin];
     const tb = this.tb;
-    return this.netActive && tb && (tb.mode === "match" || tb.mode === "over") ? ["rules_legacy"] : ["rules_practice"];
+    return [this.netActive && tb && (tb.mode === "match" || tb.mode === "over") ? "rules_legacy" : "rules_practice", ...spin];
   }
   rulesCard() {
     if (!this.rulesOpen) return "";
@@ -1012,7 +1130,8 @@ export class PoolTable {
   // dòng hướng dẫn dưới màn hình: cách ngắm theo chế độ chuột + phím của chế độ chơi
   hintText() {
     const aim = t(this.mouseMode === "free" ? "pool.hint_aim_free" : "pool.hint_aim_mouse");
-    return `${aim} · ${t(this.challenge ? "pool.controls_challenge" : this.netActive ? "pool.controls_net" : "pool.controls")}`;
+    const spin = this.spinOn ? ` · ${t("pool.hint_spin")}` : "";
+    return `${aim}${spin} · ${t(this.challenge ? "pool.controls_challenge" : this.netActive ? "pool.controls_net" : "pool.controls")}`;
   }
   showHint() { if (this.active) hud.hint(this.hintText(), 600); }
 
@@ -1107,18 +1226,19 @@ export class PoolTable {
   // ---------- __game.pool ----------
   // cú tự chọn (game/src/pool/auto.js) cho người tới lượt — kiểm thử 2 người; bi trong tay: giữ chỗ đặt hiện tại. Đánh bi 8
   // (luật chuẩn): gọi đúng lỗ bi 8 sẽ vào theo vật lý (không vào → lỗ đang hướng tới). Đang chờ chọn sau cú phá: trả null
-  autoShot({ instant = true } = {}) {
+  autoShot({ instant = true, spin = 0, roll = 0 } = {}) {
     if (!this.active || (this.netActive && !this.myTurn) || this.phase === "choice") return Promise.resolve(null);
     if (this.phase === "place") this.phase = "aim";
     const s = this.state;
     const list = this.netActive && this.tb ? targets(s, this.tb, this.seat) : s.balls.filter((b) => b.n !== 0 && b.on).map((b) => b.n);
     const pick = pickShot(this.table, s, list);
     if (this.needCall) {
-      const facts = shotFacts(simulateShot(this.table, s, { angle: pick.angle, power: pick.power }, { frames: false }));
+      const sp = this.spinOn ? { spin, roll } : {};
+      const facts = shotFacts(simulateShot(this.table, s, { angle: pick.angle, power: pick.power, ...sp }, { frames: false }));
       this.call = facts.pockets[8] || null;
       if (!this.call) { this.aim = aimInfo(this.table, s, pick.angle); this.call = this.predictPocket(); }
     }
-    return this.shoot(pick.angle, pick.power, { instant });
+    return this.shoot(pick.angle, pick.power, { instant, spin, roll });
   }
   // bi trong tay: đặt bi trắng ở (x, z) cục bộ (kiểm thử; người chơi dùng W/A/S/D) → false nếu ngoài vùng được đặt / chồng bi
   debugPlace(x, z) {
@@ -1127,12 +1247,12 @@ export class PoolTable {
     this.apply(this.override);
     return true;
   }
-  // gửi cú bất chấp lượt (kiểm thử: máy chủ phải chặn)
-  forceShot(angle, power) {
+  // gửi cú bất chấp lượt / giới hạn (kiểm thử: máy chủ phải chặn); extra: trường thêm vào tin (vd { spin: 3 })
+  forceShot(angle, power, extra = {}) {
     const tb = this.tb, n = this.game.net;
     if (!tb || !n?.connected || !this.shared?.state) return false;
     const res = simulateShot(this.table, this.shared.state, { angle, power }, { frames: false });
-    n.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue: null, b: packBalls(res.finalState), k: res.pocketed, s: res.cueScratch, d: 1, ...wireFacts(res) });
+    n.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue: null, b: packBalls(res.finalState), k: res.pocketed, s: res.cueScratch, d: 1, ...wireFacts(res), ...extra });
     return true;
   }
   // kiểm thử: camera so với mặt bàn — cao bao nhiêu (cục bộ), giới hạn dưới chao đèn, tia camera → tâm bàn có vướng lưới
@@ -1149,10 +1269,12 @@ export class PoolTable {
       shots: this.session?.shots, potted: this.session?.potted, onTable: s?.balls.filter((b) => b.on).map((b) => b.n),
       cue: s && { x: +s.balls[0].x.toFixed(4), z: +s.balls[0].z.toFixed(4), on: s.balls[0].on },
       cuesHidden: this.cues?.every((c) => !c.visible), rolling: !!this.playback, left: this.challenge?.left ?? null,
+      spin: { on: this.spinOn, spin: this.spinLv, roll: this.rollLv, shown: !!this.spinEl && !this.spinEl.hidden, text: this.spinText(),
+        path: this.pathLine?.visible && this.after ? { from: this.after.from, dir: this.after.dir } : null, last: this.playback ? { spin: this.playback.spin ?? 0, roll: this.playback.roll ?? 0 } : this.lastSpin ?? null },
       mouse: this.active ? this.mouseMode : null, cursorAim: this.cursorAim, camAngle: +this.camAngle.toFixed(4), pressing: this.mouse,
       net: { on: this.netMode, active: this.netActive, seat: this.seat, myTurn: this.myTurn, mode: tb?.mode ?? null, seq: tb?.seq ?? null,
         v: tb?.v ?? null, turn: tb?.turn ?? null, groups: tb?.groups ?? null, inHand: tb?.inHand ?? null, winner: tb?.winner ?? null,
-        rules: tb?.rules ?? null, rules2: this.rules2, choice: tb?.choice ?? null, brk: tb?.brk ?? null, hand: this.hand, needCall: this.needCall,
+        rules: tb?.rules ?? null, rules2: this.rules2, spin: tb?.spin ?? null, choice: tb?.choice ?? null, brk: tb?.brk ?? null, hand: this.hand, needCall: this.needCall,
         call: this.call, callName: this.call ? this.pocketName(this.call) : null, foul: this.foul, rulesOpen: this.rulesOpen, status: this.active && this.netActive ? this.statusText() : null,
         clock: this.hudEl?.querySelector(".clock")?.textContent ?? null, marks: this.pocketMarks?.filter((m) => m.visible).map((m) => m.userData.pocket) ?? [],
         reason: tb?.reason ?? null, seats: tb?.seats.map((x) => x?.name ?? null) ?? null, replays: this.replays, mismatch: this.replayMismatch,
