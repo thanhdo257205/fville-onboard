@@ -655,6 +655,14 @@ export class Game {
   }
   get complete() { return this.progress.flags.has("game_complete"); }
 
+  // đã xong ngày đầu (game_complete): đi thẳng tới zone bất kỳ — menu Esc → Đi tới (__game.travel). Xuất hiện ở điểm bắt đầu
+  // của zone (zones.json → start), như lần đầu vào zone; việc của zone đã làm xong nên không lặp lại hội thoại / cảnh chuyển
+  async travel(zoneId) {
+    if (!this.complete || !this.zoneCfg(zoneId) || zoneId === this.state.zone || this.state.phase !== "playing" || this.cutscene) return false;
+    this.setMode("play");
+    return this.enterZone(zoneId, this.zoneCfg(zoneId).start);
+  }
+
   // tải game khi đã xong (game_complete) mà chưa thấy màn tổng kết (tải lại giữa cảnh kết / trước khi tổng kết hiện):
   // thẻ thành tựu cuối rồi màn tổng kết, như cuối cảnh kết
   resumeSummary() {

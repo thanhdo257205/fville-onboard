@@ -172,6 +172,8 @@ async function boot() {
       // độ nhạy xoay: chuột (máy có chuột — không phải điện thoại), cảm ứng (máy có màn cảm ứng)
       look: lookSens(settings.look), lookMouse: !device.phone, lookTouch: device.touchCapable,
       complete: game.complete,
+      // đã xong ngày đầu: đi thẳng tới zone bất kỳ (giờ theo zone — zone_01 lúc hoàng hôn sau cảnh kết)
+      travel: game.complete ? zones.order.map((id) => ({ id, title: t(`zones.${id}.title`), time: game.zoneClock(id) ?? t(`zones.${id}.time`), here: id === game.state.zone })) : null,
       // phụ kiện đã mở khoá (tủ đồ — chưa có tab Wardrobe): bật / tắt ở đây
       accessories: chars.accessories ? game.characters.accessoryIds().filter((id) => game.accessoryUnlocked(id))
         .map((id) => ({ id, label: tx(game.characters.accessory(id).label), on: game.wornAccessories().includes(id) })) : [] }),
@@ -195,6 +197,7 @@ async function boot() {
       input.sens = { ...settings.look };
       if (store) saveSettings(settings);
     },
+    onTravel: async (id) => { menu.hide(true); if (!await game.travel(id)) game.setMode("play"); },
     onSummary: () => { menu.hide(true); game.openSummary(); },   // chỉ hiện khi đã xong game
     onClose: () => game.setMode("play"),
     onPlayAgain: playAgain,

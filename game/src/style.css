@@ -45,6 +45,14 @@ body.overlay-open #hint { display: none; }   /* hộp thoại / mini-game / app 
 #menu .row.look input[type=range] { width: 124px; }
 #menu .row.look output { width: 46px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; opacity: 0.8; }
 #menu .muted { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+#menu .travel-h { margin-top: 14px; font-weight: 800; }
+#menu .travel-h.first { margin-top: 0; }
+#menu .travel + .muted { margin-bottom: 12px; }
+#menu .travel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+#menu .travel button { display: flex; gap: 8px; align-items: baseline; text-align: left; background: #2a2e36; color: var(--fg); border: 0; border-radius: 10px; padding: 8px 10px; font: 700 13px "Nunito"; cursor: pointer; }
+#menu .travel button:hover:not(:disabled) { background: #343944; }
+#menu .travel button.on { background: var(--orange); cursor: default; }
+#menu .travel .tm { font-variant-numeric: tabular-nums; opacity: 0.75; font-weight: 600; flex: none; }
 #menu .primary { margin-top: 16px; width: 100%; background: var(--orange); color: #fff; border: 0; border-radius: 10px; padding: 10px; font: 800 15px "Nunito"; cursor: pointer; }
 
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 8; transition: opacity .35s; }
