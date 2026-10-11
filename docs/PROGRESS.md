@@ -1408,6 +1408,23 @@ trình duyệt cùng lúc trên 1 máy — tách máy.
 - `npm run test:quick` (máy local, mỗi lần sửa nhỏ): test:data + smoke 1 ngoại hình zone 0 → 5, bỏ điện thoại + test mạng — đo
   1 phút 45 giây. Đo các phần riêng: `--mobile ui` ~2,5 phút, `--mobile pool` ~3,8 phút.
 
+### Tiếng bước chân khớp nhịp chân (11/10/2026, nhánh `fix/footstep-sync` a9b3d1b)
+
+Người dùng báo tiếng bước chân không khớp nhịp chân khi đi và chạy. Nguyên nhân: `game/src/game/footsteps.js` đếm theo quãng
+đường (bước dài 0,55 m + 0,17 × tốc độ) — không biết lúc nào chân chạm đất trong animation.
+
+- Nay theo xương cổ chân (`mixamorigLeftFoot` / `RightFoot`) so với gốc nhân vật: chân "nhấc" khi cao hơn độ cao lúc đứng trên
+  đất 4,5 cm, "chạm" khi xuống còn ≤ 1,5 cm → 1 tiếng. Đo quỹ đạo cổ chân (intern_nam): đi nhấc ~10 cm, chạy ~35 cm; chân đang
+  vung hơi trũng ~2,5 cm và rung ±2 mm khi đứng — nằm giữa 2 ngưỡng nên không thành tiếng thừa (bản thử đầu dùng điểm thấp nhất
+  cục bộ: kêu gấp đôi khi đi, 3 tiếng mỗi chu kỳ khi chạy). Đi / chạy / trộn 2 animation, tốc độ phát đổi theo tốc độ thật đều
+  tự khớp; đứng / xoay tại chỗ (< 0,35 m/s), ngồi, bị dịch chuyển → không tiếng. Model thiếu xương bàn chân → đếm như cũ.
+- Đo (3 ngoại hình, đường zone_02): đi mỗi tiếng cách 0,55–0,73 s = nửa chu kỳ animation đi; chạy cách 0,30–0,35 s = nửa chu
+  kỳ animation chạy; đứng yên 0 tiếng. Lúc chuyển đi → chạy có thể hụt 1 tiếng (2 animation chưa cùng nhịp).
+- `__game.footsteps` (tổng số tiếng, các tiếng gần nhất, độ dài / tốc độ phát animation), `__game.stepCheck()` (tìm hướng
+  thoáng, đứng / đi / chạy mỗi kiểu 3 s → số tiếng, khoảng cách, nửa chu kỳ); smoke zone_02 mỗi ngoại hình: đứng yên 0 tiếng,
+  mọi khoảng cách trong 0,7–1,3 × nửa chu kỳ.
+- Kiểm thử: test:data, smoke `--zone 2` 3 ngoại hình 33/33, test:quick 52/52.
+
 ### Nhạc nền + độ nhạy xoay (11/10/2026, nhánh `feat/music-sensitivity` 2f79cb9)
 
 Người dùng gửi bài "Piano Spiegel" (Oliver Siimon), lấy từ "Fantasy Music Mega Pack (Royalty free, CC0, Public Domain)" của Blacis

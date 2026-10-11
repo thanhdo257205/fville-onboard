@@ -457,6 +457,38 @@ export function installDebug(game, loop) {
     get sounds() { return [...soundLog.log]; },
     // âm thanh: trạng thái AudioContext, cài đặt, tiếng nền + độ vang của zone, số file đã tải / tiếng đã phát / bỏ qua, số bước chân
     get audio() { return { ...soundLog.info(), steps: game.footsteps.count }; },
+    // bước chân (game/footsteps.js): số tiếng, các lần gần nhất (vai, giờ chơi của vai — s, tốc độ m/s); nhịp animation đi / chạy
+    // tiếng bước chân (game/footsteps.js): tổng số tiếng, các tiếng gần nhất (vai, giây của bộ đếm riêng mỗi vai, tốc độ), độ dài
+    // + tốc độ phát của animation đi / chạy của người chơi
+    get footsteps() { const ch = game.player?.character; return { count: game.footsteps.count, log: game.footsteps.log || [], clips: ch && { walk: ch.actions.walk?.getClip().duration, run: ch.actions.run?.getClip().duration, walkScale: ch.actions.walk?.getEffectiveTimeScale(), runScale: ch.actions.run?.getEffectiveTimeScale() } }; },
+    // đo nhịp bước chân của người chơi: tìm hướng thoáng nhất quanh chỗ đứng (thử 8 hướng), rồi đứng yên / đi / chạy mỗi kiểu
+    // `sec` giây (sau 2 s lấy đà) → số tiếng, khoảng cách giữa 2 tiếng liền nhau, nửa chu kỳ animation (1 chân chạm đất) — khớp
+    // nhịp chân = mỗi khoảng ≈ nửa chu kỳ. Xong trả người chơi về chỗ cũ, hướng camera cũ
+    stepCheck({ sec = 3 } = {}) {
+      const pl = game.player, start = pl.position.clone(), yaw = game.cam.yaw, trig = game.triggersOff;
+      game.triggersOff = true;
+      const back = () => { pl.body.teleport(start.clone().add(new THREE.Vector3(0, 0.05, 0))); api.simulate(0.6, undefined, { render: false }); };
+      let best = null;
+      for (let k = 0; k < 8; k++) {
+        back(); game.cam.yaw = k * Math.PI / 4; const a = pl.position.clone();
+        api.simulate(2, { x: 0, y: 1, run: true }, { render: false });
+        const d = pl.position.distanceTo(a); if (!best || d > best.d) best = { k, d };
+      }
+      const out = { dir: best.k * 45, clear_m: +best.d.toFixed(1) };
+      for (const [mode, run] of [["idle", null], ["walk", false], ["run", true]]) {
+        back(); game.cam.yaw = best.k * Math.PI / 4;
+        const mv = run == null ? undefined : { x: 0, y: 1, run };
+        api.simulate(2, mv, { render: false });
+        const t0 = game.footsteps.walkers.get("player")?.t || 0, p0 = pl.position.clone();
+        api.simulate(sec, mv, { render: false });
+        const ts = (game.footsteps.log || []).filter((e) => e.role === "player" && e.t > t0).map((e) => e.t);
+        const act = run ? pl.character.actions.run : pl.character.actions.walk;
+        out[mode] = { steps: ts.length, gaps: ts.slice(1).map((t, i) => +(t - ts[i]).toFixed(3)), speed: +(pl.position.distanceTo(p0) / sec).toFixed(2),
+          half: run == null ? null : +(act.getClip().duration / act.getEffectiveTimeScale() / 2).toFixed(3) };
+      }
+      back(); game.cam.yaw = yaw; game.triggersOff = trig;
+      return out;
+    },
     // CHỈ khi chạy dev: lưu ảnh vào renders/game/<name> (Vite middleware /__dev/save) — kiểm tra khi khung trình duyệt bị ẩn
     async saveImage(name, data) { const r = await fetch("/__dev/save", { method: "POST", body: JSON.stringify({ name, data }) }); return r.json(); },
     // chụp khung hình 3D hiện tại (không có HUD / bảng HTML)

@@ -120,7 +120,8 @@ bắn tia ở tầm mắt, tia nhìn xuống / nhìn ngang lọt ra trời → t
 `touch` (giao diện cảm ứng: bật chưa, cần điều khiển, vị trí nút hành động / hàng nút / vùng joystick, bàn phím ảo), `touchPick()` (lựa chọn hội thoại smoke sẽ chạm),
 `tags` (bảng tên đang thấy, toạ độ màn hình), `showCard("act" | "ach")` (hiện thử thẻ Act 2 / thẻ thành tựu cuối),
 `audio` / `sounds` (âm thanh: trạng thái AudioContext, tiếng nền của zone, nhạc nền `music` (bài, đang phát, giây, duck), số file đã tải, số lần phát theo tên, bước chân; các
-lần gọi gần nhất), `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
+lần gọi gần nhất), `footsteps` / `stepCheck()` (tiếng bước chân theo xương cổ chân của animation: các tiếng gần nhất; đứng / đi /
+chạy 3 s → khoảng cách giữa 2 tiếng so với nửa chu kỳ animation), `shot(name)` (chỉ dev: lưu ảnh vào `renders/game/`), `benchmark(120)` (ms/khung, quay camera 1 vòng). Độ nét:
 `_game.renderer.setDetail(0|1|2)`, `state.detailLevel` (nấc Auto đã tự hạ).
 Khung trình duyệt bị ẩn thì requestAnimationFrame dừng — lái game bằng `__game._game.update(1/30)`.
 Tham số URL để thử (khi dev, hoặc bản build mở với `?debug`): `?lang=vi|en` (ngôn ngữ, không lưu — dùng được mọi lúc), `?start=zone_05` (bản lưu mẫu "đã chơi xong các zone trước",
