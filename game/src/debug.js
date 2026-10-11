@@ -116,6 +116,8 @@ export function installDebug(game, loop) {
         cycleCall: () => { p.cycleCall(); return p.call; },
         help: () => p.help(),
         screen: (x, z) => p.pointer?.screen(x, z) ?? null,      // điểm (x, z) cục bộ trên mặt bàn → toạ độ màn hình (di chuột tới)
+        touch: () => p.touchInfo(),     // cảm ứng: hộp các nút đang hiện, lực đang kéo, bi trắng / điểm chạm / lỗ trên màn hình
+        setState: (balls, opts) => p.debugState(balls, opts),   // thế bi dựng sẵn (bàn tập): { n: [x, z] }, { call: true } → thử gọi lỗ
       });
     },
     netEmote(id) { return game.net?.emote(id); },

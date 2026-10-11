@@ -1312,6 +1312,36 @@ Người dùng chơi thử Android Chrome cầm ngang: thanh địa chỉ chiế
   (máy chủ local), chạm Continue → toàn màn hình + manifest. Ảnh từng khung: `test-results/short/` (không commit).
   `__game.tags`, `__game.showCard("act" | "ach")`.
 
+### Bi-a bằng cảm ứng + ô nhắn tin máy tính + sửa Esc khung chat (11/10/2026, nhánh `feat/pool-touch` 2e1fd3b)
+
+Trên máy cảm ứng (`body.touch`) chơi được bi-a trọn vẹn: tập một mình, bàn chung 2 người, người xem, thử thách của anh Khang.
+Bỏ dòng "Bi-a bằng cảm ứng sắp có". Máy tính giữ nguyên mọi điều khiển. **Không đổi** `physics.js`, `rules.js`, `server/`,
+định dạng tin nhắn — cú từ điện thoại giống hệt cú từ máy tính (góc, lực, spin, roll, chỗ đặt bi, lỗ gọi). **Chưa deploy.**
+
+- `pool/pointer.js`: nhận "mouse", "touch", "pen"; ngón tay giữ pointer capture; ≥ 2 ngón (chụm) → bỏ qua tới khi nhấc hết.
+- `pool/table.js` (`buildTouch`, `#pool-touch`, `body.pool-on`):
+  - ngắm: kéo 1 ngón trên bàn → cơ hướng từ bi trắng tới ngón tay (như chuột không khoá); chạm nhẹ không đánh; giữ ◀ ▶ = xoay
+    chậm 0,225 rad/s (như A/D + Shift); vuốt xoay camera đi bộ tắt ở bàn (`input.drag` chỉ giữ chụm);
+  - lực: thanh dọc mép phải, kéo xuống = lực (cây cơ lùi theo, `touchPower`), thả = đánh, về đỉnh (< 4 %) thả = hủy; đang
+    phải gọi lỗ bi 8 mà chưa chọn → tự gọi lỗ đoán theo đường ngắm (như phím C);
+  - camera: chụm 2 ngón; bi trong tay: kéo bi trắng (vòng xanh / đỏ dưới bi = chỗ hợp lệ / không), nút "Đặt bi";
+  - gọi lỗ bi 8: chạm vào lỗ, vùng chạm 34 px quanh tâm lỗ trên màn (≥ 44 px đường kính), lỗ đã gọi cam như cũ;
+  - sau cú phá không hợp lệ: "Xếp lại & phá" / "Đánh tiếp"; cột nút ? (Luật) ↻ (Xếp lại) 🪑 (Ngồi — khi có ghế trống)
+    ✕ (Rời bàn; thử thách: đóng mini-game);
+  - bố cục: bảng 2 ghế / đồng hồ góc trái trên (cuộn được), ô áp phê góc trái dưới (joystick ẩn ở bàn), thanh lực mép phải,
+    cột nút cạnh thanh lực; ẩn dòng mục tiêu, đồng hồ, "N online", ô chat đóng; khung mini-game thử thách hẹp lại không đè nút;
+  - chữ bản cảm ứng (`tt()`: khoá `…_touch` — dòng hướng dẫn, trạng thái bàn chung, thẻ luật) không ghi phím.
+- Nhắn tin trên máy tính (`ui/chat.js`): ô 💬 "Enter: chat · /: quick message" ở góc trái dưới (bấm → khung đầy đủ); phím `/`
+  → gõ nhanh 1 tin (chỉ ô nhập, gửi vào tab đang chọn, gửi xong tự đóng; lần đầu chưa đọc quy tắc thì mở khung đầy đủ).
+- Sửa lỗi: Enter mở khung chat rồi Esc → vừa đóng chat vừa mở menu Esc. Nguyên nhân: đóng chat xin khoá con trỏ lại ngay,
+  nhưng trình duyệt dùng chính phím Esc đó để nhả khoá → game tưởng người chơi tự thoát → mở menu. Giờ đóng bằng Esc không
+  xin khoá 0,5 s (`input.noLockUntil`); bấm vào game để khoá lại. Nút ô chat không giữ focus (Space lúc đi lại không bấm lại).
+- Smoke: `--mobile pool` (bi-a cảm ứng 844 × 230 + 390: 8 khối không chồng nhau / không che bi trắng, nút ≥ 44 px, kéo ngón →
+  góc lệch 0 rad, chạm nhẹ không đánh, thanh lực đánh / hủy, chụm đổi camera, kéo chấm áp phê, gọi lỗ bằng chạm (thế bi dựng
+  sẵn `__game.pool.setState`), ✕ rời bàn, thử thách anh Khang; 2 người máy tính + điện thoại qua máy chủ local: 5 cú, bi trong
+  tay kéo + "Đặt bi", bàn khớp máy chủ); ô chat máy tính (bấm mở, `/`, Esc không mở menu). Test bi-a máy tính chờ hội thoại
+  on_enter của zone 5 trước khi tới bàn (lỗi chạy đua thỉnh thoảng); test né đè bảng tên (màn thấp) chờ tới khi hết đè, tối đa 4 s, thay vì 600 ms cố định (CI khung thưa → đỏ ở main sau PR #20). `__game.pool.touch()`, `__game.pool.setState()`.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

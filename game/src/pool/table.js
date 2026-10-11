@@ -30,6 +30,14 @@
 //     mặc định giữa, về giữa sau mỗi cú. Đường ngắm thêm một đoạn ngắn hướng bi trắng sau lần chạm đầu (physics.js cueAfter).
 //     Thử thách của anh Khang: luôn đánh tâm, không có ô chọn. Bàn chung: chỉ khi máy chủ báo "pool_spin" và bàn báo spin: true
 //     (mọi người ngồi đều dùng bản hiểu xoáy — pool_join sp: 1); không thì ẩn ô chọn, cú gửi spin = roll = 0.
+//   • Cảm ứng (body.touch — core/device.js; máy tính giữ nguyên mọi phím / chuột ở trên): ./pointer.js nhận cả ngón tay — chạm /
+//     kéo một ngón trên bàn: cơ hướng từ bi trắng tới ngón tay (như chuột không khoá), chạm không đánh; 2 ngón chụm: camera gần /
+//     xa (core/input.js → wheel); vuốt xoay camera của chế độ đi bộ tắt ở bàn. Lực: thanh kéo dọc mép phải (#pool-touch .tpower)
+//     — kéo xuống chọn lực (cơ lùi theo), thả đánh, kéo về đỉnh rồi thả = huỷ; đánh bi 8 chưa gọi lỗ: chạm thanh lực gọi lỗ đang
+//     ngắm tới (như Space). Ngắm tinh: giữ ◀ ▶ (như A/D + Shift). Bi trong tay: kéo bi trắng bằng ngón tay (vòng đỏ: chỗ không
+//     đặt được), nút "Đặt bi". Gọi lỗ: chạm vào lỗ (vùng chạm ≥ POCKET_TOUCH_PX px trên màn). Cột nút: Luật (H), Xếp lại (R),
+//     Ngồi (J — khi có ghế trống), Rời bàn (Esc); sau cú phá không hợp lệ: "Xếp lại và phá" / "Đánh tiếp" (R / P). Ô áp phê dời
+//     xuống góc trái dưới (CSS). Cú đánh vẫn là góc / lực / spin / roll / chỗ đặt bi / lỗ gọi như máy tính (shoot()).
 // __game.pool: trạng thái + enter / shoot(angle, power, { spin, roll }) / setSpin / leave / rerack / join / autoShot (smoke test).
 import * as THREE from "three";
 import { makeTable, rackState, customState, simulateShot, aimInfo, cueAfter, findPottingShot, respotCue, cloneState, angleTo, spinLevel,
@@ -42,6 +50,7 @@ import { hud } from "../ui/hud.js";
 import { t } from "../i18n.js";
 import { tx } from "../content/content.js";
 import { sound } from "../core/sound.js";
+import { device } from "../core/device.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
 const CHARGE_S = 1.3;             // thanh lực 0 → 1 trong 1,3 s rồi chạy ngược lại
@@ -52,6 +61,13 @@ const POKE_S = 1.5;               // hết giờ lượt của đối thủ + ch
 const OWN = ["aim", "charge", "place", "strike"];
 // thứ tự đổi lỗ bằng phím C (đi vòng quanh bàn)
 const POCKET_ORDER = ["head_left", "side_left", "foot_left", "foot_right", "side_right", "head_right"];
+const NUDGE = 0.9 * 0.25;         // cảm ứng: giữ ◀ ▶ xoay cơ (rad/s) — như A/D + Shift
+const POCKET_TOUCH_PX = 34;       // cảm ứng: chạm cách tâm lỗ (trên màn) chừng ấy px vẫn tính là chạm lỗ (vùng ≥ 44 px)
+const CANCEL_POWER = 0.04;        // thanh lực cảm ứng: thả ở dưới mức này = huỷ cú
+// chữ có bản cảm ứng (khoá + "_touch" trong data/i18n) — không ghi phím
+const TOUCH_TEXT = new Set(["pool.cleared", "pool.net_status_free", "pool.net_status_place", "pool.net_status_place_table", "pool.net_rematch_hint",
+  "pool.net_status_choice", "pool.net_status_call", "pool.rules_eight", "pool.rules_practice", "pool.rules_spin"]);
+const tt = (key, vars) => t(device.touch && TOUCH_TEXT.has(key) ? `${key}_touch` : key, vars);
 const SPIN_R = 0.6;               // ô chọn điểm chạm: nấc 2 cách tâm 0,6 bán kính hình bi (cả nấc chéo 2 / 2 vẫn nằm trong hình)
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
@@ -99,6 +115,9 @@ export class PoolTable {
     this.rulesOpen = false;       // thẻ tóm tắt luật (phím H)
     this.spinLv = 0;              // điểm chạm trên bi trắng: ngang −2 (trái) … +2 (phải)
     this.rollLv = 0;              //   dọc: +2 (trên, đánh đè) … −2 (dưới, đánh kéo)
+    this.touchPower = null;       // cảm ứng: lực đang kéo trên thanh lực (null: không kéo)
+    this.nudge = 0;               // cảm ứng: đang giữ ◀ (−1) / ▶ (+1)
+    this.placeBad = null;         // cảm ứng, bi trong tay: chỗ ngón tay vừa kéo tới không đặt được (vòng đỏ)
   }
 
   // ---------- gắn vào zone ----------
@@ -138,7 +157,10 @@ export class PoolTable {
   // bàn chung đang theo luật chuẩn (máy chủ có "pool_rules2")? Máy chủ cũ không gửi rules → luật cũ
   get rules2() { return this.netActive && this.tb?.rules === RULES_V2; }
   // bi trong tay của người tới lượt: "kitchen" (khu đầu bàn) | "table" (cả bàn) | null — luật cũ gửi true = khu đầu bàn
-  get hand() { const h = this.tb?.mode === "match" ? this.tb.inHand : false; return h === true ? "kitchen" : h || null; }
+  get hand() {
+    if (this.forceHand && !this.netActive) return this.forceHand;          // kiểm thử (debugState): bi trong tay ở bàn tập
+    const h = this.tb?.mode === "match" ? this.tb.inHand : false; return h === true ? "kitchen" : h || null;
+  }
   // được chọn điểm chạm (xoáy)? thử thách: không; bàn chung: máy chủ có "pool_spin" và bàn báo spin: true
   get spinOn() {
     if (this.challenge) return false;
@@ -147,6 +169,7 @@ export class PoolTable {
   }
   // tới lượt mình đánh bi 8 (luật chuẩn: phải gọi lỗ trước)
   get needCall() {
+    if (this.forceCall) return this.active && !this.netActive && !this.challenge;   // kiểm thử (debugState): thế bi dựng sẵn, gọi lỗ
     const tb = this.tb;
     return this.rules2 && this.myTurn && tb.mode === "match" && !tb.brk && !tb.choice && onEight(this.state, tb, this.seat);
   }
@@ -184,6 +207,14 @@ export class PoolTable {
       g.add(m);
       return m;
     });
+    // bi trong tay (cảm ứng): vòng dưới bi trắng — xanh: đặt được; đỏ ở chỗ ngón tay: không đặt được
+    this.placeMark = new THREE.Mesh(new THREE.RingGeometry(this.table.r * 1.15, this.table.r * 1.5, 32),
+      new THREE.MeshBasicMaterial({ color: 0x5ce08a, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false, side: THREE.DoubleSide }));
+    this.placeMark.rotation.x = -Math.PI / 2;
+    this.placeMark.renderOrder = 10;
+    this.placeMark.visible = false;
+    this.placeMark.userData.dynamic = true;
+    g.add(this.placeMark);
     this.cuePivot = new THREE.Group();
     const src = this.cues.find((c) => c.name === "cue_2") || this.cues[0];
     if (src) this.cuePivot.add(cueModel(src));
@@ -238,8 +269,8 @@ export class PoolTable {
     this.regain = false;
     this.cursorAim = false;
     g.input.setLook(true);
-    this.pointer = new TablePointer({ canvas: g.input.canvas, camera: g.camera, root: this.root, y: this.table.ballY,
-      onMove: (pt) => this.pointerMove(pt), onDown: (pt) => this.pointerDown(pt), onUp: () => { this.mouse = false; } }).attach();
+    this.pointer = new TablePointer({ canvas: g.input.canvas, camera: g.camera, root: this.root, y: this.table.ballY, types: ["mouse", "touch", "pen"],
+      onMove: (pt) => this.pointerMove(pt), onDown: (pt, e) => this.pointerDown(pt, e), onUp: () => { this.mouse = false; } }).attach();
     // bấm vào lỗ để gọi lỗ cho bi 8: cú bấm đó không khoá con trỏ (core/input.js hỏi trước khi khoá)
     g.input.skipLock = (e) => this.phase === "aim" && this.needCall && !!this.pocketAt(this.pointer?.point(e.clientX, e.clientY));
     this.call = null;
@@ -247,6 +278,13 @@ export class PoolTable {
     this.rulesOpen = false;
     this.spinLv = this.rollLv = 0;
     this.buildSpin();
+    this.touchPower = null;
+    this.nudge = 0;
+    this.placeBad = null;
+    this.buildTouch();
+    document.body.classList.add("pool-on");     // CSS cảm ứng: ẩn dòng mục tiêu / đồng hồ / "N online" / tin chat xem trước ở bàn
+    // laptop cảm ứng: chạm lần đầu / bấm phím đổi giao diện giữa chừng → vẽ lại bảng, dòng hướng dẫn
+    this.offTouch = device.onChange(() => { if (!this.active) return; this.touchPower = null; this.nudge = 0; this.drawHud(); this.showHint(); this.spinKey = this.touchKey = null; });
     addEventListener("blur", this.onBlur);
     document.addEventListener("pointerlockerror", this.onLockError);
     document.addEventListener("pointerlockchange", this.onLockChange);
@@ -294,6 +332,17 @@ export class PoolTable {
     this.spinEl?.remove();
     this.spinEl = null;
     this.spinLv = this.rollLv = 0;
+    this.touchEl?.remove();
+    this.touchEl = null;
+    document.body.classList.remove("pool-on");
+    this.forceCall = false;
+    this.forceHand = null;
+    this.offTouch?.();
+    this.offTouch = null;
+    this.touchPower = null;
+    this.nudge = 0;
+    this.placeBad = null;
+    this.placeMark.visible = false;
     this.helpers.visible = false;
     for (const m of this.pocketMarks) m.visible = false;
     const wasChallenge = !!this.challenge;
@@ -377,9 +426,10 @@ export class PoolTable {
     const i = this.game.input;
     return i.locked ? "lock" : i.lockSupported && !this.lockFailed ? "wait" : "free";
   }
-  // bấm nút chuột chính trên khung vẽ (./pointer.js)
-  pointerDown(pt) {
+  // bấm nút chuột chính / chạm trên khung vẽ (./pointer.js)
+  pointerDown(pt, e) {
     if (!this.active) return;
+    if (this.pointer?.lastType && this.pointer.lastType !== "mouse") { this.touchDown(pt, e); return; }
     const mode = this.mouseMode;
     if (mode !== "lock" && this.phase === "aim" && this.needCall) {   // đánh bi 8: bấm vào lỗ = gọi lỗ đó (không nạp lực)
       const p = this.pocketAt(pt);
@@ -403,6 +453,26 @@ export class PoolTable {
       this.cursorAim = true;
       this.cursorMoved = true;
     } else if (this.phase === "place") this.moveCue(pt.x, pt.z);
+  }
+  // chạm (ngón tay / bút): đánh bi 8 chưa gọi lỗ → chạm lỗ = gọi lỗ; còn lại: ngắm tới chỗ chạm / kéo bi trắng (bi trong tay).
+  // Không bao giờ nạp lực (lực: thanh kéo — buildTouch)
+  touchDown(pt, e) {
+    if (this.phase === "aim" && this.needCall) {
+      const p = this.pocketAtScreen(e?.clientX, e?.clientY) || this.pocketAt(pt);
+      if (p) { this.setCall(p.id); return; }
+    }
+    this.pointerMove(pt);
+  }
+  // lỗ có tâm trên màn hình cách (cx, cy) ≤ POCKET_TOUCH_PX px (gần nhất) hoặc null
+  pocketAtScreen(cx, cy) {
+    if (cx == null || !this.pointer) return null;
+    let best = null, bd = POCKET_TOUCH_PX;
+    for (const p of this.table.pockets) {
+      const s = this.pointer.screen(p.x, p.z);
+      const d = Math.hypot(s.x - cx, s.y - cy);
+      if (s.visible && d <= bd) { bd = d; best = p; }
+    }
+    return best;
   }
   rerack() {
     if (!this.active || this.challenge || this.playback) return;
@@ -536,6 +606,7 @@ export class PoolTable {
         b: packBalls(res.finalState), k: res.pocketed, s: res.cueScratch, d: +res.time.toFixed(2), ...wireFacts(res) });
     }
     this.spinLv = this.rollLv = 0;                   // về giữa sau mỗi cú
+    this.forceCall = false;
     this.drawSpin();
     this.hideAim();   // tiếng đầu cơ: lúc bi cái bắt đầu lăn (cueSound)
     return new Promise((resolve) => {
@@ -568,7 +639,7 @@ export class PoolTable {
       this.session.shots++;
       this.session.potted += res.pocketed.filter((n) => n !== 0).length;
       if (res.cueScratch) { respotCue(this.table, this.session.state); hud.toast(t("pool.scratch")); }
-      if (this.session.state.balls.every((b) => b.n === 0 || !b.on)) hud.toast(t("pool.cleared", { n: this.session.shots }));
+      if (this.session.state.balls.every((b) => b.n === 0 || !b.on)) hud.toast(tt("pool.cleared", { n: this.session.shots }));
       this.drawHud();
     }
     this.apply(this.state);
@@ -744,7 +815,7 @@ export class PoolTable {
     const now = performance.now(), left = Math.max(0, Math.ceil((this.deadline - now) / 1000));
     if (left !== this.shownLeft) { this.shownLeft = left; this.drawStatus(); }
     // luật chuẩn: mình hết giờ (máy chủ sẽ tính lỗi khi có tin tới) → thôi nạp lực, chờ máy chủ
-    if (this.rules2 && this.myTurn && now > this.deadline && this.phase === "charge") { this.phase = "aim"; this.power = 0; this.needRelease = true; }
+    if (this.rules2 && this.myTurn && now > this.deadline && this.phase === "charge") { this.phase = "aim"; this.power = 0; this.needRelease = true; this.touchPower = null; }
     if (this.seat >= 0 && tb.turn !== this.seat && !this.playback && now > this.deadline + POKE_S * 1000 && now - (this.pokeAt || 0) > 4000) {
       this.pokeAt = now;
       this.net?.sendPool({ t: "pool_poke" });
@@ -754,6 +825,8 @@ export class PoolTable {
   // ---------- mỗi khung ----------
   update(dt, drag) {
     if (!this.active) { if (this.playback) this.roll(dt); return; }    // cú của người khác vẫn lăn khi mình đi lại
+    // cảm ứng: kéo một ngón là ngắm (./pointer.js), không xoay camera; 2 ngón chụm vẫn thu phóng
+    if (device.touch && drag) drag = { dx: 0, dy: 0, wheel: drag.wheel || 0 };
     const input = this.game.input, k = input.keys;
     const pressing = this.mouse || k.has("Space");
     if (!pressing) this.needRelease = false;
@@ -773,19 +846,26 @@ export class PoolTable {
       this.angle += turn * dt + (drag?.dx || 0) * 0.0032 * slow;   // chờ chọn R / P: xoay quanh bàn xem thế bi
       if (drag?.dx) this.cursorAim = false;
     } else if (this.phase === "aim" || this.phase === "charge") {
-      this.angle += turn * dt + dx * 0.0032 * slow;
-      const want = pressing && !this.needRelease;
-      // đánh bi 8 chưa gọi lỗ: lần bấm này gọi lỗ đang ngắm tới (không nạp lực) — đổi bằng C / bấm vào lỗ khác
-      if (want && this.phase === "aim" && this.needCall && !this.call) { this.setCall(this.predictPocket()); this.needRelease = true; }
-      else if (want && this.phase === "aim") { this.phase = "charge"; this.chargeT = 0; }
-      if (this.phase === "charge") {
-        this.chargeT += dt;
-        const c = (this.chargeT / CHARGE_S) % 2;
-        this.power = c <= 1 ? c : 2 - c;
-        if (!want) this.shoot(this.angle, Math.max(0.04, this.power));
+      const fine = this.nudge * NUDGE;                      // cảm ứng: giữ ◀ ▶ (camera giữ nguyên như ngắm bằng ngón tay)
+      this.angle += turn * dt + dx * 0.0032 * slow + fine * dt;
+      if (this.touchPower != null) {
+        // cảm ứng: thanh lực đang kéo — lực theo ngón tay, thả mới đánh / huỷ (buildTouch)
+        if (this.phase === "aim") { this.phase = "charge"; this.chargeT = 0; }
+        this.power = this.touchPower;
+      } else {
+        const want = pressing && !this.needRelease;
+        // đánh bi 8 chưa gọi lỗ: lần bấm này gọi lỗ đang ngắm tới (không nạp lực) — đổi bằng C / bấm vào lỗ khác
+        if (want && this.phase === "aim" && this.needCall && !this.call) { this.setCall(this.predictPocket()); this.needRelease = true; }
+        else if (want && this.phase === "aim") { this.phase = "charge"; this.chargeT = 0; }
+        if (this.phase === "charge") {
+          this.chargeT += dt;
+          const c = (this.chargeT / CHARGE_S) % 2;
+          this.power = c <= 1 ? c : 2 - c;
+          if (!want) this.shoot(this.angle, Math.max(0.04, this.power));
+        }
       }
       if (this.phase === "aim" || this.phase === "charge") this.drawAim();
-      if (turn || dx || this.cursorMoved) this.placePlayer();
+      if (turn || dx || fine || this.cursorMoved) this.placePlayer();
       this.cursorMoved = false;
     }
     if (!this.cursorAim) this.camAngle = this.angle;
@@ -799,21 +879,15 @@ export class PoolTable {
     this.drawPower();
     this.drawMarks();
     this.drawSpin();
+    this.drawTouch();
+    this.drawPlaceMark();
   }
   // bi trắng trong tay: W/S dọc bàn, A/D ngang (chuột kéo cũng được), trong khu đầu bàn (luật chuẩn sau lỗi: cả bàn), không
   // chồng bi; Space / nhấp: đặt
   updatePlace(dt, drag, pressing) {
     const st = this.override;
     if (!st) { this.phase = "aim"; return; }
-    if (pressing && !this.needRelease) {
-      this.phase = "aim";
-      this.needRelease = true;
-      this.aimAtTarget();
-      this.placePlayer();
-      this.snapCamera = true;
-      this.drawStatus();
-      return;
-    }
+    if (pressing && !this.needRelease) { this.confirmPlace(); return; }
     const k = this.game.input.keys, has = (...c) => c.some((x) => k.has(x));
     const sp = 0.5 * (has("ShiftLeft", "ShiftRight") ? 0.3 : 1) * dt;
     const right = (has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0);
@@ -824,16 +898,33 @@ export class PoolTable {
     const c = st.balls[0];
     this.moveCue(c.x + dx, c.z + dz);
   }
+  // bi trong tay → đặt xong (Space / nhấp chuột / nút "Đặt bi" cảm ứng): sang ngắm
+  confirmPlace() {
+    if (!this.active || this.phase !== "place" || !this.override) return false;
+    if (this.forceHand && !this.netActive) { this.override = null; this.forceHand = null; }   // kiểm thử ở bàn tập: bàn tập giữ chỗ bi
+    this.phase = "aim";
+    this.needRelease = true;
+    this.placeBad = null;
+    this.aimAtTarget();
+    this.placePlayer();
+    this.snapCamera = true;
+    this.drawStatus();
+    if (device.touch) sound.play("tap");
+    return true;
+  }
   // bi trong tay: dời bi trắng tới (x, z) cục bộ — kẹp trong vùng được đặt (khu đầu bàn / cả bàn), không chồng bi (không được
-  // thì trượt theo 1 trục)
+  // thì trượt theo 1 trục). placeBad: chỗ được hỏi không đặt được (vòng đỏ khi kéo bằng ngón tay)
   moveCue(x, z) {
     const st = this.override;
-    if (!st) return;
+    if (!st) return false;
     const hand = this.hand || "kitchen";
     const c = st.balls[0], kk = handArea(this.table, hand), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
     const nx = clamp(x, kk.x0, kk.x1), nz = clamp(z, kk.z0, kk.z1);
     const tryAt = (px, pz) => canPlaceCueIn(this.table, st, px, pz, hand) && !!placeCue(st, px, pz);
-    if (tryAt(nx, nz) || tryAt(nx, c.z) || tryAt(c.x, nz)) this.apply(st);
+    const exact = nx === x && nz === z && tryAt(nx, nz);
+    this.placeBad = exact ? null : { x: nx, z: nz };
+    if (exact || tryAt(nx, nz) || tryAt(nx, c.z) || tryAt(c.x, nz)) this.apply(st);
+    return exact;
   }
 
   // phát lại các khung của cú đánh (60 khung/giây theo thời gian thật), bi xoay theo quãng đường lăn
@@ -1004,10 +1095,10 @@ export class PoolTable {
     const s = this.deadline != null ? Math.max(0, Math.ceil((this.deadline - performance.now()) / 1000)) : null;
     if (tb.mode === "over") {
       const head = this.seat === tb.winner ? t("pool.net_status_won") : t("pool.net_status_winner", { name: name(tb.winner) });
-      return this.seat >= 0 ? `${head} ${t("pool.net_rematch_hint")}` : head;
+      return this.seat >= 0 ? `${head} ${tt("pool.net_rematch_hint")}` : head;
     }
     if (this.seat < 0) {
-      if (tb.seats.includes(null)) return t("pool.net_status_free");
+      if (tb.seats.includes(null)) return tt("pool.net_status_free");
       return tb.mode === "match" ? t("pool.net_status_turn", { name: name(tb.turn), s: s ?? "–" }) : t("pool.net_status_watch");
     }
     if (tb.mode === "solo") return t("pool.net_status_solo");
@@ -1015,9 +1106,9 @@ export class PoolTable {
       if (this.rules2 && tb.choice) return t("pool.net_status_choosing", { name: name(tb.turn) });
       return t("pool.net_status_turn", { name: name(tb.turn), s: s ?? "–" });
     }
-    if (this.phase === "choice") return t("pool.net_status_choice");
-    if (this.phase === "place") return t(this.hand === "table" ? "pool.net_status_place_table" : "pool.net_status_place");
-    if (this.needCall) return this.call ? t("pool.net_status_called", { pocket: this.pocketName(this.call) }) : t("pool.net_status_call");
+    if (this.phase === "choice") return tt("pool.net_status_choice");
+    if (this.phase === "place") return tt(this.hand === "table" ? "pool.net_status_place_table" : "pool.net_status_place");
+    if (this.needCall) return this.call ? t("pool.net_status_called", { pocket: this.pocketName(this.call) }) : tt("pool.net_status_call");
     if (this.rules2) return t("pool.net_status_your_turn");              // luật chuẩn: giây đếm ngược ở đồng hồ
     return s != null && s <= 20 ? t("pool.net_status_your_turn_s", { s }) : t("pool.net_status_your_turn");
   }
@@ -1108,6 +1199,127 @@ export class PoolTable {
     el.querySelector(".val").textContent = this.spinText();
   }
 
+  // ---------- cảm ứng: thanh lực, ngắm tinh, cột nút (chỉ hiện khi body.touch — CSS) ----------
+  // Khung riêng #pool-touch (không nằm trong #pool-hud: bảng được vẽ lại mỗi khi bàn chung đổi, ngón tay đang kéo thanh lực
+  // sẽ mất). Thanh lực: kéo xuống từ chỗ đặt ngón (lực = quãng kéo / 90 % chiều cao thanh), thả ≥ CANCEL_POWER → đánh, thấp hơn
+  // (kéo về đỉnh) → huỷ. ◀ ▶: giữ để xoay chậm. Cột nút: Luật, Xếp lại / Ngồi, Rời bàn. Góc phải dưới theo lúc: ◀ ▶ (ngắm),
+  // "Đặt bi" (bi trong tay), "Xếp lại và phá" / "Đánh tiếp" (sau cú phá không hợp lệ).
+  buildTouch() {
+    this.touchEl?.remove();
+    const el = document.createElement("div");
+    el.id = "pool-touch";
+    const b = (a, label, text, cls = "round") => `<button type="button" class="${cls}" data-a="${a}" aria-label="${esc(label)}" title="${esc(label)}" hidden>${text}</button>`;
+    el.innerHTML = `<div class="tpower" hidden role="slider" aria-label="${esc(t("pool.power_touch"))}" title="${esc(t("pool.power_touch"))}"><span>${esc(t("pool.power"))}</span><div class="track"><i></i><b></b></div></div>
+      <div class="icons">${b("rules", t("pool.rules"), "?")}${b("rerack", t("pool.rerack"), "↻")}${b("join", t("pool.join"), "🪑")}${b("leave", t("pool.leave"), "✕")}</div>
+      <div class="ctx">${b("aimL", t("pool.aim_left"), "◀")}${b("aimR", t("pool.aim_right"), "▶")}${b("place", t("pool.place"), esc(t("pool.place")), "primary")}${
+        b("rerack_break", t("pool.rerack_break"), esc(t("pool.rerack_break")), "primary")}${b("play", t("pool.play_on"), esc(t("pool.play_on")), "ghost")}</div>`;
+    document.body.appendChild(el);
+    this.touchEl = el;
+    this.touchKey = null;
+    el.addEventListener("click", (e) => {
+      const a = e.target.closest("[data-a]")?.dataset.a;
+      if (a === "rules") this.help();
+      else if (a === "rerack") this.rerack();
+      else if (a === "join") this.join();
+      else if (a === "leave") { if (this.challenge) this.game.ui.minigame.close(false); else this.leave(); }
+      else if (a === "place") this.confirmPlace();
+      else if (a === "rerack_break") this.choose("rerack");
+      else if (a === "play") this.choose("play");
+    });
+    // ◀ ▶: giữ để xoay
+    for (const [a, dir] of [["aimL", -1], ["aimR", 1]]) {
+      const btn = el.querySelector(`[data-a=${a}]`);
+      const stop = () => { if (this.nudge === dir) this.nudge = 0; };
+      btn.addEventListener("pointerdown", (e) => { e.preventDefault(); try { btn.setPointerCapture(e.pointerId); } catch { /* chạm giả lập */ } this.nudge = dir; });
+      for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) btn.addEventListener(ev, stop);
+    }
+    // thanh lực
+    const bar = el.querySelector(".tpower"), track = el.querySelector(".track");
+    let id = null, y0 = 0;
+    bar.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if (id != null || !this.canCharge()) return;
+      if (this.needCall && !this.call) { this.setCall(this.predictPocket()); return; }   // như Space: lần chạm đầu gọi lỗ đang ngắm tới
+      id = e.pointerId;
+      y0 = e.clientY;
+      try { bar.setPointerCapture(id); } catch { /* chạm giả lập */ }
+      this.touchPower = 0;
+    });
+    bar.addEventListener("pointermove", (e) => {
+      if (e.pointerId !== id) return;
+      const h = track.getBoundingClientRect().height || 1;
+      this.touchPower = Math.max(0, Math.min(1, (e.clientY - y0) / (h * 0.9)));
+    });
+    const release = (e) => {
+      if (e.pointerId !== id) return;
+      id = null;
+      const p = this.touchPower;
+      this.touchPower = null;
+      if (this.phase !== "charge") return;
+      if (p != null && p >= CANCEL_POWER) this.shoot(this.angle, p);
+      else { this.phase = "aim"; this.power = 0; }                 // kéo về đỉnh rồi thả: huỷ
+    };
+    bar.addEventListener("pointerup", release);
+    bar.addEventListener("pointercancel", release);
+  }
+  // được kéo thanh lực: đang ngắm, tới lượt mình, không chờ chọn / bi chưa dừng
+  canCharge() {
+    if (!this.active || this.phase !== "aim" || this.playback || !this.state.balls[0].on) return false;
+    return !this.netActive || (this.myTurn && !this.tb?.choice);
+  }
+  // hiện / ẩn nút theo lúc (gọi mỗi khung; chỉ đụng DOM khi khác lần trước) + độ dài thanh lực
+  drawTouch() {
+    const el = this.touchEl;
+    if (!el) return;
+    const tb = this.tb, mine = !this.netActive || this.myTurn;
+    const aiming = (this.phase === "aim" || this.phase === "charge") && mine && !(this.netActive && tb?.choice) && this.state.balls[0].on;
+    const vis = {
+      tpower: aiming, aimL: aiming, aimR: aiming, place: this.phase === "place", rerack_break: this.phase === "choice", play: this.phase === "choice",
+      rules: !this.challenge, leave: !this.challenge,
+      rerack: !this.challenge && this.phase !== "choice" && (!this.netActive || (this.seat >= 0 && (tb?.mode === "solo" || tb?.mode === "over"))),
+      join: this.netActive && this.seat < 0 && !!tb?.seats.includes(null) && this.phase !== "wait",
+    };
+    const key = JSON.stringify(vis);
+    if (key !== this.touchKey) {
+      this.touchKey = key;
+      for (const [a, on] of Object.entries(vis)) {
+        const node = a === "tpower" ? el.querySelector(".tpower") : el.querySelector(`[data-a=${a}]`);
+        node.hidden = !on;
+      }
+    }
+    const pw = this.phase === "charge" && this.touchPower != null ? this.touchPower : this.phase === "charge" ? this.power : 0;
+    if (pw !== this.touchPw) {
+      this.touchPw = pw;
+      el.querySelector(".track i").style.height = `${Math.round(pw * 100)}%`;
+      el.querySelector(".track b").style.top = `${Math.round(pw * 100)}%`;
+    }
+  }
+  // bi trong tay (cảm ứng): vòng xanh dưới bi trắng; chỗ ngón tay vừa kéo tới không đặt được → vòng đỏ ở đó
+  drawPlaceMark() {
+    const m = this.placeMark, on = device.touch && this.phase === "place" && !!this.override;
+    m.visible = on;
+    if (!on) return;
+    const c = this.override.balls[0], at = this.placeBad || c, y = this.table.ballY - this.table.r * 0.9;
+    m.position.set(at.x, y, at.z);
+    m.material.color.setHex(this.placeBad ? 0xe5484d : 0x5ce08a);
+  }
+  // __game.pool.touch: các nút cảm ứng đang hiện (hộp trên màn hình), lực đang kéo — smoke test chạm đúng chỗ, đo chồng nhau
+  touchInfo() {
+    const box = (n) => { if (!n || n.hidden || !n.getClientRects().length) return null; const r = n.getBoundingClientRect(); return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }; };
+    const el = this.touchEl, out = {};
+    if (el) {
+      out.tpower = box(el.querySelector(".tpower"));
+      for (const n of el.querySelectorAll("[data-a]")) { const b = box(n); if (b) out[n.dataset.a] = b; }
+    }
+    const hudBox = { panel: box(this.hudEl?.querySelector(".panel")), rules: box(this.hudEl?.querySelector(".rules")), spin: box(this.spinEl), power: box(this.hudEl?.querySelector(".power.keep")) };
+    for (const [k, v] of Object.entries(hudBox)) if (v) out[k] = v;
+    const cue = this.state.balls[0], s = this.pointer && cue.on ? this.pointer.screen(cue.x, cue.z) : null;
+    const contact = this.aim?.contact && this.pointer ? this.pointer.screen(this.aim.contact.x, this.aim.contact.z) : null;
+    return { on: device.touch, boxes: out, power: this.touchPower, nudge: this.nudge, placeBad: !!this.placeBad, placeMark: this.placeMark?.visible ?? false,
+      cueScreen: s && { x: Math.round(s.x), y: Math.round(s.y) }, contactScreen: contact && { x: Math.round(contact.x), y: Math.round(contact.y) },
+      pockets: this.pointer ? this.table.pockets.map((p) => { const q = this.pointer.screen(p.x, p.z); return { id: p.id, x: Math.round(q.x), y: Math.round(q.y), visible: q.visible }; }) : [] };
+  }
+
   // ---------- phím H: tóm tắt luật (bàn chung luật chuẩn / luật cũ / tập một mình) ----------
   rulesKeys() {
     const spin = this.spinOn ? ["rules_spin"] : [];
@@ -1118,7 +1330,7 @@ export class PoolTable {
   rulesCard() {
     if (!this.rulesOpen) return "";
     return `<div class="rules"><b>${esc(t(this.rules2 ? "pool.rules_title" : "pool.title"))} <kbd>H</kbd></b>${
-      this.rulesKeys().map((k) => `<p>${esc(t(`pool.${k}`))}</p>`).join("")}</div>`;
+      this.rulesKeys().map((k) => `<p>${esc(tt(`pool.${k}`))}</p>`).join("")}</div>`;
   }
   help() {
     if (!this.active || this.challenge) return false;
@@ -1129,11 +1341,12 @@ export class PoolTable {
   }
   // dòng hướng dẫn dưới màn hình: cách ngắm theo chế độ chuột + phím của chế độ chơi
   hintText() {
+    if (device.touch) return `${t("pool.hint_touch")}${this.spinOn ? ` · ${t("pool.hint_spin_touch")}` : ""}`;
     const aim = t(this.mouseMode === "free" ? "pool.hint_aim_free" : "pool.hint_aim_mouse");
     const spin = this.spinOn ? ` · ${t("pool.hint_spin")}` : "";
     return `${aim}${spin} · ${t(this.challenge ? "pool.controls_challenge" : this.netActive ? "pool.controls_net" : "pool.controls")}`;
   }
-  showHint() { if (this.active) hud.hint(this.hintText(), 600); }
+  showHint() { if (this.active) hud.hint(this.hintText(), device.touch ? 8 : 600); }   // cảm ứng: tắt sau 8 s (khỏi che bàn)
 
   // ---------- camera + chỗ đứng ----------
   local(v) { return this.root.localToWorld(v.clone()); }
@@ -1239,6 +1452,23 @@ export class PoolTable {
       if (!this.call) { this.aim = aimInfo(this.table, s, pick.angle); this.call = this.predictPocket(); }
     }
     return this.shoot(pick.angle, pick.power, { instant, spin, roll });
+  }
+  // kiểm thử: thế bi dựng sẵn ở bàn tập một mình — balls { n: [x, z] }; call: bắt gọi lỗ như lúc đánh bi 8 (thử chạm vào lỗ);
+  // hand: "table" / "kitchen" — bi trong tay (thử kéo bi trắng bằng ngón tay + nút Đặt bi)
+  debugState(balls, { call = false, hand = null } = {}) {
+    if (!this.active || this.netActive || this.challenge || this.playback) return false;
+    this.session.state = customState(this.table, balls);
+    this.apply(this.session.state);
+    this.phase = "aim";
+    this.power = 0;
+    this.forceCall = !!call;
+    this.forceHand = hand;
+    this.call = null;
+    this.aimAtTarget();
+    if (hand) { this.override = this.session.state; this.phase = "place"; this.angle = Math.PI / 2; this.cursorAim = false; }
+    this.placePlayer();
+    this.snapCamera = true;
+    return true;
   }
   // bi trong tay: đặt bi trắng ở (x, z) cục bộ (kiểm thử; người chơi dùng W/A/S/D) → false nếu ngoài vùng được đặt / chồng bi
   debugPlace(x, z) {

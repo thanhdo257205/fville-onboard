@@ -342,8 +342,9 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
     phím ảo che; màn thấp (cầm ngang) bảng mini-game cuộn được, nút không lọt mép — ad43543
   - [x] Nhắn tin bằng cảm ứng: bàn phím ảo không che ô nhập (`visualViewport`), gửi bằng nút, gửi xong cất bàn phím, đang gõ
     không điều khiển nhân vật — ad43543
-  - [ ] Bi-a bằng cảm ứng (sau PR áp phê): kéo để ngắm, giữ nút để lấy lực, nút Rerack / Leave / Join, áp phê bằng chạm. Hiện ở
-    bàn bi-a trên máy cảm ứng: dòng "Bi-a bằng cảm ứng sắp có" + nút Rời bàn
+  - [x] Bi-a bằng cảm ứng (sau PR áp phê): kéo ngón để ngắm (chạm nhẹ không đánh), giữ ◀ ▶ ngắm tinh, thanh lực dọc kéo – thả
+    (về đỉnh = hủy), chụm đổi camera, kéo bi trắng + "Đặt bi", chạm lỗ gọi bi 8, "Xếp lại & phá" / "Đánh tiếp", nút Luật /
+    Xếp lại / Ngồi / Rời bàn, áp phê bằng chạm (góc trái dưới); tập một mình, bàn chung, người xem, thử thách anh Khang — 2e1fd3b
   - [x] Giao diện: nút ≥ 44 px, không đè lên nhau hay che nhân vật / dấu "!" / mũi tên; dòng hướng dẫn điều khiển đổi theo cảm
     ứng (không ghi "WASD", "E"); cầm dọc thì nhắc xoay ngang; chừa vùng tai thỏ / thanh điều hướng (`env(safe-area-inset-*)`);
     chặn phóng to trang, kéo xuống làm mới, menu khi giữ ngón — ad43543

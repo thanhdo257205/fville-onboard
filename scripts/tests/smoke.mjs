@@ -24,7 +24,7 @@
 //   Lượt điện thoại (Playwright hasTouch + isMobile, khung ngang 844 × 390): giao diện cảm ứng tự bật, đi bằng cần điều khiển
 //     ảo, vuốt xoay camera, chụm 2 ngón thu phóng, chạm nút hành động / qua hội thoại / lựa chọn, chơi zone 0 → 2 (--zone N:
 //     chỉ zone đó) kể cả mini-game bằng chạm (Cài app, Ảnh check-in); máy chủ local: mở chat bằng nút, gửi 1 tin bằng nút Gửi.
-//     --mobile off | only: bỏ / chỉ chạy lượt điện thoại
+//     --mobile off | only | pool: bỏ / chỉ chạy lượt điện thoại / chỉ bi-a cảm ứng (1 máy + 2 người qua máy chủ local)
 //   --headed: mở cửa sổ trình duyệt · --verbose: in thêm chi tiết từng bước
 // In gọn: mỗi bước 1 dòng ✓/✗, cuối cùng 1 dòng tổng kết + thời gian. Ảnh chụp chỉ khi bước hỏng: test-results/ (không commit).
 import { spawn, spawnSync } from "node:child_process";
@@ -55,7 +55,7 @@ if (!startZone) throw new Error(`--zone ${zoneArg}: không có zone này`);
 const onlyZone = zoneArg != null;
 const verbose = !!arg("verbose");
 const extra = arg("extra");
-const mobile = arg("mobile");      // off: bỏ lượt điện thoại · only: chỉ lượt điện thoại (+ nhắn tin bằng cảm ứng nếu có máy chủ local)
+const mobile = arg("mobile");      // off: bỏ lượt điện thoại · only: chỉ lượt điện thoại (+ nhắn tin, bi-a cảm ứng 2 người nếu có máy chủ local) · pool: chỉ bi-a cảm ứng
 const zoneIsLast = (z) => z === order[order.length - 1];
 const langArg = arg("lang");
 const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
@@ -320,6 +320,9 @@ async function runLook(browser, base, look) {
           const g = __game._game, t = g.zone.root.getObjectByName("pool_table");
           const scene = { table: !!t, balls: t ? t.children.filter((c) => /^ball_\d+$/.test(c.name)).length : 0,
             cue: !!t?.getObjectByName("cue"), col: g.zone.colMeshes.some((m) => m.name === "COL_ban_bi_a") };
+          // hội thoại on_enter của zone (app báo họp, 600 ms sau khi vào zone) có thể chưa hiện → chờ rồi giải trước khi tới bàn
+          await new Promise((r) => setTimeout(r, Math.max(0, (g.state.readyAt ?? 0) + 900 - performance.now())));
+          if (g.mode !== "play") await __game.resolve({ maxMs: 20000 });
           const a = await __game.approach("pool_table");
           const prompt = __game.prompt?.text;
           __game.interact();
@@ -1430,7 +1433,17 @@ async function mobilePage(browser, base, { query = "", name = "Mai", look = "int
   };
   await page.goto(`${base}/?debug${title ? "" : "&title=off"}${query}`);
   const ready = await wait((t) => (t ? window.__title?.open : window.__game?.state.phase === "playing"), 120000, title);
-  return { ctx, page, problems, ev, wait, touch, tap, check, ready };
+  // đường đi nhiều đoạn của 1 ngón: points = [[x, y], …] (chạm ở điểm đầu, kéo qua từng điểm, nhấc ở điểm cuối)
+  const path = async (points, { steps = 6, holdMs = 0 } = {}) => {
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: points[0][0], y: points[0][1], id: 1 }] });
+    for (let k = 1; k < points.length; k++) {
+      const [x0, y0] = points[k - 1], [x1, y1] = points[k];
+      for (let n = 1; n <= steps; n++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x0 + (x1 - x0) * n / steps, y: y0 + (y1 - y0) * n / steps, id: 1 }] }); await sleep(16); }
+      for (let tms = 0; tms < holdMs; tms += 100) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x1, y: y1, id: 1 }] }); await sleep(100); }
+    }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  };
+  return { ctx, page, problems, ev, wait, touch, tap, path, check, ready };
 }
 // tâm của phần tử (selector) trên màn hình, hoặc null khi ẩn
 // (nằm ngoài khung nhìn — vd bảng mini-game cao hơn màn điện thoại cầm ngang — thì cuộn tới như người chơi vuốt)
@@ -1666,8 +1679,14 @@ async function runShort(browser, base) {
       // né đè: gắn tạm thêm 2 bảng tên đúng chỗ bảng của Ms. Huyền (3 bảng trùng nhau) → phải dời ra, không cái nào đè
       const dodge = await ev(async () => { const g = __game._game, n = g.npc("thao"), h = n.character.model.height_m;
         const extra = ["Test A", "Test B"].map((x) => g.nametags.add(n.character.root, x, h));
-        await new Promise((r) => setTimeout(r, 600));   // xếp lại 5 lần / giây (ui/nametags.js DODGE_HZ)
-        const r = __game.tags;
+        // xếp lại 5 lần / giây theo thời gian game (ui/nametags.js DODGE_HZ) — CI chậm (khung thưa) cần lâu hơn: chờ tới khi hết đè, tối đa 4 s
+        const ov = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+        let r = __game.tags;
+        for (let t0 = performance.now(); performance.now() - t0 < 4000; ) {
+          await new Promise((res) => setTimeout(res, 200));
+          r = __game.tags;
+          if (r.length >= 2 && !r.some((a, i) => r.some((b, j) => j > i && ov(a, b)))) break;
+        }
         for (const t of extra) { t.element.remove(); t.parent?.remove(t); g.nametags.tags.splice(g.nametags.tags.indexOf(t), 1); }
         return r; });
       const dodgeHit = dodge.some((a, i) => dodge.some((b, j) => j > i && overlap(a, b)));
@@ -1773,6 +1792,290 @@ async function runFullscreen(browser, base) {
   } finally { await P.ctx.close().catch(() => {}); }
 }
 
+// (f1e) bi-a bằng cảm ứng (pool/table.js buildTouch), khung 844 × 230 (Android có thanh địa chỉ) và 844 × 390: chạm nút "Play pool"
+// → vào bàn; các nút / thanh lực / bảng / ô áp phê không chồng nhau, không che bi trắng + điểm chạm; kéo ngón trên bàn → cơ hướng
+// tới ngón tay; chạm nhẹ không đánh; kéo thanh lực xuống rồi thả → có cú (số cú tăng); kéo xuống rồi về đỉnh → huỷ; chụm 2 ngón →
+// camera gần lại; kéo chấm áp phê; thế bi dựng sẵn (gọi lỗ) → chạm gần lỗ = gọi lỗ đó; nút ✕ → rời bàn. Mỗi khung 1 ảnh.
+const boxHit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+const inBox = (p, b) => p && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
+function boxProblems(t) {
+  const list = Object.entries(t.boxes), bad = [];
+  for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (boxHit(list[i][1], list[j][1])) bad.push(`${list[i][0]}×${list[j][0]}`);
+  for (const [k, b] of list) { if (inBox(t.cueScreen, b)) bad.push(`${k} che bi trắng`); if (inBox(t.contactScreen, b)) bad.push(`${k} che điểm chạm`); }
+  return bad;
+}
+async function runPoolTouch(browser, base) {
+  mkdirSync(join(OUT, "short"), { recursive: true });
+  for (const view of SHORT_VIEWS) {
+    const label = `bi-a cảm ứng ${view.width} × ${view.height}`;
+    const P = await mobilePage(browser, base, { query: "&net=off&start=zone_05", label, view, look: "intern_nam", gender: "nam", name: "An" });
+    const { page, ev, check } = P;
+    const pool = () => ev(() => ({ ...__game.pool, camDist: __game._game.pool.camDist, t: __game.pool.touch() }));
+    try {
+      if (!await check(P.ready, "vào game zone_05")) continue;
+      // tin nhắn / hội thoại đầu zone tới sau vài giây → giải hết, chờ yên rồi mới vào bàn
+      for (let k = 0; k < 5; k++) {
+        await ev(() => __game.resolve({ maxMs: 20000 }));
+        await sleep(1500);
+        if (await ev(() => __game._game.mode === "play" && !__game._game.ui.dialogue.open)) break;
+      }
+      // vào bàn bằng nút hành động "Play pool"
+      await ev(() => __game.approach("pool_table"));
+      await ev(() => { for (let k = 0; k < 4; k++) __game._game.update(1 / 30); });
+      const act = await P.wait(() => __game.touch?.act?.text === "Play pool", 5000) && await ev(() => __game.touch.act);
+      if (act) await P.tap(act.x, act.y);
+      const entered = await P.wait(() => __game.pool.active && __game.pool.phase === "aim", 5000);
+      await sleep(700);
+      const s0 = await pool();
+      const hint = await ev(() => document.getElementById("hint").textContent);
+      const bad0 = boxProblems(s0.t);
+      await page.screenshot({ path: join(OUT, "short", `pool-touch-${view.height}.png`) }).catch(() => {});
+      const need = ["tpower", "aimL", "aimR", "rules", "rerack", "leave", "panel", "spin"].filter((k) => !s0.t.boxes[k]);
+      const small = Object.entries(s0.t.boxes).filter(([k, b]) => !["panel", "spin", "tpower", "power"].includes(k) && (b.w < 44 || b.h < 44)).map(([k]) => k);
+      await check(entered && !!act && s0.t.on && !need.length && !bad0.length && !small.length && !await ev(() => !!document.querySelector(".pool-note")) && hint === `${I18N.en.pool.hint_touch} · ${I18N.en.pool.hint_spin_touch}`,
+        `chạm "Play pool" → vào bàn; ${Object.keys(s0.t.boxes).length} khối (thanh lực, ◀ ▶, Luật / Xếp lại / Rời bàn, bảng, ô áp phê) không chồng nhau, không che bi trắng / điểm chạm, nút ≥ 44 px; dòng hướng dẫn cảm ứng`,
+        JSON.stringify({ entered, act: !!act, need, bad0, small, hint, boxes: s0.t.boxes, cue: s0.t.cueScreen, contact: s0.t.contactScreen }));
+      // kéo ngón trên bàn → cơ hướng từ bi trắng tới ngón tay; chạm nhẹ không đánh
+      const c = s0.t.cueScreen, tx = c.x - Math.min(150, view.width * 0.16), ty = Math.max(30, c.y - 70);
+      await P.touch([[c.x - 40, c.y - 30]], [[tx, ty]], { steps: 6 });
+      await sleep(200);
+      const aim = await ev(([x, y]) => { const p = __game._game.pool, pt = p.pointer.point(x, y), cue = p.state.balls[0];
+        const want = Math.atan2(pt.z - cue.z, pt.x - cue.x), d = Math.atan2(Math.sin(p.angle - want), Math.cos(p.angle - want));
+        return { angle: p.angle, want, diff: Math.abs(d) }; }, [tx, ty]);
+      const shots0 = (await pool()).shots;
+      await P.tap(c.x + 60, Math.max(30, c.y - 50));
+      await sleep(700);
+      const afterTap = await pool();
+      await check(aim.diff < 0.02 && Math.abs(aim.angle - s0.angle) > 0.05 && afterTap.shots === shots0 && afterTap.phase === "aim" && !afterTap.rolling,
+        `kéo ngón trên bàn → cơ quay ${(Math.abs(aim.angle - s0.angle) * 57.3).toFixed(0)}°, hướng đúng tới ngón tay (lệch ${aim.diff.toFixed(4)} rad); chạm nhẹ không đánh`,
+        JSON.stringify({ aim, s0: s0.angle, shots: [shots0, afterTap.shots], phase: afterTap.phase }));
+      // thanh lực: kéo xuống giữ rồi thả → cú; kéo xuống rồi về đỉnh → huỷ
+      const rec = () => ev(() => { window.__tp = { max: 0, charge: false, cue: 0 }; window.__tpI = setInterval(() => { const p = __game._game.pool;
+        if (p.touchPower != null) __tp.max = Math.max(__tp.max, p.touchPower); if (p.phase === "charge") __tp.charge = true; }, 30); });
+      const stopRec = () => ev(() => { clearInterval(__tpI); return __tp; });
+      const tp = s0.t.boxes.tpower, sx = tp.x + tp.w / 2, sy = tp.y + 34;
+      await rec();
+      await P.path([[sx, sy], [sx, sy + tp.h * 0.5], [sx, sy]], { steps: 6, holdMs: 200 });
+      const cancel = await stopRec();
+      await sleep(400);
+      const afterCancel = await pool();
+      await rec();
+      await P.path([[sx, sy], [sx, sy + tp.h * 0.55]], { steps: 6, holdMs: 300 });
+      const shot = await stopRec();
+      const done = await P.wait((n) => __game.pool.shots === n + 1 && !__game.pool.rolling && __game.pool.phase === "aim", 30000, shots0);
+      const afterShot = await pool();
+      await check(cancel.charge && cancel.max > 0.3 && afterCancel.shots === shots0 && afterCancel.phase === "aim" && afterCancel.power === 0
+        && shot.charge && shot.max > 0.3 && done && afterShot.shots === shots0 + 1,
+        `thanh lực: kéo xuống (lực ${cancel.max.toFixed(2)}) rồi về đỉnh, thả → hủy; kéo xuống (lực ${shot.max.toFixed(2)}), thả → đánh, số cú ${shots0} → ${afterShot.shots}`,
+        JSON.stringify({ cancel, afterCancel: { shots: afterCancel.shots, phase: afterCancel.phase, power: afterCancel.power }, shot, done, shots: afterShot.shots }));
+      // chụm / mở 2 ngón → camera gần / xa; kéo chấm áp phê
+      const d0 = (await pool()).camDist, cy = Math.max(40, c.y - 50);
+      await P.touch([[c.x - 30, cy], [c.x + 30, cy]], [[c.x - 120, cy], [c.x + 120, cy]], { steps: 8 });
+      await sleep(200);
+      const d1 = (await pool()).camDist;
+      const dot = await ev(() => __game.pool.spinDot());
+      if (dot) await P.touch([[dot.x, dot.y]], [[dot.x + dot.r * 0.6, dot.y - dot.r * 0.6]], { steps: 5 });
+      const sp = (await pool()).spin;
+      await check(d1 < d0 - 0.2 && !!dot && sp.spin > 0 && sp.roll > 0,
+        `mở 2 ngón → camera ${d0.toFixed(2)} → ${d1.toFixed(2)} m; kéo chấm áp phê → "${sp.text}"`, JSON.stringify({ d0, d1, dot, sp }));
+      // gọi lỗ bi 8 (thế bi dựng sẵn): chạm cách tâm lỗ 12 px vẫn gọi đúng lỗ đó; không đánh
+      await ev(() => { const rz = __game._game.pool.table.rz; __game.pool.setState({ 0: [0, -rz * 0.5], 8: [0.05, rz * 0.3] }, { call: true }); });
+      await sleep(600);
+      const tc = (await pool()).t;
+      const boxes = Object.values(tc.boxes), pk = tc.pockets.filter((q) => q.visible && q.x > 20 && q.x < view.width - 20 && q.y > 10 && q.y < view.height - 10
+        && !boxes.some((b) => inBox({ x: q.x, y: q.y }, { x: b.x - 16, y: b.y - 16, w: b.w + 32, h: b.h + 32 }))).sort((a, b) => a.y - b.y)[0];
+      if (pk) await P.tap(pk.x + 12, pk.y + 4);
+      await sleep(300);
+      const called = await pool();
+      await check(!!pk && called.net.call === pk.id && called.shots === shots0 + 1 && called.phase === "aim",
+        `đánh bi 8 (thế bi dựng sẵn): chạm cạnh lỗ ${pk?.id} → gọi lỗ đó ("${called.net.callName}"), không đánh`, JSON.stringify({ pk, call: called.net.call, shots: called.shots }));
+      // nút ✕ → rời bàn
+      const lv = (await pool()).t.boxes.leave;
+      if (lv) await P.tap(lv.x + lv.w / 2, lv.y + lv.h / 2);
+      const left = await P.wait(() => !__game.pool.active && __game._game.mode === "play", 4000);
+      // thử thách của anh Khang (mini-game "Một cú bi-a"): không ô áp phê / nút Luật / Rời bàn (khung mini-game có nút huỷ), đánh
+      // bằng thanh lực → còn ít cú hơn; khung mini-game không đè thanh lực / ◀ ▶
+      await ev(() => { __game._game.runMinigame("billiards"); });
+      const ch = await P.wait(() => __game.pool.active && __game.pool.challenge && __game.pool.phase === "aim", 8000);
+      await sleep(500);
+      const c0 = await pool();
+      const mgBox = await ev(() => { const r = document.querySelector("#minigame .panel")?.getBoundingClientRect(); return r ? { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) } : null; });
+      const cBad = boxProblems({ ...c0.t, contactScreen: null, boxes: { ...c0.t.boxes, ...(mgBox ? { minigame: mgBox } : {}) } });   // bi trắng không bị che
+      const ctp = c0.t.boxes.tpower;
+      if (ctp) await P.path([[ctp.x + ctp.w / 2, ctp.y + 34], [ctp.x + ctp.w / 2, ctp.y + 34 + ctp.h * 0.4]], { steps: 6, holdMs: 200 });
+      const shotC = await P.wait((n) => (__game.pool.left !== n || !__game.pool.active) && !__game.pool.rolling, 20000, c0.left);
+      const c1 = await pool();
+      await ev(() => __game._game.ui.minigame.active && __game._game.ui.minigame.close(false));
+      const con = P.problems.splice(0);
+      await check(left && ch && !c0.t.boxes.spin && !c0.t.boxes.rules && !c0.t.boxes.leave && !!ctp && !cBad.length && shotC && (c1.left !== c0.left || !c1.active) && !con.length,
+        `nút ✕ → rời bàn; thử thách của anh Khang: không ô áp phê / Luật / Rời bàn, thanh lực đánh được (còn ${c0.left} → ${c1.active ? c1.left : "xong"} cú), khung mini-game không đè nút; console sạch`,
+        JSON.stringify({ left, ch, boxes: Object.keys(c0.t.boxes), mgBox, cBad, shotC, lefts: [c0.left, c1.left], console: con.slice(0, 6) }));
+    } catch (e) {
+      results.push({ look: label, ok: false, text: e.message });
+      line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+    } finally { await P.ctx.close().catch(() => {}); }
+  }
+}
+
+// (f1f) bi-a 2 người: 1 máy cảm ứng (Bình, 844 × 390) + 1 máy tính (An) qua máy chủ local. Bình ngắm bằng ngón tay + thanh lực;
+// An không chạm bi → Bình có bi trong tay cả bàn: kéo bi trắng bằng ngón tay (chồng lên bi khác → vòng đỏ), chạm "Đặt bi", đánh
+// bằng thanh lực. Sau mỗi cú bàn 2 máy = bàn máy chủ, phát lại khớp từng bit; console sạch
+async function runPoolTouchNet(browser, base, srv) {
+  const label = "bi-a cảm ứng · 2 người";
+  let A = null, B = null;
+  try {
+    A = await poolPage(browser, base, srv.url, label, "An", "intern_nam", "nam");
+    B = await mobilePage(browser, base, { query: `&net=${encodeURIComponent(srv.url)}&start=zone_05`, label, name: "Bình", look: "intern_nu", gender: "nu" });
+    const check = B.check;
+    const bReady = B.ready && await B.wait(() => window.__game.net?.connected && !!window.__game.pool?.net?.on, 60000);
+    if (!await check(A.ready && bReady, "máy tính (An) + điện thoại (Bình) vào zone_05, cùng máy chủ local")) return;
+    await A.ev(() => __game.pool.enter());
+    await A.wait(() => __game.pool.net.seat === 0, 10000);
+    await B.ev(() => __game.resolve({ maxMs: 20000 }));
+    await B.ev(() => __game.pool.enter());
+    const started = await Promise.all([A, B].map((p) => p.wait(() => { const n = __game.pool.net; return n.mode === "match" && n.seats.join() === "An,Bình"; }, 15000)));
+    await A.ev(() => __game.pool.setFast(true));
+    const st = { touchShots: 0, deskShots: 0, placed: null, red: false, mismatch: 0, unsynced: 0, log: [] };
+    const bNet = () => poolNet(B);
+    const synced = async (q) => {
+      await poolSettle([A, B], q, 40000);
+      const [a, b] = await Promise.all([poolNet(A), bNet()]);
+      if (!sameJson(a.shown, a.server) || !sameJson(b.shown, b.server)) st.unsynced++;
+      st.mismatch = Math.max(a.mismatch, b.mismatch);
+    };
+    for (let i = 0; i < 14 && !(st.touchShots >= 2 && st.deskShots >= 2 && st.placed); i++) {
+      const n = await bNet();
+      if (n.mode !== "match") break;
+      const q = n.seq;
+      if (n.turn === 0) {
+        await poolPace(A);
+        // lần 2 của An: không chạm bi (đánh nhẹ về băng đầu bàn) → Bình có bi trong tay cả bàn
+        if (!st.placed && st.deskShots >= 1) await A.ev(() => __game.pool.shoot(-Math.PI / 2, 0.08, { instant: true }));
+        else if ((await poolNet(A)).phase === "choice") await A.ev(() => __game.pool.choose("play"));
+        else await A.ev(() => __game.pool.autoShot());
+        st.deskShots++; st.log.push("A");
+        await synced(q + 1);
+        continue;
+      }
+      await B.wait(() => ["aim", "place", "choice"].includes(__game.pool.phase), 8000);
+      const ph = (await bNet()).phase;
+      let t = await B.ev(() => __game.pool.touch());
+      if (ph === "choice") {
+        const b = t.boxes.play; if (b) await B.tap(b.x + b.w / 2, b.y + b.h / 2);
+        st.log.push("B:play"); await B.wait(() => __game.pool.phase !== "choice", 5000); continue;
+      }
+      if (ph === "place") {
+        // kéo bi trắng lên một bi khác (đỏ), rồi tới chỗ trống giữa bàn; chạm "Đặt bi" (chờ camera chuyển xong sang góc nhìn bi trong tay)
+        await sleep(1200);
+        t = await B.ev(() => __game.pool.touch());
+        const cue = t.cueScreen;
+        const other = await B.ev(() => { const p = __game._game.pool, b = p.state.balls.find((x) => x.n !== 0 && x.on); const s = p.pointer.screen(b.x, b.z); return { x: s.x, y: s.y }; });
+        const spot = await B.ev(() => { const p = __game._game.pool, s = p.state; let best = null;
+          for (let x = -0.3; x <= 0.3; x += 0.1) for (let z = -0.6; z <= 0.6; z += 0.15) { if (!p.override || !s.balls.every((b) => !b.on || b.n === 0 || Math.hypot(b.x - x, b.z - z) > 0.12)) continue;
+            const q = p.pointer.screen(x, z); if (q.visible && q.y > 40 && q.y < innerHeight - 60 && q.x > 120 && q.x < innerWidth - 140) { best = { x: q.x, y: q.y, lx: x, lz: z }; break; } if (best) break; }
+          return best; });
+        await B.ev(() => { window.__red = false; window.__redI = setInterval(() => { if (__game._game.pool.placeBad && __game._game.pool.placeMark.visible) __red = true; }, 30); });
+        if (cue && other && spot) await B.path([[cue.x, cue.y], [other.x, other.y], [spot.x, spot.y]], { steps: 8, holdMs: 300 });
+        st.red = await B.ev(() => { clearInterval(__redI); return __red; });
+        // bi trắng phải nằm đúng dưới chỗ nhấc ngón (điểm trên mặt bàn lúc đó), chỗ đó đặt được (không đỏ)
+        const under = spot && await B.ev(([x, y]) => { const p = __game._game.pool; return { ...p.pointer.point(x, y), bad: !!p.placeBad }; }, [spot.x, spot.y]);
+        const before = await B.ev(() => __game.pool.cue);
+        t = await B.ev(() => __game.pool.touch());
+        const pb = t.boxes.place; if (pb) await B.tap(pb.x + pb.w / 2, pb.y + pb.h / 2);
+        const aimNow = await B.wait(() => __game.pool.phase === "aim", 4000);
+        st.placed = { spot, under, cue: before, aimNow, ok: !!under && !under.bad && Math.hypot(before.x - under.x, before.z - under.z) < 0.01 };
+        st.log.push("B:place");
+        t = await B.ev(() => __game.pool.touch());
+      }
+      // ngắm bằng ngón tay tới bi mục tiêu gần nhất, kéo thanh lực
+      const tgt = await B.ev(() => { const p = __game._game.pool, s = p.state, cue = s.balls[0];
+        const own = s.balls.filter((b) => b.on && b.n !== 0 && b.n !== 8).sort((a, b) => Math.hypot(a.x - cue.x, a.z - cue.z) - Math.hypot(b.x - cue.x, b.z - cue.z))[0] || s.balls[8];
+        const q = p.pointer.screen(own.x, own.z); return { x: q.x, y: q.y }; });
+      if (tgt) await B.touch([[tgt.x + 4, tgt.y + 4]], [[tgt.x, tgt.y]], { steps: 3 });
+      await sleep(150);
+      t = await B.ev(() => __game.pool.touch());
+      const tp = t.boxes.tpower;
+      if (!tp) { st.log.push(`B:no-power(${(await bNet()).phase})`); break; }
+      const sx = tp.x + tp.w / 2, sy = tp.y + 34;
+      await B.path([[sx, sy], [sx, sy + tp.h * 0.5]], { steps: 6, holdMs: 200 });
+      st.touchShots++; st.log.push("B:shot");
+      await synced(q + 1);
+    }
+    const [a, b] = await Promise.all([poolNet(A), bNet()]);
+    const con = [...A.problems.splice(0), ...B.problems.splice(0)];
+    await check(started.every(Boolean) && st.touchShots >= 2 && st.deskShots >= 2 && st.placed?.ok && st.placed.aimNow && st.red && !st.unsynced && !st.mismatch
+      && sameJson(a.server, b.server) && !con.length,
+      `máy tính + điện thoại chơi ${st.deskShots + st.touchShots} cú (${st.touchShots} cú bằng ngón tay + thanh lực); bi trong tay: kéo bi trắng (chồng bi → vòng đỏ), "Đặt bi"; sau mỗi cú bàn 2 máy = bàn máy chủ, phát lại khớp; console sạch`,
+      JSON.stringify({ started, ...st, a: { mismatch: a.mismatch, replays: a.replays }, b: { mismatch: b.mismatch, replays: b.replays }, console: con.slice(0, 6) }));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally { for (const p of [A, B]) await p?.ctx.close().catch(() => {}); }
+}
+
+// (f1g) ô nhắn tin ở góc trái dưới (máy tính, 1000 × 640, máy chủ local): khung đóng → ô "Enter: chat · /: quick message"; bấm
+// vào ô → khung đầy đủ; "/" → gõ nhanh (chỉ ô nhập, ký tự "/" không lọt vào ô), Enter gửi rồi tự đóng; Enter → khung đầy đủ,
+// Esc → đóng, KHÔNG mở menu Esc, không xin khoá con trỏ ngay (lỗi cũ: trình duyệt nhả khoá bằng chính phím Esc → game mở menu)
+async function runChatBar(browser, base, srv) {
+  const label = "nhắn tin · ô góc trái dưới";
+  const ctx = await browser.newContext({ viewport: { width: 1000, height: 640 } });
+  await ctx.addInitScript(INIT_ONCE, { settings: { tier: "low", lang: "en", chat_rules: true }, save: { v: 1, created: true, player: { name: "Lan", position: "developer", gender: "nu", look: "intern_nu" } } });
+  const page = await ctx.newPage();
+  const problems = watch(page);
+  const ev = (fn, a) => page.evaluate(fn, a);
+  const wait = async (fn, ms, a) => { try { await page.waitForFunction(fn, a, { timeout: ms, polling: 100 }); return true; } catch { return false; } };
+  const check = async (ok, text, extra = "") => {
+    results.push({ look: label, ok, text });
+    line(ok, `${label} · ${text}${extra && (verbose || !ok) ? ` — ${extra}` : ""}`);
+    if (!ok) { mkdirSync(OUT, { recursive: true }); const f = join(OUT, `chatbar-${++shots}.png`); await page.screenshot({ path: f }).catch(() => {}); console.log(`    ảnh: ${f.replace(ROOT + "/", "")}`); }
+    return ok;
+  };
+  try {
+    await page.goto(`${base}/?debug&net=${encodeURIComponent(srv.url)}&title=off&start=zone_02`);
+    const ready = await wait(() => window.__game?.state.phase === "playing" && __game.chat?.available, 90000);
+    for (let k = 0; k < 4; k++) { await ev(() => __game.resolve({ maxMs: 20000 })); await sleep(1200); if (await ev(() => __game._game.mode === "play" && !__game._game.ui.dialogue.open)) break; }
+    // giả lập khoá con trỏ (headless không khoá thật ổn định): lock() → khoá sau 30 ms như thật
+    // headless có thể đang khoá con trỏ thật (bấm vào canvas lúc chơi) → mọi cú bấm chuột đi vào canvas; nhả khoá (không mở menu)
+    await ev(() => { const i = __game._game.input; if (document.pointerLockElement) { i._releasing = true; document.exitPointerLock(); } });
+    await sleep(300);
+    await ev(() => { const i = __game._game.input; i._releasing = false; i.lockSupported = true; i.fakeLock = false; });
+    const bar = await ev(() => { const b = document.querySelector("#chat .bar"), r = b.getBoundingClientRect(); return { shown: __game.chat.bar, text: b.textContent, left: Math.round(r.left), bottom: Math.round(innerHeight - r.bottom), h: Math.round(r.height) }; });
+    const bc = await ev(() => { const r = document.querySelector("#chat .bar").getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+    await page.mouse.click(bc.x, bc.y);
+    const clickOpen = await wait(() => __game._game.chat.isOpen && !__game.chat.quick && document.activeElement === __game._game.chat.input, 3000);
+    await ev(() => __game.chat.close());
+    await sleep(300);
+    // "/" → gõ nhanh
+    await page.keyboard.press("Slash");
+    const quick = await wait(() => __game._game.chat.isOpen && __game.chat.quick && document.activeElement === __game._game.chat.input, 3000);
+    const q = await ev(() => ({ value: __game._game.chat.input.value, tabs: getComputedStyle(document.querySelector("#chat .tabs")).display, log: getComputedStyle(document.querySelector("#chat .log")).display, ph: __game._game.chat.input.placeholder }));
+    await page.keyboard.type("Hi from the quick bar");
+    await page.keyboard.press("Enter");
+    const sent = await wait(() => (__game.net.chat.channels.zone || []).some((e) => e.mine && e.text === "Hi from the quick bar"), 5000);
+    const closedQ = await wait(() => !__game._game.chat.isOpen && __game._game.mode === "play", 3000);
+    await sleep(400);
+    // Enter → khung đầy đủ; Esc → đóng, không menu, không xin khoá ngay
+    await ev(() => { __game._game.input.fakeLock = false; });
+    await page.keyboard.press("Enter");
+    const full = await wait(() => __game._game.chat.isOpen && !__game.chat.quick && getComputedStyle(document.querySelector("#chat .tabs")).display !== "none", 3000);
+    await page.keyboard.press("Escape");
+    await sleep(200);
+    const esc = await ev(() => ({ open: __game._game.chat.isOpen, menu: !document.getElementById("menu").hidden, mode: __game._game.mode, locked: __game._game.input.locked }));
+    await sleep(700);
+    // sau đó bấm vào game vẫn khoá lại được (chờ hết 0,5 s)
+    await ev(() => __game._game.input.lock());
+    const relock = await wait(() => __game._game.input.locked, 2000);
+    const con = problems.splice(0);
+    await check(ready && bar.shown && bar.left <= 24 && bar.bottom <= 24 && bar.text.includes(I18N.en.chat.bar) && clickOpen && quick && q.value === "" && q.tabs === "none" && q.log === "none"
+      && sent && closedQ && full && !esc.open && !esc.menu && esc.mode === "play" && !esc.locked && relock && !con.length,
+      `ô "${I18N.en.chat.bar}" ở góc trái dưới (cách mép ${bar.left} / ${bar.bottom} px), bấm → khung chat; "/" → gõ nhanh (không lọt "/"), Enter gửi rồi đóng; Enter → khung đầy đủ, Esc → đóng, không mở menu Esc, không xin khoá ngay; bấm lại thì khoá được; console sạch`,
+      JSON.stringify({ ready, bar, clickOpen, quick, q, sent, closedQ, full, esc, relock, console: con.slice(0, 6) }));
+  } catch (e) {
+    results.push({ look: label, ok: false, text: e.message });
+    line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
+  } finally { await ctx.close().catch(() => {}); }
+}
+
 // (f2) nhắn tin bằng cảm ứng (máy chủ local): nút Chat mở khung chat (ô nhập được focus), gõ, chạm nút Gửi → tin tới máy chủ
 // (bản đã lọc quay về), gửi xong cất bàn phím (ô nhập hết focus), đang mở chat thì cần điều khiển ẩn; chạm Menu → menu Esc
 async function runMobileChat(browser, base, srv) {
@@ -1821,11 +2124,12 @@ const browser = await chromium.launch({ headless: !arg("headed"), ...(chromePath
 console.log(`smoke: ${extra === "only" ? "" : `${looks.map((l) => l.id).join(", ")} · ${onlyZone ? startZone : `${order[0]} → ${order[order.length - 1]}`} · `}${extra === "off" ? "" : "bản lưu cũ, mạng (zone 4, bi-a 2 người, nhắn tin, chia phòng, máy chủ cũ) · "}${server.mode || server.base}`);
 try {
   // lần lượt từng ngoại hình (chạy song song chỉ nhanh hơn ~1 phút, và trang chạy nền không tải được ảnh thẻ)
-  if (extra !== "only" && mobile !== "only") for (const look of looks) await runLook(browser, server.base, look);
-  if (extra !== "only" && mobile !== "off") { await runMobile(browser, server.base); await runShort(browser, server.base); await runShortCam(browser, server.base); await runFullscreen(browser, server.base); }
-  if (extra !== "off" && mobile === "only") {
+  if (extra !== "only" && mobile !== "only" && mobile !== "pool") for (const look of looks) await runLook(browser, server.base, look);
+  if (extra !== "only" && mobile !== "off" && mobile !== "pool") { await runMobile(browser, server.base); await runShort(browser, server.base); await runShortCam(browser, server.base); await runFullscreen(browser, server.base); }
+  if (extra !== "only" && mobile !== "off") await runPoolTouch(browser, server.base);
+  if (extra !== "off" && (mobile === "only" || mobile === "pool")) {
     const srv = await startNetServer();
-    if (!srv.skip && !srv.error) { try { await runMobileChat(browser, server.base, srv); } finally { srv.stop(); } }
+    if (!srv.skip && !srv.error) { try { if (mobile === "only") await runMobileChat(browser, server.base, srv); await runPoolTouchNet(browser, server.base, srv); } finally { srv.stop(); } }
   } else if (extra !== "off") {
     await runOldSave(browser, server.base);
     // các test mạng dùng chung 1 máy chủ local; chia phòng chạy cuối (cần phòng 1 trống)
@@ -1837,7 +2141,8 @@ try {
         await runNetZone4(browser, server.base, srv);
         await runPoolNet(browser, server.base, srv);
         await runChat(browser, server.base, srv);
-        if (mobile !== "off") await runMobileChat(browser, server.base, srv);
+        await runChatBar(browser, server.base, srv);
+        if (mobile !== "off") { await runMobileChat(browser, server.base, srv); await runPoolTouchNet(browser, server.base, srv); }
         await runRooms(srv);
       } finally { srv.stop(); }
       // máy chủ bản cũ (luật bi-a rút gọn, không báo "pool_rules2") — wrangler dev thứ 2, kho dữ liệu riêng
