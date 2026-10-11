@@ -1,0 +1,22 @@
+{
+  "_ghi_chu": "Bầu trời + phông nền xa (game/src/render/sky.js), mọi zone. Trời: vòm chuyển màu đỉnh (mood.sky_top) → chân trời (mood.sky_horizon), quầng sáng phía mặt trời (mood.sun), không có thì default_sky. Sương (scene.fog) lấy đúng màu chân trời: mood.fog, không có thì default_fog → mặt đất tan dần vào trời. Mặt đất xa (ground): vành phẳng quanh zone, từ hộp bao zone ra radius_m, nằm thấp hơn mặt đất zone y_m, có sương → hết đường cắt giữa mép cỏ và trời. layers: vòng phông nền quanh tâm zone, không chiếu sáng, màu theo đỉnh (màu lớp pha dần sang màu chân trời: haze, cộng thêm theo sương ở khoảng cách đó × fog_haze). kind: trees (hàng cây gợn tán) | blocks (dãy nhà khu Công nghệ cao, chỉ trong các cung sectors_deg) | ridge (đồi / núi; peaks: đỉnh nhô theo hướng la bàn). Hướng la bàn: 0 = bắc (−Z glTF), 90 = đông (+X) — khớp mood.sun (sáng sớm nắng phía đông +X, hoàng hôn phía tây −X). Núi Ba Vì: tây – tây bắc Hòa Lạc (đỉnh Vua 21,06° B 105,37° Đ; Khu CNC Hòa Lạc ~21,01° B 105,53° Đ → hướng ~290°). low_detail: false = tắt ở nấc Detail thấp nhất (điện thoại) cùng với mây. Tổng ≤ 5.000 tam giác (test:data ước tính).",
+  "default_sky": { "top": "#5e9fdc", "horizon": "#cfe3f1" },
+  "default_fog": [90, 480],
+  "fog_haze": 0.8,
+  "ground": { "color": "#9cc46c", "radius_m": 560, "y_m": -0.56, "segments": 72 },
+  "layers": [
+    { "id": "trees", "kind": "trees", "radius_m": 190, "height_m": [8, 16], "color": "#3b6a3a", "haze": 0.1, "segments": 240, "seed": 11 },
+    { "id": "hitech", "kind": "blocks", "radius_m": 262, "height_m": [12, 40], "width_m": [14, 34], "gap_m": [4, 18], "color": "#7d8898", "haze": 0.22,
+      "sectors_deg": [[20, 75], [110, 165], [200, 235]], "seed": 23, "low_detail": false },
+    { "id": "hills", "kind": "ridge", "radius_m": 360, "height_m": [10, 24], "color": "#56785d", "haze": 0.42, "segments": 160, "seed": 37 },
+    { "id": "ba_vi", "kind": "ridge", "radius_m": 450, "height_m": [8, 20], "color": "#55708c", "haze": 0.5, "segments": 200, "seed": 53,
+      "peaks": [
+        { "_ten": "đỉnh Vua", "bearing_deg": 290, "height_m": 58, "width_deg": 9 },
+        { "_ten": "đỉnh Tản Viên", "bearing_deg": 281, "height_m": 52, "width_deg": 8 },
+        { "_ten": "đỉnh Ngọc Hoa", "bearing_deg": 298, "height_m": 47, "width_deg": 7 },
+        { "_ten": "sườn nam dãy Ba Vì", "bearing_deg": 266, "height_m": 34, "width_deg": 16 },
+        { "_ten": "sườn bắc", "bearing_deg": 312, "height_m": 30, "width_deg": 14 }
+      ] }
+  ],
+  "clouds": { "count": 9, "radius_m": [300, 420], "height_m": [85, 140], "size_m": [26, 48], "speed_deg_s": 0.25, "color": "#ffffff", "seed": 71 }
+}
