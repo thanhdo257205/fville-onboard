@@ -253,7 +253,23 @@
     "net_status_choosing": "{name} is choosing after the illegal break.",
     "net_status_place_table": "Ball in hand: put the white ball anywhere (mouse or W/A/S/D), then click or press Space.",
     "net_status_call": "Shooting the 8: call a pocket first. Click a pocket or press C.",
-    "net_status_called": "Called: {pocket}. C: change pocket."
+    "net_status_called": "Called: {pocket}. C: change pocket.",
+    "hint_touch": "Drag on the table: aim · Drag the power bar down, let go: shoot (back to the top: cancel) · ◀ ▶: fine aim · Pinch: zoom",
+    "hint_spin_touch": "Drag the dot on the white ball: spin",
+    "power_touch": "Drag down for power, let go to shoot. Drag back to the top to cancel.",
+    "aim_left": "Turn the cue left (slow)",
+    "aim_right": "Turn the cue right (slow)",
+    "place": "Place ball",
+    "cleared_touch": "Table cleared in {n} shots! Tap ↻ to rack them up again.",
+    "net_status_free_touch": "A seat is free. Tap 🪑 to play.",
+    "net_status_place_touch": "Ball in hand: drag the white ball in the head area, then tap Place ball.",
+    "net_status_place_table_touch": "Ball in hand: drag the white ball anywhere on the table, then tap Place ball.",
+    "net_rematch_hint_touch": "Tap ↻ for a rematch.",
+    "net_status_choice_touch": "Illegal break. Rerack and break, or play from here.",
+    "net_status_call_touch": "Shooting the 8: call a pocket first — tap a pocket.",
+    "rules_eight_touch": "Clear your group, then call a pocket for the 8: tap a pocket (or drag the power bar to call the one you're aiming at).",
+    "rules_practice_touch": "Practice: no turns or fouls, pot balls in any order. If the white ball drops, it goes back on the head spot. ↻: rerack.",
+    "rules_spin_touch": "Spin: drag the dot on the white ball. Left/right spin bends the bounce off a rail; follow keeps the white ball rolling after it hits a ball, draw pulls it back. The dot goes back to the center after every shot."
   },
   "tiers": {
     "low": "Low",
@@ -391,7 +407,9 @@
     "empty_dm": "Choose a player to start a private chat.",
     "unread": "{n} new — press Enter to read",
     "help_touch": "Send: send · tap a name: private message / mute",
-    "unread_touch": "{n} new — tap 💬 to read"
+    "unread_touch": "{n} new — tap 💬 to read",
+    "bar": "Enter: chat · /: quick message",
+    "quick": "To {tab} · Enter: send · Esc: cancel"
   },
   "touch": {
     "_note": "Touch controls (game/src/ui/touch.js): buttons are icons, these are their labels (screen readers, long-press tooltips). say_from / say_to: in-game hints that say \"press E\" read as say_to when playing by touch.",
@@ -404,8 +422,6 @@
     "fullscreen_failed": "Full screen isn't available in this browser.",
     "ios_home": "On iPhone / iPad: tap Share ⬆, then \"Add to Home Screen\" to play full screen.",
     "ios_tip": "Tip: Share ⬆ → \"Add to Home Screen\" to play full screen.",
-    "pool_soon": "Pool by touch is coming soon.",
-    "pool_leave": "Leave the table",
     "rotate": "Turn your phone sideways to play.",
     "say_from": "press E",
     "say_to": "tap the action button"
