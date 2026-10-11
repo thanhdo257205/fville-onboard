@@ -326,6 +326,15 @@ async function runLook(browser, base, look) {
           `${zone}: bầu trời chuyển màu + phông nền xa — ${open.length}/${sk.views.length} hướng nhìn thấy trời, màu phổ biến nhất ≤ ${Math.max(...open.map((v) => v.share))} (trời phẳng = 1), sương ${sk.info.fog?.join("–")} m, ${tris} tam giác`,
           JSON.stringify({ info: sk.info, flat, open: open.map((v) => [v.spawn, v.dir, v.share]) }));
       }
+      // tiếng bước chân khớp nhịp chân (game/footsteps.js — theo xương cổ chân của animation): zone_02 (đường thoáng), mỗi ngoại
+      // hình — đứng yên không có tiếng; đi / chạy: mỗi khoảng giữa 2 tiếng ≈ nửa chu kỳ animation (1 chân chạm đất), không tiếng thừa
+      if (zone === "zone_02") {
+        const fs = await ev(async () => { if (__game._game.mode !== "play") await __game.resolve({ maxMs: 15000 }); return __game.stepCheck(); });
+        const fit = (m) => m.half && m.steps >= Math.floor(3 / m.half) - 1 && m.gaps.every((x) => x > 0.7 * m.half && x < 1.3 * m.half);
+        await check(fs.idle.steps === 0 && fit(fs.walk) && fit(fs.run),
+          `${zone}: tiếng bước chân khớp nhịp chân — đứng yên 0 tiếng, đi ${fs.walk.steps} tiếng / 3 s (cách ~${fs.walk.gaps[0]} s, nửa chu kỳ ${fs.walk.half} s), chạy ${fs.run.steps} tiếng (cách ~${fs.run.gaps[0]} s, nửa chu kỳ ${fs.run.half} s)`,
+          JSON.stringify(fs));
+      }
       // zone_05: bàn bi-a (mô hình Sketchfab, node pool_table + 16 bi + cơ, COL): chơi một mình (lời nhắc "Play pool", đánh
       // bằng __game.pool.shoot, bi lăn rồi dừng, rời bàn) và mini-game Một cú bi-a của anh Khang trên bàn thật (thử thách)
       if (zone === "zone_05" && look === looks[0]) {
