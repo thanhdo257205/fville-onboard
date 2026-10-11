@@ -1357,6 +1357,28 @@ gh-pages c3ef40f).
 - `__game.player.pen`: độ lồng của capsule vào `COL_` (m).
 - Smoke zone 5: ngồi vào bàn rồi đứng dậy → lồng 0,256 → 0 m, đi được ≥ 4/8 hướng (code cũ: 0,256 m, 2/8 hướng → đỏ).
 
+### Bầu trời chuyển màu + mây + phông nền xa (11/10/2026, nhánh `feat/sky-backdrop`)
+
+CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" — lớp 1 + 2 (làm bằng code, không cần Blender). **Chưa deploy.**
+
+- `game/src/render/sky.js` + `data/backdrop.json`, dùng chung mọi zone, không sửa GLB (chỉ thêm vật ở xa ngoài hộp bao zone):
+  - vòm trời: shader đỉnh (`mood.sky_top`) → chân trời (`mood.sky_horizon`) + quầng nắng theo `mood.sun`; đi theo camera, nằm ở mặt
+    phẳng xa, vẽ sau vật đục (chỉ tô điểm ảnh còn trống);
+  - sương màu chân trời ở mọi zone: `mood.fog`, không có thì `default_fog` 90–480 m (trước: zone 1–5 không có sương);
+  - vành mặt đất xa: hình tròn 560 m khoét đúng hộp bao zone, thấp hơn mặt đất zone, có sương → hết đường cắt mép cỏ / trời;
+  - 4 vòng phông nền quanh tâm zone: hàng cây 190 m, dãy nhà khu CNC 262 m, đồi 360 m, núi Ba Vì 450 m hướng ~290° (tính từ toạ độ
+    đỉnh Vua và Khu CNC Hòa Lạc), màu theo đỉnh, không chiếu sáng, pha dần sang màu chân trời theo khoảng cách + sương;
+  - 9 cụm mây low-poly trôi chậm (mặt trên sáng theo màu nắng, mặt dưới pha chân trời);
+  - 1.959 tam giác (phông nền 1.238 + mây 680 + mặt đất xa 41), 5 lệnh vẽ; không viền nét; bản đồ app My FPT không vẽ (chỉ vẽ zone);
+  - nấc Detail thấp nhất (điện thoại): tắt mây + dãy nhà.
+- `data/zones.json`: `sky_top` / `sky_horizon` cho zone_00 (06:30), zone_01 hoàng hôn, zone_05 buổi chiều; zone khác dùng
+  `default_sky`. Đổi zone: dựng lại vành mặt đất (giải phóng bản cũ — smoke bộ nhớ GPU zone_04 ↔ zone_05 vẫn không tăng).
+- Kiểm thử: `test:data` (màu trời đủ cặp, `backdrop.json`, dựng thật ≤ 5.000 tam giác); smoke zone 0–2 `__game.skyCheck()` —
+  ở mọi SPAWN_ × 8 hướng, chỗ thấy trời / phông nền ở nửa trên khung có màu phổ biến nhất ≤ 80 % (đo ≤ 0,65; trời phẳng cũ = 1,0);
+  điện thoại: nấc Detail thấp tắt mây + dãy nhà. Hiệu năng (máy cloud không GPU, SwiftShader): +10–20 % ms / khung —
+  `docs/perf_report.md`; còn đo trên laptop Intel.
+- Còn (cần Blender): lớp 3 (kéo mặt đất zone ra xa, ruộng lúa, cột điện), lớp 4 (hàng rào thay tường vô hình), build lại zone 0–2.
+
 ### Smoke: dấu chỉ đường trước mỗi việc bắt buộc + dọn checklist (11/10/2026, nhánh `test/guide-markers` 14ae65c)
 
 - `scripts/tests/smoke.mjs`: mỗi zone, trước mỗi việc bắt buộc / lối ra zone (lúc đang đi lại tự do, chờ tối đa 2,5 s) phải có dấu
