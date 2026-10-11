@@ -66,7 +66,8 @@ export function installDebug(game, loop) {
     // Bàn chung (bi-a bước 3): .net (ghế, lượt, nhóm, bàn đang hiện / bàn máy chủ, số cú đã phát lại, sự kiện), join(),
     // autoShot() (cú tự chọn cho người tới lượt), forceShot(angle, power) (gửi bất chấp lượt — máy chủ phải chặn), place(x, z)
     // (bi trong tay: đặt bi trắng),
-    // setFast(true) (cú của người khác hiện ngay kết quả)
+    // setFast(true) (cú của người khác hiện ngay kết quả). Luật chuẩn (máy chủ "pool_rules2"): choose("rerack" | "play") (sau cú
+    // phá không hợp lệ), call(id) / cycleCall() (gọi lỗ cho bi 8), help() (thẻ tóm tắt luật, phím H)
     get pool() {
       const p = game.pool;
       if (!p) return null;
@@ -82,6 +83,10 @@ export function installDebug(game, loop) {
         forceShot: (angle, power = 0.5) => p.forceShot(angle, power),
         setFast: (on = true) => { p.fast = !!on; return p.fast; },
         place: (x, z) => p.debugPlace(x, z),
+        choose: (c) => { p.choose(c); return p.info(); },
+        call: (id) => { p.setCall(id); return p.call; },
+        cycleCall: () => { p.cycleCall(); return p.call; },
+        help: () => p.help(),
         screen: (x, z) => p.pointer?.screen(x, z) ?? null,      // điểm (x, z) cục bộ trên mặt bàn → toạ độ màn hình (di chuột tới)
       });
     },

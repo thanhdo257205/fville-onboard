@@ -1086,6 +1086,46 @@ dựng lại mỗi lần build zone bằng `scripts/blender/lib/bus.py`, `trees.
   nạp lực), chuột sang phải → cơ quay sang phải màn hình (0,064 rad / 40 px), Shift 0,016, D xoay sang phải, giữ → đánh.
   test:data, test:pool đạt (vật lý không đổi); `test:smoke -- --zone 5` 3 ngoại hình + bản lưu cũ, mạng: 62/62 bước.
 
+### Bi-a: luật chuẩn 8 bi "sọc trơn" cho bàn chung 2 người (11/10/2026, nhánh `feat/pool-rules-8ball`)
+
+Theo WPA, rút gọn cho game (tóm tắt luật: `docs/GDD.md` zone 5; giao thức + tương thích: `docs/multiplayer.md` mục cuối).
+Tập một mình và thử thách của anh Khang giữ luật cũ. **Máy chủ thật chưa `wrangler deploy`** (máy Desktop làm sau) — tới lúc
+đó bàn chung trên trang thật vẫn theo luật rút gọn cũ.
+- `game/src/pool/rules.js` (thuần, tất định — chỉ + − × ÷): `shotFacts(res)` đọc sự kiện cú mà `simulateShot` vốn đã ghi
+  (chạm bi / chạm băng / vào lỗ nào, theo thứ tự thời gian) → bi trắng chạm bi nào trước, có bi chạm băng sau lần chạm đó
+  không, số bi chạm băng, bi vào lỗ + lỗ của từng bi. `applyShotV2(table, m, before, after, facts, call)` → ván mới + sự kiện:
+  cú phá hợp lệ / không (`choice: "break"`), bàn mở sau phá, lỗi (`scratch`, `off`, `no_hit`, `wrong_first` kèm số bi,
+  `no_rail`) → bi trong tay `"table"` (sau cú phá: `"kitchen"`), bi 8 (thắng / thua `eight_early`, `eight_pocket`,
+  `eight_foul`, `eight_scratch`, `eight_off`). `onEight`, `handArea`, `canPlaceCueIn`, `newMatchV2`. Luật cũ `applyShot` giữ
+  nguyên. **`physics.js` không đổi** — cú cũ chạy lại giống từng bit.
+- `server/src/pool.js`: `PoolRoom({ rules: 2 })` tự tính lại cú (`simulateShot`, bỏ qua kết quả máy khách gửi), kiểm tra chỗ
+  đặt bi trong tay theo vùng, lỗ gọi khi đánh bi 8 (`err: "call"`), chặn cú khi đang chờ chọn (`choice`); `choose()` cho
+  `pool_choice`; hết giờ lượt = lỗi, 3 lần liên tiếp → mất ghế; máy khách không gửi `pool_join {r: 2}` → `err: "version"`;
+  bản chụp của bộ luật khác → xếp lại ván mới. `rules: 1` = máy chủ cũ (`shotV1`, như trước). `server/src/index.js`: tin chào
+  `features` thêm `"pool_rules2"`; biến `POOL_RULES = "1"` → chạy như bản cũ (smoke dùng để giả máy chủ cũ).
+- `game/src/pool/table.js` (bàn chung luật chuẩn khi bàn có `rules: 2`): xin ghế kèm `r: 2`; bảng: đồng hồ lượt (≤ 10 s
+  màu cam), dòng lỗi gần nhất ("⚠ Hit the 3-ball first — foul." / "Chạm bi 3 trước — lỗi."), nút Rules (H); toast lỗi kèm
+  ai được bi trong tay. Bi trong tay cả bàn: camera nhìn bao quát, chuột / W/A/S/D đặt (không chồng bi). Sau cú phá không hợp
+  lệ: phase `choice`, nút + phím **R** xếp lại và phá / **P** đánh tiếp. Đánh bi 8: vòng sáng ở 6 lỗ (lỗ đã gọi màu cam), bấm
+  vào lỗ để gọi (cú bấm đó không khoá con trỏ — `input.skipLock`), **C** đổi lỗ, Space / cú bấm đầu gọi lỗ bi 8 đang hướng
+  tới (không nạp lực); tên lỗ theo góc nhìn ("far left corner", "lỗ giữa bên trái"…). **H**: thẻ tóm tắt luật (luật chuẩn
+  6 dòng / luật cũ / tập một mình). Người xem thấy lỗ người đánh đã gọi khi bi lăn. Máy chủ cũ → giao diện như trước.
+- `#hint`, `#toast` xuống dòng khi dài hơn màn hình (trước bị cắt 2 đầu — dòng điều khiển ở bàn bi-a chung đã dài hơn màn
+  1280 px từ bản ngắm bằng chuột).
+- Chữ en + vi: `pool.rules*`, `pool.foul_*`, `pool.net_hand*`, `pool.pocket_*`, `pool.net_status_choice / choosing /
+  place_table / call / called`, `pool.net_lose_foul / pocket / off`, `pool.net_break_illegal`, `pool.net_open`,
+  `pool.net_chose_*`, `pool.rerack_break`, `pool.play_on`, `pool.called`.
+- Kiểm thử: `pool_rules.mjs` thêm 27 tình huống luật chuẩn, 4 tình huống `shotFacts` từ vật lý thật (cú cũ chạy lại giống
+  từng bit), 17 tình huống bàn máy chủ luật chuẩn, ván trọn 2 người giả (xếp lại sau phá hỏng, lỗi, bi trong tay, gọi lỗ;
+  người xem phát lại = máy chủ tính, chạy 2 lần giống hệt). Smoke: bi-a 2 người với luật mới + máy chủ giả bản cũ
+  (`wrangler dev --var POOL_RULES:1`, kho dữ liệu riêng) chơi trọn ván luật cũ.
+- CPU máy chủ mỗi cú (Node): 0,4–3 ms khi đã nóng, ~24 ms cú đầu sau khi khởi động — gói Free giới hạn 10 ms CPU / lần gọi
+  Worker; chưa xác nhận được có áp cho tin WebSocket của Durable Object không → kiểm bằng `wrangler tail` sau khi deploy.
+- Kết quả: test:data, test:pool đạt (`physics.js` không đổi; cú cũ chạy lại giống từng bit); `test:smoke -- --zone 5`: 71/71
+  bước (3 ngoại hình + bản lưu cũ + mạng: bi-a 2 người luật chuẩn, chia phòng, máy chủ giả bản cũ); bản build + Chromium
+  headless shell như CI (`--build --extra only`): 27/27. Xem bằng mắt 3 ảnh: lựa chọn sau cú phá (vi), bi trong tay cả bàn
+  (en), gọi lỗ bi 8 + thẻ luật (vi).
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

@@ -8,8 +8,9 @@
 // Tin nhắn (JSON gọn):
 //   client → máy chủ: join {name, model, outfit, acc, zone} (gửi lại = cập nhật tên / model / bộ đồ / phụ kiện) · state {zone, pos, yaw, anim}
 //                      · emote {id} · phrase {id} · leave · ping (tự trả lời)
-//                      · bi-a (chỉ ở zone của bàn, data/pool.json): pool_join · pool_leave · pool_shot {seq, a, p, cue, b, k,
-//                        s, d} · pool_rerack · pool_poke (người chờ báo hết giờ lượt)
+//                      · bi-a (chỉ ở zone của bàn, data/pool.json): pool_join {r} (r: 2 = máy khách hiểu luật chuẩn) · pool_leave
+//                        · pool_shot {seq, a, p, cue, call, b, k, s, d} · pool_choice {c: "rerack" | "play"} (sau cú phá không hợp lệ)
+//                        · pool_rerack · pool_poke (người chờ báo hết giờ lượt)
 //   máy chủ → client: welcome {id, online, room, features} · zone {zone, players, online} (vừa vào zone: ai đang ở đó) ·
 //                      join {p} · state {id, pos, yaw, anim} · emote {id, e} · phrase {id, p} · leave {id} · online {n} ·
 //                      error {code, msg} · pool {tb, err?} (bàn bi-a; vừa vào zone của bàn cũng nhận) · pool_shot {shot, tb}
@@ -38,7 +39,10 @@ const ROOM_SIZE = S.room_size ?? 30;
 const MAX_ROOMS = Math.max(1, S.max_rooms ?? 6);
 const TURN_MS = (S.pool_turn_s ?? 60) * 1000;
 const POOL_ZONE = poolCfg.zone;
-const FEATURES = ["pool"];    // máy khách thấy "pool" mới chơi bi-a 2 người qua máy chủ (máy chủ cũ: bàn chỉ tập một mình)
+// máy khách thấy "pool" mới chơi bi-a 2 người qua máy chủ (máy chủ cũ: bàn chỉ tập một mình); "pool_rules2" = luật chuẩn 8 bi
+// (biến POOL_RULES = "1" trong wrangler → chạy như máy chủ cũ: luật rút gọn, không báo "pool_rules2" — để thử máy khách mới)
+const poolRules = (env) => (String(env?.POOL_RULES ?? "2") === "1" ? 1 : 2);
+const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2"] : ["pool"]);
 // phòng 1 giữ tên DO cũ "fville" (không đổi phòng của bản đã chạy)
 const roomName = (n) => (n <= 1 ? "fville" : `fville-${n}`);
 // request WebSocket kèm số phòng (header) — chuyển nguyên request sang DO khác vẫn giữ nâng cấp WebSocket
@@ -161,7 +165,7 @@ export class FVilleRoom extends DurableObject {
   // DO vừa thức dậy (hibernation): dựng lại bàn từ attachment mới nhất của người đang ngồi; ghế của người đã đi → giải phóng
   get pool() {
     if (!this._pool) {
-      this._pool = new PoolRoom(poolCfg, { turnMs: TURN_MS });
+      this._pool = new PoolRoom(poolCfg, { turnMs: TURN_MS, rules: poolRules(this.env) });
       let best = null;
       const live = new Set();
       for (const [, a] of this.players()) { live.add(a.id); if (a.pool && (!best || a.pool.v > best.v)) best = a.pool; }
@@ -190,9 +194,15 @@ export class FVilleRoom extends DurableObject {
         return;
       }
       case "pool_join": {
-        const r = p.join(a.id, a.name, now);
+        const r = p.join(a.id, a.name, now, m.r);
         if (r.changed) this.poolChanged();
-        else this.send(ws, { t: "pool", tb: p.view(now), ...(r.seated ? {} : { err: "full" }) });
+        else this.send(ws, { t: "pool", tb: p.view(now), ...(r.seated ? {} : { err: r.err || "full" }) });
+        return;
+      }
+      case "pool_choice": {
+        const r = p.choose(a.id, m.c, now);
+        if (r.ok) this.poolChanged();
+        else this.send(ws, { t: "pool", tb: p.view(now), err: r.err });
         return;
       }
       case "pool_leave": if (p.leave(a.id, now, "left")) this.poolChanged(); return;
@@ -252,6 +262,7 @@ export class FVilleRoom extends DurableObject {
       case "pool_leave":
       case "pool_shot":
       case "pool_rerack":
+      case "pool_choice":
       case "pool_poke": return this.onPool(ws, a, m, now);
       case "emote":
       case "phrase": {
@@ -279,7 +290,7 @@ export class FVilleRoom extends DurableObject {
     if (!a.joined) {
       a.joined = true;
       a.zone = m.zone;
-      this.send(ws, { t: "welcome", id: a.id, online: this.online(), room: a.room || 1, features: FEATURES });
+      this.send(ws, { t: "welcome", id: a.id, online: this.online(), room: a.room || 1, features: features(this.env) });
       this.enterZone(ws, a);
       this.save(ws, a);
       this.broadcastOnline();

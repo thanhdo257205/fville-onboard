@@ -1,6 +1,6 @@
 # Chơi nhiều người mức "thấy nhau"
 
-Cập nhật: 10/10/2026 (thêm chia phòng ~30 người và bi-a 2 người — xem 2 mục cuối)
+Cập nhật: 11/10/2026 (luật chuẩn 8 bi "sọc trơn" cho bàn bi-a chung — mục cuối; 10/10: chia phòng ~30 người, bi-a 2 người)
 
 Không mã phòng, không tạo phòng: máy chủ tự xếp người vào phòng (mỗi phòng ~30 người, xem "Chia phòng"). Mỗi người vẫn
 chơi phần của mình: nhiệm vụ, hội thoại, Tú, NPC đều riêng từng máy. Phần chung là **thấy nhau** khi ở cùng phòng và cùng
@@ -16,7 +16,7 @@ có chat tự do.
 | --- | --- |
 | `server/` | Máy chủ: Cloudflare Worker và Durable Object, mỗi DO một phòng (`fville`, `fville-2`…; `src/index.js`, `wrangler.toml`). Dùng WebSocket Hibernation API |
 | `server/src/pool.js` | Bàn bi-a chung của một phòng: ghế, lượt, vị trí bi, kiểm tra cú đánh, luật (JS thuần, thử bằng Node) |
-| `game/src/pool/rules.js` | Luật 8 bi rút gọn + mã hoá bàn — dùng chung cho game và máy chủ |
+| `game/src/pool/rules.js` | Luật 8 bi (luật chuẩn `applyShotV2` + luật rút gọn cũ `applyShot`) + mã hoá bàn — dùng chung cho game và máy chủ |
 | `data/net.json` | URL máy chủ, nhịp gửi, độ trễ nội suy, số người hiện tối đa, danh sách emote và câu chat, giới hạn của máy chủ (mục `server`: cả `room_size`, `max_rooms`, `pool_turn_s`). **Máy chủ đọc file này (và `data/pool.json`) lúc `wrangler deploy`** |
 | `game/src/net/client.js` | Kết nối WebSocket: thử lại theo backoff, ping khi đứng yên, phát hiện rớt mạng |
 | `game/src/net/remotes.js` | Hiện người chơi khác: model, bộ đồ, bảng tên, animation, nội suy, bong bóng câu chat |
@@ -69,14 +69,15 @@ có chat tự do.
 | | `state {zone, pos, yaw, anim}` | Tối đa 5 lần/giây và chỉ khi có thay đổi (> 2 cm, > 2°, đổi anim hoặc zone). Đổi zone cũng bằng tin này |
 | | `emote {id}` · `phrase {id}` · `leave` | |
 | | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
-| | `pool_join` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế, rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
-| | `pool_shot {seq, a, p, cue, b, k, s, d}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn |
-| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung |
+| | `pool_join {r}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
+| | `pool_choice {c}` | Luật chuẩn, sau cú phá không hợp lệ của đối thủ: `"rerack"` (xếp lại và tự phá) / `"play"` (đánh tiếp) |
+| | `pool_shot {seq, a, p, cue, call, b, k, s, d}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), lỗ gọi cho bi 8 (luật chuẩn), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn (b / k / s / d: máy chủ luật chuẩn bỏ qua, tự tính) |
+| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi |
 | | `zone {zone, players, online}` | Vừa vào zone: danh sách người cùng zone |
 | | `join {p}` · `state {id, pos, yaw, anim}` · `emote {id, e}` · `phrase {id, p}` · `leave {id}` | **Chỉ gửi cho người cùng zone** |
 | | `online {n}` | Số người online, gửi cho cả phòng |
 | | `error {code, msg}` | Vd phòng đầy |
-| | `pool {tb, err?}` | Bàn bi-a hiện tại (vừa vào zone của bàn cũng nhận); `err`: `full`, `turn`, `seq`, `cue`, `bad`… khi máy chủ từ chối |
+| | `pool {tb, err?}` | Bàn bi-a hiện tại (vừa vào zone của bàn cũng nhận); `err`: `full`, `turn`, `seq`, `cue`, `bad`, `call`, `choice`, `version` (máy khách cũ xin ghế ở bàn luật chuẩn)… khi máy chủ từ chối |
 | | `pool_shot {shot, tb}` | Một cú vừa được nhận (`shot`: người đánh, góc, lực, chỗ đặt bi trắng, vị trí bi) + bàn sau cú |
 
 ## Máy chủ: giới hạn và kiểm tra đầu vào
@@ -314,3 +315,56 @@ curl https://fville-net.fville-onboard.workers.dev/status   # có "room_size", "
 
 Rồi deploy bản web (`python scripts/deploy_site.py`). Thứ tự không bắt buộc: bản web mới + máy chủ cũ → bàn chỉ tập một
 mình; máy chủ mới + bản web cũ → bản web cũ bỏ qua các tin `pool`.
+
+## Bi-a luật chuẩn 8 bi "sọc trơn" (11/10/2026)
+
+Bàn chung theo luật 8 bi chuẩn (WPA, rút gọn cho game — tóm tắt luật: `docs/GDD.md`, zone 5): cú phá hợp lệ (có bi vào hoặc
+≥ 4 bi chạm băng; không thì đối thủ chọn xếp lại phá / đánh tiếp), bàn vẫn mở sau cú phá, lỗi → đối thủ có bi trong tay cả
+bàn, phải gọi lỗ cho bi 8, mỗi cú 60 s (hết giờ = lỗi). Tập một mình và thử thách của anh Khang giữ luật cũ.
+
+**Máy chủ** (`server/src/pool.js`, `PoolRoom` với `rules: 2`):
+- **Tự tính lại cú**: người đánh chỉ gửi góc, lực, chỗ đặt bi trắng, lỗ gọi; máy chủ chạy `physics.js` (tất định, cùng mã
+  với game) → sự kiện cú (bi trắng chạm bi nào trước, bi nào chạm băng, bi nào vào lỗ nào — `shotFacts`) → `applyShotV2`.
+  Vị trí bi máy khách gửi (`b`, `k`, `s`, `d`) bị bỏ qua — không gian lận được kết quả. **CPU mỗi cú** (đo bằng Node, cùng
+  V8 với workerd): 0,4–3 ms khi mã đã "nóng" (cú nhẹ → phá mạnh), ~24 ms cho cú đầu tiên sau khi máy chủ vừa khởi động. Gói
+  Free của Workers giới hạn 10 ms CPU mỗi lần gọi; chưa kiểm được trên tài liệu Cloudflare giới hạn này có áp cho từng tin
+  WebSocket của Durable Object không → sau `wrangler deploy` xem `npx wrangler tail` / dashboard (lỗi "exceeded CPU") khi
+  chơi thử vài ván. Nếu bị chặn: chuyển máy chủ về `POOL_RULES = "1"` (luật cũ) rồi tính lại cách làm (vd tin kết quả của
+  máy khách như luật cũ, chỉ kiểm tra lại bằng luật chuẩn).
+- Kiểm tra: đúng ghế / lượt / số thứ tự cú; chưa chọn sau cú phá không hợp lệ thì không nhận cú (`choice`); chỗ đặt bi trong
+  tay (`inHand`: `"kitchen"` khu đầu bàn sau cú phá, `"table"` cả bàn sau lỗi; không chồng bi — `canPlaceCueIn`); đang đánh
+  bi 8 phải có `call` là id lỗ hợp lệ (`call`).
+- Hết giờ lượt: lỗi (`ev {k: "foul", why: "timeout"}`), đối thủ có bi trong tay; 3 lần liên tiếp của cùng một người → mất ghế.
+- `tb` gửi thêm `rules` (2), `choice` (`"break"` khi chờ chọn); `inHand` là `false` / `"kitchen"` / `"table"`; sự kiện cú có
+  `foul {why, n}` (`scratch`, `off`, `no_hit`, `wrong_first`, `no_rail`), `brk` (`"legal"` / `"illegal"`), `call`; hết ván:
+  `reason` thêm `eight_foul`, `eight_pocket`, `eight_off`.
+- Bản chụp qua lúc DO ngủ ghi kèm bộ luật; dậy mà bản chụp là ván của bộ luật khác → xếp lại ván mới (không trộn 2 luật).
+
+**Tương thích — không lệch bàn trong mọi trường hợp:**
+
+| Máy chủ | Bản web | Kết quả |
+| --- | --- | --- |
+| mới (`pool_rules2`) | mới | luật chuẩn |
+| mới | cũ (`pool_join` không có `r: 2`) | không được ngồi (`err: "version"`) → chờ hết 6 s rồi tập một mình; vẫn xem được (cú phát lại khớp vì máy chủ gửi kết quả nó tính) |
+| cũ (chỉ `pool`) | mới | luật rút gọn cũ, giao diện cũ (máy khách thấy `tb.rules` không phải 2) |
+| cũ | cũ | như trước |
+
+Thử máy chủ bản cũ trên máy: `npx wrangler dev --var POOL_RULES:1` (biến `POOL_RULES = "1"` → luật cũ, không báo
+`pool_rules2`; smoke dùng cách này).
+
+**Kiểm thử:** `npm run test:pool` (thêm: từng tình huống luật chuẩn, sự kiện cú từ vật lý — cú cũ chạy lại giống từng bit,
+bàn máy chủ luật chuẩn, ván trọn 2 người giả có xếp lại / lỗi / bi trong tay / gọi lỗ); `npm run test:smoke` (máy chủ local:
+phá không hợp lệ → R / P, lỗi không chạm bi → bi trong tay cả bàn, gọi lỗ bi 8, máy khách cũ bị từ chối; rồi máy chủ giả
+bản cũ: chơi trọn ván luật cũ).
+
+**Cần `wrangler deploy`** (máy Desktop có `wrangler login`, sau khi nhánh `feat/pool-rules-8ball` đã vào `main`) — máy chủ
+thật đang chạy bản cũ, chưa deploy thì bàn chung vẫn theo luật rút gọn cũ:
+
+```bash
+git pull
+cd server
+npx wrangler deploy
+```
+
+Rồi deploy bản web (`python scripts/deploy_site.py`). Nên deploy máy chủ và bản web gần nhau: trong lúc máy chủ đã mới mà
+bản web còn cũ, người chơi bản web cũ không ngồi được bàn chung (chỉ tập một mình / đứng xem).
