@@ -1606,6 +1606,7 @@ các chậu cây trong phòng.
   mỗi hộp gỡ ≥ 3 mảnh, đủ số chậu mới; `--extra only`: bộ nhớ GPU zone_04 ↔ zone_05 2 vòng không tăng (geometry 37 → 37, texture 9 → 9).
   Đo: test:data, test:quick 56/56 + 57/57.
 - Chưa đổi: cây nhỏ trên bàn làm việc zone 5, hộp cây trên tủ trắng zone 4.
+- Gộp main qua PR #29 (079a255, cùng "Đi tới" bên dưới), đã deploy gh-pages 4463aa9.
 
 ### Xong ngày đầu → đi tự do giữa các zone (12/10/2026, nhánh `feat/potted-plant` c1cd732)
 
