@@ -433,7 +433,7 @@ Lùi lại: `npx wrangler rollback` về e150c939 (bản web mới vẫn chạy 
 
 ## Nhắn tin tự do + bộ lọc từ (11/10/2026)
 
-Trạng thái: [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) — chưa lên trang thật (chờ gộp PR, deploy bản web, rồi `wrangler deploy` máy chủ).
+Trạng thái: [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16) đã gộp vào `main` (1195cb1) — chưa lên trang thật (chờ deploy bản web, rồi `wrangler deploy` máy chủ).
 
 Người dùng chốt: cho gõ chữ tự do (không chỉ câu soạn sẵn), kèm bộ lọc từ. Câu soạn sẵn ở phím T vẫn giữ.
 

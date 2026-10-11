@@ -1157,7 +1157,7 @@ Sau deploy e150c939, cú phá tốn 11–20 ms CPU máy chủ (quá mốc 10 ms 
 ### Nhắn tin tự do giữa người chơi + bộ lọc từ (11/10/2026, nhánh `claude/lucid-hamilton-t2xq2l` 35c3536 + 2033d1f, [PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16))
 
 Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2 "Nhắn tin giữa người chơi"). Chi tiết: `docs/multiplayer.md` →
-"Nhắn tin tự do + bộ lọc từ". **Chưa lên trang thật:**
+"Nhắn tin tự do + bộ lọc từ". **Đã gộp vào `main` (1195cb1); chưa lên trang thật:**
 1. bản web: `python scripts/deploy_site.py` — người dùng đã đồng ý, nhưng máy cloud bị chặn quyền chạy lệnh deploy
    (11/10/2026) → chờ người dùng cho phép, hoặc tự chạy ở máy Desktop;
 2. máy chủ: `cd server && npx wrangler deploy` ở máy Desktop (người dùng tự làm) — sau bản web. Bản web mới với máy chủ
@@ -1226,7 +1226,7 @@ Người dùng chốt: cho gõ chữ tự do, kèm bộ lọc từ (CHECKLIST P2
 ## Việc tiếp theo
 Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLIST.md`.
 
-- **Nhắn tin tự do ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16)):** gộp PR → deploy bản web (`python scripts/deploy_site.py`) → máy chủ
+- **Nhắn tin tự do ([PR #16](https://github.com/thanhdo257205/fville-onboard/pull/16), đã gộp `main` 1195cb1):** deploy bản web (`python scripts/deploy_site.py`) → máy chủ
   (`cd server && npx wrangler deploy`, lời chào phải có `"chat"`) → nhắn thử giữa 2 cửa sổ trên trang thật, xem
   `npx wrangler tail --format json` (mọi `outcome` = `ok`). Sau buổi chơi thử: xem có từ nào cần thêm / bỏ khỏi bộ lọc
   (`data/chat.json`, sửa xong phải deploy lại máy chủ).
