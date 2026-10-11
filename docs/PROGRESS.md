@@ -1465,7 +1465,7 @@ Người dùng gửi mô hình Meshy bác tài (áo sơ mi trắng, cà vạt, m
   định dạng các dòng gọn) → đã trả về bản cũ, chỉ chèn `models.tai_xe`.
 - Smoke: bước nhạc nền / độ nhạy so thanh độ nhạy cảm ứng với `(pointer: coarse)` / `maxTouchPoints` của trang (trước đòi không
   có → hỏng trên laptop cảm ứng). Đo: test:data, smoke `--look intern_nam --mobile off --extra off` 53/53; xem bằng mắt zone 0
-  (tài xế xe 1 đứng vỉa hè, nói chuyện). Chưa deploy gh-pages.
+  (tài xế xe 1 đứng vỉa hè, nói chuyện). **Đã deploy** gh-pages 2bcd7e9 (từ main 4591a5c).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
