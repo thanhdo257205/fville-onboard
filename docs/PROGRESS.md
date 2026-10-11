@@ -1387,7 +1387,11 @@ CHECKLIST P2 "Khoảng trống ngoài vùng đi được trông trống trơn" �
 - CHECKLIST: tick "Bi-a bước 3" (mọi dòng con đã xong), "Build, push, deploy" phần điện thoại (PR #19–#21), ghi bản web bi-a xoáy
   đã deploy (còn `wrangler deploy` máy chủ); "zone 3: tách cụm cây" — người dùng chốt bỏ, coi như xong.
 
-### Kiểm thử nhanh hơn: CI chạy song song + `npm run test:quick` (11/10/2026, nhánh `ci/parallel-smoke`)
+### Kiểm thử nhanh hơn: CI chạy song song + `npm run test:quick` (11/10/2026, nhánh `ci/parallel-smoke`, PR #25 → main 23addab)
+
+**Kết quả trên CI (lượt cuối của PR #25):** cả lượt 4 phút 58 giây (trước 15–20 phút) — data 17 giây, net 2 phút 50, mobile
+3 phút 17, pool-touch 4 phút 36, desktop 4 phút 58 (lượt đầu 11 phút 18 vì skyCheck đọc điểm ảnh lần lượt — đã sửa). Đã deploy
+cùng gh-pages 43a2c81 (bản web chỉ đổi `__game.skyCheck`, không đổi cách chơi).
 
 Người dùng hỏi cách làm test nhanh hơn. Một lượt CI cũ 15–20 phút: mọi phần chạy nối tiếp trên 1 máy (cài đặt ~2–3 phút,
 máy tính 2 ngoại hình ~3, điện thoại ~6,5, test mạng ~5). Máy CI không có GPU (trình duyệt vẽ bằng CPU) nên không chạy nhiều
