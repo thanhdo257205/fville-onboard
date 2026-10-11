@@ -64,6 +64,10 @@ Danh sách đầy đủ từng file, nguồn, SHA-256 và giấy phép: `docs/au
   `assets/sfx/licenses/`).
 - Các tiếng còn lại tự tạo cho dự án bằng code: `scripts/blender/audio/synth.py` (tin nhắn, hạt lúa, màn trập, nước, cửa,
   đầu đọc thẻ, xe bus), tiếng nền theo zone và tiếng máy xe bus tạo lúc chơi (`game/src/core/ambience.js`).
+- Nhạc nền `assets/music/piano_spiegel.mp3`: "Piano Spiegel" — Oliver Siimon, trong "Fantasy Music Mega Pack (Royalty free,
+  CC0, Public Domain)" của Blacis — https://blacis.itch.io/royalty-free-music-megapack — giấy phép Creative Commons CC0 1.0
+  (trang ghi nhạc tạo bằng AI, chỉnh tay). Nén lại cho game (bỏ metadata, tăng 4 dB, MP3 ~75 kbps); SHA-256 file gốc trong
+  `data/sounds.json` → `music`; ghi chú giấy phép: `assets/music/licenses/`.
 
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.

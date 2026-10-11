@@ -251,6 +251,39 @@ async function runLook(browser, base, look) {
     });
     await check(au.state === "running" && au.loaded >= 30 && !au.failed && au.ambience === au.want && (au.moved < 1 || au.steps > 0),
       `${startZone}: âm thanh — AudioContext chạy, ${au.loaded} file đã tải, tiếng nền "${au.ambience}", đi ${au.moved} m → ${au.steps} tiếng bước chân`, JSON.stringify(au));
+    // nhạc nền (core/music.js, data/sounds.json → music): bài mặc định đang phát, thời gian chạy; menu Esc: thanh Nhạc, độ nhạy
+    // chuột (máy tính: không có thanh cảm ứng) — kéo 200 % → chuột (khoá con trỏ giả lập) xoay gấp đôi, lưu cài đặt; trả về 100 %;
+    // thanh Nhạc = 0 → dừng nhạc, kéo lại → phát tiếp
+    if (look === looks[0] && startZone === order[0]) {
+      await wait(() => __game.audio.music?.playing && __game.audio.music.time > 0.3, 15000);
+      const mu = { start: await ev(() => __game.audio.music) };
+      await page.waitForTimeout(1200);
+      mu.later = await ev(() => __game.audio.music);
+      await page.waitForTimeout(800);
+      await ev(() => __game.resolve());
+      await page.keyboard.press("Escape");
+      mu.menu = await wait(() => !document.getElementById("menu").hidden, 5000);
+      const drag = () => ev(() => { const inp = __game._game.input, keep = inp.fakeLock; inp.fakeLock = true; inp.consumeDrag(true);
+        document.dispatchEvent(new MouseEvent("mousemove", { movementX: 40, movementY: 0 })); const d = inp.consumeDrag(true).dx; inp.fakeLock = keep; return d; });
+      const slide = (sel, v) => ev(([sel, v]) => { const r = document.querySelector(sel); r.value = v; r.dispatchEvent(new Event("input")); r.dispatchEvent(new Event("change")); return document.querySelector(sel.replace("data-look=", "data-look-out=").replace("input", "output"))?.textContent ?? null; }, [sel, v]);
+      mu.rows = await ev(() => ({ music: !!document.querySelector("#menu [data-vol=music]"), mouse: !!document.querySelector("#menu [data-look=mouse]"), touch: !!document.querySelector("#menu [data-look=touch]") }));
+      mu.d1 = await drag();
+      mu.label = await slide("#menu [data-look=mouse]", 200);
+      mu.d2 = await drag();
+      mu.saved = await ev(() => JSON.parse(localStorage.getItem("fville.settings") || "{}").look);
+      await slide("#menu [data-look=mouse]", 100);
+      await slide("#menu [data-vol=music]", 0);
+      mu.off = await wait(() => !__game.audio.music.playing, 3000);
+      await slide("#menu [data-vol=music]", 50);
+      mu.on = await wait(() => __game.audio.music.playing, 3000);
+      await page.keyboard.press("Escape");
+      mu.closed = await wait(() => document.getElementById("menu").hidden && __game._game.mode === "play", 5000);
+      await check(mu.start?.id === "piano_spiegel" && mu.start.playing && mu.later.time > mu.start.time && !mu.later.failed.length
+        && mu.menu && mu.rows.music && mu.rows.mouse && !mu.rows.touch && mu.d1 > 0 && Math.abs(mu.d2 - 2 * mu.d1) < 1e-6 && mu.label === "200%"
+        && mu.saved?.mouse === 2 && mu.off && mu.on && mu.closed,
+        `nhạc nền "${mu.start?.id}" đang phát (${mu.start?.time} → ${mu.later?.time} s); menu Esc: thanh Nhạc (0 → dừng, kéo lại → phát), độ nhạy chuột 200 % → xoay ×2 (${mu.d1} → ${mu.d2}), lưu cài đặt`,
+        JSON.stringify(mu));
+    }
     // đổi ngôn ngữ giữa chừng (menu Esc → Language): mục tiêu, tiêu đề menu đổi ngay, tiến trình / vị trí giữ nguyên, đổi lại
     if (lang !== "en" && startZone === order[0]) {
       const q0 = QUESTS.find((q) => q.zone === startZone && q.required)?.title;
@@ -1757,6 +1790,20 @@ async function runShort(browser, base) {
       const mb = await P.wait(() => !!__game.touch?.buttons.menu, 5000) && await ev(() => __game.touch.buttons.menu);
       if (mb) await P.tap(mb.x, mb.y);
       if (await P.wait(() => !document.getElementById("menu").hidden, 3000)) { await sleep(200); res.menu = await box("#menu .panel"); await snap("menu"); }
+      // độ nhạy cảm ứng (điện thoại: chỉ thanh cảm ứng, không có thanh chuột): 200 % → vuốt 40 px xoay gấp đôi; trả về 100 %
+      const sens = await ev(() => {
+        const inp = __game._game.input, c = __game._game.renderer.canvas, r = c.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+        const swipe = () => { inp.consumeDrag(true);
+          const o = { pointerId: 77, pointerType: "touch", isPrimary: true, bubbles: true, clientY: y };
+          c.dispatchEvent(new PointerEvent("pointerdown", { ...o, clientX: x })); c.dispatchEvent(new PointerEvent("pointermove", { ...o, clientX: x + 40 }));
+          c.dispatchEvent(new PointerEvent("pointercancel", { ...o, clientX: x + 40 })); return +inp.consumeDrag(true).dx.toFixed(3); };
+        const slide = (v) => { const el = document.querySelector("#menu [data-look=touch]"); if (!el) return; el.value = v; el.dispatchEvent(new Event("input")); el.dispatchEvent(new Event("change")); };
+        const out = { touch: !!document.querySelector("#menu [data-look=touch]"), mouse: !!document.querySelector("#menu [data-look=mouse]"), music: !!document.querySelector("#menu [data-vol=music]") };
+        out.d1 = swipe(); slide(200); out.d2 = swipe(); out.saved = JSON.parse(localStorage.getItem("fville.settings") || "{}").look?.touch; slide(100);
+        return out;
+      });
+      await check(sens.touch && !sens.mouse && sens.music && sens.d1 > 0 && Math.abs(sens.d2 - 2 * sens.d1) < 1e-3 && sens.saved === 2,
+        `${view.width} × ${view.height}: menu Esc có thanh Nhạc + độ nhạy cảm ứng (không có độ nhạy chuột) — 200 % → vuốt xoay ×2 (${sens.d1} → ${sens.d2}), lưu cài đặt`, JSON.stringify(sens));
       await ev(() => document.querySelector("#menu [data-act=resume]")?.click());
       await sleep(300);
       // mini-game: quiz tượng Cuder (đoạn chuyện dài nhất)

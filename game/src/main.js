@@ -12,7 +12,7 @@ import * as THREE from "three";
 import { loadJSON, url } from "./core/assets.js";
 import { loadStrings, t, lang, pickLang } from "./i18n.js";
 import { createRenderer } from "./render/renderer.js";
-import { Input } from "./core/input.js";
+import { Input, lookSens } from "./core/input.js";
 import { loadSettings, saveSettings } from "./core/quality.js";
 import { Characters } from "./characters/characters.js";
 import { Game } from "./game/game.js";
@@ -79,6 +79,7 @@ async function boot() {
   const app = document.getElementById("app");
   const renderer = createRenderer(app);
   const input = new Input(renderer.canvas);
+  input.sens = lookSens(settings.look);
   const nametags = new NameTags(app);
   const progress = new GameState(content);
   const saved = save.load();
@@ -168,6 +169,8 @@ async function boot() {
       detail: settings.detail ?? "auto", detailLevel: renderer.detail, net: net.enabled, players: settings.players !== false,
       chat: settings.chat !== false,
       sound: { ...SOUND_DEFAULTS, ...settings.sound },
+      // độ nhạy xoay: chuột (máy có chuột — không phải điện thoại), cảm ứng (máy có màn cảm ứng)
+      look: lookSens(settings.look), lookMouse: !device.phone, lookTouch: device.touchCapable,
       complete: game.complete,
       // phụ kiện đã mở khoá (tủ đồ — chưa có tab Wardrobe): bật / tắt ở đây
       accessories: chars.accessories ? game.characters.accessoryIds().filter((id) => game.accessoryUnlocked(id))
@@ -185,6 +188,12 @@ async function boot() {
       sound.apply(settings.sound);
       if (store) saveSettings(settings);
       if (redraw) menu.draw();
+    },
+    // độ nhạy xoay camera (kéo thanh: đổi ngay, thả tay mới lưu)
+    onLook: (patch, { store = true } = {}) => {
+      settings.look = lookSens({ ...settings.look, ...patch });
+      input.sens = { ...settings.look };
+      if (store) saveSettings(settings);
     },
     onSummary: () => { menu.hide(true); game.openSummary(); },   // chỉ hiện khi đã xong game
     onClose: () => game.setMode("play"),

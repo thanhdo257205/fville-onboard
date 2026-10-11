@@ -7,9 +7,9 @@ import { TIERS } from "../core/quality.js";
 import { sound } from "../core/sound.js";
 
 export class Menu {
-  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onAccessory, onLang, onSound, onSummary, onClose, onPlayAgain, info }) {
+  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onAccessory, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info }) {
     this.el = document.getElementById("menu");
-    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onAccessory, onLang, onSound, onSummary, onClose, onPlayAgain, info });
+    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onAccessory, onLang, onSound, onLook, onSummary, onClose, onPlayAgain, info });
     this.open = false;
     // tiếng bấm nút (nút Resume: tiếng đóng menu)
     this.el.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && b.dataset.act !== "resume") sound.play("tap"); });
@@ -30,12 +30,16 @@ export class Menu {
     if (!silent) { sound.play("menu_close"); this.onClose?.(); }
   }
   draw() {
-    const i = this.info();   // { setting, tier, gpu, fps, guide, detail, detailLevel, net, players, complete, sound: { on, sfx, amb } }
+    const i = this.info();   // { setting, tier, gpu, fps, guide, detail, detailLevel, net, players, complete, sound: { on, sfx, amb, music }, look: { mouse, touch }, lookMouse, lookTouch }
     const btn = (v) => `<button data-tier="${v}" class="${i.setting === v ? "on" : ""}">${t(`menu.${v}`)}</button>`;
     const dbtn = (v) => `<button data-detail="${v}" class="${i.detail === v ? "on" : ""}">${t(`menu.detail_${v}`)}</button>`;
     const gbtn = (on) => `<button data-guide="${on ? 1 : 0}" class="${i.guide === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     const sbtn = (on) => `<button data-sound="${on ? 1 : 0}" class="${i.sound.on === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     const vol = (k) => `<input type="range" min="0" max="100" step="5" data-vol="${k}" value="${Math.round(i.sound[k] * 100)}" aria-label="${t(`menu.${k}_volume`)}"${i.sound.on ? "" : " disabled"}>`;
+    // độ nhạy xoay camera: 20 % … 300 %, số % hiện cạnh thanh (kéo: đổi ngay; thả: lưu)
+    const look = (k) => `<div class="lookv"><input type="range" min="20" max="300" step="10" data-look="${k}" value="${Math.round(i.look[k] * 100)}" aria-label="${t(`menu.look_${k}`)}"><output data-look-out="${k}">${Math.round(i.look[k] * 100)}%</output></div>`;
+    const lookRows = [i.lookMouse && "mouse", i.lookTouch && "touch"].filter(Boolean)
+      .map((k) => `<div class="row vol look"><span>${t(`menu.look_${k}`)}</span>${look(k)}</div>`).join("");
     const pbtn = (on) => `<button data-players="${on ? 1 : 0}" class="${i.players === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     const cbtn = (on) => `<button data-chat="${on ? 1 : 0}" class="${i.chat === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     // phụ kiện đã mở khoá (vd mũ lưỡi trai sau khi xong game): [{ id, label, on }]
@@ -50,7 +54,9 @@ export class Menu {
         <div class="row"><span>${t("menu.sound")}</span><div class="seg">${sbtn(true)}${sbtn(false)}</div></div>
         <div class="row vol"><span>${t("menu.sfx_volume")}</span>${vol("sfx")}</div>
         <div class="row vol"><span>${t("menu.amb_volume")}</span>${vol("amb")}</div>
+        <div class="row vol"><span>${t("menu.music_volume")}</span>${vol("music")}</div>
         <p class="muted">${t("menu.sound_note")}</p>
+        ${lookRows ? `${lookRows}<p class="muted">${t("menu.look_note")}</p>` : ""}
         <div class="row"><span>${t("menu.graphics")}</span><div class="seg">${btn("auto")}${btn("low")}${TIERS.includes("high") ? btn("high") : ""}</div></div>
         <p class="muted current">${t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu })}</p>
         <p class="muted fps">${t("menu.fps", { fps: Math.round(i.fps) })}</p>
@@ -75,6 +81,11 @@ export class Menu {
     this.el.querySelectorAll("[data-vol]").forEach((r) => {
       r.addEventListener("input", () => this.onSound?.({ [r.dataset.vol]: r.value / 100 }, { store: false }));
       r.addEventListener("change", () => { this.onSound?.({ [r.dataset.vol]: r.value / 100 }); if (r.dataset.vol === "sfx") sound.play("tap"); });
+    });
+    this.el.querySelectorAll("[data-look]").forEach((r) => {
+      const out = this.el.querySelector(`[data-look-out="${r.dataset.look}"]`);
+      r.addEventListener("input", () => { out.textContent = `${r.value}%`; this.onLook?.({ [r.dataset.look]: r.value / 100 }, { store: false }); });
+      r.addEventListener("change", () => this.onLook?.({ [r.dataset.look]: r.value / 100 }));
     });
     this.el.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.lang !== lang) this.onLang?.(b.dataset.lang); }));
     this.el.querySelectorAll("[data-acc]").forEach((b) => b.addEventListener("click", () => this.onAccessory?.(b.dataset.acc, b.dataset.on === "1")));

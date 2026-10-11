@@ -2,6 +2,7 @@
 // app / mini-game / menu thì nhả khoá để bấm được. Không khoá được (vd cảm ứng) → kéo để xoay như cũ.
 // Cảm ứng (ui/touch.js): điều khiển ảo đặt `stick` = {x, y, run} (thay phím W/A/S/D); vuốt trên khung vẽ xoay camera (độ nhạy
 // TOUCH_SCALE); 2 ngón chụm / mở kéo camera xa / gần (như con lăn chuột, PINCH_PX px ≈ 1 nấc lăn).
+// Độ nhạy xoay (menu Esc, settings.look): `sens.mouse` nhân vào chuột (khoá + kéo), `sens.touch` nhân vào vuốt ngón tay; 1 = mặc định.
 // `override` cho phép __game giả lập phím khi tự kiểm tra; `fakeLock` giả lập khoá con trỏ (smoke: headless không khoá thật ổn định).
 import { device } from "./device.js";
 
@@ -9,6 +10,12 @@ const LOCK_SCALE = 0.5;    // độ nhạy chuột khi khoá so với kéo (came
 const TOUCH_SCALE = 0.7;   // vuốt ngón tay: 1 px ≈ 0,0035 rad (vuốt ngang nửa màn hình điện thoại ~420 px ≈ 85°)
 const PINCH_PX = 40;       // chụm / mở 2 ngón: mỗi chừng ấy px khoảng cách = 1 nấc lăn chuột (camera xa / gần 0,4 m)
 const MAX_MOVE = 200;      // bỏ cú nhảy movementX/Y bất thường (Chrome trên Windows thỉnh thoảng gửi)
+export const LOOK_DEFAULTS = { mouse: 1, touch: 1 };   // độ nhạy xoay mặc định (settings.look); menu Esc: 20 % … 300 %
+// settings.look (có thể là bản lưu cũ / hỏng) → { mouse, touch } hợp lệ, mỗi giá trị trong 0,2 … 3
+export const lookSens = (s) => Object.fromEntries(Object.entries(LOOK_DEFAULTS).map(([k, d]) => {
+  const v = Number(s?.[k]);
+  return [k, Number.isFinite(v) && v > 0 ? Math.min(3, Math.max(0.2, v)) : d];
+}));
 const typing = (e) => e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
 
 export class Input {
@@ -16,6 +23,7 @@ export class Input {
     this.canvas = canvas;
     this.keys = new Set();
     this.drag = { dx: 0, dy: 0, wheel: 0 };
+    this.sens = { ...LOOK_DEFAULTS };   // độ nhạy xoay camera (menu Esc) — không đổi chụm 2 ngón / con lăn
     this.override = null;
     this.enabled = true;
     this.handlers = {};          // phím đơn: Escape, Tab, E…  → callback
@@ -47,8 +55,8 @@ export class Input {
     document.addEventListener("mousemove", (e) => {
       if (!this.locked) return;
       const c = (v) => Math.max(-MAX_MOVE, Math.min(MAX_MOVE, v));
-      this.drag.dx += c(e.movementX) * LOCK_SCALE;
-      this.drag.dy += c(e.movementY) * LOCK_SCALE;
+      this.drag.dx += c(e.movementX) * LOCK_SCALE * this.sens.mouse;
+      this.drag.dy += c(e.movementY) * LOCK_SCALE * this.sens.mouse;
     });
 
     // kéo (ngón tay / chuột khi không khoá): mỗi con trỏ một vị trí; 1 con trỏ → xoay camera, 2 ngón → chụm / mở thu phóng
@@ -75,7 +83,7 @@ export class Input {
     canvas.addEventListener("pointermove", (e) => {
       const p = pts.get(e.pointerId);
       if (!p) return;
-      const k = e.pointerType === "mouse" ? 1 : TOUCH_SCALE;
+      const k = e.pointerType === "mouse" ? this.sens.mouse : TOUCH_SCALE * this.sens.touch;
       if (pts.size >= 2) {
         for (const q of pts.values()) q.multi = true;
         p.x = e.clientX; p.y = e.clientY;
