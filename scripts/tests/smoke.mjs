@@ -266,7 +266,9 @@ async function runLook(browser, base, look) {
       const drag = () => ev(() => { const inp = __game._game.input, keep = inp.fakeLock; inp.fakeLock = true; inp.consumeDrag(true);
         document.dispatchEvent(new MouseEvent("mousemove", { movementX: 40, movementY: 0 })); const d = inp.consumeDrag(true).dx; inp.fakeLock = keep; return d; });
       const slide = (sel, v) => ev(([sel, v]) => { const r = document.querySelector(sel); r.value = v; r.dispatchEvent(new Event("input")); r.dispatchEvent(new Event("change")); return document.querySelector(sel.replace("data-look=", "data-look-out=").replace("input", "output"))?.textContent ?? null; }, [sel, v]);
-      mu.rows = await ev(() => ({ music: !!document.querySelector("#menu [data-vol=music]"), mouse: !!document.querySelector("#menu [data-look=mouse]"), touch: !!document.querySelector("#menu [data-look=touch]") }));
+      // thanh độ nhạy cảm ứng có khi máy có màn cảm ứng (device.touchCapable) — máy CI không có, laptop cảm ứng có
+      mu.rows = await ev(() => ({ music: !!document.querySelector("#menu [data-vol=music]"), mouse: !!document.querySelector("#menu [data-look=mouse]"), touch: !!document.querySelector("#menu [data-look=touch]"),
+        touchCapable: matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0 }));
       mu.d1 = await drag();
       mu.label = await slide("#menu [data-look=mouse]", 200);
       mu.d2 = await drag();
@@ -279,7 +281,7 @@ async function runLook(browser, base, look) {
       await page.keyboard.press("Escape");
       mu.closed = await wait(() => document.getElementById("menu").hidden && __game._game.mode === "play", 5000);
       await check(mu.start?.id === "piano_spiegel" && mu.start.playing && mu.later.time > mu.start.time && !mu.later.failed.length
-        && mu.menu && mu.rows.music && mu.rows.mouse && !mu.rows.touch && mu.d1 > 0 && Math.abs(mu.d2 - 2 * mu.d1) < 1e-6 && mu.label === "200%"
+        && mu.menu && mu.rows.music && mu.rows.mouse && mu.rows.touch === mu.rows.touchCapable && mu.d1 > 0 && Math.abs(mu.d2 - 2 * mu.d1) < 1e-6 && mu.label === "200%"
         && mu.saved?.mouse === 2 && mu.off && mu.on && mu.closed,
         `nhạc nền "${mu.start?.id}" đang phát (${mu.start?.time} → ${mu.later?.time} s); menu Esc: thanh Nhạc (0 → dừng, kéo lại → phát), độ nhạy chuột 200 % → xoay ×2 (${mu.d1} → ${mu.d2}), lưu cài đặt`,
         JSON.stringify(mu));

@@ -1,0 +1,20 @@
+{
+  "_ghi_chu": "tai_xe (bác tài xe đưa đón — vai tai_xe, tai_xe_1, tai_xe_3): file gốc tai_xe_rigged.fbx tải từ Mixamo (tư thế chữ A tĩnh, gắn xương trên file prepare_for_mixamo 25k tam giác) → idle và 13 animation lấy từ file của prajith (retarget, hông nhân theo tỉ lệ độ cao hông), như huyen, nga. speed_mps: tốc độ chơi như nga. Texture lấy từ textures/tai_xe_basecolor.jpg.",
+  "base": [
+    "tai_xe_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "fold_missing_bones": true,
+  "_fold_ghi_chu": "tai_xe_rigged.fbx gắn xương Skeleton LOD Standard (65 xương, có ngón tay) — file của prajith không có ngón giữa / áp út / út / cái → dồn trọng số lên bàn tay, xoá xương (như No Fingers).",
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "face_keep_tris": 2200,
+    "face_detail_pct": 0.12
+  },
+  "_decimate_ghi_chu": "Bản 6k: mặt trước + mũ ~5.600 tam giác (prepare_for_mixamo --protect-face) — giữ cả thì thân gần như không còn. Lượt 0: giảm phần phẳng mặt trước / mũ còn ~2.200, giữ 12% đỉnh tương phản cao (mắt, lông mày, miệng, vành mũ); lượt 2: giữ đầu, giảm thân."
+}

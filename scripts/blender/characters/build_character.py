@@ -15,7 +15,8 @@ Vào:  assets/characters/<id>/mixamo/*.fbx  (tên file → id action: bảng ACT
       assets/characters/<id>/mixamo/actions.json cùng cấu trúc để ghi đè). Thêm trong actions.json:
         "anim_dir": thư mục chứa các file Without Skin (vd dùng lại animation của prajith);
         "idle_file": file lấy idle khi file gốc chỉ là tư thế tĩnh (tải từ Mixamo không kèm animation);
-        "speed_mps": tốc độ chơi {walk, run} ghi vào characters.json (game chỉnh tốc độ phát cho khớp chân).
+        "speed_mps": tốc độ chơi {walk, run} ghi vào characters.json (game chỉnh tốc độ phát cho khớp chân);
+        "fold_missing_bones": true — gắn xương "Standard" (có ngón) mà anim_dir thiếu ngón → dồn ngón vào bàn tay.
       assets/characters/<id>/textures/<id>_basecolor.jpg (ảnh màu chuẩn của nhân vật)
 Ra:   assets/characters/<id>/<id>.glb        (đã tối ưu: WebP 1024, meshopt) — dùng trong game
       assets/characters/<id>/<id>.raw.glb    (Blender xuất, chưa tối ưu)
@@ -183,6 +184,49 @@ def load_base(cfg):
             scale_location_curves(idle, s)
     print(f"[gốc] cao (tư thế gốc) {rest_h:.4f} m → {HEIGHT} m (hệ số {s:.4f})")
     return arm, mesh, idle
+
+
+def fold_missing_bones(arm, mesh, path):
+    """actions.json → fold_missing_bones: nhân vật gắn xương Skeleton LOD "Standard" (có ngón tay) nhưng animation lấy từ
+    file thiếu các xương đó (vd anim_dir của prajith) → dồn trọng số của chúng lên tổ tiên gần nhất có trong file
+    animation (ngón → bàn tay), rồi xoá xương. Kết quả như tải từ Mixamo với "No Fingers"."""
+    src, objs = import_fbx(path)
+    have = set(b.name for b in src.data.bones)
+    for o in objs:
+        bpy.data.objects.remove(o)
+    gone = [b.name for b in arm.data.bones if b.name not in have]
+    if not gone:
+        return []
+    target = {}
+    for n in gone:
+        b = arm.data.bones[n].parent
+        while b is not None and b.name in gone:
+            b = b.parent
+        if b is None:
+            raise RuntimeError(f"{n}: không có xương tổ tiên nào trong {os.path.basename(path)}")
+        target[n] = b.name
+    groups = {g.name: g for g in mesh.vertex_groups}
+    for n, t in target.items():
+        g = groups.get(n)
+        if g is None:
+            continue
+        tg = groups.get(t) or mesh.vertex_groups.new(name=t)
+        groups[t] = tg
+        for v in mesh.data.vertices:
+            for e in v.groups:
+                if e.group == g.index and e.weight > 0:
+                    tg.add([v.index], e.weight, "ADD")
+        mesh.vertex_groups.remove(g)
+        groups.pop(n)
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    for n in gone:
+        arm.data.edit_bones.remove(arm.data.edit_bones[n])
+    bpy.ops.object.mode_set(mode="OBJECT")
+    print(f"[xương] dồn {len(gone)} xương không có trong {os.path.basename(path)} lên xương cha "
+          f"({', '.join(sorted(set(target.values())))}) → còn {len(arm.data.bones)}")
+    return gone
 
 
 def is_static(arm, action, rot_deg=0.5, loc_m=0.002):
@@ -844,8 +888,11 @@ def main():
     bpy.context.preferences.filepaths.save_version = 0
     anim_dir = os.path.join(ROOT, cfg["anim_dir"]) if cfg.get("anim_dir") else MIX_DIR
     arm, mesh, base_act = load_base(cfg)
+    folded = (fold_missing_bones(arm, mesh, os.path.join(anim_dir, cfg.get("idle_file", "Standing Idle.fbx")))
+              if cfg.get("fold_missing_bones") else [])
     hips_h = rest_hips_height(arm, mesh)
-    report = {"id": CID, "variant": VARIANT, "single": SINGLE, "bones_before": len(arm.data.bones),
+    report = {"id": CID, "variant": VARIANT, "single": SINGLE, "bones_before": len(arm.data.bones) + len(folded),
+              "folded_bones": folded,
               "anim_dir": os.path.relpath(anim_dir, ROOT).replace("\\", "/"), "rest_hips_m": round(hips_h, 4)}
     if base_act is None or is_static(arm, base_act):
         # file gốc chỉ là tư thế tĩnh (hoặc không có animation) → idle lấy từ idle_file (retarget), rồi mới đặt chân

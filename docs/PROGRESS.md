@@ -1448,6 +1448,25 @@ Người dùng gửi bài "Piano Spiegel" (Oliver Siimon), lấy từ "Fantasy M
   trên laptop có màn cảm ứng hỏng bước nhạc / độ nhạy: menu hiện cả thanh độ nhạy cảm ứng (đúng thiết kế) nhưng smoke mong không
   có — xem "Việc nhỏ để sau".
 
+### Nhân vật tài xế riêng (11/10/2026, máy Desktop)
+
+Người dùng gửi mô hình Meshy bác tài (áo sơ mi trắng, cà vạt, mũ kê-pi xanh đậm). Id model `tai_xe`, cao 1,70 m.
+
+- `prepare_for_mixamo.py -- --id tai_xe --height 1.70 --tris 25000 --protect-face`: 61.320 → 25.000 tam giác (mặt + mũ giữ
+  ~5.600), texture 1024 → `tai_xe_for_mixamo.fbx`. Mixamo gắn xương bằng Skeleton LOD Standard (65 xương, có ngón tay —
+  khác huyen / nga "No Fingers").
+- `build_character.py -- --id tai_xe --height 1.70 --tris 6000 --single`: idle + 13 animation lấy từ prajith (như huyen, nga).
+  Thêm tuỳ chọn `fold_missing_bones` trong `mixamo/actions.json`: xương không có trong file animation (32 xương ngón giữa / áp
+  út / út / cái) → dồn trọng số lên bàn tay rồi xoá — như "No Fingers"; nhân vật cũ không đổi. `decimate_protect.face_keep_tris`
+  2.200 (mặt + mũ). Kết quả: 6.000 tam giác, 28 xương, 15 animation, GLB 0,68 MB, khớp lệch sau retarget 80–170 mm (nga ~200).
+  Chân dung `tai_xe_portrait.png` (`render_portrait.py`).
+- `data/characters.json`: 3 vai `tai_xe` (zone 1), `tai_xe_1`, `tai_xe_3` (zone 0) → model `tai_xe`, bỏ `tint` (tint đổi điểm
+  ảnh áo cam — áo trắng không có). Lưu ý: `build_character.py` / `render_portrait.py` ghi lại cả file khi thêm model mới (đổi
+  định dạng các dòng gọn) → đã trả về bản cũ, chỉ chèn `models.tai_xe`.
+- Smoke: bước nhạc nền / độ nhạy so thanh độ nhạy cảm ứng với `(pointer: coarse)` / `maxTouchPoints` của trang (trước đòi không
+  có → hỏng trên laptop cảm ứng). Đo: test:data, smoke `--look intern_nam --mobile off --extra off` 53/53; xem bằng mắt zone 0
+  (tài xế xe 1 đứng vỉa hè, nói chuyện). Chưa deploy gh-pages.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,
@@ -1527,8 +1546,7 @@ Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLI
   `seeThrough` gộp thành 1 cây vì các tán dính nhau → khi che thì mờ cả cụm cùng lúc. Chưa cần sửa (cây ngoài vách kính,
   ít khi che người chơi). Cách sửa nếu cần: không gộp mảnh chỉ vì chạm nhau mà tách theo thân cây (mỗi thân + các cụm lá
   gần nó nhất).
-- Smoke máy tính, bước nhạc nền + độ nhạy (`scripts/tests/smoke.mjs`, khối "nhạc nền"): đòi `!mu.rows.touch` → hỏng trên laptop
-  có màn cảm ứng (game hiện thanh độ nhạy cảm ứng khi `device.touchCapable`). Nên so với `navigator.maxTouchPoints > 0` của trang.
+- ~~Smoke máy tính, bước nhạc nền + độ nhạy: hỏng trên laptop có màn cảm ứng~~ — xong 11/10/2026 (xem "Nhân vật tài xế riêng").
 
 ## Nội dung [DRAFT] chờ HR (20 mục)
 1. Tin nhắn đầu game (Ms. Nga, Tuyển dụng): xe số 2 đi Hòa Lạc, đón lúc 06:45, mã intern FV-2026 để đăng nhập App My FPT.
