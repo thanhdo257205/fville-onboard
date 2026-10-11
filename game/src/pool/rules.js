@@ -169,6 +169,28 @@ export function shotFacts(res) {
   return { first: res.firstContact ?? null, rail, railBalls: railBalls.size, pocketed, pockets, scratch: pocketed.includes(0), off: res.off || [] };
 }
 
+// máy khách gửi kèm cú (máy chủ không chạy vật lý — CPU máy chủ ~0 mỗi cú): sự kiện cú → trường của pool_shot
+// { f: bi trắng chạm trước | null, r: có bi chạm băng sau lần chạm đó, rb: số bi (trừ bi trắng) chạm băng, kp: lỗ của từng bi
+// trong k (k = res.pocketed, cùng thứ tự) }
+export function wireFacts(res) {
+  const fx = shotFacts(res);
+  return { f: fx.first, r: fx.rail, rb: fx.railBalls, kp: fx.pocketed.map((n) => fx.pockets[n]) };
+}
+// ngược lại (máy chủ): bàn trước cú + bi vào lỗ k (đã kiểm khớp với vị trí bi máy khách gửi) + trường f / r / rb / kp → dữ kiện
+// cho applyShotV2, hoặc null khi không hợp lý: f không phải bi đang trên bàn; không chạm bi nào mà có bi khác vào lỗ / chạm
+// băng; rb quá số bi trên bàn; kp lệch số bi vào lỗ hoặc có lỗ không tồn tại
+export function factsFromWire(table, before, k, m) {
+  const f = m.f ?? null, kp = m.kp;
+  const objects = before.balls.reduce((c, b) => c + (b.on && b.n !== 0 ? 1 : 0), 0);
+  if (f !== null && !(Number.isInteger(f) && f >= 1 && f < before.balls.length && before.balls[f].on)) return null;
+  if (typeof m.r !== "boolean" || !Number.isInteger(m.rb) || m.rb < 0 || m.rb > objects) return null;
+  if (f === null && (m.r || m.rb > 0 || k.some((n) => n !== 0))) return null;
+  if (!Array.isArray(kp) || kp.length !== k.length || !kp.every((id) => table.pockets.some((p) => p.id === id))) return null;
+  const pockets = {};
+  k.forEach((n, i) => { pockets[n] = kp[i]; });
+  return { first: f, rail: m.r, railBalls: m.rb, pocketed: [...k], pockets, scratch: k.includes(0), off: [] };
+}
+
 // người ở ghế `seat` đang đánh bi 8 (nhóm mình đã hết trước cú này) → cú phải gọi lỗ
 export function onEight(state, m, seat) {
   const own = m?.mode === "match" ? m.groups[seat] : null;

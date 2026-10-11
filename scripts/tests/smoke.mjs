@@ -836,13 +836,14 @@ async function poolPace(p) {
 }
 
 // (c) bi-a 2 người (bi-a bước 3 + luật chuẩn 8 bi "sọc trơn") trên máy chủ local: An, Bình mở zone_05 ở 2 trình duyệt, máy
-// chủ báo features "pool" + "pool_rules2". An ngồi → tập một mình, cú của An phát lại (có hoạt cảnh) ở máy Bình; Bình ngồi →
+// chủ báo features "pool" + "pool_rules2" + "pool_facts" (máy chủ không chạy vật lý). An ngồi → tập một mình, cú của An phát lại (có hoạt cảnh) ở máy Bình; Bình ngồi →
 // ván 8 bi, An phá; Bình đánh sai lượt → máy chủ chặn; phím H: thẻ luật, đồng hồ lượt. Luật chuẩn: An phá nhẹ (không hợp lệ)
 // → Bình chọn, phím R: xếp lại và tự phá; Bình phá nhẹ → An bấm P: đánh tiếp; An không chạm bi nào → lỗi (toast + dòng lỗi
 // nêu lý do), Bình có bi trong tay cả bàn (đặt giữa bàn). Chơi trọn ván bằng cú tự chọn (__game.pool.autoShot, tự gọi lỗ cho
 // bi 8; lần đầu đánh bi 8: vòng sáng ở lỗ, C gọi lỗ) — sau mỗi cú bàn của 2 người (và người xem) giống hệt bàn máy chủ, cú
 // phát lại khớp từng bit; Cường vào xem giữa ván → thấy đúng bàn, hết ghế thì chỉ xem; hết ván → R: ván mới, người thua
-// phá; Bình rớt mạng → ghế được giải phóng, An thắng; máy khách cũ (pool_join không kèm r: 2) không được ngồi; Cường ngồi
+// phá; Bình rớt mạng → ghế được giải phóng, An thắng; máy khách cũ (pool_join không kèm r: 2) và bản web luật chuẩn đầu
+// (r: 2, chưa gửi sự kiện cú cf: 1) không được ngồi; Cường ngồi
 // vào ghế trống; An phá thẳng bi trắng vào lỗ → Cường có bi trong tay chỉ ở khu đầu bàn; máy chủ cũ (không báo "pool") →
 // bàn chỉ tập một mình
 async function runPoolNet(browser, base, srv) {
@@ -857,8 +858,8 @@ async function runPoolNet(browser, base, srv) {
     const check = A.check;
     const [a0, b0] = await Promise.all([net(A), net(B)]);
     const f0 = await A.ev(() => __game.net.features);
-    await check(A.ready && B.ready && f0.includes("pool") && f0.includes("pool_rules2") && a0.mode === "idle" && same(a0.server, b0.server) && !A.problems.length && !B.problems.length,
-      `2 trình duyệt vào zone_05, máy chủ báo features "pool" + "pool_rules2", cùng một bàn (${Math.round((Date.now() - t1) / 1000)} s)`,
+    await check(A.ready && B.ready && ["pool", "pool_rules2", "pool_facts"].every((f) => f0.includes(f)) && a0.mode === "idle" && same(a0.server, b0.server) && !A.problems.length && !B.problems.length,
+      `2 trình duyệt vào zone_05, máy chủ báo features "pool" + "pool_rules2" + "pool_facts", cùng một bàn (${Math.round((Date.now() - t1) / 1000)} s)`,
       JSON.stringify({ ready: [A.ready, B.ready], f0, a0: a0.mode, console: [...A.problems, ...B.problems].slice(0, 5) }));
     // An ngồi → tập một mình; cú của An phát lại ở máy Bình (có hoạt cảnh)
     await A.ev(() => __game.pool.enter());
@@ -1007,12 +1008,15 @@ async function runPoolNet(browser, base, srv) {
     const cSeesFree = await C.wait(() => __game.pool.net.seats[1] === null, 10000);
     await C.ev(() => __game._game.net.sendPool({ t: "pool_join" }));
     const oldClient = await C.wait(() => __game.pool.net.log.some((l) => l.err === "version"), 5000);
+    // bản web luật chuẩn đầu tiên (r: 2, chưa gửi sự kiện cú — máy chủ cũ tự tính cú) cũng bị từ chối
+    await C.ev(() => __game._game.net.sendPool({ t: "pool_join", r: 2 }));
+    const v2Client = await C.wait(() => __game.pool.net.log.filter((l) => l.err === "version").length >= 2, 5000);
     const stillFree = (await net(C)).seats[1] === null;
     await C.ev(() => __game.pool.join());
     const cSeat = await C.wait(() => { const n = __game.pool.net; return n.seat === 1 && n.mode === "match"; }, 10000);
-    await check(freed && cSeesFree && oldClient && stillFree && cSeat,
-      "Bình rớt mạng giữa ván → ghế được giải phóng, An thắng; máy khách cũ xin ghế → bị từ chối (version); Cường bấm J → ngồi, ván mới",
-      JSON.stringify({ freed, cSeesFree, oldClient, stillFree, cSeat, a: await net(A) }));
+    await check(freed && cSeesFree && oldClient && v2Client && stillFree && cSeat,
+      "Bình rớt mạng giữa ván → ghế được giải phóng, An thắng; máy khách cũ / luật chuẩn bản đầu xin ghế → bị từ chối (version); Cường bấm J → ngồi, ván mới",
+      JSON.stringify({ freed, cSeesFree, oldClient, v2Client, stillFree, cSeat, a: await net(A) }));
     // An phá bằng cú đánh bi trắng thẳng vào lỗ góc đầu bàn → lỗi, Cường có bi trong tay ở khu đầu bàn: đặt bi trắng ở đó rồi
     // đánh; An phát lại đúng cú đó (kể cả chỗ đặt bi trắng)
     const sq = (await net(A)).seq, errs0 = (await net(C)).log.filter((l) => l.err).length;

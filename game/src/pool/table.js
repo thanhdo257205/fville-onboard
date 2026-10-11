@@ -17,8 +17,8 @@
 //     chỗ đặt bi trắng + kết quả; người kia và người xem phát lại đúng cú đó từ bàn của mình, cuối cú chốt theo bàn máy chủ
 //     gửi. Bi trắng rơi → đối thủ có bi trong tay: W/A/S/D (hoặc chuột) đặt bi trắng ở khu đầu bàn, Space / nhấp chuột đặt.
 //     Hết ván: R = ván mới. Mất kết nối / máy chủ không trả lời → tập một mình tiếp với bàn đang có.
-//   • Luật chuẩn "sọc trơn" (máy chủ báo thêm "pool_rules2", bàn có rules: 2 — rules.js → applyShotV2): pool_join kèm r: 2;
-//     máy chủ tự tính lại cú. Lỗi → toast kèm lý do + dòng "lỗi" trên bảng, đối thủ có bi trong tay cả bàn (camera nhìn bao
+//   • Luật chuẩn "sọc trơn" (máy chủ báo thêm "pool_rules2", bàn có rules: 2 — rules.js → applyShotV2): pool_join kèm r: 2, cf: 1;
+//     cú đánh gửi kèm sự kiện cú (wireFacts) — máy chủ không chạy vật lý, chỉ kiểm tra rồi áp luật. Lỗi → toast kèm lý do + dòng "lỗi" trên bảng, đối thủ có bi trong tay cả bàn (camera nhìn bao
 //     quát, chuột / W/A/S/D đặt); cú phá không hợp lệ → người tới lượt chọn: R xếp lại và phá / P đánh tiếp (pool_choice);
 //     đánh bi 8: phải gọi lỗ — bấm vào lỗ (con trỏ không khoá), C đổi lỗ, hoặc Space / cú bấm đầu gọi lỗ đang ngắm tới (không
 //     nạp lực); vòng sáng ở các lỗ, lỗ đã gọi màu cam. Đồng hồ 60 s mỗi cú trên bảng; H: tóm tắt luật. Máy chủ cũ (không có
@@ -28,7 +28,7 @@
 // __game.pool: trạng thái + enter / shoot(angle, power) / leave / rerack / join / autoShot (smoke test).
 import * as THREE from "three";
 import { makeTable, rackState, customState, simulateShot, aimInfo, findPottingShot, respotCue, cloneState, angleTo, FRAME_STEPS, DT, MAX_SPEED } from "./physics.js";
-import { packBalls, unpackBalls, placeCue, ballsLeft, targets, handArea, canPlaceCueIn, onEight, shotFacts, RULES_V2 } from "./rules.js";
+import { packBalls, unpackBalls, placeCue, ballsLeft, targets, handArea, canPlaceCueIn, onEight, shotFacts, wireFacts, RULES_V2 } from "./rules.js";
 import { pickShot } from "./auto.js";
 import { TablePointer } from "./pointer.js";
 import { clampCamera } from "../world/collision.js";
@@ -235,7 +235,7 @@ export class PoolTable {
       this.phase = "wait";
       this.waitT = 0;
       this.hideAim();
-      this.net.sendPool({ t: "pool_join", r: RULES_V2 });      // r: hiểu luật chuẩn (máy chủ cũ bỏ qua)
+      this.net.sendPool({ t: "pool_join", r: RULES_V2, cf: 1 });   // r: hiểu luật chuẩn, cf: gửi sự kiện cú (máy chủ cũ bỏ qua)
     } else {
       this.phase = "aim";
       this.aimAtTarget();
@@ -404,7 +404,7 @@ export class PoolTable {
     if (!this.active || !this.netActive || this.seat >= 0 || !this.tb?.seats.includes(null) || this.phase === "wait") return;
     this.phase = "wait";
     this.waitT = 0;
-    this.net?.sendPool({ t: "pool_join", r: RULES_V2 });
+    this.net?.sendPool({ t: "pool_join", r: RULES_V2, cf: 1 });
     this.drawHud();
   }
   // luật chuẩn, sau cú phá không hợp lệ của đối thủ: "rerack" (R) xếp lại và tự phá · "play" (P) đánh tiếp từ bàn đang có
@@ -502,12 +502,12 @@ export class PoolTable {
     this.pull = 0.04 + 0.22 * power;
     this.playback = { res, t: 0, frame: 0, prev: res.frames[0], hidden: new Set(), own: true, net: this.netActive, tb: null, call };
     if (this.netActive) {
-      // bàn chung: gửi thông số + kết quả (vị trí đã làm tròn — mọi bên lấy bàn máy chủ gửi về làm điểm xuất phát cú sau).
-      // Máy chủ luật chuẩn tự tính lại cú (b / k / f / s / d chỉ để máy chủ cũ dùng), kiểm tra chỗ đặt bi trắng + lỗ gọi
+      // bàn chung: gửi thông số + kết quả (vị trí đã làm tròn — mọi bên lấy bàn máy chủ gửi về làm điểm xuất phát cú sau) + sự
+      // kiện cú cho luật chuẩn (f / r / rb / kp — máy chủ không chạy vật lý, chỉ kiểm tra rồi áp luật; máy chủ cũ bỏ qua)
       const tb = this.tb, cue = tb.mode === "match" && tb.inHand ? [start.balls[0].x, start.balls[0].z] : null;
       this.playback.seq = tb.seq;
       this.net.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue, call, b: packBalls(res.finalState), k: res.pocketed,
-        f: res.firstContact, s: res.cueScratch, d: +res.time.toFixed(2) });
+        s: res.cueScratch, d: +res.time.toFixed(2), ...wireFacts(res) });
     }
     this.hideAim();   // tiếng đầu cơ: lúc bi cái bắt đầu lăn (cueSound)
     return new Promise((resolve) => {
@@ -1132,7 +1132,7 @@ export class PoolTable {
     const tb = this.tb, n = this.game.net;
     if (!tb || !n?.connected || !this.shared?.state) return false;
     const res = simulateShot(this.table, this.shared.state, { angle, power }, { frames: false });
-    n.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue: null, b: packBalls(res.finalState), k: res.pocketed, f: res.firstContact, s: res.cueScratch, d: 1 });
+    n.sendPool({ t: "pool_shot", seq: tb.seq, a: angle, p: power, cue: null, b: packBalls(res.finalState), k: res.pocketed, s: res.cueScratch, d: 1, ...wireFacts(res) });
     return true;
   }
   // kiểm thử: camera so với mặt bàn — cao bao nhiêu (cục bộ), giới hạn dưới chao đèn, tia camera → tâm bàn có vướng lưới

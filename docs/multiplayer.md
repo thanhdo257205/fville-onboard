@@ -1,6 +1,6 @@
 # Chơi nhiều người mức "thấy nhau"
 
-Cập nhật: 11/10/2026 (luật chuẩn 8 bi "sọc trơn" cho bàn bi-a chung — mục cuối; 10/10: chia phòng ~30 người, bi-a 2 người)
+Cập nhật: 11/10/2026 (bi-a: máy khách tính cú, máy chủ chỉ áp luật — mục cuối; luật chuẩn 8 bi "sọc trơn" — mục áp cuối; 10/10: chia phòng ~30 người, bi-a 2 người)
 
 Không mã phòng, không tạo phòng: máy chủ tự xếp người vào phòng (mỗi phòng ~30 người, xem "Chia phòng"). Mỗi người vẫn
 chơi phần của mình: nhiệm vụ, hội thoại, Tú, NPC đều riêng từng máy. Phần chung là **thấy nhau** khi ở cùng phòng và cùng
@@ -69,10 +69,10 @@ có chat tự do.
 | | `state {zone, pos, yaw, anim}` | Tối đa 5 lần/giây và chỉ khi có thay đổi (> 2 cm, > 2°, đổi anim hoặc zone). Đổi zone cũng bằng tin này |
 | | `emote {id}` · `phrase {id}` · `leave` | |
 | | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
-| | `pool_join {r}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
+| | `pool_join {r, cf}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn, `cf: 1` = gửi sự kiện cú), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
 | | `pool_choice {c}` | Luật chuẩn, sau cú phá không hợp lệ của đối thủ: `"rerack"` (xếp lại và tự phá) / `"play"` (đánh tiếp) |
-| | `pool_shot {seq, a, p, cue, call, b, k, s, d}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), lỗ gọi cho bi 8 (luật chuẩn), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn (b / k / s / d: máy chủ luật chuẩn bỏ qua, tự tính) |
-| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi |
+| | `pool_shot {seq, a, p, cue, call, b, k, s, d, f, r, rb, kp}` | Cú đánh: số thứ tự, góc, lực, chỗ đặt bi trắng (bi trong tay), lỗ gọi cho bi 8 (luật chuẩn), vị trí 16 bi khi dừng, bi vào lỗ theo thứ tự, bi trắng rơi, thời gian lăn; sự kiện cú cho luật chuẩn (`rules.js` → `wireFacts`): bi trắng chạm bi nào trước, có bi chạm băng sau lần chạm đó, số bi chạm băng, lỗ của từng bi vào lỗ |
+| máy chủ → client | `welcome {id, online, room, features}` | `room`: số phòng; `features: ["pool"]`: có bàn bi-a chung; thêm `"pool_rules2"`: bàn chung theo luật chuẩn 8 bi; `"pool_facts"`: máy chủ không chạy vật lý, dùng kết quả + sự kiện cú máy khách gửi |
 | | `zone {zone, players, online}` | Vừa vào zone: danh sách người cùng zone |
 | | `join {p}` · `state {id, pos, yaw, anim}` · `emote {id, e}` · `phrase {id, p}` · `leave {id}` | **Chỉ gửi cho người cùng zone** |
 | | `online {n}` | Số người online, gửi cho cả phòng |
@@ -323,7 +323,7 @@ Bàn chung theo luật 8 bi chuẩn (WPA, rút gọn cho game — tóm tắt lu�
 bàn, phải gọi lỗ cho bi 8, mỗi cú 60 s (hết giờ = lỗi). Tập một mình và thử thách của anh Khang giữ luật cũ.
 
 **Máy chủ** (`server/src/pool.js`, `PoolRoom` với `rules: 2`):
-- **Tự tính lại cú**: người đánh chỉ gửi góc, lực, chỗ đặt bi trắng, lỗ gọi; máy chủ chạy `physics.js` (tất định, cùng mã
+- *(Bản đầu, đã thay bằng "Máy khách tính cú" — mục cuối.)* **Tự tính lại cú**: người đánh chỉ gửi góc, lực, chỗ đặt bi trắng, lỗ gọi; máy chủ chạy `physics.js` (tất định, cùng mã
   với game) → sự kiện cú (bi trắng chạm bi nào trước, bi nào chạm băng, bi nào vào lỗ nào — `shotFacts`) → `applyShotV2`.
   Vị trí bi máy khách gửi (`b`, `k`, `s`, `d`) bị bỏ qua — không gian lận được kết quả. **CPU mỗi cú** (đo bằng Node, cùng
   V8 với workerd): 0,4–3 ms khi mã đã "nóng" (cú nhẹ → phá mạnh), ~24 ms cho cú đầu tiên sau khi máy chủ vừa khởi động. Gói
@@ -377,3 +377,46 @@ chơi thử bàn chung 2 người (3 lượt ván, ~8 phút): 325 sự kiện c�
 và cú ngay sau, nhiều bi lăn nhất; nặng nhất 20 ms). Vượt mốc 10 ms/lần gọi của gói Free nhưng Cloudflare vẫn chạy (không
 `exceededCpu`); cần theo dõi dashboard → Workers & Pages → fville-net → Metrics, và cân nhắc giảm CPU máy chủ khi tự tính lại
 cú phá (vd bước mô phỏng thưa hơn / tính lười).
+
+## Máy khách tính cú, máy chủ chỉ áp luật (11/10/2026, sau deploy e150c939)
+
+Bản e150c939 tự tính lại từng cú trên máy chủ: trên Cloudflare cú phá và cú ngay sau tốn **11–20 ms CPU**, quá mốc 10 ms / lần
+gọi của gói Free (mục trên). Người dùng chốt: chi phí tính toán để ở máy khách.
+
+- **Máy khách** (`game/src/pool/table.js`): như luật cũ, người đánh tự tính cú bằng `physics.js` rồi gửi thông số + kết quả
+  (`b` vị trí bi khi dừng, `k` bi vào lỗ theo thứ tự, `s`, `d`), thêm **sự kiện cú** cho luật chuẩn (`rules.js` → `wireFacts`,
+  rút từ `shotFacts`): `f` bi trắng chạm bi nào trước (null: không chạm), `r` có bi chạm băng sau lần chạm đó, `rb` số bi
+  (trừ bi trắng) chạm băng, `kp` lỗ của từng bi trong `k`. Xin ghế kèm `cf: 1`.
+- **Máy chủ** (`server/src/pool.js`): **không chạy vật lý** (không còn gọi `simulateShot`). Kiểm tra kết quả như luật cũ (bi
+  vào lỗ = đúng những bi biến mất, bi đã vào không quay lại, `s` khớp `k`) + sự kiện cú hợp lý (`rules.js` → `factsFromWire`:
+  `f` là bi đang trên bàn, không chạm bi nào thì không có bi khác vào lỗ / chạm băng, `rb` không quá số bi trên bàn, `kp` đủ
+  và đúng id lỗ) → `applyShotV2` như trước; chỗ đặt bi trong tay, lỗ gọi, lựa chọn sau cú phá, hết giờ giữ nguyên. Tin chào
+  thêm `"pool_facts"`.
+- **CPU mỗi cú của máy chủ** (`test:pool`, Node, cả `JSON.parse`): ~0,09 ms trung bình, lâu nhất ~0,15 ms (bản tự tính lại:
+  0,4–3 ms trong Node, 11–20 ms cú phá trên Cloudflare). Tin `pool_shot` lớn nhất trong ván ~410 ký tự, xấu nhất (16 bi vào
+  lỗ) ~715 — dưới giới hạn 1.200.
+- **Đánh đổi:** máy chủ tin kết quả người đánh gửi (như luật rút gọn cũ trước PR #14) — chỉ chặn được kết quả không hợp lý,
+  không chặn được máy khách bị sửa để "bịa" một cú hợp lý. Mọi bên vẫn chốt theo bàn máy chủ gửi nên bàn không lệch; người
+  xem phát lại từng cú và đếm cú lệch (`__game.pool.net.mismatch`). Nếu sau này cần chống gian lận: để người kia (đối thủ)
+  phát lại cú — vốn đã làm để hiện hoạt cảnh — và báo máy chủ khi lệch.
+
+**Tương thích (3 bản máy chủ):**
+
+| Máy chủ | Bản web | Kết quả |
+| --- | --- | --- |
+| mới (`pool_facts`) | mới | luật chuẩn, máy chủ không chạy vật lý |
+| mới | luật chuẩn bản đầu (gh-pages 6c15184: `r: 2`, chưa có `cf`) | không được ngồi (`version`) → chờ 6 s rồi tập một mình; vẫn xem được |
+| e150c939 (đang chạy: `pool_rules2`, tự tính cú) | mới | luật chuẩn — máy chủ bỏ qua `cf` và sự kiện cú, tự tính như cũ (đã thử: chơi trọn ván với mã máy chủ của `main` fe49f63 qua `wrangler dev`, 15 cú, không lỗi, phát lại khớp) |
+| cũ (chỉ `pool`) | mới | luật rút gọn cũ (smoke: `--var POOL_RULES:1`) |
+
+**Thứ tự deploy: bản web trước, máy chủ sau** (bản web mới chạy được với máy chủ đang chạy, nên không có lúc nào người chơi
+mất bàn chung; chỉ tab mở từ trước còn bản web cũ mới bị từ chối sau khi máy chủ lên bản mới — tải lại trang là được):
+
+```bash
+git pull
+python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trước)
+cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "pool_facts"
+npx wrangler tail --format json        # 3. chơi thử 1 ván 2 người: cú phá phải còn ~0 ms CPU, mọi outcome ok
+```
+
+Lùi lại: `npx wrangler rollback` về e150c939 (bản web mới vẫn chạy với nó — bảng trên).
