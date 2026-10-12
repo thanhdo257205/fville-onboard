@@ -228,81 +228,45 @@ const profile_check = {
   },
 };
 
-// ---------- Dòng thời gian (Phòng Hạt Lúa, zone 3): kéo 5 mốc theo thứ tự năm ----------
-const timeline = {
+// ---------- Hạt Lúa (Phòng Hạt Lúa, zone 3): F-Ville lấy hạt lúa làm biểu tượng chính (văn minh lúa nước), trên hạt lúa
+// khắc tên Top Performer của FPT Software qua các năm. Bấm từng hạt lúa nhỏ (phím 1–9) → dòng tên của năm đó sáng lên trên
+// hạt lúa lớn + thẻ chi tiết; sáng hết các năm là xong (không có sai — trò đọc / khám phá) ----------
+const rice_grain = {
   start(ctx) {
-    const d = ctx.data;
-    const items = d.items.map((it, k) => ({ ...it, k }));
-    const sorted = [...items].sort((a, b) => a.year - b.year);
-    let order = shuffle(items);
-    let sel = 0, done = false, hints = 0, okSet = new Set();
-    // làm sáng (sai 2 lần): mọi thẻ hiện năm (thẻ chưa đúng chỗ: class glow) → chỉ còn việc xếp theo năm
-    const draw = (reveal = false) => {
-      ctx.body.innerHTML = `<div class="timeline"><div class="ends">${t("minigame.oldest")}</div>
-        <ol class="cards">${order.map((it, n) => `<li data-k="${it.k}" class="${n === sel && !done ? "sel" : ""} ${okSet.has(it.k) || reveal ? "ok" : ctx.assist ? "glow" : ""}">
-          <span class="grip">⋮⋮</span><span class="txt">${esc(tx(it.text))}</span>${reveal || okSet.has(it.k) || ctx.assist ? `<b>${it.year}</b>` : ""}</li>`).join("")}</ol>
-        <div class="ends">${t("minigame.newest")}</div>
-        ${done ? "" : `<button class="primary check">${t("minigame.check")} ${kbd("Enter")}</button>`}</div>`;
-      ctx.body.querySelector(".check")?.addEventListener("click", check);
-      // kéo thả: bắt con trỏ trên danh sách (không đứng yên), vì thẻ đổi chỗ trong DOM sẽ mất pointer capture
-      const list = ctx.body.querySelector(".cards");
-      let drag = null;
-      list.addEventListener("pointerdown", (e) => {
-        const li = e.target.closest("li");
-        if (done || !li || e.button !== 0) return;
-        drag = li; list.setPointerCapture(e.pointerId); li.classList.add("drag");
-      });
-      list.addEventListener("pointermove", (e) => {
-        if (!drag) return;
-        const over = document.elementFromPoint(e.clientX, e.clientY)?.closest(".cards li");
-        if (!over || over === drag) return;
-        const r = over.getBoundingClientRect();
-        list.insertBefore(drag, e.clientY > r.top + r.height / 2 ? over.nextSibling : over);
-      });
-      const drop = () => {
-        if (!drag) return;
-        const li = drag;
-        drag = null;
-        order = [...list.querySelectorAll("li")].map((x) => items[+x.dataset.k]);
-        sel = order.findIndex((x) => x.k === +li.dataset.k);
-        okSet = new Set();
-        sound.play("tap");
-        draw();
-      };
-      list.addEventListener("pointerup", drop);
-      list.addEventListener("pointercancel", drop);
+    const d = ctx.data, years = d.years;
+    const lit = new Set();
+    let shown = -1, done = false;
+    ctx.body.innerHTML = `<div class="rice"><p class="about">${esc(tx(d.about))}</p>
+      <div class="stage"><div class="grain" aria-label="${esc(tx(d.grain_label))}"><span class="husk" aria-hidden="true"></span>
+        <ol class="lines">${years.map((y, k) => `<li data-k="${k}"><b>${y.year}</b><span>${esc(tx(y.names))}</span></li>`).join("")}</ol></div>
+        <div class="side"><div class="seeds">${years.map((y, k) => `<button type="button" class="seed" data-k="${k}" aria-pressed="false">
+          <i aria-hidden="true"></i><span>${y.year}</span>${kbd(k + 1)}</button>`).join("")}</div>
+          <div class="card" aria-live="polite"></div><div class="count"></div></div></div></div>`;
+    const lines = [...ctx.body.querySelectorAll(".lines li")], seeds = [...ctx.body.querySelectorAll(".seed")];
+    const card = ctx.body.querySelector(".card"), count = ctx.body.querySelector(".count");
+    const update = () => {
+      lines.forEach((li, k) => { li.classList.toggle("lit", lit.has(k)); li.classList.toggle("now", k === shown); });
+      seeds.forEach((b, k) => { b.classList.toggle("lit", lit.has(k)); b.setAttribute("aria-pressed", lit.has(k) ? "true" : "false"); b.classList.toggle("glow", ctx.assist && !lit.has(k)); });
+      const y = years[shown];
+      card.innerHTML = y ? `<b>${y.year}</b><span>${esc(tx(y.names))}</span>${y.note ? `<small>${esc(tx(y.note))}</small>` : ""}` : `<small>${esc(tx(d.idle))}</small>`;
+      count.textContent = tx(d.progress, { n: lit.size, total: years.length });
     };
-    const move = (from, to) => {
-      if (to < 0 || to >= order.length || from === to) return;
-      const [it] = order.splice(from, 1);
-      order.splice(to, 0, it);
-      okSet = new Set();
-      sel = to; sound.play("tap"); draw();
+    const light = (k) => {
+      if (done || !years[k]) return;
+      shown = k;
+      if (!lit.has(k)) { lit.add(k); sound.play("grain"); } else sound.play("tap");
+      update();
+      if (lit.size === years.length) { done = true; ctx.correct(tx(d.done)); ctx.later(() => ctx.finish(), 1800); }
     };
-    const check = () => {
-      if (done) return;
-      const wrong = order.findIndex((it, n) => it.year !== sorted[n].year);
-      if (wrong < 0) { done = true; ctx.correct(tx(d.done)); draw(true); ctx.later(() => ctx.finish(), 1400); return; }
-      // các thẻ đã đúng chỗ hiện năm (xanh), gợi ý dần
-      okSet = new Set(order.filter((it, n) => it.year === sorted[n].year).map((it) => it.k));
-      const h = d.hints[Math.min(hints++, d.hints.length - 1)];
-      draw();
-      ctx.mistake(tx(h));
-    };
-    draw();
+    ctx.body.querySelector(".seeds").addEventListener("click", (e) => { const b = e.target.closest(".seed"); if (b) light(+b.dataset.k); });
+    update();
     ctx.idleHint = () => (done ? null : tx(d.idle));
-    ctx.onAssist = () => { if (!done) draw(); };
-    ctx.onKey = (e) => {
-      if (done) return false;
-      if (e.code === "ArrowUp") { e.shiftKey ? move(sel, sel - 1) : (sel = Math.max(0, sel - 1), draw()); return true; }
-      if (e.code === "ArrowDown") { e.shiftKey ? move(sel, sel + 1) : (sel = Math.min(order.length - 1, sel + 1), draw()); return true; }
-      if (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") { check(); return true; }
-      return false;
-    };
+    ctx.onAssist = () => { if (!done) update(); };
+    ctx.onKey = (e) => { const k = digit(e); if (k >= 0 && k < years.length) { light(k); return true; } return false; };
     ctx.debug = {
-      solve: () => { order = [...sorted]; check(); ctx.finish(); },
-      wrong: () => { const a = [...sorted]; [a[0], a[1]] = [a[1], a[0]]; order = a; check(); },
-      state: () => ({ order: order.map((x) => x.year), sel, years: ctx.body.querySelectorAll(".cards li b").length }),
+      solve: () => years.forEach((_, k) => { if (!lit.has(k)) light(k); }),
+      wrong: () => {},
+      state: () => ({ lit: [...lit], total: years.length, done }),
     };
   },
 };
@@ -663,7 +627,7 @@ const day_checklist = {
 };
 
 export const GAMES = {
-  install_app, well, quiz, profile_check, timeline, learning_path, compass, priorities, pool_shot, login, day_checklist,
+  install_app, well, quiz, profile_check, rice_grain, learning_path, compass, priorities, pool_shot, login, day_checklist,
   photo_checkin: { layout: "photo", start: (ctx) => photo.start(ctx, "checkin") },
   photo_id: { layout: "photo", start: (ctx) => photo.start(ctx, "id") },
 };

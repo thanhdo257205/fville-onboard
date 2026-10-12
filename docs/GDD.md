@@ -310,7 +310,7 @@ Người chơi nhận thẻ nhân viên, thứ mở được mọi cánh cửa p
 | --- | --- | --- |
 | `NPC_le_tan` (chị lễ tân), `INT_quay_le_tan` | Mini-game **Kiểm tra hồ sơ**: phiếu thông tin điền sẵn có 1 chỗ sai (ví dụ sai tên team), người chơi tìm và sửa. Sau đó **chụp ảnh thẻ**: camera chân dung, chọn 1 trong 3 biểu cảm | **Thẻ nhân viên FPT** (in tên, vị trí, ảnh vừa chụp) và **Welcome Kit** *[HR: Welcome Kit thật gồm những gì]*; Hiểu biết +5 |
 | Chiếc ví đánh rơi (code đặt cạnh đôn lục giác, không có trong GLB) | Nhặt ví, rồi chọn: mang đến quầy lễ tân trả, hoặc để lại chỗ cũ | Trả ví: ô **Chí công**, Kết nối +3 |
-| `INT_hat_lua` | Đọc về các cá nhân, tập thể xuất sắc. Mini-game **Dòng thời gian**: kéo 5 mốc thành tựu vào đúng thứ tự năm *[HR cung cấp 5 mốc]* | Hiểu biết +10; hũ thủy tinh hiện số hạt lúa vàng đã nhặt |
+| `INT_hat_lua` | Concept F-Ville 1 = làng quê, văn minh lúa nước → hạt lúa là điểm chính, trên đó khắc tên Top Performer FPT Software qua các năm. Mini-game **Hạt Lúa** (12/10/2026, thay Dòng thời gian): chạm từng hạt lúa nhỏ (1 năm) → tên năm đó sáng lên trên hạt lúa lớn; sáng hết 6 năm là xong *[HR cung cấp tên Top Performer từng năm]* | Hiểu biết +10; hũ thủy tinh hiện số hạt lúa vàng đã nhặt |
 | Hạt lúa vàng × 2 | Sau chậu cọ cạnh quầy; góc sàn dưới chân cầu thang trang trí, cạnh lối vào Phòng Hạt Lúa (thành cầu thang kín nên hạt đặt trên chiếu nghỉ không nhìn thấy từ sàn) | |
 
 **Chị lễ tân ở quầy (mẫu):** chị chào người chơi, nói chị Nga bên Tuyển dụng đã dặn đón, hỏi sáng nay có lên đúng xe số 2 không, rồi: "Giờ tới phần giấy tờ. Trên tờ khai này có một thông tin bị nhầm — em tìm giúp chị dòng đó." (đổi 12/10/2026: trước đó chị Nga đứng quầy; chị Nga giờ là mentor ở zone 5 — lời thoại của chị: `docs/dialogue_nga.md`).
@@ -476,7 +476,7 @@ Mười bốn mục nội dung dưới đây cần nguồn chính thức; trong 
 - [x] Câu chuyện hình tượng Cuder và 3 câu quiz (zone 2) — đã có từ mentor, 09/10/2026
 - [ ] Diễn giải chính thức 6 giá trị Tôn Đổi Đồng Chí Gương Sáng; rà lại 6 lựa chọn gắn với từng giá trị (Cơ chế chơi)
 - [ ] Welcome Kit thật gồm những gì (zone 3)
-- [ ] 5 mốc thành tựu, cùng các cá nhân và tập thể xuất sắc được phép nêu tên (zone 3, Phòng Hạt Lúa)
+- [ ] Tên Top Performer FPT Software từng năm (2020–2025, hoặc các năm HR chọn) được phép nêu tên (zone 3, Phòng Hạt Lúa — mini-game Hạt Lúa)
 - [ ] Sứ mệnh FSA và các khóa học gợi ý theo từng vị trí intern (zone 4)
 - [ ] Quy định ra vào bằng thẻ và cách xử lý khi thẻ lỗi hoặc quên thẻ (zone 4)
 - [ ] Quy định mật khẩu và xác thực hai lớp, từ IT (zone 5)
