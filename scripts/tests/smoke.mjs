@@ -1326,10 +1326,20 @@ async function runPoolNet(browser, base, srv) {
       if (!callUi) {
         const ci = await poolNet(shooter);
         if (ci.needCall && ci.phase === "aim") {
-          const lit = await shooter.wait(() => __game.pool.net.marks.length === 6, 3000);
+          // Reproduce a server handoff from watching to aiming in one synchronous
+          // task: no rAF can repair stale rings before this assertion.
+          const handoff = await shooter.ev(() => {
+            const p = __game._game.pool, tb = p.tb;
+            p.phase = "watch"; p.drawMarks();
+            const before = p.info().net.marks.length;
+            p.applyTb(tb);
+            return { before, phase: p.phase, needCall: p.needCall, marks: p.info().net.marks };
+          });
+          const lit = handoff.before === 0 && handoff.phase === "aim" && handoff.needCall && handoff.marks.length === 6
+            && new Set(handoff.marks).size === 6;
           const id = await shooter.ev(() => __game.pool.cycleCall());
           const after = await poolNet(shooter);
-          callUi = { lit, call0: ci.call, status0: ci.status, id, name: after.callName, status1: after.status, marks: after.marks.length };
+          callUi = { lit, handoff, call0: ci.call, status0: ci.status, id, name: after.callName, status1: after.status, marks: after.marks.length };
         }
       }
       await poolPace(shooter);
