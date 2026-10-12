@@ -7,6 +7,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Prajith mô hình mới — áo polo cam FPT (12/10/2026, nhánh `feat/prajith-polo`):** model `prajith_polo` từ Meshy (59.198 →
+  25.000 tam giác cho Mixamo, `--protect-face`; bản game 6.000 tam giác, 0,57 MB, 15 animation retarget từ file của `prajith`,
+  `fold_missing_bones`), logo FPT dán ngực trái (`chest_logo.json`, logo gốc trong `source/` — không commit), chân dung mới.
+  Vai `manager` đổi sang `prajith_polo`; model `prajith` cũ giữ nguyên (nguồn animation, viewer).
 - **Dòng mục tiêu giữa màn hình + menu Esc gọn (12/10/2026, nhánh `feat/menu-layout`):** dòng mục tiêu (`#objective`) chuyển từ
   góc trái lên giữa mép trên (màn thấp: toast xuống 50 px, thẻ tên zone 86 px để không đè). Menu Esc rộng hơn, chia 3 nhóm
   thành cột (Âm thanh & ngôn ngữ · Điều khiển & chỉ đường · Hiển thị; hẹp thì 2 / 1 cột), chú thích dài chuyển vào tooltip,

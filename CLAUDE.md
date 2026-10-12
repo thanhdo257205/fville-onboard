@@ -230,7 +230,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   bài nhạc mới cũng phải CC0 (người dùng chọn / đồng ý), `test:data` chặn file nhạc không khai.
 - Nội dung chờ HR có `"draft": true` → game hiện **[DRAFT]**. Danh sách: `docs/PROGRESS.md`.
 - Vai nhân vật: id vai trong dữ liệu giữ nguyên (vd vai `thao` hiển thị là **Ms. Huyền**, model `huyen`; vai `mentor`
-  là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại; vai `manager` là **Prajith**, model `prajith`; vai
+  là **Ms. Nga**, model `nga`, kèm người nói `hr` của tin nhắn điện thoại; vai `manager` là **Prajith**, model `prajith_polo` (áo polo cam FPT, thay `prajith` 12/10/2026 — `prajith` vẫn là nguồn animation Mixamo của nhiều nhân vật); vai
   `le_tan` là chị lễ tân không tên riêng, model `tiep_tan_nu` — người dùng chốt 12/10/2026, id nhiệm vụ cũ `z5_prajith` giữ
   nguyên cho bản lưu cũ). Vai `player` chọn model theo giới tính
   (`roles.player.model_by_gender`: nam → `intern_nam`, nu → `intern_nu`; bản lưu `player.gender`, mặc định nam; thử khi dev:
