@@ -371,6 +371,12 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [x] Gộp PR vào `main` (1195cb1, 11/10/2026)
   - [x] Deploy `gh-pages` c26234f (từ `main` 1195cb1); máy chủ thật `npx wrangler deploy` version c487c71a (11/10/2026, máy
     Desktop — web trước, máy chủ sau)
+  - [x] Bộ lọc từ tiếng Việt đầy đủ hơn (12/10/2026, nhánh `feat/chat-filter-vi`; người dùng yêu cầu): `data/chat.json` thêm biến
+    thể chửi tục có dấu (đù, đờ mờ, đéo biết, đếch, lìn, kặc…), tục về tình dục, cụm xúc phạm (mẹ mày, tổ sư, thằng chó, đồ ngu,
+    súc vật, mất dạy, câm mồm…), viết tắt / teencode / gõ không dấu (dit, ditme, duma, dmvl, cmm, cmnr, vl…) — chỉ dạng không
+    trùng từ thường; máy khách lọc lại tin + tên nhận được (`game/src/net/net.js`, bảng tên `remotes.js`) → có hiệu lực khi deploy
+    bản web; `test:data` 35 câu mẫu (thêm 18 câu tiếng Việt, cả câu thường dễ che nhầm), smoke: máy khách che tin chưa lọc
+  - [ ] Máy chủ thật: `npx wrangler deploy` (máy Desktop) để máy chủ cũng lọc theo danh sách mới
 - [ ] P2 Chơi trên trình duyệt điện thoại: tối ưu cho điện thoại + nút điều hướng và tương tác trên màn hình — Phụ trách: Claude
   — nhánh `feat/mobile-touch` (11/10/2026)
   - [x] Nhận biết máy cảm ứng bằng `matchMedia("(pointer: coarse)")` / `navigator.maxTouchPoints` (không dựa vào user agent);

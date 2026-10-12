@@ -395,6 +395,13 @@ const chatCases = [
   ["fuuuck you", "****** you"], ["F u c k", "* * * *"], ["sh1t man", "**** man"], ["$hit", "****"], ["WTF vcl", "*** ***"],
   ["vào https://evil.example/x nhé", "vào [link] nhé"], ["xem www.abc.vn", "xem [link]"], ["F-Ville.com", "[link]"],
   ["  nhiều   khoảng\u200b trắng  ", "nhiều khoảng trắng"],
+  // tiếng Việt: có dấu, không dấu / viết tắt, cụm xúc phạm — và câu thường dễ che nhầm (bỏ dấu trùng từ khác)
+  ["đù má mày", "** ** mày"], ["ĐỜ MỜ", "** **"], ["đéo biết", "*** ****"], ["đếch quan tâm", "**** quan tâm"], ["lìn kặc", "*** ***"],
+  ["thằng chó này", "***** *** này"], ["đồ ngu", "** ***"], ["tổ sư mày", "** ** mày"], ["mất dạy", "*** ***"], ["câm mồm đi", "*** *** đi"],
+  ["con mẹ mày", "*** ** ***"], ["ditme duma dmvl cmnr", "***** **** **** ****"], ["đ ị t", "* * *"], ["đjt mẹ", "*** mẹ"],
+  ["Đi ngủ thôi, di ngu thoi", "Đi ngủ thôi, di ngu thoi"], ["con chó nhà mình, đồ ngủ màu hồng, con ngủ chưa", "con chó nhà mình, đồ ngủ màu hồng, con ngủ chưa"],
+  ["Dù mẹ bảo, chờ để em xem, cho de em xem", "Dù mẹ bảo, chờ để em xem, cho de em xem"],
+  ["cac ban oi buoi chieu nay hop, lon bia, Dell laptop", "cac ban oi buoi chieu nay hop, lon bia, Dell laptop"],
 ];
 for (const [inp, want] of chatCases) {
   const got = flt.clean(inp).text;

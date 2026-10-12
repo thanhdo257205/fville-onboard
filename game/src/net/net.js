@@ -3,11 +3,14 @@
 // mạng thì vẫn chơi bình thường, tự thử lại. Gửi: join {name, model, outfit, zone} (gửi lại khi đổi bộ đồ), state {zone,
 // pos, yaw, anim} tối đa send_hz lần/giây và chỉ khi có thay đổi, emote {id}, phrase {id}; bi-a (game/src/pool/table.js):
 // pool_* khi máy chủ báo features "pool"; nhắn tin tự do chat {ch, to, text} khi máy chủ báo "chat" (data/chat.json — máy chủ
-// lọc từ, người gửi nhận lại bản đã lọc; khung chat: ../ui/chat.js). Góc màn hình: "N online · M in this zone" (phòng 2 trở
+// lọc từ, người gửi nhận lại bản đã lọc; máy khách lọc lại tin + tên nhận được bằng cùng bộ lọc ./chatfilter.js theo danh
+// sách trong data/chat.json của bản web — danh sách mới có hiệu lực ngay khi deploy bản web, chưa cần wrangler deploy máy
+// chủ; khung chat: ../ui/chat.js). Góc màn hình: "N online · M in this zone" (phòng 2 trở
 // đi: "Room 2 · …").
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { NetClient } from "./client.js";
 import { RemotePlayers } from "./remotes.js";
+import { makeFilter } from "./chatfilter.js";
 import { tx } from "../content/content.js";
 import { t } from "../i18n.js";
 import { sound } from "../core/sound.js";
@@ -40,7 +43,10 @@ export class Net {
     this.onChat = null;         // (entry) → khung chat vẽ lại
     this.onChatError = null;    // (code)
     if (!this.enabled) return;
-    this.remotes = new RemotePlayers({ game, cfg: this.cfg, phrases: this.phrases });
+    // bộ lọc từ (data/chat.json → filter): lọc lại tin, tên người gửi / người chơi khác nhận từ máy chủ
+    this.filter = makeFilter(this.chatCfg);
+    this.clean = (s) => (typeof s === "string" ? this.filter.clean(s).text : s);
+    this.remotes = new RemotePlayers({ game, cfg: this.cfg, phrases: this.phrases, clean: this.clean });
     this.remotes.show = settings.players !== false;
     this.client = new NetClient({ ...this.cfg, url: this.cfg.url.trim() }, {
       onOpen: () => this.sendJoin(),
@@ -152,6 +158,7 @@ export class Net {
   mute(id, on = true) { if (on) this.muted.add(id); else this.muted.delete(id); }
   onChatMessage(m) {
     if (this.settings.chat === false || typeof m.text !== "string" || !["zone", "all", "dm"].includes(m.ch)) return;
+    m = { ...m, text: this.clean(m.text), name: this.clean(m.name), toName: this.clean(m.toName) };
     const mine = m.id === this.myId;
     if (!mine && this.muted.has(m.id)) return;
     if (!mine && m.name) this.people.set(m.id, m.name);

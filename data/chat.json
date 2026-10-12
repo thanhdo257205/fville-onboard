@@ -10,14 +10,22 @@
     "mask": "*",
     "mask_links": true,
     "exact": [
-      "địt", "đụ", "đéo", "lồn", "buồi", "cặc", "đĩ", "cứt", "đụ má", "đụ mẹ", "địt mẹ", "chó đẻ", "óc chó", "đồ chó", "con đĩ"
+      "địt", "đụ", "đéo", "lồn", "buồi", "cặc", "đĩ", "cứt", "đụ má", "đụ mẹ", "địt mẹ", "chó đẻ", "óc chó", "đồ chó",
+      "con đĩ", "đù", "đù má", "đù mẹ", "đụ mạ", "đờ mờ", "địt cụ", "địt bà", "địt con mẹ", "đéo biết", "đếch", "đel", "lìn",
+      "kặc", "cặk", "vãi lồn", "vãi cả lồn", "mặt lồn", "bú cu", "bú cặc", "bú lồn", "liếm lồn", "chịch", "nứng", "dâm dục",
+      "dâm đãng", "dâm tặc", "hiếp dâm", "điếm", "đĩ điếm", "con điếm", "phò", "con phò", "mẹ mày", "con mẹ mày", "bố mày",
+      "cha mày", "tổ cha", "tổ sư", "tiên sư", "mả mẹ", "thằng chó", "con chó cái", "chó má", "chó chết", "đồ khốn",
+      "thằng khốn", "khốn nạn", "súc vật", "đồ súc vật", "mất dạy", "vô học", "đồ ngu", "thằng ngu", "con ngu", "ngu như bò",
+      "ngu như chó", "óc lợn", "óc bò", "câm mồm", "im mồm"
     ],
     "plain": [
-      "dm", "dmm", "dcm", "dcmm", "dkm", "dmcs", "vcl", "vkl", "vcc", "cmn", "clgt", "clm", "loz", "djt", "dit me", "dit con me",
+      "dm", "dmm", "dcm", "dcmm", "dkm", "dkmm", "dmcs", "dmvl", "dcmvl", "vcl", "vkl", "vcc", "vl", "cmn", "cmm", "cmnr",
+      "clgt", "clm", "loz", "djt", "djtme", "dit", "ditme", "ditmemay", "ditconme", "dit me", "dit con me", "dit cu",
+      "du ma", "du me", "duma", "dume", "dumame", "cak", "kak",
       "fuck*", "motherfuck*", "fck", "fuk", "shit*", "bitch*", "bastard*", "asshole*", "cunt*", "dick", "dickhead*", "pussy",
       "whore*", "slut*", "nigger*", "nigga*", "faggot*", "retard*", "wtf", "stfu"
     ],
     "allow": ["các", "lớn", "lon", "đeo", "dù", "du"],
-    "_bo_loc_ly_do": "Lọc theo từng từ (không lọc chuỗi con, để 'class', 'Scunthorpe', 'assistant' không bị che). exact: so nguyên dấu tiếng Việt (chữ thường, NFC) — từ bỏ dấu sẽ trùng từ thường ('cặc' → 'các', 'lồn' → 'lớn' / 'lon', 'đụ' → 'dù', 'đéo' → 'đeo') nên phải giữ dấu; cụm 2 từ trở lên so liền nhau. plain: so sau khi bỏ dấu, đổi chữ số / ký hiệu giống chữ (0 → o, 1 → i, 3 → e, 4 → a, 5 → s, 7 → t, @ → a, $ → s) và gộp chữ lặp ('fuuuck' → 'fuck'); '*' cuối = mọi từ bắt đầu bằng phần trước. Chữ cái tách rời ('f u c k', 'd m') được ghép lại rồi so. allow: từ không bao giờ che (so nguyên dấu, ưu tiên hơn 2 danh sách trên) — chốt chặn cho từ thường dễ bị che nhầm. mask_links: che đường link (http://, www., tên miền .com / .vn …) thành [link] — tránh dẫn người chơi tới trang lạ. Không lọc được mọi cách viết lách; người chơi vẫn có thể tắt nhận tin từ một người (mute) hoặc tắt hẳn chat trong menu Esc."
+    "_bo_loc_ly_do": "Lọc theo từng từ (không lọc chuỗi con, để 'class', 'Scunthorpe', 'assistant' không bị che). exact: so nguyên dấu tiếng Việt (chữ thường, NFC) — từ bỏ dấu sẽ trùng từ thường ('cặc' → 'các', 'lồn' → 'lớn' / 'lon', 'đụ' → 'dù', 'đéo' → 'đeo') nên phải giữ dấu; cụm 2 từ trở lên so liền nhau. plain: so sau khi bỏ dấu, đổi chữ số / ký hiệu giống chữ (0 → o, 1 → i, 3 → e, 4 → a, 5 → s, 7 → t, @ → a, $ → s) và gộp chữ lặp ('fuuuck' → 'fuck'); '*' cuối = mọi từ bắt đầu bằng phần trước. Chữ cái tách rời ('f u c k', 'd m') được ghép lại rồi so. allow: từ không bao giờ che (so nguyên dấu, ưu tiên hơn 2 danh sách trên) — chốt chặn cho từ thường dễ bị che nhầm. mask_links: che đường link (http://, www., tên miền .com / .vn …) thành [link] — tránh dẫn người chơi tới trang lạ. Tiếng Việt (12/10/2026): exact thêm biến thể chửi tục (đù, đờ mờ, đếch, lìn, kặc…), tục về tình dục, cụm xúc phạm (mẹ mày, tổ sư, thằng chó, đồ ngu, súc vật, mất dạy…) — cụm nhiều từ để không che từ thường ('ngu' gõ không dấu trùng 'ngủ', 'con chó' là con vật); plain thêm viết tắt / teencode / gõ không dấu không trùng từ thường (dit, duma, dmvl, cmm, cmnr, vl…; 'dit' che cả 'đít'). Máy khách cũng lọc lại tin + tên nhận được (game/src/net/net.js) — danh sách mới có hiệu lực ngay khi deploy bản web, kể cả khi máy chủ chưa wrangler deploy. Không lọc được mọi cách viết lách; người chơi vẫn có thể tắt nhận tin từ một người (mute) hoặc tắt hẳn chat trong menu Esc."
   }
 }

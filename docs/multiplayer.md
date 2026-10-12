@@ -95,7 +95,9 @@ tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ �
 - **Vị trí, hướng:** phải là số hữu hạn (|x| ≤ 5000). Zone phải đúng dạng `zone_NN`. Anim lạ đổi thành `idle`.
 - **Emote, câu chat:** id phải nằm trong danh sách của `data/net.json`, một người cách nhau ít nhất 0,8 s.
 - **Nhắn tin tự do:** bỏ ký tự điều khiển / vô hình, tối đa 120 ký tự, mỗi người dồn 5 tin rồi 1 tin / giây; lọc từ thô tục
-  và link (`data/chat.json`) trước khi phát; tên người chơi cũng qua bộ lọc. Không lưu tin nào.
+  và link (`data/chat.json`) trước khi phát; tên người chơi cũng qua bộ lọc. Không lưu tin nào. Máy khách lọc lại tin + tên nhận
+  được bằng cùng bộ lọc (`game/src/net/net.js`) theo `data/chat.json` của bản web → sửa danh sách từ có hiệu lực ngay khi deploy
+  bản web; máy chủ chỉ lọc theo danh sách mới sau `wrangler deploy`.
 - **Tần suất:** quá 10 tin/giây mỗi kết nối thì bỏ tin, gấp 3 lần thì ngắt (mã 4003).
 - **Số kết nối:** phòng đủ `room_size` (30) thì người mới sang phòng sau; phòng cuối (`max_rooms` = 6) nhận tối đa 60, người
   thứ 61 nhận `error` "The room is full…" rồi bị đóng (mã 4001).
