@@ -7,6 +7,7 @@ import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
 import { sound } from "../core/sound.js";
 import { photo } from "./photo.js";
+import myFptLogo from "../assets/myfpt-logo.png";
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const kbd = (k) => `<kbd>${k}</kbd>`;
@@ -26,7 +27,7 @@ const install_app = {
     const steps = ctx.data.steps;
     const order = shuffle(steps.map((_, i) => i));
     let next = 0, busy = false;
-    ctx.body.innerHTML = `<div class="phone-mock"><div class="phone-top">My FPT · ${t("minigame.setup")}</div>
+    ctx.body.innerHTML = `<div class="phone-mock"><div class="phone-top"><img class="app-logo" src="${myFptLogo}" width="32" height="32" alt="" aria-hidden="true">My FPT · ${t("minigame.setup")}</div>
       <ol class="steps">${order.map((si, k) => `<li data-k="${k}">${kbd(k + 1)}<span>${esc(tx(steps[si].text))}</span><i></i></li>`).join("")}</ol>
       <div class="progress"><div class="label"></div><div class="bar"><i></i></div></div></div>`;
     const lis = [...ctx.body.querySelectorAll(".steps li")];
@@ -66,33 +67,19 @@ const install_app = {
   },
 };
 
-// ---------- Kéo nước bằng cần vọt (zone 2): bấm đúng lúc vạch chạy vào vùng xanh, 3 gầu ----------
+// ---------- Kéo nước bằng cần vọt (zone 2): bấm Kéo → lên 1 gàu kèm 1 câu chuyện nhỏ, 3 gàu ----------
+// (12/10/2026: bỏ phần canh giờ — vạch chạy, vùng xanh, gợi ý sớm / muộn — theo góp ý lời thoại)
 const well = {
   start(ctx) {
     const d = ctx.data, total = d.snippets.length;
-    let bucket = 0, zone = null, t0 = performance.now(), reading = false, raf = 0;
+    let bucket = 0, reading = false;
     ctx.body.innerHTML = `<div class="well"><div class="buckets">${d.snippets.map(() => "<span>🪣</span>").join("")}</div>
-      <div class="meter"><div class="zone"></div><div class="mark"></div></div>
       <button class="primary pull">${t("minigame.pull")} ${kbd("Space")}</button>
       <div class="snippet" hidden><p></p><button class="ghost next">${t("minigame.next")} ${kbd("Enter")}</button></div></div>`;
-    const zoneEl = ctx.body.querySelector(".zone"), mark = ctx.body.querySelector(".mark"), pullBtn = ctx.body.querySelector(".pull");
-    const snip = ctx.body.querySelector(".snippet"), buckets = [...ctx.body.querySelectorAll(".buckets span")];
-    const speed = () => d.speed[Math.min(bucket, d.speed.length - 1)];
-    const pos = () => { const ph = ((performance.now() - t0) / 1000) * speed(); const f = ph % 2; return f < 1 ? f : 2 - f; };  // 0..1..0
-    // làm sáng (sai 2 lần): vùng xanh rộng thêm assist_width và sáng lên
-    const newZone = () => {
-      const w = d.zone_width[Math.min(bucket, d.zone_width.length - 1)] + (ctx.assist ? d.assist_width ?? 0.12 : 0);
-      zoneEl.classList.toggle("glow", ctx.assist);
-      const a = 0.12 + Math.random() * (0.76 - w);
-      zone = [a, a + w];
-      zoneEl.style.left = `${a * 100}%`; zoneEl.style.width = `${w * 100}%`;
-      t0 = performance.now();
-    };
-    const draw = () => { mark.style.left = `${pos() * 100}%`; raf = requestAnimationFrame(draw); };
-    const pull = (forced = null) => {
+    const pullBtn = ctx.body.querySelector(".pull"), snip = ctx.body.querySelector(".snippet");
+    const buckets = [...ctx.body.querySelectorAll(".buckets span")];
+    const pull = () => {
       if (reading || bucket >= total) return;
-      const p = forced ?? pos();
-      if (p < zone[0] || p > zone[1]) { sound.play("splash"); ctx.mistake(tx(p < zone[0] ? d.hint_early : d.hint_late)); return; }
       sound.play("bucket");
       buckets[bucket].classList.add("full");
       snip.querySelector("p").textContent = draftMark(d.draft_snippets) + tx(d.snippets[bucket]);
@@ -104,23 +91,19 @@ const well = {
       if (!reading) return;
       reading = false; snip.hidden = true;
       if (bucket >= total) { ctx.finish(); return; }
-      pullBtn.hidden = false; newZone();
+      pullBtn.hidden = false;
     };
-    newZone(); draw();
-    ctx.idleHint = () => (bucket >= total ? null : tx(reading ? d.idle.read : d.idle.pull));
-    ctx.onAssist = () => { if (!reading) newZone(); else zoneEl.classList.toggle("glow", ctx.assist); };
-    pullBtn.addEventListener("click", () => pull());
+    pullBtn.addEventListener("click", pull);
     snip.querySelector(".next").addEventListener("click", next);
     ctx.onKey = (e) => {
       if (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter") { reading ? next() : pull(); return true; }
       return false;
     };
     ctx.debug = {
-      solve: () => { while (bucket < total) { if (reading) next(); else pull((zone[0] + zone[1]) / 2); } next(); },
-      wrong: () => { if (reading) next(); pull(zone[0] > 0.2 ? 0.02 : 0.98); },
-      state: () => ({ bucket, zone, reading, glow: zoneEl.classList.contains("glow") }),
+      solve: () => { while (bucket < total) { if (reading) next(); else pull(); } next(); },
+      wrong: () => false,                 // không còn bấm sai
+      state: () => ({ bucket, reading }),
     };
-    return () => cancelAnimationFrame(raf);
   },
 };
 

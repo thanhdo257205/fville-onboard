@@ -9,6 +9,7 @@ import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
 import { ZoneMap } from "./map.js";
 import { sound } from "../core/sound.js";
+import myFptLogo from "../assets/myfpt-logo.png";
 
 export class MyFptApp {
   constructor(content, state) {
@@ -41,10 +42,9 @@ export class MyFptApp {
     if (!list.includes(this.tab)) this.tab = "checklist";
     const tabs = list.map((k) => `<button data-tab="${k}" class="${this.tab === k ? "on" : ""}" aria-pressed="${this.tab === k}"><svg viewBox="0 0 24 24" aria-hidden="true">${TAB_ICONS[k]}</svg><span>${t(`myfpt.tabs.${k}`)}</span></button>`).join("");
     const clock = document.getElementById("clock")?.textContent || "";
-    const initial = [...String(s.player.name || "").trim()][0]?.toUpperCase() || "·";
     this.el.innerHTML = `<div class="phone">
       <div class="status" aria-hidden="true"><span class="clock">${escape(clock)}</span><span class="sys">${SYS_ICONS}</span></div>
-      <header class="appbar"><span class="avatar" aria-hidden="true">${escape(initial)}</span><div class="who"><b>${t("myfpt.title")}</b><small>${escape(s.player.name)}</small></div>
+      <header class="appbar"><img class="app-logo" src="${myFptLogo}" width="36" height="36" alt="" aria-hidden="true"><div class="who"><b>${t("myfpt.title")}</b><small>${escape(s.player.name)}</small></div>
         <button class="help ${this.helpOpen ? "on" : ""}" data-a="help">? ${t("myfpt.help")} <kbd>H</kbd></button>
         <button class="close" data-a="close" aria-label="${escape(t("myfpt.close_btn"))}">×</button></header>
       <div class="screen">

@@ -13,6 +13,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   mã build mới, tóm tắt ở trang lượt chạy. Chỉ đổi tài liệu / script Blender / test / máy chủ → bỏ qua. Chạy tay nhập commit main
   → build lại, dùng để quay về bản cũ. Cảnh báo khi bản trên web build từ commit chưa vào main. Cần người dùng tạo môi trường
   `production` + Required reviewers (Settings → Environments). Máy chủ Cloudflare vẫn deploy tay.
+- **Logo MyFPT theo ảnh người dùng (12/10/2026, nhánh `codex/myfpt-logo`):** dùng ảnh icon F Next được cung cấp,
+  hiển thị ở thanh đầu app MyFPT và mini-game cài app. PNG nằm trong `game/src/assets/`, Vite đóng gói / tạo tên hash;
+  icon 36 px trong app, 32 px trong mini-game, giữ tỉ lệ ảnh. Smoke trên CI kiểm tra logo tải được ở app;
+  các kiểm thử trình duyệt chạy trên GitHub Actions theo lựa chọn của người dùng.
+
 - **Nền cỏ từ model người dùng (12/10/2026, nhánh `codex/grass-ground-model`, PR #31):** Simple Grass Ground của Shun Koizumi
   (CC BY 4.0), 6.890.736 → 77.600 byte; giữ mặt phẳng tối thiểu 2 tam giác, chỉ texture màu 512 px WebP + Draco.
   `scripts/tools/prepare_grass.py` dựng lại asset từ file gốc. Game thay mặt cỏ thấp ở zone 1–4 và vành đất xa,
@@ -1687,6 +1692,17 @@ Người dùng muốn bộ lọc nhắn tin lọc được cả từ tiếng Vi�
   30 s (CI desktop, ngoại hình thứ 2) → `openMenu` chờ qua mốc on_enter, giải hội thoại rồi bấm, thử lại tối đa 4 lần.
 - Gộp PR #30 vào main (b4d7d38), CI 5/5 xanh; deploy gh-pages 1561566. Còn lại: `npx wrangler deploy` trên máy Desktop để máy
   chủ thật dùng danh sách mới.
+
+### Góp ý lời thoại: bỏ phần canh giờ ở Giếng Làng (12/10/2026, máy Desktop)
+
+File góp ý (`loi_thoai_2026-10-12 - Copy.xlsx`, xuất bằng `export_dialogue.py`): các ô bôi vàng (`FFFF00`) kèm comment "bỏ" —
+Hội thoại #69 `well_intro` / n1 (Tú giới thiệu cách canh vạch vào vùng xanh) và Mini-game & quiz #27–31 `well` (`line`,
+`hint_early`, `hint_late`, `idle.pull`, `idle.read`). Tên mini-game và 3 câu chuyện nhỏ (`snippets`) không bị bôi → giữ.
+- `data/dialogues.json`: bỏ hội thoại `well_intro`; `INT_gieng_lang` → `minigame:well` thẳng (cờ cũ `well_intro_heard` trong
+  bản lưu không ảnh hưởng). `data/interactables.json → minigames.well`: bỏ các câu trên + `speed`, `zone_width`, `assist_width`.
+- `game/src/minigames/games.js` (well): bỏ thanh vạch chạy / vùng xanh / bấm sai — bấm Kéo (Space) lên 1 gàu + câu chuyện,
+  Tiếp (Enter) sang gàu sau, 3 gàu; phần thưởng, quest `z2_well` giữ nguyên. CSS `.well .meter / .zone / .mark` bỏ.
+  GDD cập nhật. Đo: test:data, smoke `--zone 2` 14/14, `--mobile ui` 20/20 (chạm qua giếng); xem bằng mắt. **Đã deploy** gh-pages af95a65 (từ main ac5cc4f).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
