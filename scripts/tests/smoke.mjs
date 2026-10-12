@@ -165,6 +165,29 @@ async function runLook(browser, base, look) {
     }
     return false;
   };
+  // A real mouse click after checking visibility/hit testing. In short CI
+  // windows, compositor-frame stability waits can stall on paused overlays.
+  // chờ game vẽ xong 2 khung hình (không giới hạn giờ): vật / chất liệu mới (vd mũ vừa đội, áo vừa đổi) làm lần vẽ đầu biên
+  // dịch shader — trên máy CI (SwiftShader) luồng chính bận hàng chục giây, thao tác ngay sau đó dễ quá giờ
+  const settle = () => ev(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const clickShown = async (selector, { hover = false } = {}) => {
+    await page.bringToFront();
+    // Scrolling/redrawing cards can put the next card under the old pointer.
+    // Leave the panel first so the move below produces a fresh pointerover.
+    if (hover) await page.mouse.move(0, 0);
+    // máy CI vẽ bằng CPU (~10 FPS): luồng chính có thể bận biên dịch shader lâu → nới thời gian chờ
+    await page.locator(selector).evaluate((button) => button.scrollIntoView({ block: "center", behavior: "instant" }), null, { timeout: 90000 });
+    const point = await page.waitForFunction((selector) => {
+      const button = document.querySelector(selector);
+      if (!button || button.disabled || button.getAttribute("aria-disabled") === "true") return false;
+      const r = button.getBoundingClientRect(), x = r.x + r.width / 2, y = r.y + r.height / 2;
+      return r.width > 0 && r.height > 0 && document.elementFromPoint(x, y)?.closest(selector) === button ? { x, y } : false;
+    }, selector, { timeout: 30000, polling: 100 });
+    const { x, y } = await point.jsonValue();
+    await point.dispose();
+    if (hover) await page.mouse.move(x, y);
+    else await page.mouse.click(x, y);
+  };
   // khoá con trỏ (Pointer Lock) không phải thứ cần thử: headless + đổi chế độ liên tục bằng code → khoá / nhả chồng nhau có
   // thể làm main.js tưởng người chơi bấm Esc (mở menu). Tắt hẳn, Esc đi thẳng vào main.js như khi không khoá
   // Khoá đã xin lúc vào game có thể được cấp SAU lệnh này (luồng chính bận vẽ) rồi bị nhả khi đổi khung nhìn → game tưởng Esc →
@@ -625,12 +648,14 @@ async function runLook(browser, base, look) {
           const img = document.querySelector("#myfpt .map img");
           if (img && !img.complete) await new Promise((r) => { img.onload = img.onerror = r; });
           const pos = (sel) => { const el = document.querySelector(`#myfpt .map ${sel}`); return el ? [parseFloat(el.style.left), parseFloat(el.style.top)] : null; };
-          return { img: img ? [img.naturalWidth, img.naturalHeight] : null, me: pos(".mk.me"), goal: pos(".mk.goal"), line: document.querySelector("#myfpt .map-goal span")?.textContent.trim() ?? null, map: __game.map };
+          const logo = document.querySelector("#myfpt .appbar .app-logo");
+          return { logo: !!logo?.complete && logo.naturalWidth > 0 && logo.naturalWidth === logo.naturalHeight,
+            img: img ? [img.naturalWidth, img.naturalHeight] : null, me: pos(".mk.me"), goal: pos(".mk.goal"), line: document.querySelector("#myfpt .map-goal span")?.textContent.trim() ?? null, map: __game.map };
         });
         await page.keyboard.press("Tab");
         m.closed = await wait(() => document.getElementById("myfpt").hidden && __game._game.mode === "play", 5000);
         const inside = (p) => p && p.every((v) => v >= 0 && v <= 100);
-        await check(opened && drawn && m.img?.[0] > 100 && m.img[1] > 100 && inside(m.me) && inside(m.goal) && m.line && m.closed,
+        await check(opened && drawn && m.logo && m.img?.[0] > 100 && m.img[1] > 100 && inside(m.me) && inside(m.goal) && m.line && m.closed,
           `${zone}: app → tab Bản đồ — ảnh ${m.map?.w}×${m.map?.h} (${m.map?.ms} ms), dấu bạn + mục tiêu "${m.line}" trong ảnh, đóng app`, JSON.stringify(m));
       }
       // zone_05: ngồi vào bàn làm việc rồi đứng dậy (hội thoại desk_main khi còn việc khác chưa xong) → ra chỗ trống, đi được.
@@ -789,27 +814,29 @@ async function runLook(browser, base, look) {
         // bản lưu player.outfit) → phím I đóng, nút 👕 hiện → bấm nút mở lại → phím 2 = Áo Cam FPT → Esc đóng
         await page.keyboard.press("Escape");
         const mbtn = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-act=wardrobe]"), 5000);
-        if (mbtn) await page.click("#menu [data-act=wardrobe]");
+        if (mbtn) await clickShown("#menu [data-act=wardrobe]");
         const wopen = await wait(() => window.__game?.wardrobe.open && window.__game._game.mode === "wardrobe", 5000);
         const capItem = "#wardrobe .item[data-kind=acc][data-id=cap]:not([disabled])";
-        if (wopen && await ev((sel) => !!document.querySelector(sel), capItem)) await page.click(capItem);
+        if (wopen && await ev((sel) => !!document.querySelector(sel), capItem)) await clickShown(capItem);
         const worn = await wait(() => window.__game?.model.accessories.includes("cap"), 15000);
+        if (worn) await settle();
         const cap = worn ? await ev(() => { const i = __game.accessoryInfo("cap"), c = __game._game.player.character;
           const root = c.root.position.y, f = i.fit;
           return { ...i, headTop: +(root + f.top).toFixed(3), saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.accessories }; }) : null;
-        if (wopen) await page.click("#wardrobe .item[data-kind=outfit][data-id=dau_ngay]");
-        const day1 = await wait(() => window.__game?.model.outfit === "dau_ngay", 5000);
+        if (wopen) await clickShown("#wardrobe .item[data-kind=outfit][data-id=dau_ngay]");
+        const day1 = await wait(() => window.__game?.model.outfit === "dau_ngay", 15000);
+        if (day1) await settle();
         const d1 = await ev(() => ({ morph: __game.model.morph, saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.outfit,
           badge: !!document.querySelector("#wardrobe .item.on[data-id=dau_ngay]"), preview: __game.wardrobe.preview,
           thumbs: __game.wardrobe.items.filter((x) => x.kind === "outfit").every((x) => /portrait/.test(x.img || "")) }));
         // rê chuột vào Áo Cam (chưa mặc) → khung xem trước đổi sang chân dung mặc Áo Cam, chưa thay áo
-        await page.hover("#wardrobe .item[data-kind=outfit][data-id=ao_cam]");
+        await clickShown("#wardrobe .item[data-kind=outfit][data-id=ao_cam]", { hover: true });
         const pv = await wait(() => window.__game?.wardrobe.preview?.item === "ao_cam" && window.__game.model.outfit === "dau_ngay", 3000)
           && await ev(() => __game.wardrobe.preview.img);
         await page.keyboard.press("KeyI");
         const shut = await wait(() => !window.__game?.wardrobe.open && window.__game._game.mode === "play", 5000);
         const btn = shut && await wait(() => { window.__game._game.ui.wardrobe.update(); return window.__game.wardrobe.button; }, 5000);
-        if (btn) await page.click("#wardrobe-btn");
+        if (btn) await clickShown("#wardrobe-btn");
         const reopen = await wait(() => window.__game?.wardrobe.open, 5000);
         await page.keyboard.press("Digit2");
         const orange = await wait(() => window.__game?.model.outfit === null && window.__game.wardrobe.outfit === "ao_cam", 5000);
@@ -854,7 +881,12 @@ async function runLook(browser, base, look) {
       }
     }
   } catch (e) {
-    await check(false, `lỗi script: ${e.message.split("\n")[0]}`);
+    const diagnostic = await ev(() => {
+      const g = window.__game?._game;
+      return { mode: g?.mode, wardrobeHidden: document.getElementById("wardrobe")?.hidden,
+        menuHidden: document.getElementById("menu")?.hidden, input: g?.input && { fakeLock: g.input.fakeLock, lookActive: g.input.lookActive, hasUnlock: !!g.input.onUnlock } };
+    }).catch(() => null);
+    await check(false, `lỗi script: ${e.message}`, JSON.stringify(diagnostic));
   } finally {
     await ctx.close();
   }
