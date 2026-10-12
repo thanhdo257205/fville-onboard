@@ -292,7 +292,7 @@ Zone 2 là nơi người chơi chính thức "gia nhập Làng F" và nhận c�
 | Đối tượng | Hoạt động | Kết quả |
 | --- | --- | --- |
 | `INT_cong_fville` | Check-in gia nhập Làng F: chế độ **chụp ảnh** trước biển chữ FPT SOFTWARE, người chơi chọn tư thế và có thể kéo Tú vào khung | **Áo Cam FPT**, mặc vào ngay; ảnh lưu vào app; Hiểu biết +5 |
-| `INT_gieng_lang` | Mini-game **Kéo nước bằng cần vọt**: 3 lượt, bấm đúng lúc thanh chạy vào vùng xanh. Mỗi gầu kéo lên mở một mẩu về ý nghĩa F-Ville và triết lý "Làng Công Nghệ" *[HR cung cấp 3 mẩu]* | Huy hiệu **Tinh thần Đồng đội** gắn lên áo; Hiểu biết +10 |
+| `INT_gieng_lang` | Mini-game **Kéo nước bằng cần vọt**: 3 lượt, bấm Kéo là lên 1 gàu (12/10/2026 bỏ phần canh giờ vùng xanh và câu Tú giới thiệu — góp ý lời thoại). Mỗi gầu kéo lên mở một mẩu về ý nghĩa F-Ville và triết lý "Làng Công Nghệ" *[HR cung cấp 3 mẩu]* | Huy hiệu **Tinh thần Đồng đội** gắn lên áo; Hiểu biết +10 |
 | `INT_tuong_cuder` | Đọc câu chuyện về Cuder (CU + DER, người làm IT chăm chỉ, cây cuốc và đống xu 0/1; nội dung từ mentor, `data/quiz.json`), rồi trả lời **quiz 3 câu** | Huy hiệu **Tôn Đổi Đồng Chí Gương Sáng** (6 ô); Hiểu biết +5 mỗi câu đúng |
 | Hạt lúa vàng × 3 | Trong bụi tre trên đảo giếng; trên gò cỏ sau biển chữ; dưới tầng trệt pilotis | |
 

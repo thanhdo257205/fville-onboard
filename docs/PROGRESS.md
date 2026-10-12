@@ -1687,6 +1687,17 @@ Người dùng muốn bộ lọc nhắn tin lọc được cả từ tiếng Vi�
 - Gộp PR #30 vào main (b4d7d38), CI 5/5 xanh; deploy gh-pages 1561566. Còn lại: `npx wrangler deploy` trên máy Desktop để máy
   chủ thật dùng danh sách mới.
 
+### Góp ý lời thoại: bỏ phần canh giờ ở Giếng Làng (12/10/2026, máy Desktop)
+
+File góp ý (`loi_thoai_2026-10-12 - Copy.xlsx`, xuất bằng `export_dialogue.py`): các ô bôi vàng (`FFFF00`) kèm comment "bỏ" —
+Hội thoại #69 `well_intro` / n1 (Tú giới thiệu cách canh vạch vào vùng xanh) và Mini-game & quiz #27–31 `well` (`line`,
+`hint_early`, `hint_late`, `idle.pull`, `idle.read`). Tên mini-game và 3 câu chuyện nhỏ (`snippets`) không bị bôi → giữ.
+- `data/dialogues.json`: bỏ hội thoại `well_intro`; `INT_gieng_lang` → `minigame:well` thẳng (cờ cũ `well_intro_heard` trong
+  bản lưu không ảnh hưởng). `data/interactables.json → minigames.well`: bỏ các câu trên + `speed`, `zone_width`, `assist_width`.
+- `game/src/minigames/games.js` (well): bỏ thanh vạch chạy / vùng xanh / bấm sai — bấm Kéo (Space) lên 1 gàu + câu chuyện,
+  Tiếp (Enter) sang gàu sau, 3 gàu; phần thưởng, quest `z2_well` giữ nguyên. CSS `.well .meter / .zone / .mark` bỏ.
+  GDD cập nhật. Đo: test:data, smoke `--zone 2` 14/14, `--mobile ui` 20/20 (chạm qua giếng); xem bằng mắt.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

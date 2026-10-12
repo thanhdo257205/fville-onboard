@@ -191,7 +191,7 @@
         "en": "Draw water from the well",
         "vi": "Kéo nước ở giếng"
       },
-      "action": "dialogue:well_intro",
+      "action": "minigame:well",
       "hide_if": {
         "quests": [
           "z2_well"
@@ -620,31 +620,7 @@
         "en": "Draw Water",
         "vi": "Kéo nước"
       },
-      "line": {
-        "en": "Press Space (or Pull!) when the marker is inside the green zone — three buckets.",
-        "vi": "Nhấn Space (hoặc bấm Kéo!) khi vạch nằm trong vùng xanh — kéo đủ ba gàu."
-      },
-      "speed": [0.55, 0.7, 0.85],
-      "zone_width": [0.22, 0.18, 0.15],
-      "assist_width": 0.12,
-      "hint_early": {
-        "en": "Too early — wait until the marker reaches the green zone.",
-        "vi": "Sớm quá — đợi vạch chạy vào vùng xanh đã."
-      },
-      "hint_late": {
-        "en": "A little late — pull while the marker is inside the green zone.",
-        "vi": "Hơi muộn rồi — kéo khi vạch còn nằm trong vùng xanh nhé."
-      },
-      "idle": {
-        "pull": {
-          "en": "Watch the marker: press Space (or Pull!) the moment it's inside the green zone.",
-          "vi": "Nhìn vạch: nhấn Space (hoặc bấm Kéo!) ngay khi vạch vào vùng xanh."
-        },
-        "read": {
-          "en": "Read the note, then press Enter (or Next) for the next bucket.",
-          "vi": "Đọc câu chuyện nhỏ, rồi nhấn Enter (hoặc bấm Tiếp) để kéo gàu sau."
-        }
-      },
+      "_ly_do": "12/10/2026 (góp ý lời thoại, người dùng chốt): bỏ phần canh giờ (vạch chạy, vùng xanh, gợi ý sớm / muộn / đứng yên) và câu Tú giới thiệu (hội thoại well_intro) — bấm Kéo là lên 1 gàu kèm 1 câu chuyện, 3 gàu.",
       "draft_snippets": true,
       "snippets": [
         {

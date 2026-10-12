@@ -241,7 +241,6 @@ button { font-family: "Nunito", sans-serif; }
 .mg .hint[data-kind=idle] { color: #ffd27a; }   /* 8 s không thao tác: gợi ý bước hiện tại */
 /* sai 2 lần ở một bước: làm sáng lựa chọn đúng */
 .mg ol li.glow { outline: 3px solid #ffd27a; animation: mgglow .9s ease-in-out infinite alternate; }
-.well .zone.glow { background: #45c97a; animation: mgglow .9s ease-in-out infinite alternate; }
 @keyframes mgglow { from { box-shadow: 0 0 4px rgba(255, 210, 122, .35); } to { box-shadow: 0 0 18px rgba(255, 210, 122, .95); } }
 .mg footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
 .mg .skip { background: #3a3f4a; color: #fff; border: 0; border-radius: 10px; padding: 9px 16px; font: 800 14px "Nunito"; cursor: pointer; }
@@ -268,10 +267,7 @@ button { font-family: "Nunito", sans-serif; }
 /* kéo nước */
 .well .buckets { font-size: 24px; letter-spacing: 6px; opacity: .5; }
 .well .buckets span.full { opacity: 1; filter: drop-shadow(0 0 6px #6fb7ff); }
-.well .meter { position: relative; height: 30px; margin: 14px 0; background: #262a31; border-radius: 10px; overflow: hidden; }
-.well .zone { position: absolute; top: 0; bottom: 0; background: #2e9e5b; }
-.well .mark { position: absolute; top: -2px; bottom: -2px; width: 6px; margin-left: -3px; background: #fff; border-radius: 3px; box-shadow: 0 0 8px #fff; }
-.well .pull { width: 100%; }
+.well .pull { width: 100%; margin-top: 14px; }
 .well .snippet { margin-top: 12px; background: #1f3346; border-radius: 12px; padding: 12px 14px; }
 .well .snippet p { margin: 0 0 8px; line-height: 1.45; }
 /* quiz */

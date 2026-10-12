@@ -163,14 +163,6 @@
       }
     },
     {
-      "id": "well_intro", "start": "check",
-      "nodes": {
-        "check": { "branch": [{ "if": { "flags": ["well_intro_heard"] }, "next": "go" }], "next": "n1" },
-        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "A real village well! Pull the rope the moment the marker is in the green zone. Three buckets — each one comes with a little story.", "vi": "Giếng làng thật luôn này! Kéo dây đúng lúc vạch chạy vào vùng xanh nhé. Có ba gàu nước — gàu nào cũng kèm một câu chuyện nhỏ." }, "effects": { "flags": ["well_intro_heard"] }, "next": "go" },
-        "go": { "action": "minigame:well", "next": null }
-      }
-    },
-    {
       "id": "cuder_intro", "start": "check",
       "nodes": {
         "check": { "branch": [{ "if": { "flags": ["cuder_intro_heard"] }, "next": "go" }], "next": "n1" },
