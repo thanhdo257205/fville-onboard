@@ -214,9 +214,13 @@ export class Sky {
     shape.holes.push(hole);
     const g = new THREE.ShapeGeometry(shape, Math.max(8, Math.round((G.segments ?? 72) / 4)));
     g.rotateX(-Math.PI / 2);
+    if (this.groundTexture) {
+      const pos = g.attributes.position, uv = g.attributes.uv;
+      for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + cx) / 4, (pos.getZ(i) + cz) / 4);
+    }
     if (this.ground) { this.backdrop.remove(this.ground); this.ground.geometry.dispose(); }
     else {
-      const m = new THREE.MeshLambertMaterial({ color: G.color ?? "#7f9a5c", fog: true });
+      const m = new THREE.MeshLambertMaterial({ color: this.groundTexture ? "#ffffff" : G.color ?? "#7f9a5c", map: this.groundTexture ?? null, fog: true });
       m.userData.outlineParameters = NO_OUTLINE;
       this.ground = new THREE.Mesh(g, m);
       this.ground.frustumCulled = false;

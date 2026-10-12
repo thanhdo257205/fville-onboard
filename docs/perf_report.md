@@ -1,5 +1,35 @@
 # Báo cáo hiệu năng — bản web
 
+## Nền cỏ Simple Grass Ground (12/10/2026)
+
+Model người dùng cung cấp: Shun Koizumi, CC BY 4.0 (CREDITS.md). Bản gốc chỉ có 2 tam giác;
+6.890.736 byte chủ yếu là 3 texture. Bản dùng trong game giữ 2 tam giác, bỏ normal / AO / metallic-roughness map,
+giữ base color 512 px WebP, Draco: **77.600 byte**, giảm **98,87%**. Texture lát 4 × 4 m; dùng chung giữa các zone
+và vành đất xa. Cỏ zone 1 gộp 900 → 2 tam giác; zone 2 gộp 2.054 → 10, giữ mảng tròn dưới bụi tre.
+
+**Cách đo:** `npm --prefix game run dev`, sau đó `node scripts/tests/grass_perf.mjs`.
+Chrome headless dùng **AMD Radeon(TM) Graphics / ANGLE Direct3D11 thật**, không SwiftShader, 1366 × 768,
+Low, Detail Sharper, mạng tắt. Cùng code / pose / ánh sáng / asset khác; bản trước chỉ tắt module thay cỏ qua
+Playwright route (chỉ trong test). Hai phiên cùng được tải, dừng vòng rAF tự động để không tranh GPU khi đo;
+warmup 30 khung, mỗi zone đo 3 vòng Before–After–After–Before, mỗi mẫu 120 khung quay camera trọn vòng.
+Lấy trung vị 6 mẫu mỗi bản, đồng bộ CPU–GPU bằng `__game.benchmark` / `readPixels`.
+FPS dưới đây là **FPS tương đương từ thời gian dựng khung**, không phải FPS bị giới hạn bởi tần số màn hình.
+
+| Zone | Trước (ms) | Sau (ms) | FPS tương đương trước → sau | Thay đổi thời gian khung |
+| --- | ---: | ---: | ---: | ---: |
+| 0 · Điểm đón | 7,915 | 7,690 | 126 → 130 | −2,8% |
+| 1 · Bến xe | 5,760 | 5,980 | 174 → 167 | +3,8% |
+| 2 · Campus | 5,005 | 5,310 | 200 → 188 | +6,1% |
+| 3 · Sảnh / Hạt Lúa | 5,845 | 5,805 | 171 → 172 | −0,7% |
+| 4 · Hành lang | 4,920 | 4,985 | 203 → 201 | +1,3% |
+| 5 · Văn phòng | 8,130 | 7,740 | 123 → 129 | −4,8% |
+
+**Đạt ngưỡng:** cả 6 zone có tăng thời gian khung dưới 10%, FPS tương đương giảm tối đa khoảng 5,7%.
+Lượt đo cả hành trình trước rồi cả hành trình sau dao động nhiều theo thời gian (zone 4 từng +10,5%);
+đã thay bằng phép đo A/B sát nhau tại từng zone ở trên. Kết quả chỉ đại diện GPU / cấu hình này;
+máy Intel / điện thoại thật vẫn cần chơi thử như các mục bên dưới. Raw samples: `test-results/grass-perf.json`
+(không commit). Regression geometry / texture budget chạy trong `test:data`; smoke kiểm tra 4 zone.
+
 Đo lần đầu ngày 09/10/2026 trên bản đã deploy (`https://thanhdo257205.github.io/fville-onboard/game/`, gh-pages build từ `main`
 8996537 trở về sau), đồ họa **Thấp** (game tự chọn: GPU tích hợp → Thấp). Lần đo đầu chỉ đo, không sửa code; mục
 "Sau khi sửa" là kết quả sau khi làm đề xuất 1–3.

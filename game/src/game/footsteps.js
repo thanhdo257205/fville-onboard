@@ -105,7 +105,8 @@ export class Footsteps {
     if (hit && def !== "carpet") {
       const m = hit.object, col = m.geometry.attributes.color, src = m.userData.srcMaterial ?? m.material;
       const name = [src].flat()[0]?.name || "";
-      if (col && hit.face && /palette/i.test(name)) {
+      if (m.userData.surface === "grass") s = "grass";
+      else if (col && hit.face && /palette/i.test(name)) {
         _c.fromBufferAttribute(col, hit.face.a);
         if (_c.g > _c.r * 1.12 && _c.g > _c.b * 1.12 && _c.g > 0.08) s = "grass";
       }
