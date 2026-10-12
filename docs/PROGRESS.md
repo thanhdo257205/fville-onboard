@@ -7,6 +7,14 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Thẻ nhân viên cầm tay — lễ tân đưa thẻ, người chơi quẹt thẻ (13/10/2026, nhánh `feat/id-card`):** mô hình thẻ người dùng gửi
+  → `assets/props/id_card/id_card.glb` (bỏ dây đeo + ảnh mặt thẻ mẫu của người khác; 138 tam giác, 10 KB); mặt thẻ vẽ bằng code
+  (ảnh thẻ người chơi chụp ở quầy, tên, vị trí · Intern, FV-2026). Animation Mixamo "Reaching Out" (tay vươn quá vai ở cuối) cắt
+  đoạn đầu → clip `reach` thêm vào GLB lễ tân (`--end 85`: tay qua mặt quầy cao 1,12 m) và 4 ngoại hình người chơi (`--end 80`:
+  tay ngang đầu đọc 1,13–1,27 m), giữ lưới + animation cũ (`build_reach.py`). Zone 3: câu "đây là thẻ nhân viên" lễ tân đưa thẻ,
+  người chơi đưa tay nhận, thẻ trượt qua quầy sang tay. Zone 4: thêm câu rút thẻ trước tiếng "bíp" — người chơi bước tới trước
+  đầu đọc, đưa thẻ chạm; người lạ dời 0,6 m dọc tường để không chắn đầu đọc. `test:data` mục "thẻ nhân viên cầm tay", smoke
+  zone 3 → 4. Nguồn / giấy phép mô hình thẻ: chờ người dùng xác nhận (CREDITS.md).
 - **Phòng Hạt Lúa + giới thiệu F-Ville 1 ở chỗ chụp ảnh (12/10/2026, nhánh `feat/rice-room`):** mini-game Dòng thời gian thay bằng
   **Hạt Lúa** (`minigames.rice_grain`, `games.js rice_grain`): hạt lúa lớn khắc tên Top Performer theo năm, chạm hạt lúa nhỏ / phím
   1–6 → dòng tên sáng lên + thẻ chi tiết, sáng hết là xong (quest `z3_rice_room`, Hiểu biết +10). Tên chưa có nguồn công khai →
