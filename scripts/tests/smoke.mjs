@@ -789,6 +789,15 @@ async function runLook(browser, base, look) {
         // tủ đồ (ui/wardrobe.js): menu Esc → nút Tủ đồ → bảng (camera ra trước mặt) → đội mũ lưỡi trai (xong game mới mở khoá):
         // mũ gắn xương đầu, vòm trên đỉnh đầu (không lún, không bay), vào bản lưu → mặc lại Đồ ngày đầu (texture + morph về 0,
         // bản lưu player.outfit) → phím I đóng, nút 👕 hiện → bấm nút mở lại → phím 2 = Áo Cam FPT → Esc đóng
+        await ev(() => {
+          const g = __game._game, setMode = g.setMode;
+          g.smokeModes = [];
+          g.setMode = function (mode) {
+            this.smokeModes.push({ from: this.mode, to: mode, stack: new Error().stack });
+            if (this.smokeModes.length > 12) this.smokeModes.shift();
+            return setMode.call(this, mode);
+          };
+        });
         await page.keyboard.press("Escape");
         const mbtn = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-act=wardrobe]"), 5000);
         if (mbtn) {
@@ -861,7 +870,12 @@ async function runLook(browser, base, look) {
       }
     }
   } catch (e) {
-    await check(false, `lỗi script: ${e.message}`);
+    const diagnostic = await ev(() => {
+      const g = window.__game?._game;
+      return { mode: g?.mode, modes: g?.smokeModes, wardrobeHidden: document.getElementById("wardrobe")?.hidden,
+        menuHidden: document.getElementById("menu")?.hidden, input: g?.input && { fakeLock: g.input.fakeLock, lookActive: g.input.lookActive, hasUnlock: !!g.input.onUnlock } };
+    }).catch(() => null);
+    await check(false, `lỗi script: ${e.message}`, JSON.stringify(diagnostic));
   } finally {
     await ctx.close();
   }
