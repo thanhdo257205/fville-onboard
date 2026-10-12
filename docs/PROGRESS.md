@@ -1,12 +1,18 @@
 # Tiến độ — Ngày Đầu Ở F-Ville
 
-Cập nhật: 11/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
+Cập nhật: 12/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
 `/viewer/`).
 
 Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và push nhánh `main`.
 
 ## Đã xong
 
+- **CD mức A — deploy GitHub Pages có duyệt (12/10/2026, nhánh `feat/cd-deploy`):** `.github/workflows/deploy.yml`. Push main →
+  `test` xanh → job `deploy` (môi trường `production`) chờ người dùng bấm Approve trên Actions → `deploy_site.py --no-build` với
+  đúng bản build smoke desktop đã chơi thử (artifact `site-build` từ `test.yml`), bot `github-actions[bot]` → chờ trang thật có
+  mã build mới, tóm tắt ở trang lượt chạy. Chỉ đổi tài liệu / script Blender / test / máy chủ → bỏ qua. Chạy tay nhập commit main
+  → build lại, dùng để quay về bản cũ. Cảnh báo khi bản trên web build từ commit chưa vào main. Cần người dùng tạo môi trường
+  `production` + Required reviewers (Settings → Environments). Máy chủ Cloudflare vẫn deploy tay.
 - **Logo MyFPT theo ảnh người dùng (12/10/2026, nhánh `codex/myfpt-logo`):** dùng ảnh icon F Next được cung cấp,
   hiển thị ở thanh đầu app MyFPT và mini-game cài app. PNG nằm trong `game/src/assets/`, Vite đóng gói / tạo tên hash;
   icon 36 px trong app, 32 px trong mini-game, giữ tỉ lệ ảnh. Smoke trên CI kiểm tra logo tải được ở app;

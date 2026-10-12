@@ -1,0 +1,157 @@
+# Deploy GitHub Pages (CD mức A): CI xanh trên main → chờ người dùng DUYỆT → đưa lên nhánh gh-pages.
+#   • Tự chạy khi workflow "test" của một lần push main xong và xanh. Dùng đúng bản build đã chơi thử ở job smoke (desktop)
+#     (artifact site-build) — không build lại.
+#   • Job deploy thuộc môi trường "production" (Settings → Environments → production → Required reviewers): GitHub dừng chờ
+#     người được chỉ định bấm "Review deployments → Approve" trên trang Actions (có email báo). Không duyệt trong 30 ngày → tự huỷ.
+#   • Bỏ qua (không hỏi duyệt) nếu từ bản đang chạy trên web tới commit này chỉ đổi tài liệu / script Blender / test / máy chủ
+#     (xem SKIP bên dưới) — đọc commit cuối của gh-pages: "Site: build <ngày> từ main <hash>".
+#   • Chạy tay (Actions → deploy → Run workflow): nhập commit / nhánh của main (mặc định main mới nhất; hash cũ = quay về bản cũ)
+#     → build lại từ đầu rồi cũng chờ duyệt. Chỉ nhận commit nằm trên main.
+#   • Các bước giống máy local: scripts/deploy_site.py --no-build (make_site → quét riêng tư → commit → push gh-pages), danh tính
+#     github-actions[bot] (email noreply), rồi chờ trang thật có mã build mới (tối đa ~10 phút), ghi tóm tắt vào trang của lượt chạy.
+#   • Máy chủ chơi nhiều người (server/, Cloudflare) KHÔNG deploy ở đây — vẫn wrangler deploy tay (docs/multiplayer.md).
+#   Khẩn cấp vẫn deploy được từ máy: python scripts/deploy_site.py (cần người dùng đồng ý).
+name: deploy
+
+on:
+  workflow_run:
+    workflows: [test]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit hoặc nhánh trên main cần deploy (hash cũ = quay về bản cũ)"
+        required: true
+        default: main
+
+permissions:
+  contents: write   # push gh-pages
+  actions: read     # tải artifact site-build của lượt test
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  SITE: https://thanhdo257205.github.io/fville-onboard/
+  # đổi các file này thì bản web không đổi → không deploy
+  SKIP: '^(docs/|scripts/blender/|scripts/tests/|scripts/tools/|server/|references/|\.github/)|\.md$'
+
+jobs:
+  plan:
+    # workflow_run: chỉ lượt test của push main, xanh
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.plan.outputs.sha }}
+      deploy: ${{ steps.plan.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || inputs.ref }}
+          fetch-depth: 0
+
+      - name: Có cần deploy không
+        id: plan
+        run: |
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if ! git merge-base --is-ancestor "$sha" origin/main; then
+            echo "::error::$sha không nằm trên main — chỉ deploy commit của main"
+            exit 1
+          fi
+          last=$(git log -1 --format=%s origin/gh-pages | grep -oE 'từ main [0-9a-f]+' | awk '{print $3}' || true)
+          deploy=true
+          note="deploy ${sha:0:7}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            note="chạy tay: deploy ${sha:0:7} (bản trên web: ${last:-?})"
+          elif [ -n "$last" ] && git cat-file -e "$last^{commit}" 2>/dev/null; then
+            site=$(git diff --name-only "$last" "$sha" | grep -vE "$SKIP" || true)
+            if [ -z "$site" ]; then
+              deploy=false
+              note="bỏ qua: từ $last tới ${sha:0:7} không đổi file của bản web"
+            else
+              note="deploy ${sha:0:7} (bản trên web: $last; $(echo "$site" | wc -l) file của bản web đổi)"
+            fi
+          fi
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+          echo "$note"
+          echo "### $note" >> "$GITHUB_STEP_SUMMARY"
+          # bản trên web build từ commit chưa vào lịch sử của commit này (vd deploy tay từ nhánh PR) → deploy sẽ làm mất thay đổi đó
+          if [ "$deploy" = true ] && [ -n "$last" ] && ! git merge-base --is-ancestor "$last" "$sha" 2>/dev/null; then
+            w="Bản trên web ($last) có thay đổi chưa nằm trong ${sha:0:7} — duyệt deploy sẽ làm mất chúng (gộp nhánh đó vào main trước)"
+            echo "::warning::$w"
+            echo "> ⚠️ $w" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  deploy:
+    needs: plan
+    if: needs.plan.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://thanhdo257205.github.io/fville-onboard/game/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Bản build đã kiểm thử (artifact site-build của lượt test)
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: site-build
+          path: game/dist
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - uses: actions/setup-node@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: game/package-lock.json
+
+      - name: Build (chạy tay)
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: game
+        run: npm ci && npm run build
+
+      - name: dist/ = worktree nhánh gh-pages, danh tính bot (email noreply)
+        run: |
+          git worktree add -B gh-pages dist origin/gh-pages
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy (make_site → quét riêng tư → commit → push gh-pages)
+        run: python3 scripts/deploy_site.py --no-build
+
+      - name: Chờ trang thật có bản mới
+        id: live
+        run: |
+          short=$(git rev-parse --short=7 HEAD)
+          for i in $(seq 1 40); do
+            js=$(curl -fsSL "${SITE}game/?nocache=$RANDOM$i" | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' | head -1 || true)
+            if [ -n "$js" ] && curl -fsSL "${SITE}game/$js" | grep -q "$short-"; then
+              echo "Trang thật đã có bản $short (sau ~$((i * 15)) giây)"
+              echo "ok=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::warning::Sau 10 phút trang thật chưa có bản $short — xem Actions → pages-build-deployment"
+          echo "ok=false" >> "$GITHUB_OUTPUT"
+
+      - name: Tóm tắt
+        if: always()
+        run: |
+          {
+            echo "### Deploy GitHub Pages"
+            echo "- main: \`$(git rev-parse --short=7 HEAD)\` — $(git log -1 --format=%s HEAD)"
+            echo "- gh-pages: \`$(git -C dist log -1 --format='%h %s' 2>/dev/null || echo '?')\`"
+            echo "- Trang thật: ${{ steps.live.outputs.ok == 'true' && 'đã cập nhật ✅' || 'chưa xác nhận ⚠️' }} — ${SITE}game/"
+          } >> "$GITHUB_STEP_SUMMARY"

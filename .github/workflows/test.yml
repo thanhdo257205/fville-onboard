@@ -13,6 +13,7 @@
 #                     --mobile off): zone 4 khi có người chơi khác, bi-a 2 người luật chuẩn, nhắn tin, ô chat máy tính, chia
 #                     phòng; máy chủ giả bản cũ (wrangler dev --var POOL_RULES:1): bi-a 2 người luật cũ
 #   Bộ nhớ đệm: npm (setup-node) + Chromium của Playwright (~/.cache/ms-playwright, theo phiên bản playwright).
+#   Push main: phần desktop lưu bản build đã chơi thử (artifact site-build, 3 ngày) → deploy.yml đưa lên GitHub Pages.
 #   Lỗi → workflow đỏ, ảnh bước hỏng ở artifact test-results-<phần>. Máy local: npm run test:quick (data + 1 ngoại hình, ~3 phút).
 # Pull Request từ fork: GitHub chỉ cấp quyền đọc (permissions bên dưới) — workflow không cần secret nên vẫn chạy đủ.
 name: test
@@ -113,6 +114,16 @@ jobs:
       # là sai → luôn ra vế sau
       - name: Chơi thử tự động (test:smoke — ${{ matrix.part }})
         run: npm run test:smoke -- --build ${{ matrix.args }} ${{ matrix.part == 'desktop' && github.event_name != 'workflow_dispatch' && '--look intern_nam,intern_nu' || '' }}
+
+      # bản build vừa chơi thử xong (push main, phần desktop) → deploy.yml đưa đúng bản này lên GitHub Pages khi người dùng duyệt
+      - name: Lưu bản build đã kiểm thử (cho deploy.yml)
+        if: success() && matrix.part == 'desktop' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: game/dist/
+          retention-days: 3
+          if-no-files-found: error
 
       - name: Ảnh bước hỏng
         if: failure()
