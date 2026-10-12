@@ -1630,6 +1630,15 @@ lại) · Gợi ý & tin nhắn (101: gợi ý H, Tú nhắc, tin nhắn khi đ�
 Tổng hợp (COUNTIF theo nhân vật: số câu, số câu đã có đề xuất; tự tính khi mở). Mỗi dòng có 2 cột nền vàng "Đề xuất sửa" EN / VI
 + Ghi chú; dòng DRAFT tô cam nhạt.
 
+### Dấu chỉ đường: "!" → mũi tên, to hơn (12/10/2026, máy Desktop)
+
+Người dùng yêu cầu đổi dấu chấm than chỉ đường thành mũi tên và to hơn cho dễ theo dõi (`game/src/game/guide.js`, `style.css`):
+- Trên mục tiêu: mũi tên cam chỉ xuống (SVG, viền trắng, đổ bóng — rõ trên nền sáng lẫn tối), 44 × 52 px (vòng tròn "!" cũ
+  28 px), nhấp nhô 10 px.
+- Mục tiêu ngoài khung nhìn: mũi tên cam lớn 46 × 54 px ở mép màn hình xoay theo hướng cần đi (thay vòng tròn "!" 34 px +
+  mũi nhọn nhỏ); lề mép nới ra (máy tính 38 px, cảm ứng 44 px, trên 80 px).
+- Đo: test:quick 57/57, `--mobile ui` 20/20; xem bằng mắt zone 3 (trên đầu chị lễ tân, mũi tên mép khi quay lưng).
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

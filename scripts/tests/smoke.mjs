@@ -712,7 +712,7 @@ async function runLook(browser, base, look) {
       const where = st.complete ? "cảnh kết" : next ? `→ ${next}` : "";
       await check(!bad.length, `${zone}: ${required.length} việc bắt buộc, áo ${st.ao ? "ao_cam" : "dau_ngay"}${"ao_cam" in st.morph ? ` (morph ${st.morph.ao_cam})` : ""}, ${where}, console sạch (${Math.round((Date.now() - zt) / 1000)} s)`, bad.join("; "));
       const noMark = marks.filter((m) => !m.shown);
-      await check(marks.length > 0 && !noMark.length, `${zone}: dấu "!" hoặc mũi tên chỉ đường trước ${marks.length} việc bắt buộc / lối ra (${marks.map((m) => m.goal).join(", ")})`,
+      await check(marks.length > 0 && !noMark.length, `${zone}: mũi tên trên mục tiêu hoặc ở mép màn hình trước ${marks.length} việc bắt buộc / lối ra (${marks.map((m) => m.goal).join(", ")})`,
         JSON.stringify(noMark.length ? noMark : marks));
       if (zone === "zone_02" && !failed && await ev(() => __game.tu.visible)) await tuCheck("sau cổng", true);
       // âm thanh đã phát qua zone 0 → 4 (trước cảnh kết — ngoại hình đầu tải lại trang giữa cảnh kết, bộ đếm về 0)

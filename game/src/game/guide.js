@@ -1,6 +1,7 @@
 // Hướng dẫn người chơi mới (data/guidance.json): lúc nào cũng biết "giờ làm gì" trong vài giây.
 //   • Mục tiêu hiện tại = quest bắt buộc đầu tiên chưa xong của zone (quests.json → target); zone xong hết → zone_exits.
-//   • Dấu "!" nổi trên target (nhấp nhô, viền như bảng tên); target ngoài khung nhìn → mũi tên ở mép màn hình.
+//   • Mũi tên cam chỉ xuống nổi trên target (nhấp nhô; trước 12/10/2026 là dấu "!"); target ngoài khung nhìn → mũi tên
+//     lớn ở mép màn hình, xoay theo hướng cần đi.
 //     Chỉ hiện lúc đang đi lại (tắt khi hội thoại / mini-game / app / menu / cảnh chuyển); tắt hẳn trong menu Esc.
 //   • Không tiến triển nhiệm vụ idle_s giây (chỉ tính lúc đang đi lại) → Tú nói 1 câu bong bóng (không mở hộp thoại,
 //     không dừng game); không có Tú đi cùng → tin nhắn điện thoại ngắn (Ms. Huyền zone 0–2, Ms. Nga zone 3–4).
@@ -15,14 +16,18 @@ import { t } from "../i18n.js";
 import { hud } from "../ui/hud.js";
 import { sound } from "../core/sound.js";
 
-const EDGE = { x: 34, top: 74, bottom: 112 };   // mũi tên cách mép màn hình (trên: dòng mục tiêu, dưới: gợi ý E + dòng điều khiển)
+const EDGE = { x: 38, top: 80, bottom: 112 };   // mũi tên cách mép màn hình (trên: dòng mục tiêu, dưới: gợi ý E + dòng điều khiển)
 // cảm ứng: dưới là cần điều khiển (trái) + nút hành động / hàng nút (phải) → chừa nhiều hơn (ui/touch.js, style.css #touch)
-const EDGE_TOUCH = { x: 40, top: 74, bottom: 200 };
+const EDGE_TOUCH = { x: 44, top: 80, bottom: 200 };
 const TU_NEAR_M = 15;      // Tú ở xa hơn (vd vừa bị bỏ lại) → coi như không đi cùng, nhắn điện thoại
 
 const _v = new THREE.Vector3(), _s = new THREE.Vector3(), _box = new THREE.Box3();
 
-// phần tử CSS2D neo ở cạnh đáy (bong bóng / dấu "!" nằm ngay phía trên điểm neo)
+// mũi tên chỉ đường (SVG, cam viền trắng): chỉ xuống — nổi trên target; chỉ lên — ở mép màn hình, xoay theo hướng target
+const ARROW_PATH = { down: "M13 2H27V24H37L20 46L3 24H13Z", up: "M20 2L37 24H27V46H13V24H3Z" };
+const arrowSvg = (dir) => `<svg viewBox="0 0 40 48" aria-hidden="true"><path d="${ARROW_PATH[dir]}" fill="#f37021" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>`;
+
+// phần tử CSS2D neo ở cạnh đáy (bong bóng / mũi tên nằm ngay phía trên điểm neo)
 function anchored(cls, html) {
   const el = document.createElement("div");
   el.className = cls;
@@ -42,13 +47,13 @@ export class Guide {
     this.s = { idle_s: 30, repeat_s: 45, max_nudges: 2, bubble_s: 5, phone_s: 7, help_s: 8,
       marker_above_head_m: 0.8, marker_above_object_m: 0.6, marker_above_trigger_m: 0.3, phone_from: {}, ...cfg.settings };
     this.content = content;
-    this.mark = anchored("guide-mark", "<span>!</span>");
+    this.mark = anchored("guide-mark", `<span>${arrowSvg("down")}</span>`);
     this.bubble = anchored("speech", "<span></span>");
     game.scene.add(this.mark, this.bubble);
     this.arrow = document.createElement("div");
     this.arrow.id = "guide-arrow";
     this.arrow.hidden = true;
-    this.arrow.innerHTML = "<i></i><span>!</span>";   // i: mũi nhọn (xoay theo hướng), span: dấu "!" (đứng thẳng)
+    this.arrow.innerHTML = `<i>${arrowSvg("up")}</i>`;   // i: mũi tên (xoay theo hướng, 0° = chỉ lên)
     document.getElementById("hud").appendChild(this.arrow);
     this.goal = null;          // { key, quest, target, data }
     this.idle = 0;             // giây không tiến triển (lúc đang đi lại)

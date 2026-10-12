@@ -342,18 +342,15 @@ body.photo-mode #hud, body.photo-mode .nametags { display: none; }
 .form .fields li.ok:hover { background: #e3f5e8; }
 
 /* ---------- Hướng dẫn người chơi mới (game/guide.js) ---------- */
-/* dấu "!" trên target của mục tiêu hiện tại: viền như bảng tên, nhấp nhô nhẹ */
-.guide-mark { padding-bottom: 4px; }
-.guide-mark span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(18, 20, 24, .82); border: 2px solid rgba(243, 112, 33, .95);
-  color: #ffd27a; font: 900 19px/1 "Nunito", sans-serif; box-shadow: 0 0 10px rgba(243, 112, 33, .45); animation: markbob 1.3s ease-in-out infinite alternate; }
-@keyframes markbob { from { transform: translateY(0); } to { transform: translateY(-7px); } }
-/* mũi tên ở mép màn hình khi target ngoài khung nhìn */
-#guide-arrow { position: absolute; left: 0; top: 0; width: 34px; height: 34px; pointer-events: none; }
-#guide-arrow span { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(18, 20, 24, .82); border: 2px solid rgba(243, 112, 33, .95);
-  color: #ffd27a; font: 900 18px/1 "Nunito", sans-serif; box-shadow: 0 0 10px rgba(243, 112, 33, .45); }
-#guide-arrow i { position: absolute; inset: -17px; }   /* xoay quanh tâm; mũi nhọn nằm ngoài vòng tròn, phía trên */
-#guide-arrow i::before { content: ""; position: absolute; left: 50%; top: 0; transform: translateX(-50%); border: 11px solid transparent; border-bottom: 16px solid #f37021; border-top: 0;
-  filter: drop-shadow(0 0 3px rgba(0, 0, 0, .5)); }
+/* mũi tên chỉ xuống trên target của mục tiêu hiện tại (SVG cam viền trắng, đổ bóng — rõ trên nền sáng lẫn tối), nhấp nhô */
+.guide-mark { padding-bottom: 6px; }
+.guide-mark span { display: block; width: 44px; height: 52px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .55)) drop-shadow(0 0 8px rgba(243, 112, 33, .45));
+  animation: markbob 1.1s ease-in-out infinite alternate; }
+.guide-mark svg, #guide-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes markbob { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+/* mũi tên lớn ở mép màn hình khi target ngoài khung nhìn: xoay quanh tâm theo hướng cần đi (0° = chỉ lên) */
+#guide-arrow { position: absolute; left: 0; top: 0; width: 46px; height: 54px; pointer-events: none; }
+#guide-arrow i { position: absolute; inset: 0; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .55)) drop-shadow(0 0 8px rgba(243, 112, 33, .45)); }
 body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 /* bong bóng lời Tú (nhắc khi đứng yên) */
 .speech { padding-bottom: 10px; }
