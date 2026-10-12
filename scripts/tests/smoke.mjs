@@ -154,6 +154,17 @@ async function runLook(browser, base, look) {
     return ok;
   };
   const wait = async (fn, ms, arg) => { try { await page.waitForFunction(fn, arg, { timeout: ms, polling: 100 }); return true; } catch { return false; } };
+  // mở menu Esc khi đang chơi: hội thoại on_enter (tin nhắn HR, 600 ms sau khi vào zone — máy CI bận có thể trễ hơn) mở đúng
+  // lúc bấm Esc thì Esc bị bỏ qua (main.js escape: đang hội thoại) → chờ qua mốc đó, giải hết rồi bấm; menu chưa mở thì thử lại
+  const openMenu = async () => {
+    await wait(() => performance.now() - (__game._game.state.readyAt ?? 0) > 700, 5000);
+    for (let i = 0; i < 4; i++) {
+      await ev(() => __game.resolve());
+      await page.keyboard.press("Escape");
+      if (await wait(() => !document.getElementById("menu").hidden, 2000)) return true;
+    }
+    return false;
+  };
   // khoá con trỏ (Pointer Lock) không phải thứ cần thử: headless + đổi chế độ liên tục bằng code → khoá / nhả chồng nhau có
   // thể làm main.js tưởng người chơi bấm Esc (mở menu). Tắt hẳn, Esc đi thẳng vào main.js như khi không khoá
   // Khoá đã xin lúc vào game có thể được cấp SAU lệnh này (luồng chính bận vẽ) rồi bị nhả khi đổi khung nhìn → game tưởng Esc →
@@ -260,10 +271,7 @@ async function runLook(browser, base, look) {
       const mu = { start: await ev(() => __game.audio.music) };
       await page.waitForTimeout(1200);
       mu.later = await ev(() => __game.audio.music);
-      await page.waitForTimeout(800);
-      await ev(() => __game.resolve());
-      await page.keyboard.press("Escape");
-      mu.menu = await wait(() => !document.getElementById("menu").hidden, 5000);
+      mu.menu = await openMenu();
       const drag = () => ev(() => { const inp = __game._game.input, keep = inp.fakeLock; inp.fakeLock = true; inp.consumeDrag(true);
         document.dispatchEvent(new MouseEvent("mousemove", { movementX: 40, movementY: 0 })); const d = inp.consumeDrag(true).dx; inp.fakeLock = keep; return d; });
       const slide = (sel, v) => ev(([sel, v]) => { const r = document.querySelector(sel); r.value = v; r.dispatchEvent(new Event("input")); r.dispatchEvent(new Event("change")); return document.querySelector(sel.replace("data-look=", "data-look-out=").replace("input", "output"))?.textContent ?? null; }, [sel, v]);
@@ -293,25 +301,26 @@ async function runLook(browser, base, look) {
       const sw = {};
       const snap = () => ev(() => ({ lang: document.documentElement.lang, objective: __game.objective, menu: document.querySelector("#menu h2")?.textContent,
         quests: __game.progress.quests.length, pos: __game.player.pos, mode: __game._game.mode }));
-      // hội thoại on_enter (tin nhắn HR, 600 ms sau khi vào zone_00) có thể đang mở hoặc sắp mở → chờ rồi giải xong, Esc mới mở menu
+      // hội thoại on_enter (tin nhắn HR) có thể đang mở hoặc sắp mở → openMenu chờ, giải xong rồi mới bấm Esc
       await page.waitForTimeout(800);
       await ev(() => __game.resolve());
       sw.before = await snap();
-      await page.keyboard.press("Escape");
-      sw.menuOpen = await wait(() => !document.getElementById("menu").hidden, 5000);
-      await page.click("#menu [data-lang=en]");
-      await wait(() => document.documentElement.lang === "en", 10000);
-      sw.en = await snap();
-      await page.click(`#menu [data-lang=${lang}]`);
-      await wait((l) => document.documentElement.lang === l, 10000, lang);
-      sw.back = await snap();
+      sw.menuOpen = await openMenu();
+      if (sw.menuOpen) {
+        await page.click("#menu [data-lang=en]", { timeout: 5000 });
+        await wait(() => document.documentElement.lang === "en", 10000);
+        sw.en = await snap();
+        await page.click(`#menu [data-lang=${lang}]`, { timeout: 5000 });
+        await wait((l) => document.documentElement.lang === l, 10000, lang);
+        sw.back = await snap();
+      } else sw.stuck = await snap();
       sw.saved = await ev(() => JSON.parse(localStorage.getItem("fville.settings") || "{}").lang);
       await page.keyboard.press("Escape");
       sw.closed = await wait(() => document.getElementById("menu").hidden && __game._game.mode === "play", 5000);
-      await check(sw.before.objective === q0?.[lang] && sw.menuOpen && sw.en.objective === q0?.en && sw.en.menu === I18N.en.menu.title
-        && sw.back.objective === q0?.[lang] && sw.back.menu === I18N[lang].menu.title && sw.saved === lang && sw.closed
-        && sw.en.quests === sw.before.quests && JSON.stringify(sw.en.pos) === JSON.stringify(sw.before.pos),
-        `menu Esc → English → ${I18N[lang].lang[lang]}: mục tiêu "${sw.before.objective}" ↔ "${sw.en.objective}", tiến trình giữ nguyên, lưu cài đặt`, JSON.stringify(sw));
+      await check(sw.before.objective === q0?.[lang] && sw.menuOpen && sw.en?.objective === q0?.en && sw.en?.menu === I18N.en.menu.title
+        && sw.back?.objective === q0?.[lang] && sw.back?.menu === I18N[lang].menu.title && sw.saved === lang && sw.closed
+        && sw.en?.quests === sw.before.quests && JSON.stringify(sw.en?.pos) === JSON.stringify(sw.before.pos),
+        `menu Esc → English → ${I18N[lang].lang[lang]}: mục tiêu "${sw.before.objective}" ↔ "${sw.en?.objective}", tiến trình giữ nguyên, lưu cài đặt`, JSON.stringify(sw));
     }
     // Tú (zone có Tú): đúng model khác giới, áo ngày đầu, chân dung theo bộ đồ, câu dẫn he / she
     const tu = tuOf(look, lang);
