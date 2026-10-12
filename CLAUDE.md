@@ -180,7 +180,7 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   `game/src/core/quality.js` → `TIERS = ["low"]` (máy card rời / cài đặt cũ "high" vẫn chạy bản Thấp, menu ẩn nút High,
   bản build không chép `assets/glb/high/`). GLB bản Cao cũ thiếu node mới (vd `SPAWN_zone_04_from_zone_03`) → từng làm kẹt
   zone 4 trên trang thật (10/10/2026). Chỉ bật lại khi đã build lại đủ mọi zone bản Cao.
-- **Tải zone không bao giờ được treo im lặng:** `Game.enterZone` bọc `_enterZone` — lỗi hoặc quá 20 s (`ZONE_TIMEOUT_MS`)
+- **Tải zone không bao giờ được treo im lặng:** `Game.enterZone` bọc `_enterZone` — lỗi, đứng yên quá 20 s (`ZONE_TIMEOUT_MS` — không qua thêm bước nào, `Game.zoneProgress`) hoặc tổng quá 90 s (`ZONE_MAX_MS`)
   → `console.error` + hộp lỗi trên màn tải (nút Retry, Back to <zone trước> / Reload page; `hud.zoneError`), trả `false`
   thay vì ném lỗi. Thiếu SPAWN_ → xuất hiện ở `start` của zone hoặc SPAWN_ đầu tiên (kèm cảnh báo console). Người chơi
   khác (mạng) chỉ dựng sau khi zone xong (`phase === "playing"`); lỗi mạng trong vòng lặp chỉ log, không dừng game.

@@ -11,6 +11,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   25.000 tam giác cho Mixamo, `--protect-face`; bản game 6.000 tam giác, 0,57 MB, 15 animation retarget từ file của `prajith`,
   `fold_missing_bones`), logo FPT dán ngực trái (`chest_logo.json`, logo gốc trong `source/` — không commit), chân dung mới.
   Vai `manager` đổi sang `prajith_polo`; model `prajith` cũ giữ nguyên (nguồn animation, viewer).
+- **Canh giờ tải zone theo tiến độ (12/10/2026, nhánh `fix/zone-load-watchdog`):** smoke điện thoại trên CI đỏ lặp lại (gộp PR #34,
+  #36): zone_02 tải quá 20 s tổng trên máy CI vẽ bằng CPU → bảng lỗi che màn chơi, chạm nút Giếng làng 56 lần không mở được.
+  Giờ chỉ báo lỗi khi tải đứng yên 20 s (không qua bước nào: GLB, cỏ, đồ vật, BVH, nhân vật, NPC, biên dịch shader — `zoneProgress`)
+  hoặc tổng quá 90 s; lỗi in kèm thời gian từng bước (`state.zoneSteps`).
 - **Dòng mục tiêu giữa màn hình + menu Esc gọn (12/10/2026, nhánh `feat/menu-layout`):** dòng mục tiêu (`#objective`) chuyển từ
   góc trái lên giữa mép trên (màn thấp: toast xuống 50 px, thẻ tên zone 86 px để không đè). Menu Esc rộng hơn, chia 3 nhóm
   thành cột (Âm thanh & ngôn ngữ · Điều khiển & chỉ đường · Hiển thị; hẹp thì 2 / 1 cột), chú thích dài chuyển vào tooltip,
