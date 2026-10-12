@@ -1637,7 +1637,7 @@ Người dùng yêu cầu đổi dấu chấm than chỉ đường thành mũi t
   28 px), nhấp nhô 10 px.
 - Mục tiêu ngoài khung nhìn: mũi tên cam lớn 46 × 54 px ở mép màn hình xoay theo hướng cần đi (thay vòng tròn "!" 34 px +
   mũi nhọn nhỏ); lề mép nới ra (máy tính 38 px, cảm ứng 44 px, trên 80 px).
-- Đo: test:quick 57/57, `--mobile ui` 20/20; xem bằng mắt zone 3 (trên đầu chị lễ tân, mũi tên mép khi quay lưng).
+- Đo: test:quick 57/57, `--mobile ui` 20/20; xem bằng mắt zone 3 (trên đầu chị lễ tân, mũi tên mép khi quay lưng). **Đã deploy** gh-pages 6414049 (từ main e2ef552).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
