@@ -1491,6 +1491,14 @@ async function runChat(browser, base, srv) {
     await sleep(300);
     const aSees = await A.ev(() => (__game.net.chat.channels.all || []).some((e) => e.text === "An có thấy không?"));
     await check(masked && bSees && !aSees, 'tên tự đặt cũng lọc ("fuck boy" → "**** boy"); An mute Cường → An không nhận, Bình vẫn nhận', JSON.stringify({ masked, bSees, aSees }));
+    // máy khách lọc lại tin + tên nhận được (máy chủ trên mạng có thể chưa wrangler deploy danh sách từ mới): đẩy thẳng 1 tin chưa
+    // lọc (tiếng Việt) vào máy khách Bình → khung chat hiện bản đã che
+    const local = await B.ev(() => {
+      __game._game.net.onChatMessage({ t: "chat", ch: "all", id: "fake_vi", name: "thằng chó", text: "đù má, đồ ngu vl" });
+      const e = (__game.net.chat.channels.all || []).find((x) => x.id === "fake_vi");
+      return e ? { name: e.name, text: e.text } : null; });
+    await check(local?.text === "** **, ** *** **" && local?.name === "***** ***",
+      `máy khách lọc lại tin chưa lọc (tiếng Việt): "${local?.name}: ${local?.text}"`, JSON.stringify(local));
     // tắt chat ở menu Esc (Bình): không còn khung chat, không nhận tin, Enter không mở
     await A.ev(() => __game.chat.close());
     await free(B);

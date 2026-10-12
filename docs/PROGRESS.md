@@ -1651,6 +1651,24 @@ Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem tr
 - Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
   sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390. **Đã deploy** gh-pages 0125625 (từ main 7500094).
 
+### Bộ lọc từ chat: thêm tiếng Việt (12/10/2026, nhánh `feat/chat-filter-vi`)
+
+Người dùng muốn bộ lọc nhắn tin lọc được cả từ tiếng Việt. Trước: 15 từ có dấu + ~20 viết tắt.
+
+- `data/chat.json → filter`: `exact` (so nguyên dấu) 15 → 75 mục — biến thể chửi tục (đù, đù má, đờ mờ, đéo biết, đếch, đel, lìn,
+  kặc, cặk, vãi lồn, mặt lồn…), tục về tình dục (chịch, nứng, bú…, dâm dục / dâm đãng / dâm tặc, hiếp dâm, điếm, phò), cụm xúc phạm
+  (mẹ mày, con mẹ mày, bố mày, tổ sư, tiên sư, mả mẹ, thằng chó, chó má, đồ khốn, khốn nạn, súc vật, mất dạy, vô học, đồ ngu, thằng
+  ngu, ngu như bò, óc lợn, câm mồm…). Từ một chữ dễ trùng nghĩa thường thì chỉ lọc theo cụm: "ngu" gõ không dấu trùng "ngủ",
+  "con chó" là con vật, "đồ ngu" bỏ dấu trùng "đồ ngủ". `plain` (so sau khi bỏ dấu) thêm teencode / gõ không dấu không trùng từ
+  thường: dit, ditme, ditmemay, ditconme, djtme, dit cu, du ma, duma, dume, dumame, dmvl, dcmvl, dkmm, cmm, cmnr, vl, cak, kak
+  ("dit" che cả "đít"; bỏ "du me" vì "dù mẹ"; "vl" che cả viết tắt "VL" — chấp nhận).
+- Máy khách lọc lại: `net.js` dựng cùng bộ lọc (`chatfilter.js`) từ `data/chat.json` của bản web → tin, tên người gửi / người nhận,
+  bảng tên người chơi khác (`remotes.js`) đều qua bộ lọc khi nhận. Lọc 2 lần không đổi gì ("***" giữ nguyên) → danh sách mới có
+  hiệu lực ngay khi deploy bản web; máy chủ thật vẫn lọc theo danh sách cũ tới khi `npx wrangler deploy` (máy Desktop).
+- Kiểm thử: thử 24 câu thường (có dấu / không dấu, câu dễ trùng) + 31 câu chửi: không lọt câu nào, chỉ che nhầm "VL". `test:data`
+  35 câu mẫu (thêm 18 câu tiếng Việt, gồm câu thường không được che); smoke nhắn tin: đẩy thẳng tin chưa lọc vào máy khách →
+  hiện bản đã che. Đo: test:data, test:quick 57/57; phần nhắn tin chạy trên CI (job `net`).
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

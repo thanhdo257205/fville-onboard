@@ -29,6 +29,9 @@ function tag(cls, text, center = null) {
   return obj;
 }
 
+// tên người chơi khác qua bộ lọc từ của chat (net.js truyền vào; máy chủ đã lọc, máy khách lọc lại theo danh sách mới nhất)
+let cleanName = (s) => s;
+
 class Remote {
   constructor(p) {
     this.id = p.id;
@@ -41,7 +44,7 @@ class Remote {
     this.profile(p);
   }
   profile(p) {
-    this.name = p.name || "";
+    this.name = cleanName(p.name || "");
     this.outfit = p.outfit || "";
     this.acc = Array.isArray(p.acc) ? p.acc.filter((x) => typeof x === "string") : [];   // phụ kiện đang đội (vd cap)
     if (this.model && p.model !== this.model) { this.rebuild = true; this.failed = false; }   // đổi model → dựng lại
@@ -73,7 +76,8 @@ class Remote {
 }
 
 export class RemotePlayers {
-  constructor({ game, cfg, phrases }) {
+  constructor({ game, cfg, phrases, clean = null }) {
+    if (clean) cleanName = clean;
     this.g = game;
     this.cfg = cfg;
     this.phrases = phrases;     // id → chữ
