@@ -6,8 +6,10 @@ Bố cục (người chơi vào từ cửa FSA phía đông, đi về -X):
   x  -8..0    KHU NGHỈ sàn gỗ: bàn bi-a, kệ ô vuông đỏ–trắng, ghế tulip. Cửa FSA ở x = 0, y -1.6..1.6
   x -34..-8   VĂN PHÒNG sàn gạch caro xanh 4 tông
      lối đi chính y -1.5..1.5 (3 m)
-     phía bắc: PHÒNG HỌP MENTOR (x -21..-15) và PHÒNG HỌP MANAGER (x -30..-24), hộp kính tối, cửa mở ra lối đi
      phía nam: 6 cụm bàn (2 hàng × 3 cụm × 8 bàn); BÀN INTERN ở đầu dãy gần lối vào (x ≈ -11.9)
+  x -52..-34  HÀNH LANG gỗ, 3 phòng họp phía +Y: trái khi đi từ phòng phụ về phòng chính (+X).
+  x -70..-52  PHÒNG LÀM VIỆC PHỤ: sàn caro xanh, bàn đen, tủ cây, lối gỗ dọc vách kính.
+  Tên phòng tạm Phòng họp 1–3, cấu hình tại data/office.json; kích thước ước lượng từ video.
 Sàn zone này z = 0 (tầng trên; zone_04 đặt tầng trên ở z 4.2).
 """
 import json
@@ -25,19 +27,21 @@ for _m in [k for k in sys.modules if k == "lib" or k.startswith("lib.")]:
 import bpy  # noqa: E402
 
 from lib import interior as it  # noqa: E402
-from lib import desktop_computer, kit, pool_table, team_photos, zone  # noqa: E402
+from lib import desktop_computer, kit, office_extension, pool_table, team_photos, zone  # noqa: E402
 from lib import markers as mk  # noqa: E402
 from lib.mesh import MeshBuilder  # noqa: E402
 
 ZONE = "zone_05_office"
 H = it.CEIL_OFFICE
 BREAK = (-8.0, 0.0, -6.0, 6.0)
-OFFICE = (-34.0, -8.0, -14.0, 8.0)
+with open(os.path.join(HERE, "..", "..", "data", "office.json"), encoding="utf-8") as _f:
+    OFFICE_CONFIG = json.load(_f)
+OFFICE = tuple(OFFICE_CONFIG["main"])
 FSA_Y = (-1.6, 1.6)
 OPEN_Y = (-1.5, 1.5)                    # lối từ khu nghỉ sang văn phòng
-ROOM_MENTOR = (-21.0, -15.0, 2.5, 8.0)
-ROOM_MANAGER = (-30.0, -24.0, 2.5, 8.0)
-ROOM_DOOR = 2.6
+ROOM_MENTOR = tuple(OFFICE_CONFIG["meeting_rooms"][0]["bounds"])
+ROOM_MANAGER = tuple(OFFICE_CONFIG["meeting_rooms"][1]["bounds"])
+ROOM_DOOR = OFFICE_CONFIG["door_width_m"]
 CLUSTERS_X = (-14.0, -22.2, -30.4)       # tâm các cụm bàn
 CLUSTERS_Y = (-5.0, -11.0)               # đường vách ngăn giữa 2 hàng
 DESK_W = 1.4
@@ -69,10 +73,10 @@ def build_shell(col, rng):
     bx0, bx1, by0, by1 = BREAK
     ox0, ox1, oy0, oy1 = OFFICE
     # sàn
-    it.floor_tiles(b, bx0, by0, bx1, by1, 0.0, ["san_go_vp", "san_go_vp_2"], cell=0.5, mat="gloss",
-                   jitter=lambda i, j: int((i * 3 + j * 7) % 5 == 0))
+    office_extension.wood_floor(b, BREAK)
     it.floor_tiles(b, ox0, oy0, ox1, oy1, 0.0, ["office_tile_dk", "office_tile_md", "office_tile_yl", "office_tile_lt"],
-                   cell=0.6, mat="gloss", jitter=office_floor_color)
+                   cell=1.2, mat="gloss", jitter=lambda i, j: office_floor_color(i * 2, j * 2))
+    office_extension.wood_floor(b, (ox0, ox1, OPEN_Y[0], OPEN_Y[1]), z=0.006)
     # trần + đèn panel LED
     it.ceiling_tex(b, bx0, by0, bx1, by1, H, mat="ceiling_grid_tex")
     it.ceiling_tex(b, ox0, oy0, ox1, oy1, H, mat="ceiling_grid_tex")
@@ -90,7 +94,8 @@ def build_shell(col, rng):
     # tường văn phòng
     it.wall(b, (ox0, oy0), (ox1, oy0), 0, H)
     it.wall(b, (ox0, oy1), (ox1, oy1), 0, H)
-    it.wall(b, (ox0, oy0), (ox0, oy1), 0, H)
+    it.wall(b, (ox0, oy0), (ox0, oy1), 0, H,
+            openings=[(OPEN_Y[0] - oy0, OPEN_Y[1] - oy0, H)])
     it.wall(b, (ox1, oy1), (ox1, by1), 0, H)
     it.wall(b, (ox1, by0), (ox1, oy0), 0, H)
     # nhìn ra qua cửa FSA: một đoạn sàn tầng trên zone_04 (sàn xanh nhạt, tường, trần) — trước đây sau cửa không có gì,
@@ -107,9 +112,12 @@ def build_shell(col, rng):
     it.fire_cabinet(b, -9.0, oy1 - 0.15, face=(0, -1))
     # cửa sổ rèm cuốn (tường nam + tây văn phòng), len chân tường, ảnh team treo tường khu nghỉ
     it.window_band(b, (ox0, oy0), (ox1, oy0), (0, 1), rng=rng)
-    it.window_band(b, (ox0, oy0), (ox0, oy1), (1, 0), rng=rng)
+    # Tách cửa sổ hai bên, không phủ kính lên lối vào hành lang.
+    it.window_band(b, (ox0, oy0), (ox0, OPEN_Y[0]), (1, 0), rng=rng)
+    it.window_band(b, (ox0, OPEN_Y[1]), (ox0, oy1), (1, 0), rng=rng)
     for p0, p1, inw in (((ox0, oy0), (ox1, oy0), (0, 1)), ((ox0, oy1), (ox1, oy1), (0, -1)),
-                        ((ox0, oy0), (ox0, oy1), (1, 0)), ((bx0, by1), (bx1, by1), (0, -1)),
+                        ((ox0, oy0), (ox0, OPEN_Y[0]), (1, 0)),
+                        ((ox0, OPEN_Y[1]), (ox0, oy1), (1, 0)), ((bx0, by1), (bx1, by1), (0, -1)),
                         ((bx0, by0), (bx1, by0), (0, 1))):
         it.baseboard(b, p0, p1, inw)
     # 3 ảnh team thật (lib/team_photos.py; trước đây 3 mảng màu 1,0 × 0,7 m): cùng cao 0,75 m, rộng theo tỉ lệ từng ảnh
@@ -183,20 +191,7 @@ def write_pool_json(info):
 
 
 def build_meeting_rooms(cols, rng):
-    I = cols["INT"]
-    out = {}
-    for key, label, (x0, x1, y0, y1) in (("phong_hop_mentor", "Phòng họp Mentor", ROOM_MENTOR),
-                                         ("phong_hop_manager", "Phòng họp Manager", ROOM_MANAGER)):
-        cx = (x0 + x1) / 2
-        b = MeshBuilder()
-        it.meeting_room(b, x0, y0, x1, y1, ("S", cx - ROOM_DOOR / 2, cx + ROOM_DOOR / 2), h=H, rng=rng)
-        # biển phòng (placeholder màu: mentor = cam, manager = xanh dương)
-        b.box((cx + ROOM_DOOR / 2 + 0.5, y0 - 0.06, 2.0), (0.5, 0.02, 0.3), "fpt_orange" if "mentor" in key else "fpt_blue")
-        mesh = b.to_object(f"{key}_mesh", I)
-        root = mk.interactive(key, label, (cx, (y0 + y1) / 2, 0), I)
-        mk.parent(mesh, root)
-        out[key] = (x0, x1, y0, y1)
-    return out
+    return office_extension.rooms(cols, OFFICE_CONFIG, H)
 
 
 def desk_rows():
@@ -295,7 +290,8 @@ def build_colliders(col, rooms):
     C("vach_luc_giac_bac", (bx0, (OPEN_Y[1] + oy1) / 2, H / 2), (0.4, oy1 - OPEN_Y[1], H), col)
     C("vp_tuong_nam", ((ox0 + ox1) / 2, oy0, H / 2), (ox1 - ox0, 0.3, H), col)
     C("vp_tuong_bac", ((ox0 + ox1) / 2, oy1, H / 2), (ox1 - ox0, 0.3, H), col)
-    C("vp_tuong_tay", (ox0, (oy0 + oy1) / 2, H / 2), (0.3, oy1 - oy0, H), col)
+    C("vp_tuong_tay_nam", (ox0, (oy0 + OPEN_Y[0]) / 2, H / 2), (0.3, OPEN_Y[0] - oy0, H), col)
+    C("vp_tuong_tay_bac", (ox0, (OPEN_Y[1] + oy1) / 2, H / 2), (0.3, oy1 - OPEN_Y[1], H), col)
     (x0, y0, _), (x1, y1, z1) = POOL_INFO["world_bounds"]   # bàn + 2 cây cơ, đo khi dựng (lib/pool_table.py)
     C("ban_bi_a", ((x0 + x1) / 2, (y0 + y1) / 2, z1 / 2), (x1 - x0, y1 - y0, z1), col)
     C("ke_o_vuong_1", (-7.6, -3.5, 1.0), (0.45, 1.3, 2.0), col)
@@ -317,10 +313,18 @@ def build_colliders(col, rooms):
 
 
 def build(cols, rng):
+    # Văn phòng ở tầng trên (zone_04 cao 4.2 m). Mặt sân thấp bên ngoài
+    # chặn góc nhìn xiên qua kính; 2 tam giác, không va chạm / vùng đi mới.
+    outside = MeshBuilder()
+    outside.quad([(-120, -64, -4.2), (56, -64, -4.2), (56, 58, -4.2), (-120, 58, -4.2)], "grass")
+    outside.to_object("ENV_san_ngoai_van_phong", cols["ENV"])
     build_shell(cols["ENV"], rng)
     build_break_area(cols["ENV"], rng)
+    office_extension.collaboration_area(cols, H)
+    office_extension.shell(cols, OFFICE_CONFIG, H, office_floor_color)
     rooms = build_meeting_rooms(cols, rng)
     intern = build_desks(cols, rng)
+    office_extension.desks(cols, OFFICE_CONFIG, DESK_W)
     build_markers(cols["GAME_markers"], intern)
     build_colliders(cols["COLLISION"], rooms)
 
@@ -336,14 +340,18 @@ def compare_cameras():
         ("bi_a", "VanPhongLamViec/t_0018.0.jpg", (-6.2, 0.2, 1.6), (-3.2, 4.0, 0.8), 22),
         ("ban_bi_a_can", None, (POOL[0] + 1.9, POOL[1] - 1.9, 1.75), (POOL[0] + 0.2, POOL[1], 0.72), 30),
         ("khu_nghi", None, (-0.6, -5.4, 2.5), (-4.6, 1.8, 0.6), 16),      # toàn cảnh khu nghỉ (không có ảnh thật)
-        ("phong_hop", "VanPhongLamViec/t_0024.0.jpg", (-12.0, -1.0, 1.5), (-20.0, 4.5, 1.2), 22),
+        ("phong_hop", "2hgb6fgdsy5bvvqlfur14ouxy5nrsueccy2c1/t_0002.0.jpg", (-50.0, -0.7, 1.6), (-35.0, 0.5, 1.4), 22),
+        ("phong_phu", "2hgb6fgdsy6mehwougvbaggp0un9yfmsz6my2/t_0010.0.jpg", (-53.5, 0.1, 1.6), (-65.0, -3.0, 1.0), 22),
+        ("hanh_lang_ve_chinh", None, (-51.0, 0.0, 1.65), (-34.0, 0.0, 1.5), 20),
+        ("hanh_lang_ve_phu", None, (-35.0, 0.0, 1.65), (-52.0, 0.0, 1.5), 20),
     ]
 
 
 LIGHTS = ([((x, y, 2.95), 2.5, 60) for x in range(-31, 0, 5) for y in (-10, -4, 2, 6)]
-          + [((x, y, 1.2), 4.0, 120, True) for x in range(-30, 0, 8) for y in (-8, 0, 5)])
+          + [((x, y, 1.2), 4.0, 120, True) for x in range(-30, 0, 8) for y in (-8, 0, 5)]
+          + [((x, y, 2.9), 2.0, 90) for x in range(-68, -34, 4) for y in (-5, 0, 5)])
 
 if __name__ == "__main__":
     zone.run(ZONE, build, compare_cameras(),
-             overview=((-17, -3, 40), (-17, -3, 0), 0, {"ortho": 36, "cut_z": 2.7}),
+             overview=((-35, -3, 65), (-35, -3, 0), 0, {"ortho": 76, "cut_z": 2.7}),
              interior=True, ao_distance=1.0, preview_lights=LIGHTS)

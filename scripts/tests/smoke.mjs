@@ -361,6 +361,38 @@ async function runLook(browser, base, look) {
       const zone = order[zi], next = order[zi + 1], zt = Date.now();
       const required = await ev((z) => __game._game.content.quests.filter((q) => q.zone === z && q.required).map((q) => q.id), zone);
       const ps = { zone, lunch: false, login: false, reloaded: false };
+      // Rebuilt office: exercise the real capsule solver on both corridor directions
+      // and each meeting-room doorway without advancing quests or moving the player.
+      if (zone === "zone_05" && look === looks[0]) {
+        const office = await ev(() => {
+          const g = __game._game, V = g.player.position.constructor;
+          const body = new g.player.body.constructor();
+          body.teleport(new V(-2, 0.05, 0));
+          const legs = [];
+          const go = (x, z) => {
+            let distance = Infinity;
+            for (let i = 0; i < 1600; i++) {
+              const d = new V(x - body.position.x, 0, z - body.position.z);
+              distance = d.length();
+              if (distance < 0.1) break;
+              body.step(1 / 60, d.normalize().multiplyScalar(Math.min(4, distance * 60)), g.zone.collider);
+            }
+            legs.push({ to: [x, z], reached: distance < 0.1, floor: Math.abs(body.position.y) < 0.05 });
+          };
+          go(-68, 0); go(-2, 0);
+          const names = [];
+          for (const id of ["phong_hop_mentor", "phong_hop_manager", "phong_hop_3"]) {
+            const room = g.zone.nodes.get(`INT_${id}`), p = room?.getWorldPosition(new V());
+            if (!p) { legs.push({ reached: false, missing: id }); continue; }
+            names.push(room.userData.label);
+            go(p.x, 0); go(p.x, -3.1); go(p.x, 0);
+          }
+          const batches = []; g.zone.root.traverse(o => { if (o.userData.batchGroup === "ENV_ban_phu") batches.push(o.name); });
+          return { legs, names, batches };
+        });
+        await check(office.legs.every(l => l.reached && l.floor) && office.names.length === 3 && office.batches.length > 0,
+          "zone_05: phòng chính ↔ phòng phụ, đi qua cửa 3 phòng họp, sàn liên tục và bàn phụ được gộp lượt vẽ", JSON.stringify(office));
+      }
       // cây / bụi tre mô hình Sketchfab (zone 0–3): bản sao dùng chung lưới đã gộp thành vài mesh (world/zone.js
       // batchInstances), mỗi bản sao = 1 cây riêng để làm mờ (số cây khác nhau, camera giữa tán → cây mờ), lá cắt alpha
       // (alphaTest) không viền nét; zone_00 / zone_01: xe bus mô hình (thân + cánh cửa dùng chung lưới, chất liệu M_bus_tex)
@@ -620,13 +652,13 @@ async function runLook(browser, base, look) {
       // mắt không lọt ra trời (sàn không áp tường, mặt đất ngoài kính thiếu…). Tia ngang lọt qua cửa mở ra sân là đúng, chỉ in
       // số. GAP_FREE: zone đã build lại sau khi sửa script; zone_03, zone_05 thêm vào khi build lại trên máy có file gốc Sketchfab
       if (/^zone_0[345]$/.test(zone) && look === looks[0]) {
-        const GAP_FREE = ["zone_04"];
+        const GAP_FREE = ["zone_04", "zone_05"];
         // FLAT_FREE: zone không có cửa nào mở ra ngoài trời — tia ngang lọt ra = nhìn qua cửa sang zone khác thấy phông nền
         // (thiếu phòng giả scene_fixes → rooms; zone_05: cửa kính vào văn phòng, trước đây ~260 tia)
         const FLAT_FREE = ["zone_04", "zone_05"];
-        const gp = await ev(() => { const r = __game.gaps(); const n = (k) => r.gaps.filter((g) => g.kind === k).reduce((a, g) => a + g.rays, 0);
+        const gp = await ev((z) => { const r = __game.gaps({ far: z === "zone_05" ? 100 : 60 }); const n = (k) => r.gaps.filter((g) => g.kind === k).reduce((a, g) => a + g.rays, 0);
           const rooms = []; __game._game.zone.root.traverse((o) => { if (o.userData.fix === "room") rooms.push(o.name); });
-          return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), rooms, top: r.gaps.slice(0, 5) }; });
+          return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), rooms, top: r.gaps.slice(0, 5) }; }, zone);
         const strict = GAP_FREE.includes(zone), flatFree = FLAT_FREE.includes(zone);
         // chậu cây thay chậu cọ cũ (scene_fixes → remove_parts + props): mọi hộp gỡ đúng 1 cây (≥ 3 mảnh), đủ số chậu mới
         const fxz = SCENE_FIXES[zone] || {}, zf = await ev(() => __game._game.zone.fixes);

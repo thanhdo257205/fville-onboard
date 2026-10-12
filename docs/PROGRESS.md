@@ -7,6 +7,15 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Dựng lại zone 5 theo ba video (12/10/2026, nhánh `codex/office-video-rebuild`):** phòng chính / khu nghỉ
+  theo VanPhongLamViec, thêm phòng phụ 16 bàn và hành lang gỗ nối hai phòng. Ba phòng họp có cửa kính mở sẵn,
+  tay nắm và biển Phòng họp 1–3, đúng bên trái khi từ phòng phụ sang chính (+X), bên phải ở chiều ngược lại.
+  Tên / bố cục tại `data/office.json`; kích thước ước lượng từ video. Giữ nhiệm vụ, bàn intern và số đo bi-a;
+  gộp bàn phụ, giảm lưới sàn, bỏ phòng giả sau cửa FSA vì GLB mới đã có hành lang thật. Thêm mặt sân thấp 4,2 m
+  ngoài cửa sổ (2 tam giác) để góc nhìn xiên qua kính không thấy khoảng trống. Bản Thấp 56.279 tam giác,
+  Draco / WebP khoảng 598 KB; có kiểm tra sàn, cửa, phía phòng họp, ngân sách và capsule thật trong smoke GitHub.
+  Chi tiết / giới hạn: `references/office_layout.md`. Chưa đo FPS trên GPU thật; không chạy Chrome local.
+
 - **Mở rộng danh sách lọc chat (12/10/2026, nhánh `codex/chat-blocklist`):** bổ sung cụm chửi tục / xúc phạm
   tiếng Việt có dấu, biến thể viết tắt / không dấu và tiếng Anh trong `data/chat.json`. Giữ cách so theo từ / cụm,
   không cấm riêng các từ không dấu dễ trùng nghĩa thường (`du`, `lon`, `cac`, `buoi`, `ngu`, `cho de`).
