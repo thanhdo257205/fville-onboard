@@ -1649,7 +1649,7 @@ Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem tr
 - Ảnh: `Game.wardrobeInfo` → `img` = `models.<model người chơi>.portrait` (Áo Cam) / `outfit_portraits.<bộ>` (cùng nguồn với màn
   tạo nhân vật). Màn thấp: khung 84 px.
 - Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
-  sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390.
+  sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390. **Đã deploy** gh-pages 0125625 (từ main 7500094).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
