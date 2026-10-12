@@ -1,12 +1,18 @@
 # Tiến độ — Ngày Đầu Ở F-Ville
 
-Cập nhật: 11/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
+Cập nhật: 12/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
 `/viewer/`).
 
 Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và push nhánh `main`.
 
 ## Đã xong
 
+- **CD mức A — deploy GitHub Pages có duyệt (12/10/2026, nhánh `feat/cd-deploy`):** `.github/workflows/deploy.yml`. Push main →
+  `test` xanh → job `deploy` (môi trường `production`) chờ người dùng bấm Approve trên Actions → `deploy_site.py --no-build` với
+  đúng bản build smoke desktop đã chơi thử (artifact `site-build` từ `test.yml`), bot `github-actions[bot]` → chờ trang thật có
+  mã build mới, tóm tắt ở trang lượt chạy. Chỉ đổi tài liệu / script Blender / test / máy chủ → bỏ qua. Chạy tay nhập commit main
+  → build lại, dùng để quay về bản cũ. Cảnh báo khi bản trên web build từ commit chưa vào main. Cần người dùng tạo môi trường
+  `production` + Required reviewers (Settings → Environments). Máy chủ Cloudflare vẫn deploy tay.
 - **Nền cỏ từ model người dùng (12/10/2026, nhánh `codex/grass-ground-model`, PR #31):** Simple Grass Ground của Shun Koizumi
   (CC BY 4.0), 6.890.736 → 77.600 byte; giữ mặt phẳng tối thiểu 2 tam giác, chỉ texture màu 512 px WebP + Draco.
   `scripts/tools/prepare_grass.py` dựng lại asset từ file gốc. Game thay mặt cỏ thấp ở zone 1–4 và vành đất xa,

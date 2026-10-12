@@ -108,7 +108,8 @@ npm --prefix server ci && npm --prefix server run dev
 node scripts/tools/net_bots.js --url ws://127.0.0.1:8787/ws --bots 20 --seconds 60   # đo tải, ước tính request Cloudflare
 # đưa máy chủ lên Cloudflare (cần wrangler login, chỉ máy Desktop): docs/multiplayer.md
 
-# Deploy GitHub Pages (chỉ khi người dùng đồng ý)
+# Deploy GitHub Pages: bình thường do CD làm (.github/workflows/deploy.yml — push main, CI xanh → người dùng duyệt trên Actions)
+# Deploy từ máy (khẩn cấp / không có CD; chỉ khi người dùng đồng ý):
 python scripts/deploy_site.py        # build → quét riêng tư → commit → push gh-pages
 python scripts/tools/privacy_scan.py # quét nhánh main trước khi commit
 ```
@@ -284,6 +285,12 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   test:pool) và `smoke (desktop | mobile | pool-touch | net)` (build rồi smoke trên bản build: 2 ngoại hình zone 0 → 5 / lượt
   điện thoại `--mobile ui` / bi-a cảm ứng `--mobile pool` / bản lưu cũ + test mạng `--extra only --mobile off`), ~8–10 phút;
   chạy tay (Run workflow) thì phần desktop chạy cả 3 ngoại hình. Đỏ → xem log + artifact `test-results-<phần>`.
+- CD mức A (`.github/workflows/deploy.yml`): lượt `test` của một lần push main xanh → job `deploy` (môi trường `production`,
+  Required reviewers) **chờ người dùng duyệt** trên trang Actions → `deploy_site.py --no-build` với đúng bản build smoke desktop đã
+  chơi thử (artifact `site-build`, 3 ngày), danh tính `github-actions[bot]` → chờ trang thật có mã build mới, tóm tắt ở trang lượt
+  chạy. Chỉ đổi tài liệu / `scripts/blender|tests|tools/` / `server/` / `.github/` / `*.md` → bỏ qua, không hỏi duyệt. Chạy tay
+  (Actions → deploy → Run workflow, nhập commit của main) = build lại + duyệt — dùng để quay về bản cũ. Bản trên web build từ
+  commit chưa vào main (deploy tay từ nhánh PR) → cảnh báo trong lượt chạy. Máy chủ Cloudflare vẫn deploy tay.
 
 ## Riêng tư và bản quyền (repo công khai)
 
@@ -300,7 +307,8 @@ trước. `python -m http.server 8765` ở thư mục gốc để mở viewer (`
   không file nào trên 20 MB.
 - Commit bằng danh tính noreply đã cấu hình trong repo (`git config user.email` = `…@users.noreply.github.com`).
 - Nhánh **main**: cuối mỗi lần làm việc cập nhật `docs/PROGRESS.md`, commit và push. Nhánh **gh-pages** (deploy bản
-  web): chỉ push khi người dùng đồng ý.
+  web): chỉ push khi người dùng đồng ý — CD trên GitHub hỏi duyệt mỗi lần; đừng deploy tay từ nhánh chưa gộp vào main (lần CD
+  sau sẽ ghi đè mất).
 
 ## Việc chỉ làm được trên máy có Blender (máy làm việc gốc)
 
