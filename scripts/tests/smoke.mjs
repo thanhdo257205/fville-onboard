@@ -572,6 +572,19 @@ async function runLook(browser, base, look) {
         await check(back.z1.ok && back.z1.zone === "zone_04" && !back.z1.err && back.z2.ok && back.z2.zone === "zone_05" && !back.z2.err && back.z2.pool && !conB.length,
           "zone_05 → zone_04 → zone_05 (sau khi chơi bi-a): rời và vào lại zone 5 được, bàn bi-a dựng lại, console sạch", JSON.stringify({ ...back, console: conB.slice(0, 5) }));
       }
+      if (/^zone_0[1234]$/.test(zone) && look === looks[0]) {
+        const grass = await ev(() => {
+          const g = __game._game, meshes = [];
+          g.zone.root.traverse((o) => { if (o.isMesh && o.name.startsWith("GRASS_")) meshes.push(o); });
+          const map = meshes[0]?.material.map;
+          return { ...g.zone.fixes?.grass, count: meshes.length, width: map?.image?.width, height: map?.image?.height,
+            normalsUp: meshes.every((o) => o.geometry.attributes.normal.getY(0) > 0.99),
+            noOutline: meshes.every((o) => o.material.userData.outlineParameters?.visible === false),
+            surface: meshes.every((o) => o.userData.surface === "grass") };
+        });
+        await check(grass.count > 0 && grass.count === grass.meshes && grass.after <= grass.before && grass.width === 512 && grass.height === 512 && grass.normalsUp && grass.noOutline && grass.surface,
+          `${zone}: nền cỏ WebP 512 px, ${grass.before} → ${grass.after} tam giác, ${grass.count} mesh, không viền`, JSON.stringify(grass));
+      }
       // zone trong nhà: kéo chuột ngẩng hết cỡ + lăn chuột lùi xa nhất → camera vẫn dưới trần (trần không có COL_; trước
       // đây camera bay lên tận nóc nhà). Đối chứng: cùng các góc khi camera chỉ tránh COL_ (số lần xuyên trần trước khi sửa)
       if (/^zone_0[345]$/.test(zone) && look === looks[0]) {

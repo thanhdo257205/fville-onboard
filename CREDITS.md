@@ -61,6 +61,13 @@ do người dùng cung cấp, chỉ nằm trong texture.
   texture màu thành 1 atlas khi build zone.
 
 ## Đồ vật đặt bằng dữ liệu
+- Nền cỏ (`assets/props/grass_ground/grass_ground.glb`): "Simple Grass Ground (Free Low Model)" by Shun Koizumi
+  (Sketchfab), giấy phép CC BY 4.0 —
+  https://sketchfab.com/3d-models/simple-grass-ground-free-low-model-758b5be71cd6427e9834d2968afff7c4
+  (nguồn và giấy phép trong glTF `asset.extras`). File gốc chỉ lưu ở thư mục `source/` trên máy làm việc.
+  `scripts/tools/prepare_grass.py`: giữ mặt phẳng tối thiểu 2 tam giác, bỏ normal / AO / metallic-roughness map,
+  texture màu 512 px WebP, Draco: 6.890.736 → 77.600 byte. Game dùng bề mặt này cho các bãi cỏ hiện có, lát 4 × 4 m;
+  lưới cỏ hình chữ nhật được gộp về 2 tam giác, giữ đường / vỉa hè / va chạm.
 - Chậu cây trong nhà (`assets/props/potted_plant/potted_plant.glb` — thay chậu cọ cũ ở sảnh zone 3, tầng trên zone 4, khu
   nghỉ zone 5): "Potted Plant" by Blizzy (Sketchfab), giấy phép CC BY 4.0 —
   https://sketchfab.com/3d-models/potted-plant-2cfe4f4c192f4dd08229bd7460532b09 (ghi trong file gốc, glTF `asset.extras`).

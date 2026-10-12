@@ -147,6 +147,11 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 
 ## 4. Nhân vật và 3D (cần máy có Blender + file gốc)
 
+- [x] P2 Thay nền đất xanh bằng model Simple Grass Ground do người dùng cung cấp (12/10/2026)
+  — Phụ trách: Codex — nhánh `codex/grass-ground-model`, PR #31. GLB 6,89 MB → 77,6 KB; mặt phẳng 2 tam giác,
+  texture 512 px WebP + Draco; giảm lưới cỏ zone 1 / 2 về 2 / 10 tam giác, giữ đường và va chạm.
+  A/B 6 zone trên GPU AMD Radeon: thời gian khung tăng tối đa 6,1% (< 10%); test geometry / asset + smoke zone 1–4.
+
 - [ ] P2 Model riêng cho Manager, Lan, Minh, Hà, anh Khang (đang tạm dùng intern đổi màu áo): ảnh → Meshy → Mixamo → dựng — Phụ trách: —
 - [x] P2 Người chơi ngồi vào ghế ở bàn làm việc zone 5 (code + data, không cần build lại zone) — Phụ trách: Claude — nhánh
   `feat/zone5-seat-cap`

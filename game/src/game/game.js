@@ -30,6 +30,7 @@ import { setTint } from "../characters/characters.js";
 import { sound } from "../core/sound.js";
 import { PoolTable } from "../pool/table.js";
 import { Footsteps } from "./footsteps.js";
+import { replaceGrass, grassTexture } from "../world/grass.js";
 
 // áp hiệu ứng (GameState.apply → events.kinds) → tiếng, theo thứ tự ưu tiên
 const EFFECT_SOUNDS = ["reward", "checklist", "value", "quest", "grain", "item", "advice"];
@@ -159,6 +160,8 @@ export class Game {
   async _prepareZone(zoneId, file) {
     const zone = await loadZone(zoneId, file, this.state.tier, this.data.collision?.[zoneId]);
     applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
+    await replaceGrass(zone);
+    this.sky.groundTexture = await grassTexture();
     await placeProps(zone, this.data.sceneFixes?.[zoneId]?.props);   // vật từ GLB riêng (vd chậu cây) — trước BVH camera
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
     // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)

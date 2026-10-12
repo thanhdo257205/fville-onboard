@@ -7,6 +7,15 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Nền cỏ từ model người dùng (12/10/2026, nhánh `codex/grass-ground-model`, PR #31):** Simple Grass Ground của Shun Koizumi
+  (CC BY 4.0), 6.890.736 → 77.600 byte; giữ mặt phẳng tối thiểu 2 tam giác, chỉ texture màu 512 px WebP + Draco.
+  `scripts/tools/prepare_grass.py` dựng lại asset từ file gốc. Game thay mặt cỏ thấp ở zone 1–4 và vành đất xa,
+  lát 4 × 4 m, dùng chung texture / chất liệu, không viền; đường, vỉa hè và COL_ giữ nguyên.
+  Lưới cỏ zone 1: 900 → 2 tam giác; zone 2: 2.054 → 10; các mảng nhỏ / không chữ nhật giữ hình dạng.
+  Giữ tiếng bước chân cỏ bằng `userData.surface`. Kiểm thử geometry / ngân sách asset nằm trong `test:data`;
+  smoke kiểm tra nền cỏ ở zone 1–4. A/B 6 zone trên AMD Radeon, 1366 × 768: thời gian khung −4,8% đến +6,1%, đạt ngưỡng +10%
+  (`scripts/tests/grass_perf.mjs`; kết quả và cách đo trong `docs/perf_report.md`).
+
 ### Bối cảnh 3D (Blender → GLB)
 - 6 zone dựng bằng script Python chạy lại được (`scripts/blender/zone_00.py` … `zone_05.py`, thư viện dùng chung
   `scripts/blender/lib/`): zone 0 điểm đón xe bus trong phố, zone 1 bến xe F-Ville, zone 2 cổng · giếng làng · tượng
