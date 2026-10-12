@@ -7,6 +7,12 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Mở rộng danh sách lọc chat (12/10/2026, nhánh `codex/chat-blocklist`):** bổ sung cụm chửi tục / xúc phạm
+  tiếng Việt có dấu, biến thể viết tắt / không dấu và tiếng Anh trong `data/chat.json`. Giữ cách so theo từ / cụm,
+  không cấm riêng các từ không dấu dễ trùng nghĩa thường (`du`, `lon`, `cac`, `buoi`, `ngu`, `cho de`).
+  Bổ sung 16 câu kiểm tra cụm mới, viết hoa, leetspeak, chữ tách rời, emoji và câu thường không bị che nhầm;
+  chạy kiểm thử trên GitHub Actions. Máy khách áp dụng khi deploy web; máy chủ cần deploy Worker để lọc trước khi phát.
+
 - **CD mức A — deploy GitHub Pages có duyệt (12/10/2026, nhánh `feat/cd-deploy`):** `.github/workflows/deploy.yml`. Push main →
   `test` xanh → job `deploy` (môi trường `production`) chờ người dùng bấm Approve trên Actions → `deploy_site.py --no-build` với
   đúng bản build smoke desktop đã chơi thử (artifact `site-build` từ `test.yml`), bot `github-actions[bot]` → chờ trang thật có

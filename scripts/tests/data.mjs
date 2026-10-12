@@ -402,6 +402,15 @@ const chatCases = [
   ["Đi ngủ thôi, di ngu thoi", "Đi ngủ thôi, di ngu thoi"], ["con chó nhà mình, đồ ngủ màu hồng, con ngủ chưa", "con chó nhà mình, đồ ngủ màu hồng, con ngủ chưa"],
   ["Dù mẹ bảo, chờ để em xem, cho de em xem", "Dù mẹ bảo, chờ để em xem, cho de em xem"],
   ["cac ban oi buoi chieu nay hop, lon bia, Dell laptop", "cac ban oi buoi chieu nay hop, lon bia, Dell laptop"],
+  // Mở rộng danh sách: cụm có dấu / không dấu, viết tắt, leetspeak và che đúng ranh giới từ.
+  ["VÃI BUỒI", "*** ****"], ["ăn cứt", "** ***"], ["đồ rác rưởi", "** *** ****"],
+  ["đụ cả nhà", "** ** ***"], ["dit ca nha", "*** ** ***"], ["dau buoi", "*** ****"],
+  ["vailon dclm deome", "****** **** *****"], ["v4il0n", "******"], ["d c l m", "* * * *"],
+  ["bullshit dumbass shithead", "******** ******* ********"], ["son of a bitch", "*** ** * *****"],
+  ["cocksucker phuck", "********** *****"], ["😀 ăn cứt nhé", "😀 ** *** nhé"],
+  ["Cho dê ăn, dù cả nhà đi ngủ, đầu bài rất lớn", "Cho dê ăn, dù cả nhà đi ngủ, đầu bài rất lớn"],
+  ["cho de an, du ca nha di ngu, dau bai rat lon", "cho de an, du ca nha di ngu, dau bai rat lon"],
+  ["cocktail shuttle classic document", "cocktail shuttle classic document"],
 ];
 for (const [inp, want] of chatCases) {
   const got = flt.clean(inp).text;
