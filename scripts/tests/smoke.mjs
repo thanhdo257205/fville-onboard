@@ -169,6 +169,9 @@ async function runLook(browser, base, look) {
   // windows, compositor-frame stability waits can stall on paused overlays.
   const clickShown = async (selector, { hover = false } = {}) => {
     await page.bringToFront();
+    // Scrolling/redrawing cards can put the next card under the old pointer.
+    // Leave the panel first so the move below produces a fresh pointerover.
+    if (hover) await page.mouse.move(0, 0);
     await page.locator(selector).evaluate((button) => button.scrollIntoView({ block: "center", behavior: "instant" }));
     const point = await page.waitForFunction((selector) => {
       const button = document.querySelector(selector);
