@@ -1,5 +1,5 @@
 // Tủ đồ: chọn áo (characters.json → wardrobe.outfits) và phụ kiện (accessories, vd mũ lưỡi trai cam). Mở bằng nút 👕
-// (máy tính: góc phải dưới; cảm ứng: hàng nút — ui/touch.js), phím I, hoặc nút trong menu Esc. Bảng ở bên phải màn hình, camera
+// (máy tính: góc phải dưới; cảm ứng: hàng nút — ui/touch.js), hoặc phím I. Bảng ở bên phải màn hình, camera
 // quay ra trước mặt nhân vật (Game.openWardrobe) — bấm món đồ là mặc ngay. Món chưa mở khoá: ổ khoá + câu gợi ý cách mở.
 // Khung xem trước đầu bảng: chân dung nhân vật mặc bộ đang trỏ tới (rê chuột / focus / chạm — cả món chưa mở khoá), mặc định
 // bộ đang mặc; thẻ áo có ảnh thu nhỏ (như màn tạo nhân vật — models.<id>.portrait / outfit_portraits).

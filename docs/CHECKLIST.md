@@ -338,7 +338,7 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
   - [x] Kiểm thử: smoke bi-a ngắm bằng chuột ở cả 2 chế độ (khoá / không khoá) → góc cơ đổi đúng hướng, bấm lần đầu không đánh
     — 2e53a25
 - [ ] P2 Tủ đồ: chốt danh sách món → texture áo / phụ kiện (Blender) → tab Wardrobe + mở khóa trong game — Phụ trách: Claude
-  - [x] Bảng tủ đồ: nút 👕 (máy tính góc phải dưới, cảm ứng trong hàng nút), phím I, nút "Tủ đồ" trong menu Esc (thay hàng
+  - [x] Bảng tủ đồ: nút 👕 (máy tính góc phải dưới, cảm ứng trong hàng nút), phím I (12/10/2026: bỏ nút "Tủ đồ" trong menu Esc; trước đó thay hàng
     bật / tắt mũ); camera quay ra trước mặt nhân vật; mục Áo + Phụ kiện, món chưa mở hiện ổ khoá + cách mở; phím 1–9 —
     7eab946
   - [x] Chọn áo (Đồ ngày đầu / Áo Cam FPT — cả áo phông morph của intern_nu_buitoc) + đội / bỏ mũ cam; lưu bản lưu
