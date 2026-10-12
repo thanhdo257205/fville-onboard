@@ -232,7 +232,7 @@
         "en": "Explore the Rice Grain Room",
         "vi": "Khám phá Phòng Hạt Lúa"
       },
-      "action": "dialogue:timeline_intro",
+      "action": "dialogue:rice_grain_intro",
       "hide_if": {
         "quests": [
           "z3_rice_room"
@@ -830,81 +830,86 @@
       "backdrop": "#bcd7ef",
       "result": {}
     },
-    "timeline": {
-      "kind": "timeline",
+    "rice_grain": {
+      "kind": "rice_grain",
       "draft": true,
       "title": {
-        "en": "FPT Timeline",
-        "vi": "Dòng thời gian FPT"
+        "en": "The Rice Grain",
+        "vi": "Hạt Lúa"
       },
       "line": {
-        "en": "Put the five milestones in order, oldest at the top: drag the cards (or ↑/↓ to pick, Shift+↑/↓ to move), then Check.",
-        "vi": "Xếp năm cột mốc theo thứ tự, mốc sớm nhất ở trên: kéo thả các thẻ (hoặc ↑/↓ để chọn, Shift+↑/↓ để di chuyển), rồi bấm Kiểm tra."
+        "en": "Tap each small golden grain (or press 1–6) to light up that year's names on the big grain.",
+        "vi": "Chạm từng hạt lúa vàng nhỏ (hoặc nhấn 1–6) để thắp sáng tên của năm đó trên hạt lúa lớn."
+      },
+      "about": {
+        "en": "F-Ville is built around the culture of wet rice farming, so the rice grain is the heart of the building. Carved on the big grain are the names of FPT Software's Top Performers over the years.",
+        "vi": "F-Ville lấy cảm hứng từ nền văn minh lúa nước, nên hạt lúa là điểm nhấn chính của cả tòa nhà. Trên hạt lúa lớn khắc tên những Top Performer của FPT Software qua từng năm."
+      },
+      "grain_label": {
+        "en": "The big rice grain with the Top Performers' names",
+        "vi": "Hạt lúa lớn khắc tên các Top Performer"
       },
       "idle": {
-        "en": "Drag the cards so the oldest is at the top (or ↑/↓ to pick, Shift+↑/↓ to move), then press Check.",
-        "vi": "Kéo thả các thẻ để mốc sớm nhất nằm trên cùng (hoặc ↑/↓ để chọn, Shift+↑/↓ để di chuyển), rồi bấm Kiểm tra."
+        "en": "Tap a small golden grain (or press 1–6) to light up the names for that year.",
+        "vi": "Chạm một hạt lúa vàng nhỏ (hoặc nhấn 1–6) để thắp sáng tên của năm đó."
       },
-      "items": [
+      "progress": {
+        "en": "{n} / {total} years lit",
+        "vi": "Đã thắp sáng {n} / {total} năm"
+      },
+      "years": [
         {
-          "text": {
-            "en": "FPT is founded",
-            "vi": "FPT được thành lập"
-          },
-          "year": 1988
+          "year": 2020,
+          "names": {
+            "en": "Top Performers 2020 · names from HR",
+            "vi": "Top Performer 2020 · chờ HR"
+          }
         },
         {
-          "text": {
-            "en": "FPT Software is founded",
-            "vi": "FPT Software được thành lập"
-          },
-          "year": 1999
+          "year": 2021,
+          "names": {
+            "en": "Top Performers 2021 · names from HR",
+            "vi": "Top Performer 2021 · chờ HR"
+          }
         },
         {
-          "text": {
-            "en": "FPT University opens its doors",
-            "vi": "Trường Đại học FPT ra đời"
-          },
-          "year": 2006
+          "year": 2022,
+          "names": {
+            "en": "Top Performers 2022 · names from HR",
+            "vi": "Top Performer 2022 · chờ HR"
+          }
         },
         {
-          "text": {
-            "en": "FPT celebrates its 30th birthday",
-            "vi": "FPT kỷ niệm 30 năm thành lập"
-          },
-          "year": 2018
+          "year": 2023,
+          "names": {
+            "en": "Top Performers 2023 · names from HR",
+            "vi": "Top Performer 2023 · chờ HR"
+          }
         },
         {
-          "text": {
-            "en": "FPT Software celebrates its 20th birthday",
-            "vi": "FPT Software kỷ niệm 20 năm thành lập"
-          },
-          "year": 2019
-        }
-      ],
-      "hints": [
-        {
-          "en": "Hint: the cards in green are already in the right place. FPT itself came first.",
-          "vi": "Gợi ý: thẻ màu xanh là thẻ đã đúng chỗ. FPT ra đời đầu tiên."
+          "year": 2024,
+          "names": {
+            "en": "Top Performers 2024 · names from HR",
+            "vi": "Top Performer 2024 · chờ HR"
+          }
         },
         {
-          "en": "Hint: FPT Software was born 11 years after FPT. The two birthdays come last.",
-          "vi": "Gợi ý: FPT Software ra đời sau FPT 11 năm. Hai dịp kỷ niệm nằm cuối cùng."
-        },
-        {
-          "en": "Hint: a university needs a company behind it — FPT University came after FPT Software.",
-          "vi": "Gợi ý: trường đại học cần có công ty đứng sau — Đại học FPT ra đời sau FPT Software."
+          "year": 2025,
+          "names": {
+            "en": "Top Performers 2025 · names from HR",
+            "vi": "Top Performer 2025 · chờ HR"
+          }
         }
       ],
       "done": {
-        "en": "Perfect order! Like grains of rice, every milestone adds up to a harvest.",
-        "vi": "Đúng thứ tự rồi! Như từng hạt lúa, mỗi cột mốc góp phần làm nên mùa vàng."
+        "en": "Every year is glowing! One grain at a time, these people made F-Ville's golden harvest — maybe your name will be carved here one day.",
+        "vi": "Các năm đều đã sáng! Từng hạt, từng hạt — những con người này làm nên mùa vàng của F-Ville. Biết đâu một ngày tên bạn cũng được khắc ở đây."
       },
       "result": {
         "quest": "z3_rice_room",
         "hieu_biet": 10
       },
-      "_ly_do": "5 mốc tạm (dùng các năm công khai chắc chắn); HR cung cấp 5 mốc thành tựu chính thức."
+      "_ly_do": "12/10/2026 (người dùng chốt): thay mini-game Dòng thời gian. Concept F-Ville 1 = làng quê, văn minh lúa nước → hạt lúa là điểm chính, trên đó có tên Top Performer FPT Software qua các năm. Không có danh sách công khai → tên để chờ HR (draft); thêm / bớt năm: sửa years (phím 1–9)."
     },
     "learning_path": {
       "kind": "learning_path",
