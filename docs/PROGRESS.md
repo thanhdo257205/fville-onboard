@@ -13,6 +13,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `draft` "chờ HR" (2020–2025). Hội thoại `rice_grain_intro` (người dẫn chuyện + Tú) thay `timeline_intro`. Chụp ảnh check-in:
   `checkin_intro` thêm 4 câu người dẫn chuyện (lần đầu) — F-Ville 1 tòa nhà đầu tiên của FPT Software tại Hòa Lạc (2013, 1.800 nhân
   viên), làng quê Bắc Bộ / văn minh lúa nước, ngôi làng công nghệ, sân rộng = sân đình (nội dung người dùng cung cấp).
+- **Sửa vòng gọi lỗ bi 8 khi đổi lượt (12/10/2026, nhánh `codex/pool-call-markers`):** `smoke (net)` đỏ ngẫu nhiên vì
+  bàn đã chuyển từ xem sang ngắm nhưng sáu vòng lỗ còn chờ khung vẽ kế tiếp. `applyTb` cập nhật vòng cùng trạng thái
+  bàn nhận từ máy chủ. Bài kiểm tra tái hiện chuyển xem → ngắm trong một tác vụ đồng bộ, kiểm đủ sáu vòng trước
+  khi gọi lỗ / trước khung vẽ tiếp theo; giữ kiểm tra gọi lỗ và cú bi 8 gửi lên máy chủ. Kiểm thử trên GitHub.
+
 - **Breakdance và menu hành động tròn (12/10/2026, nhánh `codex/breakdance-wheel`):** 34 điệu từ gói ZIP người dùng
   cung cấp, retarget sang cả bốn ngoại hình người chơi. Phím T / nút 🕺 mở vòng chọn, 8 điệu mỗi trang (4 trên màn
   thấp), tên Anh / Việt; chọn để nhảy một lần, đi lại / tương tác / nút Dừng để ngắt. Dùng được offline.

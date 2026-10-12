@@ -698,6 +698,9 @@ export class PoolTable {
     if (this.showsShared) this.apply(this.state);
     else this.updateCues();
     if (!this.spinOn && (this.spinLv || this.rollLv)) this.spinLv = this.rollLv = 0;     // bàn vừa tắt xoáy (có người ngồi bằng bản cũ)
+    // Turn changes arrive between render frames, including while a tab is idle.
+    // Refresh pocket rings with the table state, before a call / next frame.
+    this.drawMarks();
     this.drawHud();
   }
   // tới lượt mình → ngắm (bi trong tay: đặt bi trắng trước; luật chuẩn sau cú phá không hợp lệ: chọn trước); không → xem
