@@ -167,7 +167,7 @@ async function runLook(browser, base, look) {
   };
   // A real mouse click after checking visibility/hit testing. In short CI
   // windows, compositor-frame stability waits can stall on paused overlays.
-  const clickShown = async (selector) => {
+  const clickShown = async (selector, { hover = false } = {}) => {
     await page.bringToFront();
     await page.locator(selector).evaluate((button) => button.scrollIntoView({ block: "center", behavior: "instant" }));
     const point = await page.waitForFunction((selector) => {
@@ -178,7 +178,8 @@ async function runLook(browser, base, look) {
     }, selector, { timeout: 10000, polling: 100 });
     const { x, y } = await point.jsonValue();
     await point.dispose();
-    await page.mouse.click(x, y);
+    if (hover) await page.mouse.move(x, y);
+    else await page.mouse.click(x, y);
   };
   // khoá con trỏ (Pointer Lock) không phải thứ cần thử: headless + đổi chế độ liên tục bằng code → khoá / nhả chồng nhau có
   // thể làm main.js tưởng người chơi bấm Esc (mở menu). Tắt hẳn, Esc đi thẳng vào main.js như khi không khoá
@@ -814,19 +815,19 @@ async function runLook(browser, base, look) {
         const cap = worn ? await ev(() => { const i = __game.accessoryInfo("cap"), c = __game._game.player.character;
           const root = c.root.position.y, f = i.fit;
           return { ...i, headTop: +(root + f.top).toFixed(3), saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.accessories }; }) : null;
-        if (wopen) await page.click("#wardrobe .item[data-kind=outfit][data-id=dau_ngay]");
+        if (wopen) await clickShown("#wardrobe .item[data-kind=outfit][data-id=dau_ngay]");
         const day1 = await wait(() => window.__game?.model.outfit === "dau_ngay", 5000);
         const d1 = await ev(() => ({ morph: __game.model.morph, saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.outfit,
           badge: !!document.querySelector("#wardrobe .item.on[data-id=dau_ngay]"), preview: __game.wardrobe.preview,
           thumbs: __game.wardrobe.items.filter((x) => x.kind === "outfit").every((x) => /portrait/.test(x.img || "")) }));
         // rê chuột vào Áo Cam (chưa mặc) → khung xem trước đổi sang chân dung mặc Áo Cam, chưa thay áo
-        await page.hover("#wardrobe .item[data-kind=outfit][data-id=ao_cam]");
+        await clickShown("#wardrobe .item[data-kind=outfit][data-id=ao_cam]", { hover: true });
         const pv = await wait(() => window.__game?.wardrobe.preview?.item === "ao_cam" && window.__game.model.outfit === "dau_ngay", 3000)
           && await ev(() => __game.wardrobe.preview.img);
         await page.keyboard.press("KeyI");
         const shut = await wait(() => !window.__game?.wardrobe.open && window.__game._game.mode === "play", 5000);
         const btn = shut && await wait(() => { window.__game._game.ui.wardrobe.update(); return window.__game.wardrobe.button; }, 5000);
-        if (btn) await page.click("#wardrobe-btn");
+        if (btn) await clickShown("#wardrobe-btn");
         const reopen = await wait(() => window.__game?.wardrobe.open, 5000);
         await page.keyboard.press("Digit2");
         const orange = await wait(() => window.__game?.model.outfit === null && window.__game.wardrobe.outfit === "ao_cam", 5000);
