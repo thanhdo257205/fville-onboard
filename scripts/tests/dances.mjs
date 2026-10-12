@@ -31,7 +31,11 @@ for (const id of Object.values(cfg.roles.player.looks).flat()) {
   assert.deepEqual(new Set(pack.animations.map(a => a.name)), ids);
   const decoded = new Map();
   const floats = accessor => {
-    assert.equal(accessor.componentType, 5126, 'TRS animation must use float32 values');
+    // Meshopt stores rotations as normalized int16 after quantization.
+    const formats = { 5120: ['getInt8', 1, 127], 5121: ['getUint8', 1, 255], 5122: ['getInt16', 2, 32767],
+      5123: ['getUint16', 2, 65535], 5125: ['getUint32', 4, 4294967295], 5126: ['getFloat32', 4, 1] };
+    const format = formats[accessor.componentType];
+    assert.ok(format, 'animation accessor has an unsupported component type');
     const vi = accessor.bufferView, view = pack.bufferViews[vi], ext = view.extensions?.EXT_meshopt_compression;
     if (!decoded.has(vi)) {
       if (ext) {
@@ -41,9 +45,13 @@ for (const id of Object.values(cfg.roles.player.looks).flat()) {
       } else decoded.set(vi, binary.subarray(view.byteOffset || 0, (view.byteOffset || 0) + view.byteLength));
     }
     const values = decoded.get(vi), data = new DataView(values.buffer, values.byteOffset, values.byteLength);
-    const n = { SCALAR: 1, VEC3: 3, VEC4: 4 }[accessor.type], stride = view.byteStride || n * 4;
+    const n = { SCALAR: 1, VEC3: 3, VEC4: 4 }[accessor.type], stride = view.byteStride || n * format[1];
+    assert.ok(n, 'animation accessor must contain scalar or TRS values');
     const out = [];
-    for (let i = 0; i < accessor.count; i++) for (let k = 0; k < n; k++) out.push(data.getFloat32((accessor.byteOffset || 0) + i * stride + k * 4, true));
+    for (let i = 0; i < accessor.count; i++) for (let k = 0; k < n; k++) {
+      const value = data[format[0]]((accessor.byteOffset || 0) + i * stride + k * format[1], true);
+      out.push(accessor.normalized ? Math.max(-1, value / format[2]) : value);
+    }
     return out;
   };
   for (const anim of pack.animations) {

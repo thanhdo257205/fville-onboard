@@ -1555,13 +1555,19 @@ async function runChat(browser, base, srv) {
     // Dance packets must play on the other player's existing rig as well.
     const dancerId = await A.ev(() => __game.net.id), danceId = "dance_breakdance_uprock_var_2";
     const remoteReady = await B.wait(id => !!__game._game.net.remotes.list.get(id)?.ch, 20000, dancerId);
+    await A.wait(() => performance.now() - __game._game.state.readyAt > 1200, 5000);
+    await free(A);
     if (remoteReady) await B.ev(id => { __game._game.net.remotes.list.get(id).ch.mixer.timeScale = 0.1; }, dancerId);
-    const danceSent = await A.ev(async id => { const g = __game._game; g.net.cooldown = 0; g.player.character.mixer.timeScale = 0.1; return g.dances.play(id); }, danceId);
+    const localDance = await A.ev(async id => {
+      const g = __game._game; await g.player.standUp(); g.net.cooldown = 0; g.player.character.mixer.timeScale = 0.1;
+      const played = await g.dances.play(id); return { played, mode: g.mode, phase: g.state.phase, seated: !!g.player.seated };
+    }, danceId);
+    const danceSent = localDance.played;
     const remoteDance = remoteReady && await B.wait(({ who, dance }) => {
       const r = __game._game.net.remotes.list.get(who);
       return r?.emoting?.getClip().name === dance && r.emoting.time > 0 && !r.ch.loco;
     }, 30000, { who: dancerId, dance: danceId });
-    await check(danceSent && remoteDance && C.features.includes("dance"), "Breakdance gửi qua máy chủ: người chơi khác tải clip và nhảy trên rig của An", JSON.stringify({ danceSent, remoteReady, remoteDance, features: C.features }));
+    await check(danceSent && remoteDance && C.features.includes("dance"), "Breakdance gửi qua máy chủ: người chơi khác tải clip và nhảy trên rig của An", JSON.stringify({ localDance, remoteReady, remoteDance, features: C.features }));
     await A.ev(() => { const g = __game._game; g.dances.stop(); g.player.character.mixer.timeScale = 1; });
     if (remoteReady) await B.ev(id => { const r = __game._game.net.remotes.list.get(id); r.emoting = null; r.ch.mixer.timeScale = 1; r.ch.enableLocomotion(); }, dancerId);
     const [a0, b0] = await Promise.all([chatOf(A), chatOf(B)]);

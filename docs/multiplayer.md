@@ -7,8 +7,8 @@ chơi phần của mình: nhiệm vụ, hội thoại, Tú, NPC đều riêng t�
 zone, kèm emote và câu chat soạn sẵn, **bàn bi-a chung** ở zone 5 (2 người chơi theo lượt, người khác đứng xem) và **nhắn tin
 tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ — xem "Nhắn tin tự do + bộ lọc từ").
 
-`data/net.json` → `"url": ""` thì mạng tắt hẳn: không kết nối, không có góc online, không có phím T, menu không có dòng
-"Show other players". Game chạy y như bản chơi một mình. Bản trên gh-pages hiện để trống.
+`data/net.json` → `"url": ""` thì mạng tắt hẳn: không kết nối, không có góc online, menu không có dòng
+"Show other players". Phím T / nút 🕺 vẫn mở vòng chọn nhảy offline; tab Giao tiếp cần kết nối.
 
 ## Thành phần
 
@@ -21,7 +21,8 @@ tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ �
 | `game/src/net/client.js` | Kết nối WebSocket: thử lại theo backoff, ping khi đứng yên, phát hiện rớt mạng |
 | `game/src/net/remotes.js` | Hiện người chơi khác: model, bộ đồ, bảng tên, animation, nội suy, bong bóng câu chat |
 | `game/src/net/net.js` | Nối vào game: gửi vị trí, emote, câu chat; góc "N online · M in this zone" |
-| `game/src/ui/emotes.js` | Bảng emote và câu chat (phím T) |
+| `game/src/ui/emotes.js` | Vòng chọn nhảy và tab Giao tiếp (phím T / nút 🕺) |
+| `game/src/characters/dances.js`, `data/dances.json` | 34 điệu Breakdance, tải clip theo ngoại hình khi cần, huỷ khi di chuyển / tương tác |
 | `scripts/tools/net_bots.js` | Giả lập nhiều người đi lại để đo FPS, số tin mỗi giây và ước tính số request Cloudflare |
 
 ## Trong game
@@ -51,8 +52,13 @@ tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ �
   - Đang mini-game (vd ảnh check-in): ẩn hết.
   - Ai đứng sát camera (dưới 1,6 m) cũng bị ẩn.
 - **Góc dưới phải:** "N online · M in this zone". Chỉ hiện khi đang kết nối.
-- **Phím T:** mở bảng emote và câu chat, chọn bằng phím 1–9 hoặc chuột. Vẫn đi lại được khi bảng đang mở, chọn xong bảng tự
-  đóng. Hai lần chọn phải cách nhau 1,5 giây.
+- **Phím T / nút 🕺:** mở vòng chọn, tạm dừng di chuyển để chọn bằng phím 1–8, chuột hoặc chạm. Mũi tên đổi trang;
+  chọn xong vòng tự đóng, Esc / × đóng, nút giữa Dừng ngắt nhảy. Màn thấp dùng 4 lựa chọn mỗi trang.
+  - Tab Nhảy có 34 điệu từ Breakdance Pack, dùng được offline. Tải GLB khoảng 1 MB cho ngoại hình hiện tại khi nhảy
+    lần đầu. Nhảy một lượt, đi lại / tương tác sẽ dừng; đứng dậy khỏi ghế trước khi chọn nhảy.
+  - Worker báo feature `dance` mới phát điệu nhảy cho người cùng zone; cần `wrangler deploy` sau khi merge. Worker cũ
+    vẫn cho nhảy tại máy mình. Hai lần gửi hành động mạng cách nhau 1,5 giây.
+  - Tab Giao tiếp giữ các emote và câu chat soạn sẵn bên dưới.
   - Emote dùng animation có sẵn: Wave, Nod, Cheer.
   - Câu chat hiện thành bong bóng trên đầu (cùng kiểu bong bóng của Tú): "Hi!", "Good luck!", "Follow me!",
     "Thank you!", "See you at lunch!", "Welcome to F-Ville!".
