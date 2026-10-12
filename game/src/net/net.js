@@ -122,6 +122,7 @@ export class Net {
   emote(id) {
     const e = this.emotes.find((x) => x.id === id);
     if (!e || !this.canAct()) return false;
+    this.g.dances?.stop();
     this.cooldown = this.cfg.cooldown_s ?? 1.5;
     const ch = this.g.player.character, act = ch.playOnce(e.anim);
     this.myEmote = ch.current;

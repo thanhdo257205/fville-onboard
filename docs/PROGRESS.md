@@ -7,6 +7,14 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Breakdance và menu hành động tròn (12/10/2026, nhánh `codex/breakdance-wheel`):** 34 điệu từ gói ZIP người dùng
+  cung cấp, retarget sang cả bốn ngoại hình người chơi. Phím T / nút 🕺 mở vòng chọn, 8 điệu mỗi trang (4 trên màn
+  thấp), tên Anh / Việt; chọn để nhảy một lần, đi lại / tương tác / nút Dừng để ngắt. Dùng được offline.
+  Biến thể GLB giữ nguyên lưới nhân vật, chỉnh tiếp xúc sàn, nén Meshopt / WebP khoảng 1 MB mỗi ngoại hình và chỉ tải
+  khi nhảy lần đầu; không đưa FBX / rig nguồn vào repo. Kiểm thử trên GitHub gồm đủ clip / rig / ngân sách,
+  menu desktop / cảm ứng và animation giữa hai người chơi. Worker cần deploy bản có feature `dance` để phát cho
+  người khác; máy chủ cũ vẫn cho nhảy tại máy mình. Chưa merge / deploy tính năng này.
+
 - **Dựng lại zone 5 theo ba video (12/10/2026, nhánh `codex/office-video-rebuild`):** phòng chính / khu nghỉ
   theo VanPhongLamViec, thêm phòng phụ 16 bàn và hành lang gỗ nối hai phòng. Ba phòng họp có cửa kính mở sẵn,
   tay nắm và biển Phòng họp 1–3, đúng bên trái khi từ phòng phụ sang chính (+X), bên phải ở chiều ngược lại.

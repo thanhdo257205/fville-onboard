@@ -356,6 +356,53 @@ async function runLook(browser, base, look) {
     };
     if (startZone === order[0]) await tuCheck("trước cổng", false);
 
+    // Offline action wheel: every dance is reachable, playback binds to the
+    // existing player rig, walking stops it and the low-height layout stays usable.
+    if (startZone === order[0]) {
+      await wait(() => performance.now() - (__game._game.state.readyAt ?? 0) > 1000, 5000);
+      await ev(() => __game.resolve());
+      await page.keyboard.press("KeyT");
+      const opened = await wait(() => __game._game.actionsWheel.open && __game._game.mode === "actions", 5000);
+      const visible = async () => ev(() => {
+        const buttons = [...document.querySelectorAll("#emotes .wheel-choice")];
+        const boxes = buttons.map(b => { const r = b.getBoundingClientRect(); return { id: b.dataset.id, x: r.x, y: r.y, w: r.width, h: r.height }; });
+        return { ids: boxes.map(b => b.id), ok: boxes.every(b => b.w >= 43.9 && b.h >= 43.9 && b.x >= 0 && b.y >= 0 && b.x + b.w <= innerWidth && b.y + b.h <= innerHeight),
+          overlap: boxes.some((a, i) => boxes.slice(i + 1).some(b => Math.min(a.x + a.w, b.x + b.w) > Math.max(a.x, b.x) + 1 && Math.min(a.y + a.h, b.y + b.h) > Math.max(a.y, b.y) + 1)) };
+      });
+      const pages = await ev(() => __game._game.actionsWheel.pages), seen = new Set();
+      let fits = true;
+      for (let p = 0; opened && p < pages; p++) {
+        const v = await visible(); v.ids.forEach(id => seen.add(id)); fits &&= v.ok && !v.overlap;
+        await clickShown("#emotes [data-a=next]");
+        await wait(n => __game._game.actionsWheel.page === n, 3000, (p + 1) % pages);
+      }
+      mkdirSync(OUT, { recursive: true });
+      await page.screenshot({ path: join(OUT, `dance-wheel-${look.id}.png`) });
+      const id = await ev(() => __game._game.actionsWheel.items[0].id);
+      await ev(() => { __game._game.player.character.mixer.timeScale = 0.1; });
+      await clickShown("#emotes .wheel-choice[data-i='0']");
+      const playing = await wait(id => __game._game.dances.active?.id === id && __game._game.player.character.current?.time > 0, 30000, id);
+      const bound = await ev(() => ({ count: Object.keys(__game._game.player.character.actions).filter(k => k.startsWith("dance_")).length,
+        loco: __game._game.player.character.loco, connected: __game._game.net.connected }));
+      const stopped = await ev(() => {
+        const g = __game._game, p = g.player.position.clone(); g.player.character.mixer.timeScale = 1;
+        __game.simulate(0.6, { x: 0, y: 1 }, { render: false });
+        const ok = !g.dances.active && g.player.character.loco;
+        g.player.body.teleport(p); g.player.velocity.set(0, 0, 0); g.player.speed = 0;
+        return ok;
+      });
+      await page.setViewportSize({ width: 640, height: 230 });
+      await page.keyboard.press("KeyT");
+      await wait(() => __game._game.actionsWheel.open && __game._game.actionsWheel.pageSize === 4, 5000);
+      const short = await visible();
+      await page.screenshot({ path: join(OUT, `dance-wheel-short-${look.id}.png`) });
+      await page.keyboard.press("Escape");
+      const closed = await wait(() => !__game._game.actionsWheel.open && __game._game.mode === "play" && document.getElementById("menu").hidden, 5000);
+      await page.setViewportSize({ width: 640, height: 360 });
+      await check(opened && fits && seen.size === 34 && playing && bound.count === 34 && !bound.loco && !bound.connected && stopped && short.ok && !short.overlap && closed,
+        "Hành động T: vòng tròn đủ 34 điệu, tải / nhảy offline, đi lại dừng nhảy, màn thấp 230 px và Esc đóng", JSON.stringify({ opened, fits, seen: seen.size, playing, bound, stopped, short, closed }));
+    }
+
     const pauses = (st) => zoneIsLast(st.zone) ? [...(st.lunch ? [] : ["time_skip"]), ...(st.login ? [] : ["login"]), ...(st.reloaded || look !== looks[0] ? [] : ["ending:lan"])] : [];
     for (let zi = order.indexOf(startZone); zi < order.length && !failed; zi++) {
       const zone = order[zi], next = order[zi + 1], zt = Date.now();
@@ -1506,6 +1553,18 @@ async function runChat(browser, base, srv) {
       return p.wait(() => __game._game.mode === "play" && !__game._game.runner?.active, 20000);
     };
     await Promise.all([free(A), free(B)]);
+    // Dance packets must play on the other player's existing rig as well.
+    const dancerId = await A.ev(() => __game.net.id), danceId = "dance_breakdance_uprock_var_2";
+    const remoteReady = await B.wait(id => !!__game._game.net.remotes.list.get(id)?.ch, 20000, dancerId);
+    if (remoteReady) await B.ev(id => { __game._game.net.remotes.list.get(id).ch.mixer.timeScale = 0.1; }, dancerId);
+    const danceSent = await A.ev(async id => { const g = __game._game; g.net.cooldown = 0; g.player.character.mixer.timeScale = 0.1; return g.dances.play(id); }, danceId);
+    const remoteDance = remoteReady && await B.wait(({ who, dance }) => {
+      const r = __game._game.net.remotes.list.get(who);
+      return r?.emoting?.getClip().name === dance && r.emoting.time > 0 && !r.ch.loco;
+    }, 30000, { who: dancerId, dance: danceId });
+    await check(danceSent && remoteDance && C.features.includes("dance"), "Breakdance gửi qua máy chủ: người chơi khác tải clip và nhảy trên rig của An", JSON.stringify({ danceSent, remoteReady, remoteDance, features: C.features }));
+    await A.ev(() => { const g = __game._game; g.dances.stop(); g.player.character.mixer.timeScale = 1; });
+    if (remoteReady) await B.ev(id => { const r = __game._game.net.remotes.list.get(id); r.emoting = null; r.ch.mixer.timeScale = 1; r.ch.enableLocomotion(); }, dancerId);
     const [a0, b0] = await Promise.all([chatOf(A), chatOf(B)]);
     // Enter mở khung chat: thẻ quy tắc lần đầu, game đứng yên ở chế độ "chat"
     // tin nhắn app của zone_05 có thể tự mở hội thoại đúng lúc bấm Enter (Enter khi đó là "nói tiếp") → giải xong rồi thử lại
@@ -1782,6 +1841,25 @@ async function runMobile(browser, base) {
       if (await ev(() => __game._game.mode === "play" && !__game._game.ui.dialogue.waiting && !!__game.touch.zone.w)) break;
     }
     const z = (await ev(() => __game.touch)).zone;
+    // Real taps: offline wheel, a dance, then its Stop control.
+    const tapElement = async selector => {
+      const box = await ev(s => { const b = document.querySelector(s), r = b?.getBoundingClientRect(); return r && !b.hidden ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null; }, selector);
+      if (!box) return false;
+      await P.tap(box.x, box.y); return true;
+    };
+    await P.wait(() => !document.querySelector('#touch [data-a=emote]').hidden, 5000);
+    const wheelTap = await tapElement('#touch [data-a=emote]');
+    const wheelOpen = await P.wait(() => __game._game.actionsWheel.open && __game._game.mode === "actions", 5000);
+    await ev(() => { __game._game.player.character.mixer.timeScale = 0.1; });
+    const danceTap = wheelOpen && await tapElement('#emotes .wheel-choice[data-i="0"]');
+    const dancePlaying = danceTap && await P.wait(() => !!__game._game.dances.active && __game._game.player.character.current?.time > 0, 30000);
+    await tapElement('#touch [data-a=emote]');
+    await P.wait(() => __game._game.actionsWheel.open, 5000);
+    const stopTap = await tapElement('#emotes [data-a=stop]');
+    const danceStopped = await P.wait(() => !__game._game.dances.active && __game._game.player.character.loco && __game._game.mode === "play", 5000);
+    await ev(() => { __game._game.player.character.mixer.timeScale = 1; });
+    await check(wheelTap && wheelOpen && danceTap && dancePlaying && stopTap && danceStopped,
+      "chạm nút Hành động offline → vòng tròn → chọn nhảy → Dừng, trở lại đi lại", JSON.stringify({ wheelTap, wheelOpen, danceTap, dancePlaying, stopTap, danceStopped }));
     const p0 = await ev(() => __game.player.pos);
     // ghi trong trang (máy kiểm thử vẽ chậm: lệnh hỏi giữa chừng có thể tới sau khi đã thả)
     await ev(() => { window.__stickMax = null; window.__stickRec = setInterval(() => { const s = __game._game.input.stick; if (s && (!__stickMax || s.y > __stickMax.y)) __stickMax = { ...s }; }, 30); });

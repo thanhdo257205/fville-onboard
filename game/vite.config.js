@@ -32,7 +32,7 @@ function wanted(rel, pending = new Set()) {
     if (parts.length === 4 && (name === `${parts[2]}_portrait.png` || /^.+_portrait_[a-z0-9_]+\.png$/.test(name) && name.startsWith(`${parts[2]}_`))) return true;
     if (parts.length === 4 && name.startsWith(`${parts[2]}_`) && name.endsWith(".webp")) return true;   // texture bộ đồ
     return parts.length === 4 && name.endsWith(".glb") && !name.endsWith(".raw.glb")
-      && (name === `${parts[2]}.glb` || /^.+_\d+k\.glb$/.test(name));
+      && (name === `${parts[2]}.glb` || name === `${parts[2]}_dances.glb` || /^.+_\d+k\.glb$/.test(name));
   }
   // phụ kiện (tủ đồ): chỉ assets/accessories/<id>/<id>.glb (không source/, .raw.glb, số đo .json)
   if (rel.startsWith("assets/accessories/")) { const p = rel.split("/"); return p.length === 4 && p[3] === `${p[2]}.glb`; }

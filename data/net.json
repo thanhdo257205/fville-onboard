@@ -7,7 +7,14 @@
   "tag_distance_m": 16,
   "heartbeat_s": 20,
   "dead_after_s": 50,
-  "retry_s": [2, 4, 8, 16, 30, 60],
+  "retry_s": [
+    2,
+    4,
+    8,
+    16,
+    30,
+    60
+  ],
   "full_retry_s": 90,
   "bubble_s": 4,
   "cooldown_s": 1.5,
@@ -15,17 +22,417 @@
   "_transit_ly_do": "Đang ngồi trên xe bus (cảnh chuyển zone 0 → 1, cảnh kết): nhân vật khuất → client báo zone này (không zone nào dùng) để người cùng zone thấy mình rời đi, không còn đứng ở cửa xe. Máy chủ không cần sửa (zone_NN hợp lệ).",
   "_client_ly_do": "send_hz: gửi vị trí tối đa bấy nhiêu lần/giây và chỉ khi có thay đổi; interp_ms: vẽ người khác trễ chừng ấy để nội suy mượt — phải lớn hơn khoảng cách 2 bản tin (1000 / send_hz = 200 ms) cộng dao động mạng: 120 ms thì cứ 200 ms người khác đứng ~80 ms rồi nhảy, animation đi chỉ trộn ~40% (đo trên máy chủ thật 10/10/2026); 260 ms: tốc độ đo 1,34 / 4,28 m/s (thật 1,4 / 4,4), animation đi / chạy 96%; max_visible: chỉ hiện bấy nhiêu người gần nhất cùng zone; heartbeat_s: đứng yên thì gửi ping (máy chủ tự trả lời, không đánh thức Durable Object); dead_after_s: không nhận được gì từ máy chủ chừng ấy giây → coi như rớt, kết nối lại; retry_s: các lần thử lại (giây, cộng ngẫu nhiên), lần cuối lặp mãi; full_retry_s: phòng đầy thì chờ lâu hơn; cooldown_s: giữa 2 lần emote / câu chat.",
   "emotes": [
-    { "id": "wave", "anim": "wave", "icon": "👋", "label": { "en": "Wave", "vi": "Vẫy tay" } },
-    { "id": "nod", "anim": "nod", "icon": "🙂", "label": { "en": "Nod", "vi": "Gật đầu" } },
-    { "id": "cheer", "anim": "cheer", "icon": "🎉", "label": { "en": "Cheer", "vi": "Ăn mừng" } }
+    {
+      "id": "wave",
+      "anim": "wave",
+      "icon": "👋",
+      "label": {
+        "en": "Wave",
+        "vi": "Vẫy tay"
+      }
+    },
+    {
+      "id": "nod",
+      "anim": "nod",
+      "icon": "🙂",
+      "label": {
+        "en": "Nod",
+        "vi": "Gật đầu"
+      }
+    },
+    {
+      "id": "cheer",
+      "anim": "cheer",
+      "icon": "🎉",
+      "label": {
+        "en": "Cheer",
+        "vi": "Ăn mừng"
+      }
+    },
+    {
+      "id": "dance_brooklyn_uprock",
+      "anim": "dance_brooklyn_uprock",
+      "icon": "🕺",
+      "label": {
+        "en": "Brooklyn Uprock",
+        "vi": "Bước Brooklyn"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_crossleg_freeze",
+      "anim": "dance_crossleg_freeze",
+      "icon": "🕺",
+      "label": {
+        "en": "Crossleg Freeze",
+        "vi": "Giữ chéo chân"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_ending_1",
+      "anim": "dance_breakdance_ending_1",
+      "icon": "🕺",
+      "label": {
+        "en": "Ending 1",
+        "vi": "Kết thúc 1"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_ending_2",
+      "anim": "dance_breakdance_ending_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Ending 2",
+        "vi": "Kết thúc 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_ending_3",
+      "anim": "dance_breakdance_ending_3",
+      "icon": "🕺",
+      "label": {
+        "en": "Ending 3",
+        "vi": "Kết thúc 3"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_footwork_2",
+      "anim": "dance_breakdance_footwork_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Footwork 2",
+        "vi": "Bước chân 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_footwork_3",
+      "anim": "dance_breakdance_footwork_3",
+      "icon": "🕺",
+      "label": {
+        "en": "Footwork 3",
+        "vi": "Bước chân 3"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_footwork_to_idle",
+      "anim": "dance_breakdance_footwork_to_idle",
+      "icon": "🕺",
+      "label": {
+        "en": "Footwork To Idle",
+        "vi": "Bước → Đứng"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_freezes",
+      "anim": "dance_breakdance_freezes",
+      "icon": "🕺",
+      "label": {
+        "en": "Freezes",
+        "vi": "Chuỗi Freeze"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_flair",
+      "anim": "dance_flair",
+      "icon": "🕺",
+      "label": {
+        "en": "Flair",
+        "vi": "Xoay Flair"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_flair_2",
+      "anim": "dance_flair_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Flair 2",
+        "vi": "Xoay Flair 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_flair_3",
+      "anim": "dance_flair_3",
+      "icon": "🕺",
+      "label": {
+        "en": "Flair 3",
+        "vi": "Xoay Flair 3"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_footwork_1",
+      "anim": "dance_breakdance_footwork_1",
+      "icon": "🕺",
+      "label": {
+        "en": "Footwork 1",
+        "vi": "Bước chân 1"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_footwork_to_freeze",
+      "anim": "dance_breakdance_footwork_to_freeze",
+      "icon": "🕺",
+      "label": {
+        "en": "Footwork To Freeze",
+        "vi": "Bước → Giữ"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_footwork_to_idle_2",
+      "anim": "dance_breakdance_footwork_to_idle_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Footwork To Idle 2",
+        "vi": "Bước → Đứng 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_freeze_var_1",
+      "anim": "dance_breakdance_freeze_var_1",
+      "icon": "🕺",
+      "label": {
+        "en": "Freeze Var 1",
+        "vi": "Giữ dáng 1"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_freeze_var_2",
+      "anim": "dance_breakdance_freeze_var_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Freeze Var 2",
+        "vi": "Giữ dáng 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_freeze_var_3",
+      "anim": "dance_breakdance_freeze_var_3",
+      "icon": "🕺",
+      "label": {
+        "en": "Freeze Var 3",
+        "vi": "Giữ dáng 3"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_freeze_var_4",
+      "anim": "dance_breakdance_freeze_var_4",
+      "icon": "🕺",
+      "label": {
+        "en": "Freeze Var 4",
+        "vi": "Giữ dáng 4"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_1990",
+      "anim": "dance_breakdance_1990",
+      "icon": "🕺",
+      "label": {
+        "en": "1990",
+        "vi": "Xoay 1990"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_1990_2",
+      "anim": "dance_breakdance_1990_2",
+      "icon": "🕺",
+      "label": {
+        "en": "1990 2",
+        "vi": "Xoay 1990 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_1990_3",
+      "anim": "dance_breakdance_1990_3",
+      "icon": "🕺",
+      "label": {
+        "en": "1990 3",
+        "vi": "Xoay 1990 3"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_ready",
+      "anim": "dance_breakdance_ready",
+      "icon": "🕺",
+      "label": {
+        "en": "Ready",
+        "vi": "Khởi động"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_ready_2",
+      "anim": "dance_breakdance_ready_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Ready 2",
+        "vi": "Khởi động 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_ready_3",
+      "anim": "dance_breakdance_ready_3",
+      "icon": "🕺",
+      "label": {
+        "en": "Ready 3",
+        "vi": "Khởi động 3"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_swipes",
+      "anim": "dance_breakdance_swipes",
+      "icon": "🕺",
+      "label": {
+        "en": "Swipes",
+        "vi": "Quét chân"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock",
+      "anim": "dance_breakdance_uprock",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock",
+        "vi": "Nhảy Uprock"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock_2",
+      "anim": "dance_breakdance_uprock_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock 2",
+        "vi": "Nhảy Uprock 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock_to_ground",
+      "anim": "dance_breakdance_uprock_to_ground",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock To Ground",
+        "vi": "Uprock → Sàn"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock_to_ground_2",
+      "anim": "dance_breakdance_uprock_to_ground_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock To Ground 2",
+        "vi": "Uprock → Sàn 2"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock_var_1_end",
+      "anim": "dance_breakdance_uprock_var_1_end",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock Var 1 End",
+        "vi": "Uprock 1 kết thúc"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock_var_1",
+      "anim": "dance_breakdance_uprock_var_1",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock Var 1",
+        "vi": "Uprock 1"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock_var_1_start",
+      "anim": "dance_breakdance_uprock_var_1_start",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock Var 1 Start",
+        "vi": "Uprock 1 mở đầu"
+      },
+      "dance": true
+    },
+    {
+      "id": "dance_breakdance_uprock_var_2",
+      "anim": "dance_breakdance_uprock_var_2",
+      "icon": "🕺",
+      "label": {
+        "en": "Uprock Var 2",
+        "vi": "Uprock 2"
+      },
+      "dance": true
+    }
   ],
   "phrases": [
-    { "id": "hi", "text": { "en": "Hi!", "vi": "Chào mọi người!" } },
-    { "id": "good_luck", "text": { "en": "Good luck!", "vi": "Chúc may mắn nhé!" } },
-    { "id": "follow_me", "text": { "en": "Follow me!", "vi": "Theo mình nào!" } },
-    { "id": "thank_you", "text": { "en": "Thank you!", "vi": "Cảm ơn nhé!" } },
-    { "id": "see_you_lunch", "text": { "en": "See you at lunch!", "vi": "Trưa gặp nhau nhé!" } },
-    { "id": "welcome", "text": { "en": "Welcome to F-Ville!", "vi": "Chào mừng đến F-Ville!" } }
+    {
+      "id": "hi",
+      "text": {
+        "en": "Hi!",
+        "vi": "Chào mọi người!"
+      }
+    },
+    {
+      "id": "good_luck",
+      "text": {
+        "en": "Good luck!",
+        "vi": "Chúc may mắn nhé!"
+      }
+    },
+    {
+      "id": "follow_me",
+      "text": {
+        "en": "Follow me!",
+        "vi": "Theo mình nào!"
+      }
+    },
+    {
+      "id": "thank_you",
+      "text": {
+        "en": "Thank you!",
+        "vi": "Cảm ơn nhé!"
+      }
+    },
+    {
+      "id": "see_you_lunch",
+      "text": {
+        "en": "See you at lunch!",
+        "vi": "Trưa gặp nhau nhé!"
+      }
+    },
+    {
+      "id": "welcome",
+      "text": {
+        "en": "Welcome to F-Ville!",
+        "vi": "Chào mừng đến F-Ville!"
+      }
+    }
   ],
   "_emote_ly_do": "Emote dùng animation có sẵn của model (characters.json → models.<id>.animations). Câu chat soạn sẵn (phím T): máy chủ chỉ nhận id nằm trong 2 danh sách này. Nhắn tin tự do (phím Enter, có bộ lọc từ): data/chat.json.",
   "server": {
@@ -33,7 +440,9 @@
     "max_msgs_per_s": 10,
     "idle_kick_s": 60,
     "name_max": 20,
-    "allowed_origins": ["https://thanhdo257205.github.io"],
+    "allowed_origins": [
+      "https://thanhdo257205.github.io"
+    ],
     "room_size": 30,
     "max_rooms": 6,
     "pool_turn_s": 60,
