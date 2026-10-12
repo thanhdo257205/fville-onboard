@@ -132,3 +132,10 @@ jobs:
           name: test-results-${{ matrix.part }}
           path: test-results/
           if-no-files-found: ignore
+      - name: Ảnh vòng tròn hành động
+        if: always() && matrix.part == 'desktop'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dance-wheel-preview
+          path: test-results/dance-wheel*.png
+          if-no-files-found: ignore

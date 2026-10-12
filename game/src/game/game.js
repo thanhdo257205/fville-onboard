@@ -1009,6 +1009,7 @@ export class Game {
   }
 
   update(dt) {
+    this.dances?.update(dt);
     if (this.preview) { this.preview.update(dt); return; }   // nền màn tiêu đề: chỉ camera trôi
     this.footsteps.update(dt);   // cả lúc cảnh chuyển dắt người chơi / Tú đi
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)

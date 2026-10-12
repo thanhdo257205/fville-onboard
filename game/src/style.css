@@ -474,7 +474,7 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 #net-online::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3fcf8e; margin-right: 7px; vertical-align: 1px; box-shadow: 0 0 6px #3fcf8e; }
 #net-online[hidden] { display: none; }
 .nametag.player-tag { border-color: rgba(47, 165, 143, .95); }
-#emotes { position: absolute; right: 16px; bottom: 52px; width: 230px; background: var(--panel); border-radius: 14px; padding: 10px 12px 9px; pointer-events: auto; box-shadow: 0 6px 24px rgba(0, 0, 0, .3); }
+#emotes { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 8px; background: rgba(8, 12, 18, .65); pointer-events: auto; }
 #emotes[hidden] { display: none; }
 #emotes b { display: block; font-size: 14px; margin-bottom: 6px; }
 #emotes ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
@@ -483,7 +483,44 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 #emotes li.phrase:nth-child(4) { margin-top: 4px; border-top: 1px solid rgba(255, 255, 255, .1); border-radius: 0 0 8px 8px; padding-top: 7px; }
 #emotes kbd { display: inline-block; min-width: 1.4em; background: rgba(255, 255, 255, .14); border-radius: 5px; padding: 0 5px; font: 800 11px "Nunito"; text-align: center; color: var(--fg); }
 #emotes small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
-body.overlay-open #emotes { display: none; }
+#emotes .action-panel { --wheel-size: min(420px, calc(100vw - 64px), calc(var(--vvh, 100dvh) - 180px)); display: grid; gap: 6px;
+  padding: 8px; border: 1px solid #667184; border-radius: 20px; background: #19212e; box-shadow: 0 12px 60px #0008; }
+#emotes header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+#emotes header b { margin: 0 0 0 8px; font-size: 16px; }
+#emotes button { min-width: 44px; min-height: 44px; border: 1px solid #63738a; border-radius: 12px; color: #fff; background: #263448; cursor: pointer; font: 800 13px "Nunito"; }
+#emotes button:hover, #emotes button:focus-visible { background: #62401f; border-color: #ffb46c; outline: 2px solid #ffb46c; outline-offset: 1px; }
+#emotes button:disabled { opacity: .4; cursor: default; }
+#emotes .action-tabs { display: flex; gap: 6px; }
+#emotes .action-tabs button { flex: 1; }
+#emotes .action-tabs button[aria-pressed=true] { background: #a65318; border-color: #ffb46c; }
+#emotes .action-wheel { position: relative; width: var(--wheel-size); height: var(--wheel-size); margin: 0 12px;
+  border: 2px solid #758ca6; border-radius: 50%; background: repeating-conic-gradient(from -22.5deg, #30415c 0deg 44deg, #71859f 44deg 45deg); }
+#emotes .wheel-choice { position: absolute; transform: translate(-50%, -50%); width: max(44px, calc(var(--wheel-size) * .24));
+  height: clamp(44px, calc(var(--wheel-size) * .24), 68px); padding: 2px; display: grid; place-content: center; gap: 0; line-height: 1.05; font-size: clamp(9px, calc(var(--wheel-size) * .032), 13px); }
+#emotes .wheel-choice .icon { font-size: clamp(12px, calc(var(--wheel-size) * .055), 20px); }
+#emotes .wheel-choice span:not(.icon) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#emotes .wheel-choice kbd { font-size: 9px; line-height: 1; background: none; }
+#emotes .wheel-stop { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: max(44px, calc(var(--wheel-size) * .23));
+  height: max(44px, calc(var(--wheel-size) * .23)); border-radius: 50%; font-size: 20px; }
+#emotes .wheel-stop small { margin: 0; color: #fff; font-size: 11px; }
+#emotes footer { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+#emotes footer span { font-size: 12px; color: #cbd7e6; }
+#action-btn { position: fixed; right: 18px; bottom: 108px; z-index: 4; min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  border-radius: 999px; border: 1.5px solid #a4b8d4; background: #172334df; color: #fff; font: 800 14px "Nunito"; cursor: pointer; }
+#action-btn:hover { border-color: var(--orange); }
+#action-btn kbd { border: 1px solid #889; padding: 1px 4px; border-radius: 4px; }
+#action-btn[hidden], body.touch #action-btn { display: none; }
+@media (max-height: 339px) {
+  #emotes .action-panel { --wheel-size: min(160px, calc(100vw - 164px), calc(var(--vvh, 100dvh) - 32px)); grid-template-columns: 120px auto; gap: 4px; }
+  #emotes header { grid-column: 1; grid-row: 1; gap: 2px; }
+  #emotes header b { font-size: 12px; margin: 0; }
+  #emotes .action-tabs { grid-column: 1; grid-row: 2; }
+  #emotes .action-tabs button { font-size: 11px; padding: 2px; }
+  #emotes .action-wheel { grid-column: 2; grid-row: 1 / span 3; margin: 0 8px; align-self: center; }
+  #emotes .wheel-choice { width: 48px; height: 44px; font-size: 9px; }
+  #emotes footer { grid-column: 1; grid-row: 3; flex-wrap: wrap; }
+  #emotes footer span { order: -1; width: 100%; text-align: center; font-size: 10px; }
+}
 
 /* zone 5: La bàn nghề nghiệp, Sắp xếp ưu tiên, Một cú bi-a, Đăng nhập, checklist ngày đầu */
 .compass-card { background: linear-gradient(160deg, #fff7ef, #ffe3cc); color: #1d1f23; border-radius: 14px; padding: 16px 18px; text-align: center; }
@@ -751,7 +788,7 @@ body.touch #hint { bottom: calc(12px + env(safe-area-inset-bottom)); max-width: 
 body.touch #objective { max-width: 40vw; }
 body.touch #clock { right: calc(16px + env(safe-area-inset-right)); }
 body.touch #net-online { bottom: auto; top: 58px; right: calc(16px + env(safe-area-inset-right)); }
-body.touch #emotes { bottom: calc(126px + env(safe-area-inset-bottom)); right: calc(12px + env(safe-area-inset-right)); }
+body.touch #emotes { inset: 0; }
 body.touch #emotes li { min-height: 40px; }
 body.touch #chat { left: calc(16px + env(safe-area-inset-left)); bottom: calc(150px + env(safe-area-inset-bottom)); }
 body.touch #chat .peek p:nth-last-child(n + 4) { display: none; }

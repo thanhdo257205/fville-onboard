@@ -15,6 +15,7 @@ import { createRenderer } from "./render/renderer.js";
 import { Input, lookSens } from "./core/input.js";
 import { loadSettings, saveSettings } from "./core/quality.js";
 import { Characters } from "./characters/characters.js";
+import { DanceController } from "./characters/dances.js";
 import { Game } from "./game/game.js";
 import { GameState, save } from "./game/state.js";
 import { loadContent, validateNodes, validateLinks, tx } from "./content/content.js";
@@ -45,7 +46,7 @@ async function boot() {
   await loadStrings(pickLang({ param: params.get("lang"), saved: settings.lang, nav: navigator.languages?.length ? navigator.languages : [navigator.language] }));
   document.title = t("app.title");
   hud.loading(t("app.loading"));
-  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds, chatCfg, backdrop] = await Promise.all([
+  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds, chatCfg, backdrop, dancesCfg] = await Promise.all([
     loadJSON(url("data/zones.json")), loadJSON(url("data/characters.json")),
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
@@ -53,6 +54,7 @@ async function boot() {
     loadJSON(url("data/sounds.json")).catch(() => null),          // hiệu ứng âm thanh (thiếu → game im lặng)
     loadJSON(url("data/chat.json")).catch(() => ({})),            // nhắn tin: giới hạn (máy chủ lọc từ — thiếu file vẫn chat được)
     loadJSON(url("data/backdrop.json")).catch(() => null),        // bầu trời + phông nền xa (thiếu → trời mặc định, không phông nền)
+    loadJSON(url("data/dances.json")),
   ]);
   // âm thanh: AudioContext chỉ tạo được sau lần bấm / phím đầu tiên (trình duyệt chặn tự phát) — core/sound.js
   sound.configure(sounds);
@@ -139,7 +141,9 @@ async function boot() {
   if (device.phone) netCfg.max_visible = Math.min(netCfg.max_visible ?? 10, 6);
   const net = new Net({ game, cfg: { ...netCfg, chat: chatCfg }, settings });
   game.net = net;
-  const emotes = net.enabled ? new EmotePanel(net) : null;
+  game.dances = new DanceController(game, dancesCfg);
+  const emotes = new EmotePanel(net, game.dances);
+  game.actionsWheel = emotes;
   // nhắn tin tự do (máy chủ báo features "chat"; Enter mở, menu Esc → Chat bật / tắt)
   const chat = net.enabled ? new ChatPanel({ net, game, settings, save: () => saveSettings(settings) }) : null;
   game.chat = chat;
@@ -204,7 +208,7 @@ async function boot() {
 
   let title = null;   // màn tiêu đề (ui/title.js, mở ở dưới): đang hiện thì Esc không mở menu
   // phím: E tương tác · Space/Enter tiếp lời · 1–4 chọn (bảng emote đang mở: 1–9 chọn emote / câu chat) · Tab app
-  // · H gợi ý · T emote + câu chat (chỉ khi bật mạng) · Enter mở khung chat (máy chủ có "chat", không đang hội thoại) · Esc
+  // · H gợi ý · T vòng chọn nhảy / giao tiếp · Enter mở khung chat (máy chủ có "chat", không đang hội thoại) · Esc
   // đóng / menu
   input.on("KeyE", () => game.interact());
   input.on("KeyH", () => game.help());
@@ -222,8 +226,8 @@ async function boot() {
   const digit = (i) => () => { if (emotes?.open) emotes.pick(i - 1); else if (ui.wardrobe.open) ui.wardrobe.pick(i - 1); else if (i <= 4) ui.dialogue.choose(i - 1); };
   for (let i = 1; i <= 9; i++) { input.on(`Digit${i}`, digit(i)); input.on(`Numpad${i}`, digit(i)); }
   const emote = () => {
+    if (emotes.open) { emotes.hide(); return; }
     if (!emotes || game.mode !== "play" || game.state.phase !== "playing") return;
-    if (!net.connected) { emotes.hide(); hud.toast(t("net.offline")); return; }
     emotes.toggle();
   };
   if (emotes) input.on("KeyT", emote);
@@ -246,6 +250,7 @@ async function boot() {
   }
   const escape = () => {
     if (title?.open) return;
+    if (emotes.open) { input.noLockUntil = performance.now() + 500; return emotes.hide(); }
     if (chat?.isOpen) { input.noLockUntil = performance.now() + 500; return chat.close(); }   // Esc cũng là phím trình duyệt nhả khoá → đừng xin khoá ngay
     if (game.cutscene) return game.cutscene.skip();
     if (game.timeSkipping) return;            // màn mờ chuyển giờ (vd "12:00 · lunch"): không mở menu giữa chừng
@@ -282,7 +287,8 @@ async function boot() {
     if (!menu.open) game.update(dt);
     // người chơi khác vẫn đi lại khi mở menu. Lỗi phần mạng không được dừng vòng lặp game (ghi console, mỗi lỗi 1 lần)
     try { net.update(dt); } catch (e) { if (netErr !== e.message) { netErr = e.message; console.error("[mạng]", e); } }
-    if (emotes?.open && game.mode !== "play") emotes.hide();
+    if (emotes.open && game.mode !== "actions") emotes.hide();
+    emotes.update();
     chat?.update();
     touch.update();
     ui.wardrobe.update();

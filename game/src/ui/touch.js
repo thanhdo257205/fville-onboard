@@ -28,7 +28,7 @@ const RUN_AT = 0.92;         // đẩy quá chừng ấy bán kính = chạy
 const KB_MIN = 80;           // bàn phím ảo coi như đang mở khi che quá chừng ấy px
 const SHORT_H = 420;         // khung cao ≤ chừng ấy px (CSS) → giao diện màn thấp kể cả khi không cảm ứng
 const BUTTONS = [            // [id, biểu tượng, khoá chữ (aria-label)]
-  ["chat", "💬", "touch.chat"], ["emote", "👋", "touch.emote"], ["help", "?", "touch.help"],
+  ["chat", "💬", "touch.chat"], ["emote", "🕺", "touch.emote"], ["help", "?", "touch.help"],
   ["app", "📱", "touch.app"], ["wardrobe", "👕", "touch.wardrobe"], ["menu", "☰", "touch.menu"], ["full", "⛶", "touch.fullscreen"],
 ];
 
@@ -204,7 +204,7 @@ export class TouchControls {
     if (!free && (this.stickAt || this.input.stick)) this.stickRelease();
     const act = free ? g.interaction?.current && hud.promptText : null;
     const vis = {
-      chat: free && !!this.chat?.available, emote: free && !!this.emotes && !!g.net?.connected, help: free,
+      chat: free && !!this.chat?.available, emote: free && !!this.emotes, help: free,
       app: free && g.progress.hasReward("app_my_fpt"), wardrobe: free && !!g.ui?.wardrobe, menu: free, full: free && (device.ios || !!document.fullscreenEnabled),
     };
     const key = `${on}|${free}|${act}|${Object.values(vis).map(Number).join("")}`;

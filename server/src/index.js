@@ -57,7 +57,7 @@ const poolRules = (env) => (String(env?.POOL_RULES ?? "2") === "1" ? 1 : 2);
 // "chat" = có nhắn tin tự do (máy chủ cũ: chỉ có câu chat soạn sẵn). POOL_RULES = "1" giả trọn máy chủ bản cũ: chỉ "pool"
 // (máy chủ vẫn nhận tin chat, nhưng máy khách thấy không có "chat" nên không hiện khung chat)
 // "pool_spin" = cú bi-a có xoáy (spin / roll), máy chủ kiểm tra giới hạn rồi chuyển tiếp (server/src/pool.js)
-const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts", "pool_spin", "chat"] : ["pool"]);
+const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts", "pool_spin", "chat", "dance"] : ["pool"]);
 // phòng 1 giữ tên DO cũ "fville" (không đổi phòng của bản đã chạy)
 const roomName = (n) => (n <= 1 ? "fville" : `fville-${n}`);
 // request WebSocket kèm số phòng (header) — chuyển nguyên request sang DO khác vẫn giữ nâng cấp WebSocket

@@ -1092,4 +1092,5 @@ def main():
           f"validate={report['validate_ok']} height={report['height_m']}")
 
 
-main()
+if __name__ == "__main__":
+    main()

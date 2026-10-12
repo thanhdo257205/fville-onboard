@@ -7,6 +7,7 @@ import * as THREE from "three";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { Character } from "../characters/characters.js";
+import { loadDanceClips } from "../characters/dances.js";
 import { applyTint, setTint } from "../characters/tint.js";
 import { loadGLTF, url } from "../core/assets.js";
 import { blocked } from "../world/collision.js";
@@ -108,12 +109,17 @@ export class RemotePlayers {
     this.dispose(r);
     this.list.delete(id);
   }
-  emote(id, anim) {
+  async emote(id, anim) {
     const r = this.list.get(id);
     if (!r?.ch || !anim) return;
-    const ch = r.ch, act = ch.playOnce(anim);
-    r.emoting = ch.current;
-    act.then(() => { if (r.ch === ch && ch.current === r.emoting) { r.emoting = null; ch.enableLocomotion(); } });
+    const ch = r.ch, serial = r.emoteSerial = (r.emoteSerial || 0) + 1;
+    if (anim.startsWith("dance_")) {
+      try { await loadDanceClips(ch); } catch { return; }
+      if (this.list.get(id) !== r || r.ch !== ch || r.emoteSerial !== serial || r.speed > 0.4) return;
+    }
+    const act = ch.playOnce(anim);
+    const action = r.emoting = ch.current;
+    act.then(() => { if (r.ch === ch && r.emoting === action && ch.current === action) { r.emoting = null; ch.enableLocomotion(); } });
   }
   say(id, text, seconds = null) {
     const r = this.list.get(id);

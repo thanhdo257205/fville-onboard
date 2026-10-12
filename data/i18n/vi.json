@@ -441,7 +441,7 @@
   "touch": {
     "_note": "Nút cảm ứng (game/src/ui/touch.js): nút là biểu tượng, đây là tên nút (trình đọc màn hình, giữ ngón để xem). say_from / say_to: gợi ý trong game ghi \"nhấn E\" sẽ đọc thành say_to khi chơi bằng cảm ứng.",
     "chat": "Nhắn tin",
-    "emote": "Vẫy tay & câu nhanh",
+    "emote": "Hành động",
     "help": "Trợ giúp",
     "app": "App My FPT",
     "wardrobe": "Tủ đồ",
@@ -453,5 +453,18 @@
     "rotate": "Xoay ngang điện thoại để chơi nhé.",
     "say_from": "nhấn E",
     "say_to": "chạm nút hành động"
+  },
+  "actions": {
+    "title": "Hành động",
+    "dance": "Nhảy",
+    "social": "Giao tiếp",
+    "stop": "Dừng",
+    "close": "Đóng bảng hành động",
+    "categories": "Nhóm hành động",
+    "prev": "Các lựa chọn trước",
+    "next": "Các lựa chọn sau",
+    "choices": "lựa chọn",
+    "loading": "Đang tải điệu nhảy…",
+    "load_error": "Chưa tải được điệu nhảy. Bạn thử lại nhé."
   }
 }

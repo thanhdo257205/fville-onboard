@@ -441,7 +441,7 @@
   "touch": {
     "_note": "Touch controls (game/src/ui/touch.js): buttons are icons, these are their labels (screen readers, long-press tooltips). say_from / say_to: in-game hints that say \"press E\" read as say_to when playing by touch.",
     "chat": "Chat",
-    "emote": "Wave & quick phrases",
+    "emote": "Actions",
     "help": "Help",
     "app": "My FPT app",
     "wardrobe": "Wardrobe",
@@ -453,5 +453,18 @@
     "rotate": "Turn your phone sideways to play.",
     "say_from": "press E",
     "say_to": "tap the action button"
+  },
+  "actions": {
+    "title": "Actions",
+    "dance": "Dance",
+    "social": "Social",
+    "stop": "Stop",
+    "close": "Close actions",
+    "categories": "Action categories",
+    "prev": "Previous choices",
+    "next": "Next choices",
+    "choices": "choices",
+    "loading": "Preparing your dance…",
+    "load_error": "Couldn't load the dance. Try again."
   }
 }

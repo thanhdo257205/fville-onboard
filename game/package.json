@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:data": "node ../scripts/tests/data.mjs && node ../scripts/tests/grass.mjs && node ../scripts/tests/office.mjs",
+    "test:data": "node ../scripts/tests/data.mjs && node ../scripts/tests/grass.mjs && node ../scripts/tests/office.mjs && node ../scripts/tests/dances.mjs",
     "test:smoke": "node ../scripts/tests/smoke.mjs",
     "test:quick": "node ../scripts/tests/data.mjs && node ../scripts/tests/smoke.mjs --look intern_nam --mobile off --extra off",
     "test:pool": "node ../scripts/tests/pool_physics.mjs && node ../scripts/tests/pool_rules.mjs"

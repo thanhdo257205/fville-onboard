@@ -21,6 +21,11 @@ Logo FPT trên ngực áo (Prajith, Huyền) là bản tạm: mảng logo tách 
 (`scripts/blender/characters/apply_chest_logo.py`). Logo trên áo Nga và các nhân vật người chơi (bộ `ao_cam`): logo FPT
 do người dùng cung cấp, chỉ nằm trong texture.
 
+## Điệu nhảy
+- 34 animation từ `Breakdance Pack.zip` do người dùng cung cấp (FBX có bộ xương Mixamo), retarget sang bốn ngoại hình
+  người chơi. `tai_xe_for_mixamo.fbx` là mô hình tham chiếu, không phải điệu nhảy và không được đưa vào game.
+  Các file nguồn giữ riêng trên máy; game tải biến thể nhân vật đã nén `*_dances.glb` khi chọn nhảy lần đầu.
+
 ## Phụ kiện
 - Mũ lưỡi trai cam (`assets/accessories/cap/cap.glb`): dáng mũ lấy từ mô hình tạo bằng Meshy (meshy.ai), giấy phép
   CC BY 4.0 (file gốc không có trên repo; `scripts/blender/accessories/build_cap.py` dựng lại lưới thấp bám theo mô hình
