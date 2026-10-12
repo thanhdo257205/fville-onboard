@@ -180,10 +180,10 @@
       "_ghi_chu": "Ms. Nga (người thật, Tuyển dụng — đã đồng ý dùng hình) là mentor của intern ở zone 5 (người dùng chốt 12/10/2026; trước đó mentor là Prajith, Ms. Nga ở quầy lễ tân zone 3). Tin nhắn 'hr' từ đầu game cũng là chị (speaker_as.hr). Quần xanh than để khác Ms. Huyền (cùng áo polo cam, quần kem)."
     },
     "manager": {
-      "model": "prajith",
+      "model": "prajith_polo",
       "place": "node",
       "node": "NPC_manager",
-      "_ghi_chu": "Prajith (người thật, đã đồng ý dùng hình) là quản lý team ở zone 5 (người dùng chốt 12/10/2026; trước đó là mentor, quản lý là chị Manager hư cấu). Model prajith thật, không đổi màu áo."
+      "_ghi_chu": "Prajith (người thật, đã đồng ý dùng hình) là quản lý team ở zone 5 (người dùng chốt 12/10/2026; trước đó là mentor, quản lý là chị Manager hư cấu). Model prajith_polo (áo polo cam FPT có logo, thay model prajith cũ 12/10/2026 — prajith vẫn giữ: nguồn animation, viewer so sánh), không đổi màu áo."
     },
     "dong_nghiep_1": {
       "model": "intern_nu",
@@ -672,6 +672,96 @@
         "run": 4.39
       },
       "portrait": "assets/characters/tai_xe/tai_xe_portrait.png"
+    },
+    "prajith_polo": {
+      "glb": {
+        "low": "assets/characters/prajith_polo/prajith_polo.glb"
+      },
+      "tris": {
+        "low": 6000
+      },
+      "height_m": 1.75,
+      "forward": "+Z",
+      "_forward_ghi_chu": "Model nhìn về +Z (chuẩn glTF). Với yaw_deg của SPAWN_/NPC_ (0 = nhìn -Z): rotation.y = yaw + 180°.",
+      "anim_speed_mps": {
+        "walk": 1.78,
+        "run": 4.79
+      },
+      "_speed_ghi_chu": "anim_speed_mps: tốc độ khớp animation (đo, chân không trượt). speed_mps: tốc độ chơi (chỉnh tay); game phát walk/run với timeScale = tốc độ thật / anim_speed_mps.",
+      "seat": {
+        "height_m": 0.388,
+        "offset_xz_m": [
+          0.014,
+          -0.418
+        ],
+        "_ghi_chu": "offset_xz_m: vị trí mông so với gốc nhân vật khi đã ngồi, theo trục glTF (x, z); nhân vật nhìn +Z nên z âm = lùi về sau.",
+        "sit_type_height_m": 0.388
+      },
+      "animations": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "talk": [
+          "talk",
+          "talk_2"
+        ],
+        "talk_2": "talk_2",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "point": "point",
+        "phone": "phone",
+        "press": "press",
+        "sit_down": "sit_down",
+        "sit_type": "sit_type",
+        "cheer": "cheer",
+        "stand_up": "stand_up"
+      },
+      "loop": [
+        "idle",
+        "walk",
+        "run",
+        "talk",
+        "talk_2",
+        "think",
+        "phone",
+        "sit_type",
+        "cheer"
+      ],
+      "once": [
+        "wave",
+        "nod",
+        "point",
+        "press",
+        "sit_down",
+        "stand_up"
+      ],
+      "durations_s": {
+        "idle": 6.0,
+        "walk": 1.033,
+        "run": 0.7,
+        "talk": 3.933,
+        "talk_2": 3.767,
+        "wave": 3.167,
+        "nod": 1.633,
+        "think": 4.233,
+        "point": 2.767,
+        "phone": 18.533,
+        "press": 3.233,
+        "sit_down": 2.233,
+        "sit_type": 16.467,
+        "cheer": 2.0,
+        "stand_up": 2.233
+      },
+      "speed_mps": {
+        "walk": 1.4,
+        "run": 4.39
+      },
+      "portrait": "assets/characters/prajith_polo/prajith_polo_portrait.png",
+      "collision": {
+        "radius_m": 0.3,
+        "_ghi_chu": "capsule đứng (bán kính, cao = height_m) cho người chơi, Tú và NPC: người chơi không đi xuyên NPC / Tú; tâm capsule NPC theo xương hông (ngồi thì nằm trên ghế)."
+      }
     },
     "prajith": {
       "glb": {
