@@ -167,18 +167,22 @@ async function runLook(browser, base, look) {
   };
   // A real mouse click after checking visibility/hit testing. In short CI
   // windows, compositor-frame stability waits can stall on paused overlays.
+  // chờ game vẽ xong 2 khung hình (không giới hạn giờ): vật / chất liệu mới (vd mũ vừa đội, áo vừa đổi) làm lần vẽ đầu biên
+  // dịch shader — trên máy CI (SwiftShader) luồng chính bận hàng chục giây, thao tác ngay sau đó dễ quá giờ
+  const settle = () => ev(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const clickShown = async (selector, { hover = false } = {}) => {
     await page.bringToFront();
     // Scrolling/redrawing cards can put the next card under the old pointer.
     // Leave the panel first so the move below produces a fresh pointerover.
     if (hover) await page.mouse.move(0, 0);
-    await page.locator(selector).evaluate((button) => button.scrollIntoView({ block: "center", behavior: "instant" }));
+    // máy CI vẽ bằng CPU (~10 FPS): luồng chính có thể bận biên dịch shader lâu → nới thời gian chờ
+    await page.locator(selector).evaluate((button) => button.scrollIntoView({ block: "center", behavior: "instant" }), null, { timeout: 90000 });
     const point = await page.waitForFunction((selector) => {
       const button = document.querySelector(selector);
       if (!button || button.disabled || button.getAttribute("aria-disabled") === "true") return false;
       const r = button.getBoundingClientRect(), x = r.x + r.width / 2, y = r.y + r.height / 2;
       return r.width > 0 && r.height > 0 && document.elementFromPoint(x, y)?.closest(selector) === button ? { x, y } : false;
-    }, selector, { timeout: 10000, polling: 100 });
+    }, selector, { timeout: 30000, polling: 100 });
     const { x, y } = await point.jsonValue();
     await point.dispose();
     if (hover) await page.mouse.move(x, y);
@@ -815,11 +819,13 @@ async function runLook(browser, base, look) {
         const capItem = "#wardrobe .item[data-kind=acc][data-id=cap]:not([disabled])";
         if (wopen && await ev((sel) => !!document.querySelector(sel), capItem)) await clickShown(capItem);
         const worn = await wait(() => window.__game?.model.accessories.includes("cap"), 15000);
+        if (worn) await settle();
         const cap = worn ? await ev(() => { const i = __game.accessoryInfo("cap"), c = __game._game.player.character;
           const root = c.root.position.y, f = i.fit;
           return { ...i, headTop: +(root + f.top).toFixed(3), saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.accessories }; }) : null;
         if (wopen) await clickShown("#wardrobe .item[data-kind=outfit][data-id=dau_ngay]");
-        const day1 = await wait(() => window.__game?.model.outfit === "dau_ngay", 5000);
+        const day1 = await wait(() => window.__game?.model.outfit === "dau_ngay", 15000);
+        if (day1) await settle();
         const d1 = await ev(() => ({ morph: __game.model.morph, saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.outfit,
           badge: !!document.querySelector("#wardrobe .item.on[data-id=dau_ngay]"), preview: __game.wardrobe.preview,
           thumbs: __game.wardrobe.items.filter((x) => x.kind === "outfit").every((x) => /portrait/.test(x.img || "")) }));
