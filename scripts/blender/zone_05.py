@@ -313,6 +313,11 @@ def build_colliders(col, rooms):
 
 
 def build(cols, rng):
+    # Văn phòng ở tầng trên (zone_04 cao 4.2 m). Mặt sân thấp bên ngoài
+    # chặn góc nhìn xiên qua kính; 2 tam giác, không va chạm / vùng đi mới.
+    outside = MeshBuilder()
+    outside.quad([(-120, -64, -4.2), (56, -64, -4.2), (56, 58, -4.2), (-120, 58, -4.2)], "grass")
+    outside.to_object("ENV_san_ngoai_van_phong", cols["ENV"])
     build_shell(cols["ENV"], rng)
     build_break_area(cols["ENV"], rng)
     office_extension.collaboration_area(cols, H)

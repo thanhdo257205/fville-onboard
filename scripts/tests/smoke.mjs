@@ -652,7 +652,7 @@ async function runLook(browser, base, look) {
       // mắt không lọt ra trời (sàn không áp tường, mặt đất ngoài kính thiếu…). Tia ngang lọt qua cửa mở ra sân là đúng, chỉ in
       // số. GAP_FREE: zone đã build lại sau khi sửa script; zone_03, zone_05 thêm vào khi build lại trên máy có file gốc Sketchfab
       if (/^zone_0[345]$/.test(zone) && look === looks[0]) {
-        const GAP_FREE = ["zone_04"];
+        const GAP_FREE = ["zone_04", "zone_05"];
         // FLAT_FREE: zone không có cửa nào mở ra ngoài trời — tia ngang lọt ra = nhìn qua cửa sang zone khác thấy phông nền
         // (thiếu phòng giả scene_fixes → rooms; zone_05: cửa kính vào văn phòng, trước đây ~260 tia)
         const FLAT_FREE = ["zone_04", "zone_05"];

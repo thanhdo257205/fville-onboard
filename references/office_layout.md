@@ -50,5 +50,7 @@ dùng chung mesh / material và gộp lượt vẽ khi tải zone. Cả hai phò
   luồng chơi, bi-a, camera, map và bộ nhớ dùng các kiểm tra hiện có.
 - Dò khe hở zone 5 tăng tầm tia lên 100 m vì chiều dài văn phòng mới trên 70 m;
   không dùng giới hạn 60 m cũ để kết luận nhầm hành lang dài là khe hở.
+- Có mặt sân thấp hơn sàn 4,2 m phía ngoài cửa sổ (2 tam giác, không thêm vùng đi),
+  tránh nhìn xiên qua kính thấy khoảng trống. Zone 5 yêu cầu không còn tia nhìn xuống lọt ra trời.
 - Hiệu năng trên GPU của người chơi cần đo riêng; số tam giác / dung lượng và test CI
   không tương đương phép đo FPS trên máy thật. Không chạy Chrome local theo lựa chọn người dùng.
