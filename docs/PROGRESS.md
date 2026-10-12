@@ -1668,6 +1668,10 @@ Người dùng muốn bộ lọc nhắn tin lọc được cả từ tiếng Vi�
 - Kiểm thử: thử 24 câu thường (có dấu / không dấu, câu dễ trùng) + 31 câu chửi: không lọt câu nào, chỉ che nhầm "VL". `test:data`
   35 câu mẫu (thêm 18 câu tiếng Việt, gồm câu thường không được che); smoke nhắn tin: đẩy thẳng tin chưa lọc vào máy khách →
   hiện bản đã che. Đo: test:data, test:quick 57/57; phần nhắn tin chạy trên CI (job `net`).
+- Smoke: bước menu Esc (nhạc, đổi ngôn ngữ) có lúc bấm Esc đúng lúc tin nhắn HR on_enter mở → menu không mở, `page.click` treo
+  30 s (CI desktop, ngoại hình thứ 2) → `openMenu` chờ qua mốc on_enter, giải hội thoại rồi bấm, thử lại tối đa 4 lần.
+- Gộp PR #30 vào main (b4d7d38), CI 5/5 xanh; deploy gh-pages 1561566. Còn lại: `npx wrangler deploy` trên máy Desktop để máy
+  chủ thật dùng danh sách mới.
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
