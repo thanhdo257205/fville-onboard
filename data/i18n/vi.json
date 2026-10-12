@@ -7,6 +7,7 @@
     "error": "Có lỗi xảy ra: {message}",
     "zone_error": "Không mở được {zone}.",
     "zone_timeout": "Đã tải hơn {s} giây mà chưa xong.",
+    "zone_stalled": "Đã {s} giây mà không tải thêm được gì.",
     "zone_retry": "Thử lại",
     "zone_back": "Quay lại {zone}",
     "zone_reload": "Tải lại trang"
