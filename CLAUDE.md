@@ -24,7 +24,7 @@ hình dựng bằng script Python trong Blender, xuất GLB; game chạy trên t
 | `scripts/blender/audio/build_sfx.py`, `synth.py` | Hiệu ứng âm thanh: đọc `data/sounds.json`, lấy file từ gói zip CC0 (`assets/sfx/source/`, kiểm SHA-256) hoặc tự tạo bằng công thức (`synth.py`), xuất MP3 → `assets/sfx/`, chép giấy phép → `assets/sfx/licenses/`, sinh `docs/audio_credits.md` (chạy trong Blender: cần module `aud` + numpy) |
 | `scripts/build.py` | Build trọn gói zone (Blender → nén Draco → kiểm tra GLB → ảnh so sánh) |
 | `scripts/make_site.py`, `scripts/deploy_site.py` | Gom bản web vào `dist/` và đưa lên nhánh gh-pages |
-| `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py` |
+| `scripts/tools/` | Công cụ phụ: cắt khung video, ảnh so sánh, bảng animation, kiểm tra GLB, `privacy_scan.py`, `export_dialogue.py` (xuất mọi lời thoại + gợi ý / tin nhắn / mini-game / quiz / câu nhanh ra Excel có cột đề xuất sửa → `exports/`, không commit) |
 | `scripts/tests/` | Kiểm thử tự động: `data.mjs` (`npm run test:data`), `smoke.mjs` (`npm run test:smoke`); ảnh bước hỏng vào `test-results/` (không commit). CI: `.github/workflows/test.yml` |
 | `assets/glb/low/`, `assets/glb/high/` | GLB bối cảnh 2 mức đồ họa (game chỉ dùng **low**) |
 | `assets/characters/<id>/` | GLB nhân vật, chân dung (`<id>_portrait.png`, theo bộ đồ `<id>_portrait_<bộ>.png`), texture bộ đồ `<id>_<bộ>.webp` (vd `intern_nam_dau_ngay.webp`, `intern_nu_tu_dau_ngay.webp`), cấu hình (`chest_logo.json`, `texture_fixes.json`, `mesh_fixes.json` (rút ngắn lọn tóc trước khi giảm tam giác), `mixamo/actions.json`) |

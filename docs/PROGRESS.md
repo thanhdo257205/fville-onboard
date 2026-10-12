@@ -1620,6 +1620,16 @@ Người dùng muốn chọn tự do vào giữa các zone sau khi xong ngày đ
 - `__game.travel(zone)`; smoke (ngoại hình đầu): trước khi xong, menu Esc không có mục này; sau màn tổng kết bấm zone khác → sang
   zone, chơi tiếp không hội thoại / cảnh chuyển, `__game.travel` về lại, console sạch.
 
+### Xuất lời thoại ra Excel để góp ý (12/10/2026, máy Desktop)
+
+Người dùng cần 1 file chứa toàn bộ câu thoại của các nhân vật và các câu riêng để gửi đề xuất chỉnh sửa.
+`scripts/tools/export_dialogue.py` (Python + openpyxl, chạy lại bất cứ lúc nào) → `exports/loi_thoai_<ngày>.xlsx` (thư mục
+`exports/` trong .gitignore): trang Hướng dẫn (cách ghi đề xuất, biến {player} / {tu_*}, văn phong, DRAFT, người thật, 1 dòng
+mẫu) · Hội thoại (176 câu: lời nhân vật, lời dẫn, lựa chọn của người chơi, tin nhắn; theo zone, mã hội thoại / mã câu để tìm
+lại) · Gợi ý & tin nhắn (101: gợi ý H, Tú nhắc, tin nhắn khi đứng yên, lối ra zone) · Mini-game & quiz (244) · Câu nhanh (9) ·
+Tổng hợp (COUNTIF theo nhân vật: số câu, số câu đã có đề xuất; tự tính khi mở). Mỗi dòng có 2 cột nền vàng "Đề xuất sửa" EN / VI
++ Ghi chú; dòng DRAFT tô cam nhạt.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

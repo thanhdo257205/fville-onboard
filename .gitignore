@@ -52,3 +52,6 @@ test-results/
 
 # Âm thanh: gói gốc tải về (Kenney CC0 — URL + SHA-256 trong data/sounds.json); build_sfx.py đọc từ đây
 assets/sfx/source/
+
+# file xuất để gửi / xem (scripts/tools/export_dialogue.py) — không commit
+exports/
