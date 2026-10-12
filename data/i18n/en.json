@@ -7,6 +7,7 @@
     "error": "Something went wrong: {message}",
     "zone_error": "Couldn't open {zone}.",
     "zone_timeout": "Loading took longer than {s} seconds.",
+    "zone_stalled": "Loading made no progress for {s} seconds.",
     "zone_retry": "Retry",
     "zone_back": "Back to {zone}",
     "zone_reload": "Reload page"
