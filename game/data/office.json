@@ -1,0 +1,18 @@
+{
+  "_ghi_chu": "Bố cục zone 5 dựng từ ba video người dùng cung cấp, kích thước ước lượng theo bàn / cửa. Tọa độ Blender: X/Y trên sàn, Z lên. Từ phòng phụ sang phòng chính đi +X: phòng họp nằm phía +Y (bên trái); chiều ngược lại là bên phải. Sửa tên meeting_rooms rồi build lại zone_05 để đổi biển phòng.",
+  "main": [-34, -8, -14, 8],
+  "corridor": [-52, -34, -1.5, 1.5],
+  "secondary": [-70, -52, -8, 8],
+  "door_width_m": 1.8,
+  "meeting_rooms": [
+    { "id": "phong_hop_mentor", "name": "Phòng họp 1", "bounds": [-40, -34, 1.5, 7.5] },
+    { "id": "phong_hop_manager", "name": "Phòng họp 2", "bounds": [-46, -40, 1.5, 7.5] },
+    { "id": "phong_hop_3", "name": "Phòng họp 3", "bounds": [-52, -46, 1.5, 7.5] }
+  ],
+  "secondary_clusters": [[-57, -4.5], [-65, -4.5]],
+  "reference_roles": {
+    "main": "VanPhongLamViec.mp4",
+    "secondary": "2hgb6fgdsy6mehwougvbaggp0un9yfmsz6my2.mp4",
+    "corridor": "2hgb6fgdsy5bvvqlfur14ouxy5nrsueccy2c1.mp4"
+  }
+}
