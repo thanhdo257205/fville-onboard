@@ -15,6 +15,12 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   menu desktop / cảm ứng và animation giữa hai người chơi. Worker cần deploy bản có feature `dance` để phát cho
   người khác; máy chủ cũ vẫn cho nhảy tại máy mình. Chưa merge / deploy tính năng này.
 
+- **Dòng mục tiêu giữa màn hình + menu Esc gọn (12/10/2026, nhánh `feat/menu-layout`):** dòng mục tiêu (`#objective`) chuyển từ
+  góc trái lên giữa mép trên (màn thấp: toast xuống 50 px, thẻ tên zone 86 px để không đè). Menu Esc rộng hơn, chia 3 nhóm
+  thành cột (Âm thanh & ngôn ngữ · Điều khiển & chỉ đường · Hiển thị; hẹp thì 2 / 1 cột), chú thích dài chuyển vào tooltip,
+  nút × đóng ở góc → vừa 1 màn hình không phải cuộn (1280 × 720, 844 × 390). Bỏ nút Tủ đồ khỏi menu (vẫn mở bằng nút 👕 /
+  phím I); hàng cuối chỉ còn Chơi tiếp | Chơi lại chia đôi; Xem tổng kết (khi đã xong) nằm cạnh tiêu đề Đi tới. Chú thích
+  "Dấu chỉ đường" sửa theo mũi tên cam (không còn dấu "!"). Smoke tủ đồ mở bằng phím I.
 - **Dựng lại zone 5 theo ba video (12/10/2026, nhánh `codex/office-video-rebuild`):** phòng chính / khu nghỉ
   theo VanPhongLamViec, thêm phòng phụ 16 bàn và hành lang gỗ nối hai phòng. Ba phòng họp có cửa kính mở sẵn,
   tay nắm và biển Phòng họp 1–3, đúng bên trái khi từ phòng phụ sang chính (+X), bên phải ở chiều ngược lại.

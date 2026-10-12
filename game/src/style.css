@@ -13,7 +13,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #9cc4e8; col
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
 #clock { position: absolute; top: 14px; right: 16px; background: var(--panel); padding: 6px 12px; border-radius: 10px; font-weight: 800; font-size: 18px; }
 #clock:empty { display: none; }
-#objective { position: absolute; top: 14px; left: 16px; background: var(--panel); padding: 8px 14px; border-radius: 10px; font-weight: 700; max-width: 46vw; }
+/* dòng mục tiêu: giữa mép trên (góc trái để cho bảng bi-a / thẻ gợi ý H / chat) */
+#objective { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: var(--panel); padding: 8px 16px; border-radius: 10px; font-weight: 700;
+  width: max-content; max-width: min(46vw, 560px); text-align: center; }
 #objective:empty { display: none; }
 /* dài hơn màn hình (vd dòng điều khiển ở bàn bi-a, lỗi bi-a + bi trong tay, màn điện thoại) → xuống dòng thay vì bị cắt 2 đầu */
 #hint, #toast { position: absolute; left: 50%; transform: translateX(-50%); background: var(--panel); padding: 8px 16px; border-radius: 10px; opacity: 0; transition: opacity .4s;
@@ -32,28 +34,45 @@ body.overlay-open #hint { display: none; }   /* hộp thoại / mini-game / app 
 
 #menu { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(10, 12, 16, .45); }
 #menu[hidden] { display: none; }
-#menu .panel { background: #1b1e24; padding: 22px 26px; border-radius: 16px; min-width: 340px; box-shadow: 0 10px 40px rgba(0, 0, 0, .4); max-height: calc(100vh - 24px); overflow-y: auto; box-sizing: border-box; }
-#menu h2 { margin: 0 0 14px; font-weight: 800; }
-#menu .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+/* bảng rộng, 3 nhóm thành cột (hẹp thì 2 / 1 cột), hàng nút cuối — vừa 1 màn hình không phải cuộn (màn thấp vẫn cuộn được) */
+#menu .panel { background: #1b1e24; padding: 18px 24px 20px; border-radius: 16px; width: min(1000px, calc(100vw - 24px)); box-shadow: 0 10px 40px rgba(0, 0, 0, .4);
+  max-height: calc(var(--vvh, 100dvh) - 24px); overflow-y: auto; box-sizing: border-box; }
+#menu header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+#menu h2 { margin: 0; font-weight: 800; }
+#menu header .x { background: #2a2e36; color: var(--fg); border: 0; border-radius: 10px; width: 36px; height: 36px; font: 800 22px/1 "Nunito"; cursor: pointer; }
+#menu header .x:hover { background: #343944; }
+#menu .groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; align-items: start; }
+#menu section { background: #22262d; border-radius: 12px; padding: 10px 14px 12px; display: grid; gap: 6px; min-width: 0; }
+#menu section h3 { margin: 0 0 2px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+#menu section .muted { margin: 0; font-size: 12px; }
+#menu .muted.current { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#menu .travel-box { margin-bottom: 12px; }
+#menu .travel-h small { cursor: help; font-weight: 700; }
+#menu footer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+#menu footer button { margin: 0; }
+#menu .travel-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#menu .travel-h .ghost { padding: 6px 12px; font-size: 13px; }
+#menu .seg button { white-space: nowrap; }
+#menu .row { display: flex; align-items: center; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; min-height: 36px; }
 #menu .seg { display: flex; background: #2a2e36; border-radius: 10px; padding: 3px; }
 #menu .seg button { background: none; border: 0; color: var(--fg); font: 700 14px "Nunito"; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
 #menu .seg button.on { background: var(--orange); }
 #menu .row.vol { min-height: 34px; }
-#menu .row.vol input[type=range] { width: 170px; accent-color: var(--orange); cursor: pointer; }
+#menu .row.vol input[type=range] { width: auto; flex: 1 1 90px; max-width: 170px; accent-color: var(--orange); cursor: pointer; }
 #menu .row.vol input[type=range]:disabled { opacity: 0.4; cursor: default; }
-#menu .row.look .lookv { display: flex; align-items: center; gap: 6px; }
-#menu .row.look input[type=range] { width: 124px; }
+#menu .row.look .lookv { display: flex; align-items: center; gap: 6px; flex: 1 1 130px; max-width: 180px; }
+#menu .row.look input[type=range] { width: auto; flex: 1; min-width: 0; max-width: none; }
 #menu .row.look output { width: 46px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; opacity: 0.8; }
 #menu .muted { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
 #menu .travel-h { margin-top: 14px; font-weight: 800; }
 #menu .travel-h.first { margin-top: 0; }
 #menu .travel + .muted { margin-bottom: 12px; }
-#menu .travel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+#menu .travel { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; margin-top: 8px; }
 #menu .travel button { display: flex; gap: 8px; align-items: baseline; text-align: left; background: #2a2e36; color: var(--fg); border: 0; border-radius: 10px; padding: 8px 10px; font: 700 13px "Nunito"; cursor: pointer; }
 #menu .travel button:hover:not(:disabled) { background: #343944; }
 #menu .travel button.on { background: var(--orange); cursor: default; }
 #menu .travel .tm { font-variant-numeric: tabular-nums; opacity: 0.75; font-weight: 600; flex: none; }
-#menu .primary { margin-top: 16px; width: 100%; background: var(--orange); color: #fff; border: 0; border-radius: 10px; padding: 10px; font: 800 15px "Nunito"; cursor: pointer; }
+#menu .primary { background: var(--orange); color: #fff; border: 0; border-radius: 10px; padding: 10px; font: 800 15px "Nunito"; cursor: pointer; }
 
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 8; transition: opacity .35s; }
 /* cảnh chuyển: viền điện ảnh, thẻ chữ trên nền tối, nút Skip; hội thoại nổi trên màn tối */
@@ -766,7 +785,7 @@ body.cinematic #touch { display: none; }
    hàng nút), số người online lên góc trên phải, tin chat xem trước lên trên cần điều khiển */
 body.touch kbd, body.touch #prompt, body.touch #lockhint { display: none !important; }
 body.touch #hint { bottom: calc(12px + env(safe-area-inset-bottom)); max-width: calc(100vw - 2 * max(184px, 22vw)); font-size: 13px; }
-body.touch #objective { left: calc(16px + env(safe-area-inset-left)); max-width: 40vw; }
+body.touch #objective { max-width: 40vw; }
 body.touch #clock { right: calc(16px + env(safe-area-inset-right)); }
 body.touch #net-online { bottom: auto; top: 58px; right: calc(16px + env(safe-area-inset-right)); }
 body.touch #emotes { inset: 0; }
@@ -830,8 +849,12 @@ body.short.talking .nametags { display: none; }
 body.short .nametag { font-size: 11px; padding: 2px 7px; border-width: 1px; }
 
 /* các khung khác: không cao quá vùng nhìn thấy (khung đặt giữa cao hơn màn hình thì lòi khỏi mép trên), dài thì cuộn */
-body.short #menu .panel { max-height: calc(var(--vvh, 100dvh) - 12px); padding: 12px 18px; overscroll-behavior: contain; }
-body.short #menu h2 { margin-bottom: 8px; font-size: 18px; }
+body.short #menu .panel { max-height: calc(var(--vvh, 100dvh) - 12px); padding: 10px 16px 12px; overscroll-behavior: contain; }
+body.short #menu h2 { font-size: 18px; }
+body.short #menu header { margin-bottom: 6px; }
+body.short #menu .groups { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; }
+body.short #menu section { padding: 6px 10px 8px; gap: 2px; }
+body.short #menu footer { margin-top: 8px; }
 body.short #creator .panel, body.short #minigame .panel, body.short #minigame .panel.mg, body.short .confirm .panel, body.short #summary .panel {
   max-height: calc(var(--vvh, 100dvh) - 12px); box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; }
 body.short #summary .panel { padding: 12px 16px; }
@@ -843,8 +866,8 @@ body.short #act-card .title { font-size: 24px; padding: 4px 16px; }
 body.short #ach-card { padding: 8px 20px; }
 body.short #ach-card .title { font-size: 20px; }
 body.short #card { font-size: 22px; }
-body.short #toast { top: calc(8px + env(safe-area-inset-top)); font-size: 13px; padding: 5px 12px; }
-body.short #title-card { top: calc(48px + env(safe-area-inset-top)); }   /* dưới toast (8 px), giữa dòng mục tiêu / đồng hồ */
+body.short #toast { top: calc(50px + env(safe-area-inset-top)); font-size: 13px; padding: 5px 12px; }
+body.short #title-card { top: calc(86px + env(safe-area-inset-top)); }   /* dưới dòng mục tiêu (giữa mép trên) và toast (50 px) */
 body.short.talking #title-card { display: none; }   /* đang hội thoại: phần còn thấy phía trên khung dành cho mặt 2 người */
 body.short #title-card .time { font-size: 14px; }
 body.short #title-card .name { font-size: 22px; }

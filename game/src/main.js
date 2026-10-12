@@ -130,7 +130,7 @@ async function boot() {
   }
   const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes, pool: poolCfg, backdrop }, characters,
     input, settings, nametags, content, progress, ui });
-  ui.wardrobe = new Wardrobe({ game });                 // tủ đồ (nút 👕, phím I, menu Esc)
+  ui.wardrobe = new Wardrobe({ game });                 // tủ đồ (nút 👕, phím I)
   game.validation = { problems, nodes: nodeCheck };
   // chơi nhiều người "thấy nhau" (data/net.json → url trống = tắt, game y như chơi một mình). ?net=off: tắt (smoke test,
   // không đụng máy chủ thật); ?net=ws://127.0.0.1:8787/ws: máy chủ local (tham số thử)
@@ -178,11 +178,9 @@ async function boot() {
       sound: { ...SOUND_DEFAULTS, ...settings.sound },
       // độ nhạy xoay: chuột (máy có chuột — không phải điện thoại), cảm ứng (máy có màn cảm ứng)
       look: lookSens(settings.look), lookMouse: !device.phone, lookTouch: device.touchCapable,
-      complete: game.complete, wardrobe: !!chars.wardrobe,
+      complete: game.complete,
       // đã xong ngày đầu: đi thẳng tới zone bất kỳ (giờ theo zone — zone_01 lúc hoàng hôn sau cảnh kết)
       travel: game.complete ? zones.order.map((id) => ({ id, title: t(`zones.${id}.title`), time: game.zoneClock(id) ?? t(`zones.${id}.time`), here: id === game.state.zone })) : null }),
-    // tủ đồ (áo, phụ kiện): đóng menu rồi mở bảng tủ đồ
-    onWardrobe: () => { menu.hide(true); game.setMode("play"); game.toggleWardrobe(); },
     onTier: async (v) => { await game.setTier(v); menu.draw(); },
     onDetail: (v) => { game.setDetail(v); menu.draw(); },
     onGuide: (on) => { settings.guide = on; saveSettings(settings); menu.draw(); },

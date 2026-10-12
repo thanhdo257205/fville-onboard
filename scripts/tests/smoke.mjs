@@ -888,12 +888,11 @@ async function runLook(browser, base, look) {
         const closed = await wait(() => !window.__game?.summary.open, 5000);
         const con2 = problems.splice(0);
         await check(menu && again && closed && !con2.length, "màn tổng kết: Close → menu Esc → View summary mở lại, console sạch", JSON.stringify({ menu, again, closed, console: con2.slice(0, 5) }));
-        // tủ đồ (ui/wardrobe.js): menu Esc → nút Tủ đồ → bảng (camera ra trước mặt) → đội mũ lưỡi trai (xong game mới mở khoá):
+        // tủ đồ (ui/wardrobe.js): phím I (menu Esc không còn nút Tủ đồ) → bảng (camera ra trước mặt) → đội mũ lưỡi trai (xong game mới mở khoá):
         // mũ gắn xương đầu, vòm trên đỉnh đầu (không lún, không bay), vào bản lưu → mặc lại Đồ ngày đầu (texture + morph về 0,
         // bản lưu player.outfit) → phím I đóng, nút 👕 hiện → bấm nút mở lại → phím 2 = Áo Cam FPT → Esc đóng
-        await page.keyboard.press("Escape");
-        const mbtn = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-act=wardrobe]"), 5000);
-        if (mbtn) await clickShown("#menu [data-act=wardrobe]");
+        const mbtn = await wait(() => window.__game?._game.mode === "play" && document.getElementById("menu").hidden && !document.querySelector("#menu [data-act=wardrobe]"), 5000);
+        if (mbtn) await page.keyboard.press("KeyI");
         const wopen = await wait(() => window.__game?.wardrobe.open && window.__game._game.mode === "wardrobe", 5000);
         const capItem = "#wardrobe .item[data-kind=acc][data-id=cap]:not([disabled])";
         if (wopen && await ev((sel) => !!document.querySelector(sel), capItem)) await clickShown(capItem);
@@ -926,7 +925,7 @@ async function runLook(browser, base, look) {
         await check(mbtn && wopen && worn && /Head$/.test(cap?.bone || "") && cap.top > cap.headTop && cap.top < cap.headTop + 0.15 && cap.bottom < cap.headTop - 0.05
           && cap.fit.scale > 0.8 && cap.fit.scale < 2 && cap.saved?.includes("cap") && day1 && morphOk && d1.saved === "dau_ngay" && d1.badge
           && /portrait_dau_ngay/.test(d1.preview?.img || "") && d1.thumbs && /portrait\.png/.test(pv || "") && shut && btn && reopen && orange && done && !con3.length,
-          `tủ đồ: menu Esc → Tủ đồ → đội mũ (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), mặc lại Đồ ngày đầu${"ao_cam" in (d1.morph || {}) ? ` (morph ${d1.morph.ao_cam})` : ""}, lưu, ảnh xem trước theo bộ (rê chuột → Áo Cam, chưa thay); I đóng → nút 👕 mở → phím 2 Áo Cam → Esc`,
+          `tủ đồ: phím I → đội mũ (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), mặc lại Đồ ngày đầu${"ao_cam" in (d1.morph || {}) ? ` (morph ${d1.morph.ao_cam})` : ""}, lưu, ảnh xem trước theo bộ (rê chuột → Áo Cam, chưa thay); I đóng → nút 👕 mở → phím 2 Áo Cam → Esc`,
           JSON.stringify({ mbtn, wopen, worn, cap, day1, d1, pv, shut, btn, reopen, orange, done, console: con3.slice(0, 5) }));
         // đã xong ngày đầu → menu Esc có mục "Đi tới" (6 zone, zone đang đứng khoá nút): bấm zone_02 → sang zone_02, về chế độ
         // chơi, không tự mở hội thoại / cảnh chuyển; rồi __game.travel về zone đã đứng; console sạch

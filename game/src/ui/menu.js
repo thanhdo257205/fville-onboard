@@ -6,10 +6,12 @@ import { t, lang, LANGS } from "../i18n.js";
 import { TIERS } from "../core/quality.js";
 import { sound } from "../core/sound.js";
 
+const attr = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
 export class Menu {
-  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onTravel, onSummary, onClose, onPlayAgain, info }) {
+  constructor({ onTier, onDetail, onGuide, onPlayers, onChat, onLang, onSound, onLook, onTravel, onSummary, onClose, onPlayAgain, info }) {
     this.el = document.getElementById("menu");
-    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onWardrobe, onLang, onSound, onLook, onTravel, onSummary, onClose, onPlayAgain, info });
+    Object.assign(this, { onTier, onDetail, onGuide, onPlayers, onChat, onLang, onSound, onLook, onTravel, onSummary, onClose, onPlayAgain, info });
     this.open = false;
     // tiếng bấm nút (nút Resume: tiếng đóng menu)
     this.el.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && b.dataset.act !== "resume") sound.play("tap"); });
@@ -44,30 +46,41 @@ export class Menu {
     const cbtn = (on) => `<button data-chat="${on ? 1 : 0}" class="${i.chat === on ? "on" : ""}">${t(on ? "menu.on" : "menu.off")}</button>`;
     // tên ngôn ngữ viết bằng chính ngôn ngữ đó (lang.en = English, lang.vi = Tiếng Việt ở cả 2 file chữ)
     const lbtn = (l) => `<button data-lang="${l}" lang="${l}" class="${lang === l ? "on" : ""}">${t(`lang.${l}`)}</button>`;
+    // tủ đồ không ở đây (nút 👕 / phím I). Bảng rộng, chia 3 nhóm thành cột (hẹp thì tự xuống 2 / 1 cột — style.css #menu .groups) + hàng nút cuối (Chơi tiếp | Chơi lại, chia đôi; Xem tổng kết cạnh tiêu đề Đi tới) → vừa 1 màn hình,
+    // không phải cuộn (màn thấp vẫn cuộn được). Chú thích dài → title (rê chuột) thay vì dòng riêng, trừ dòng card đồ hoạ / FPS
     this.el.innerHTML = `
-      <div class="panel">
-        <h2>${t("menu.title")}</h2>
-        ${i.travel ? `<div class="travel-h first">${t("menu.travel")}</div><div class="travel">${i.travel.map((z) => `<button data-zone="${z.id}"${z.here ? ` class="on" disabled title="${t("menu.travel_here")}"` : ""}><span class="tm">${z.time}</span><span class="nm">${z.title}</span></button>`).join("")}</div><p class="muted">${t("menu.travel_note")}</p>` : ""}
-        <div class="row"><span>${t("menu.language")}</span><div class="seg">${LANGS.map(lbtn).join("")}</div></div>
-        <div class="row"><span>${t("menu.sound")}</span><div class="seg">${sbtn(true)}${sbtn(false)}</div></div>
-        <div class="row vol"><span>${t("menu.sfx_volume")}</span>${vol("sfx")}</div>
-        <div class="row vol"><span>${t("menu.amb_volume")}</span>${vol("amb")}</div>
-        <div class="row vol"><span>${t("menu.music_volume")}</span>${vol("music")}</div>
-        <p class="muted">${t("menu.sound_note")}</p>
-        ${lookRows ? `${lookRows}<p class="muted">${t("menu.look_note")}</p>` : ""}
-        <div class="row"><span>${t("menu.graphics")}</span><div class="seg">${btn("auto")}${btn("low")}${TIERS.includes("high") ? btn("high") : ""}</div></div>
-        <p class="muted current">${t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu })}</p>
-        <p class="muted fps">${t("menu.fps", { fps: Math.round(i.fps) })}</p>
-        <div class="row"><span>${t("menu.detail")}</span><div class="seg">${dbtn("auto")}${dbtn("sharper")}${dbtn("faster")}</div></div>
-        <p class="muted detail">${t("menu.detail_now", { level: t(`menu.detail_level_${i.detailLevel}`) })}</p>
-        <div class="row"><span>${t("menu.guide")}</span><div class="seg">${gbtn(true)}${gbtn(false)}</div></div>
-        <p class="muted">${t("menu.guide_note")}</p>
-        ${i.net ? `<div class="row"><span>${t("menu.players")}</span><div class="seg">${pbtn(true)}${pbtn(false)}</div></div>` : ""}
-        ${i.net ? `<div class="row"><span>${t("menu.chat")}</span><div class="seg">${cbtn(true)}${cbtn(false)}</div></div>` : ""}
-        ${i.wardrobe ? `<button class="ghost wide" data-act="wardrobe">${t("menu.wardrobe")}</button><p class="muted">${t("menu.wardrobe_note")}</p>` : ""}
-        <button class="primary" data-act="resume">${t("menu.resume")}</button>
-        ${i.complete ? `<button class="ghost wide" data-act="summary">🏆 ${t("menu.view_summary")}</button>` : ""}
-        <button class="ghost wide" data-act="again">${t("menu.play_again")}</button>
+      <div class="panel" role="dialog" aria-label="${t("menu.title")}">
+        <header><h2>${t("menu.title")}</h2><button type="button" class="x" data-act="resume" aria-label="${t("menu.resume")}" title="${t("menu.resume")} (Esc)">×</button></header>
+        ${i.travel ? `<section class="travel-box"><div class="travel-h first"><span>${t("menu.travel")} <small class="muted" title="${attr(t("menu.travel_note"))}">ⓘ</small></span>${i.complete ? `<button class="ghost" data-act="summary">🏆 ${t("menu.view_summary")}</button>` : ""}</div><div class="travel">${i.travel.map((z) => `<button data-zone="${z.id}"${z.here ? ` class="on" disabled title="${attr(t("menu.travel_here"))}"` : ""}><span class="tm">${z.time}</span><span class="nm">${z.title}</span></button>`).join("")}</div></section>` : ""}
+        <div class="groups">
+          <section>
+            <h3>${t("menu.group_sound")}</h3>
+            <div class="row"><span>${t("menu.language")}</span><div class="seg">${LANGS.map(lbtn).join("")}</div></div>
+            <div class="row" title="${attr(t("menu.sound_note"))}"><span>${t("menu.sound")}</span><div class="seg">${sbtn(true)}${sbtn(false)}</div></div>
+            <div class="row vol" title="${attr(t("menu.sound_note"))}"><span>${t("menu.sfx_volume")}</span>${vol("sfx")}</div>
+            <div class="row vol" title="${attr(t("menu.sound_note"))}"><span>${t("menu.amb_volume")}</span>${vol("amb")}</div>
+            <div class="row vol" title="${attr(t("menu.sound_note"))}"><span>${t("menu.music_volume")}</span>${vol("music")}</div>
+          </section>
+          <section>
+            <h3>${t("menu.group_controls")}</h3>
+            ${lookRows}
+            <div class="row" title="${attr(t("menu.guide_note"))}"><span>${t("menu.guide")}</span><div class="seg">${gbtn(true)}${gbtn(false)}</div></div>
+            ${i.net ? `<div class="row"><span>${t("menu.players")}</span><div class="seg">${pbtn(true)}${pbtn(false)}</div></div>` : ""}
+            ${i.net ? `<div class="row"><span>${t("menu.chat")}</span><div class="seg">${cbtn(true)}${cbtn(false)}</div></div>` : ""}
+          </section>
+          <section>
+            <h3>${t("menu.group_display")}</h3>
+            <div class="row"><span>${t("menu.graphics")}</span><div class="seg">${btn("auto")}${btn("low")}${TIERS.includes("high") ? btn("high") : ""}</div></div>
+            <div class="row"><span>${t("menu.detail")}</span><div class="seg">${dbtn("auto")}${dbtn("sharper")}${dbtn("faster")}</div></div>
+            <p class="muted detail">${t("menu.detail_now", { level: t(`menu.detail_level_${i.detailLevel}`) })}</p>
+            <p class="muted fps">${t("menu.fps", { fps: Math.round(i.fps) })}</p>
+            <p class="muted current" title="${attr(t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu }))}">${t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu })}</p>
+          </section>
+        </div>
+        <footer>
+          <button class="primary" data-act="resume">${t("menu.resume")}</button>
+          <button class="ghost" data-act="again">${t("menu.play_again")}</button>
+        </footer>
       </div>`;
     this.el.querySelectorAll("[data-tier]").forEach((b) => b.addEventListener("click", () => this.onTier(b.dataset.tier)));
     this.el.querySelectorAll("[data-detail]").forEach((b) => b.addEventListener("click", () => this.onDetail?.(b.dataset.detail)));
@@ -87,14 +100,14 @@ export class Menu {
     });
     this.el.querySelectorAll("[data-zone]").forEach((b) => b.addEventListener("click", () => { clearInterval(this._tick); this.onTravel?.(b.dataset.zone); }));
     this.el.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.lang !== lang) this.onLang?.(b.dataset.lang); }));
-    this.el.querySelector("[data-act=wardrobe]")?.addEventListener("click", () => { clearInterval(this._tick); this.onWardrobe?.(); });
-    this.el.querySelector("[data-act=resume]").addEventListener("click", () => this.hide());
+    this.el.querySelectorAll("[data-act=resume]").forEach((b) => b.addEventListener("click", () => this.hide()));
     this.el.querySelector("[data-act=summary]")?.addEventListener("click", () => { clearInterval(this._tick); this.onSummary?.(); });
     this.el.querySelector("[data-act=again]").addEventListener("click", () => { clearInterval(this._tick); this.onPlayAgain?.(); });
   }
   tick() {
     const i = this.info();
-    this.el.querySelector(".current").textContent = t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu });
+    const cur = this.el.querySelector(".current");
+    cur.textContent = cur.title = t("menu.current", { tier: t(`tiers.${i.tier}`), gpu: i.gpu });
     this.el.querySelector(".fps").textContent = t("menu.fps", { fps: Math.round(i.fps) });
     this.el.querySelector(".detail").textContent = t("menu.detail_now", { level: t(`menu.detail_level_${i.detailLevel}`) });
   }
