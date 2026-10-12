@@ -791,7 +791,12 @@ async function runLook(browser, base, look) {
         // bản lưu player.outfit) → phím I đóng, nút 👕 hiện → bấm nút mở lại → phím 2 = Áo Cam FPT → Esc đóng
         await page.keyboard.press("Escape");
         const mbtn = await wait(() => !document.getElementById("menu").hidden && !!document.querySelector("#menu [data-act=wardrobe]"), 5000);
-        if (mbtn) await page.click("#menu [data-act=wardrobe]");
+        if (mbtn) {
+          // The 640 × 360 creator-card run needs to scroll the long menu.
+          // Put the button in view before Playwright waits for a stable click.
+          await page.locator("#menu [data-act=wardrobe]").evaluate((button) => button.scrollIntoView({ block: "center", behavior: "instant" }));
+          await page.click("#menu [data-act=wardrobe]");
+        }
         const wopen = await wait(() => window.__game?.wardrobe.open && window.__game._game.mode === "wardrobe", 5000);
         const capItem = "#wardrobe .item[data-kind=acc][data-id=cap]:not([disabled])";
         if (wopen && await ev((sel) => !!document.querySelector(sel), capItem)) await page.click(capItem);
@@ -856,7 +861,7 @@ async function runLook(browser, base, look) {
       }
     }
   } catch (e) {
-    await check(false, `lỗi script: ${e.message.split("\n")[0]}`);
+    await check(false, `lỗi script: ${e.message}`);
   } finally {
     await ctx.close();
   }
