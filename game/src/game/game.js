@@ -36,7 +36,10 @@ import { replaceGrass, grassTexture } from "../world/grass.js";
 const EFFECT_SOUNDS = ["reward", "checklist", "value", "quest", "grain", "item", "advice"];
 
 // chuyển zone quá chừng này chưa xong → hiện lỗi + nút Retry / Back (Game.enterZone)
+// tải zone: báo lỗi khi ĐỨNG YÊN (không qua bước nào) quá ZONE_TIMEOUT_MS, hoặc tổng quá ZONE_MAX_MS. Trước đây canh tổng 20 s →
+// máy chậm (CI vẽ bằng CPU, điện thoại yếu) vẫn đang tải bình thường cũng bị báo lỗi, bảng lỗi che màn chơi
 export const ZONE_TIMEOUT_MS = 20000;
+export const ZONE_MAX_MS = 90000;
 
 export class Game {
   constructor({ renderer, data, characters, input, settings, nametags, content, progress, ui }) {
@@ -159,16 +162,20 @@ export class Game {
   // của _enterZone và showcase (nền màn tiêu đề)
   async _prepareZone(zoneId, file) {
     const zone = await loadZone(zoneId, file, this.state.tier, this.data.collision?.[zoneId]);
+    this.zoneProgress("glb");
     applySceneFixes(zone, this.data.sceneFixes?.[zoneId]);   // vd hạ ghế zone_05 (không sửa GLB)
     await replaceGrass(zone);
+    this.zoneProgress("grass");
     this.sky.groundTexture = await grassTexture();
     await placeProps(zone, this.data.sceneFixes?.[zoneId]?.props);   // vật từ GLB riêng (vd chậu cây) — trước BVH camera
+    this.zoneProgress("props");
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
     // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
     const plantRe = new RegExp(this.seeThrough.cfg.meshes), blockers = [];
     const leaves = new Set((this.data.sceneFixes?.[zoneId]?.doors || []).flatMap((d) => Object.keys(d.leaves || {})));   // cánh cửa mở được
     zone.root.traverse((o) => { if (o.isMesh && o.visible && !o.name.startsWith("COL_") && !plantRe.test(o.name) && !plantRe.test(o.parent?.name || "") && !leaves.has(o.parent?.name)) blockers.push(o); });
     zone.view = buildCollider(blockers);
+    this.zoneProgress("bvh");
     return zone;
   }
 
@@ -179,7 +186,8 @@ export class Game {
   }
 
   // Chuyển zone có canh giờ (mọi nơi gọi: trigger, mở game, cảnh chuyển, đổi mức đồ hoạ). Lỗi khi tải → hiện ra (bảng lỗi
-  // trên màn chờ + console.error), không nuốt; quá ZONE_TIMEOUT_MS chưa xong cũng vậy. Nút Retry (tải lại zone đó) và Back
+  // trên màn chờ + console.error), không nuốt; ZONE_TIMEOUT_MS không qua thêm bước nào (zoneProgress) / tổng quá ZONE_MAX_MS
+  // cũng vậy. Nút Retry (tải lại zone đó) và Back
   // to <zone vừa rời> (mở game thẳng vào zone lỗi: zone trước theo thứ tự; zone đầu: Reload page). Xong muộn sau khi đã
   // báo quá giờ → tự bỏ bảng lỗi. Việc mạng / người chơi khác không nằm trong đường này (remotes chỉ dựng khi đang chơi).
   // → true nếu đã vào zone.
@@ -189,9 +197,16 @@ export class Game {
     this.zoneLoad = token;
     hud.zoneError(null);
     let timer;
+    const t0 = performance.now();
+    this.zoneProgress();
     const load = this._enterZone(zoneId, spawnName, opts);
+    // kiểm tra mỗi giây (bước đồng bộ dài như biên dịch shader: zoneProgress chạy ngay sau đó, trước lượt kiểm tra kế)
     const late = new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(t("app.zone_timeout", { s: ZONE_TIMEOUT_MS / 1000 }))), ZONE_TIMEOUT_MS);
+      timer = setInterval(() => {
+        const now = performance.now();
+        if (now - this.zoneTick > ZONE_TIMEOUT_MS) reject(new Error(t("app.zone_stalled", { s: ZONE_TIMEOUT_MS / 1000 })));
+        else if (now - t0 > ZONE_MAX_MS) reject(new Error(t("app.zone_timeout", { s: ZONE_MAX_MS / 1000 })));
+      }, 1000);
     });
     // bảng lỗi cần con trỏ: nhả khoá chuột lúc báo lỗi, vào được zone thì trả lại (đang ở chế độ chơi)
     const relook = () => { if (this.mode === "play" && !this.input.lookActive) this.input.setLook(true); };
@@ -202,7 +217,7 @@ export class Game {
     } catch (e) {
       load.then(() => { if (this.zoneLoad === token) { hud.zoneError(null); relook(); } }, () => {});   // xong muộn → bỏ bảng lỗi
       if (this.zoneLoad !== token) return false;          // đã có lần chuyển zone khác (vd bấm Retry)
-      console.error(`[zone] không vào được ${zoneId}${spawnName ? ` (${spawnName})` : ""}:`, e);
+      console.error(`[zone] không vào được ${zoneId}${spawnName ? ` (${spawnName})` : ""}:`, e, `— các bước (ms): ${JSON.stringify(this.state.zoneSteps ?? [])}`);
       this.lastZoneError = { zone: zoneId, spawn: spawnName, message: e?.message || String(e) };
       const order = this.data.zones.order, back = from ?? order[order.indexOf(zoneId) - 1] ?? null;
       const title = (z) => t(`zones.${z}.title`);
@@ -212,7 +227,16 @@ export class Game {
       this.input.setLook(false);
       hud.zoneError({ title: t("app.zone_error", { zone: title(zoneId) }), detail: this.lastZoneError.message, buttons });
       return false;
-    } finally { clearTimeout(timer); }
+    } finally { clearInterval(timer); }
+  }
+
+  // mốc tiến độ khi tải zone (enterZone chỉ báo quá giờ khi lâu không qua mốc nào)
+  // state.zoneSteps: [bước, ms từ mốc trước] của lần tải gần nhất (lỗi quá giờ in kèm → biết bước nào chậm)
+  zoneProgress(step) {
+    const now = performance.now();
+    if (!step) this.state.zoneSteps = [];
+    else this.state.zoneSteps?.push([step, Math.round(now - this.zoneTick)]);
+    this.zoneTick = now;
   }
 
   // silent: tải sau màn tối của cảnh chuyển — không hiện màn chờ, thẻ tên zone, hội thoại vào zone
@@ -225,10 +249,12 @@ export class Game {
     if (this.ui.app.open) this.ui.app.hide();
     this.talkCam.reset();
     if (fade) await hud.fade(true);
+    this.zoneProgress("fade");
     if (!silent) hud.loading(t("app.loading_zone", { zone: t(`zones.${zoneId}.title`) }));
     // nền màn tiêu đề (showcase): đang tải → chờ; cùng zone / GLB / mức đồ hoạ → dùng lại (không tải lại); khác (vd đã xong
     // game → zone_01) → bỏ. Camera trôi tới lúc này (màn đã tối), trả fov rồi mới đặt camera chơi
     if (this.previewLoad) await this.previewLoad.catch(() => null);
+    this.zoneProgress("preview");
     const pre = this.preview;
     this.preview = null;
     pre?.dispose();
@@ -236,7 +262,7 @@ export class Game {
     let zone = null;
     if (pre && pre.zone.id === zoneId && pre.zone.file === wantFile && pre.zone.tier === this.state.tier) zone = pre.zone;
     else if (pre) { this.scene.remove(pre.zone.root); disposeZone(pre.zone); }
-    if (!zone) { await pendingPrefetch(wantFile, this.state.tier); zone = await this._prepareZone(zoneId, wantFile); }
+    if (!zone) { await pendingPrefetch(wantFile, this.state.tier); this.zoneProgress("prefetch"); zone = await this._prepareZone(zoneId, wantFile); }
     // dọn zone cũ
     if (this.zone) { this.scene.remove(this.zone.root, this.zone.collider); disposeZone(this.zone); }
     for (const n of this.npcs) n.character.dispose();
@@ -258,6 +284,7 @@ export class Game {
     // người chơi: đổi model nếu mức đồ hoạ đổi (Thấp = bản 6k, Cao = 15k)
     if (this.player.character.tier !== this.state.tier) {
       this.player.setCharacter(await this.characters.create("player", this.state.tier));
+      this.zoneProgress("player");
       this.scene.add(this.player.character.root);
       this.updateOutfit();
       this.updateAccessories();
@@ -288,6 +315,7 @@ export class Game {
     } else this.cam.occluders = null;
     this.cam.update(0, this.player.position, { dx: 0, dy: 0, wheel: 0 }, zone.collider, true, zone.view);
     await this.spawnActors();
+    this.zoneProgress("actors");
     this.setupDoors();
     this.interaction.setup(zone, this.scene);
     this.guide.reset();
@@ -302,6 +330,7 @@ export class Game {
     // biên dịch shader + đưa texture lên GPU khi màn chờ / màn tối còn che (không giật ở khung đầu tiên)
     const tw = performance.now();
     await this.renderer.warmup(this.scene, this.camera);
+    this.zoneProgress("warmup");
     this.state.warmupMs = Math.round(performance.now() - tw);
     this.monitor.reset();
     this.detailMonitor.reset();
