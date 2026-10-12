@@ -16,14 +16,23 @@
       "dâm đãng", "dâm tặc", "hiếp dâm", "điếm", "đĩ điếm", "con điếm", "phò", "con phò", "mẹ mày", "con mẹ mày", "bố mày",
       "cha mày", "tổ cha", "tổ sư", "tiên sư", "mả mẹ", "thằng chó", "con chó cái", "chó má", "chó chết", "đồ khốn",
       "thằng khốn", "khốn nạn", "súc vật", "đồ súc vật", "mất dạy", "vô học", "đồ ngu", "thằng ngu", "con ngu", "ngu như bò",
-      "ngu như chó", "óc lợn", "óc bò", "câm mồm", "im mồm"
+      "ngu như chó", "óc lợn", "óc bò", "câm mồm", "im mồm",
+      "vãi buồi", "vãi cặc", "cái lồn", "con cặc", "đầu buồi", "đầu cặc", "đầu lồn", "đầu đất",
+      "ăn cứt", "ăn cặc", "đồ rác rưởi", "thằng rác rưởi", "con rác rưởi", "đồ đần độn", "thằng đần", "con đần",
+      "đồ chó đẻ", "đụ tổ", "địt tổ", "đụ cả nhà", "địt cả nhà", "đụ con mẹ", "đụ chết mẹ", "địt chết mẹ",
+      "đéo mẹ", "đéo hiểu", "đéo cần", "đéo muốn", "vãi đái", "đái vào mồm", "cút mẹ", "cút con mẹ"
     ],
     "plain": [
       "dm", "dmm", "dcm", "dcmm", "dkm", "dkmm", "dmcs", "dmvl", "dcmvl", "vcl", "vkl", "vcc", "vl", "cmn", "cmm", "cmnr",
       "clgt", "clm", "loz", "djt", "djtme", "dit", "ditme", "ditmemay", "ditconme", "dit me", "dit con me", "dit cu",
       "du ma", "du me", "duma", "dume", "dumame", "cak", "kak",
       "fuck*", "motherfuck*", "fck", "fuk", "shit*", "bitch*", "bastard*", "asshole*", "cunt*", "dick", "dickhead*", "pussy",
-      "whore*", "slut*", "nigger*", "nigga*", "faggot*", "retard*", "wtf", "stfu"
+      "whore*", "slut*", "nigger*", "nigga*", "faggot*", "retard*", "wtf", "stfu",
+      "vcal", "vailon", "vaicalon", "vaibuoi", "vaicac", "dclm", "dtml", "dconme", "ditmemai", "ditcmm",
+      "dit chet me", "dit ca nha", "an cut", "dau buoi", "oc cho",
+      "deome", "deo hieu", "deo can", "deo muon", "deo biet", "cut me", "cut con me",
+      "bullshit*", "horseshit*", "dumbass*", "jackass*", "dipshit*", "shithead*", "arsehole*", "twat*",
+      "cock sucker", "cocksuck*", "son of a bitch", "fucc", "phuck*"
     ],
     "allow": ["các", "lớn", "lon", "đeo", "dù", "du"],
     "_bo_loc_ly_do": "Lọc theo từng từ (không lọc chuỗi con, để 'class', 'Scunthorpe', 'assistant' không bị che). exact: so nguyên dấu tiếng Việt (chữ thường, NFC) — từ bỏ dấu sẽ trùng từ thường ('cặc' → 'các', 'lồn' → 'lớn' / 'lon', 'đụ' → 'dù', 'đéo' → 'đeo') nên phải giữ dấu; cụm 2 từ trở lên so liền nhau. plain: so sau khi bỏ dấu, đổi chữ số / ký hiệu giống chữ (0 → o, 1 → i, 3 → e, 4 → a, 5 → s, 7 → t, @ → a, $ → s) và gộp chữ lặp ('fuuuck' → 'fuck'); '*' cuối = mọi từ bắt đầu bằng phần trước. Chữ cái tách rời ('f u c k', 'd m') được ghép lại rồi so. allow: từ không bao giờ che (so nguyên dấu, ưu tiên hơn 2 danh sách trên) — chốt chặn cho từ thường dễ bị che nhầm. mask_links: che đường link (http://, www., tên miền .com / .vn …) thành [link] — tránh dẫn người chơi tới trang lạ. Tiếng Việt (12/10/2026): exact thêm biến thể chửi tục (đù, đờ mờ, đếch, lìn, kặc…), tục về tình dục, cụm xúc phạm (mẹ mày, tổ sư, thằng chó, đồ ngu, súc vật, mất dạy…) — cụm nhiều từ để không che từ thường ('ngu' gõ không dấu trùng 'ngủ', 'con chó' là con vật); plain thêm viết tắt / teencode / gõ không dấu không trùng từ thường (dit, duma, dmvl, cmm, cmnr, vl…; 'dit' che cả 'đít'). Máy khách cũng lọc lại tin + tên nhận được (game/src/net/net.js) — danh sách mới có hiệu lực ngay khi deploy bản web, kể cả khi máy chủ chưa wrangler deploy. Không lọc được mọi cách viết lách; người chơi vẫn có thể tắt nhận tin từ một người (mute) hoặc tắt hẳn chat trong menu Esc."
