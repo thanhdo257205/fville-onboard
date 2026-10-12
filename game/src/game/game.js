@@ -354,9 +354,13 @@ export class Game {
   }
   wardrobeInfo() {
     const worn = this.playerOutfit(), acc = new Set(this.wornAccessories());
+    // ảnh xem trước: chân dung model người chơi mặc bộ đó (Áo Cam = portrait; bộ khác = outfit_portraits.<id>) — như màn tạo nhân vật
+    const m = this.characters.model(this.characters.modelId("player")), cam = this.characters.role("player")?.outfit?.until_reward ?? "ao_cam";
+    const img = (id) => { const p = id === cam ? m?.portrait : m?.outfit_portraits?.[id]; return p ? url(p) : null; };
     return {
       outfits: this.wardrobeOutfits().map((o) => ({ id: o.id, icon: o.icon, name: tx(o.name), desc: tx(o.desc), locked: tx(o.locked),
-        unlocked: this.outfitUnlocked(o.id), worn: o.id === worn })),
+        unlocked: this.outfitUnlocked(o.id), worn: o.id === worn, img: img(o.id) })),
+      wornImg: img(worn),
       accessories: this.characters.accessoryIds().map((id) => {
         const a = this.characters.accessory(id);
         return { id, icon: a.icon, name: tx(a.label), desc: "", locked: tx(a.locked), unlocked: this.accessoryUnlocked(id), on: acc.has(id) };

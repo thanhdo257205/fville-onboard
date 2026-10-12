@@ -1639,6 +1639,18 @@ Người dùng yêu cầu đổi dấu chấm than chỉ đường thành mũi t
   mũi nhọn nhỏ); lề mép nới ra (máy tính 38 px, cảm ứng 44 px, trên 80 px).
 - Đo: test:quick 57/57, `--mobile ui` 20/20; xem bằng mắt zone 3 (trên đầu chị lễ tân, mũi tên mép khi quay lưng). **Đã deploy** gh-pages 6414049 (từ main e2ef552).
 
+### Tủ đồ: ảnh xem trước bộ đồ (12/10/2026, máy Desktop)
+
+Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem trước Áo Cam" ở màn tạo nhân vật.
+- `ui/wardrobe.js`: khung xem trước đầu bảng — chân dung nhân vật mặc bộ đang trỏ tới (rê chuột / focus / chạm; mặc định bộ đang
+  mặc), tên + trạng thái; món chưa mở khoá vẫn xem trước được (ảnh đủ màu, viền nét đứt), bấm thì hiện câu gợi ý cách mở (thẻ
+  không còn `disabled`, dùng `aria-disabled` + lớp `locked`). Phụ kiện: chân dung bộ đang mặc + biểu tượng món. Thẻ áo có ảnh
+  thu nhỏ thay emoji (món chưa mở: xám + ổ khoá nhỏ). Ngón tay: giữ món vừa chạm (không về bộ đang mặc khi nhấc tay).
+- Ảnh: `Game.wardrobeInfo` → `img` = `models.<model người chơi>.portrait` (Áo Cam) / `outfit_portraits.<bộ>` (cùng nguồn với màn
+  tạo nhân vật). Màn thấp: khung 84 px.
+- Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
+  sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390.
+
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
   Pull Request → GitHub Actions), việc theo ưu tiên P1–P3 (trước / trong buổi chơi thử, nội dung, nhân vật 3D, tính năng,

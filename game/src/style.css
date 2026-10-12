@@ -886,8 +886,24 @@ body.touch #minigame.mg-pool .mg .line { font-size: 12px; margin: 0 0 4px; }
   background: #242830; color: var(--fg); border: 2px solid transparent; border-radius: 12px; padding: 9px 12px; cursor: pointer; font: 600 14px "Nunito"; }
 #wardrobe .item:hover:not([disabled]), #wardrobe .item:focus-visible { border-color: rgba(243, 112, 33, .55); outline: none; }
 #wardrobe .item.on { border-color: var(--orange); background: #2c241f; }
-#wardrobe .item[disabled] { cursor: default; opacity: .62; }
-#wardrobe .item .ic { font-size: 26px; text-align: center; }
+#wardrobe .item.locked { opacity: .7; }
+#wardrobe .item.locked .tx b, #wardrobe .item.locked .st { opacity: .8; }
+#wardrobe .item .ic { position: relative; font-size: 26px; text-align: center; }
+#wardrobe .item .ic.ph { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: #2f3440; }
+#wardrobe .item .ic.ph img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+#wardrobe .item.locked .ic.ph img { filter: grayscale(.85) brightness(.7); }
+#wardrobe .item .ic i { position: absolute; right: -4px; bottom: -4px; font: 15px/1 "Nunito"; font-style: normal; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .6)); }
+/* khung xem trước: chân dung nhân vật mặc bộ đang trỏ tới (như màn tạo nhân vật) */
+#wardrobe .preview { display: grid; grid-template-columns: 132px 1fr; gap: 14px; align-items: center; margin-top: 12px; padding: 10px;
+  background: #242830; border-radius: 14px; }
+#wardrobe .preview .pic { position: relative; width: 132px; height: 132px; border-radius: 12px; overflow: hidden; background: #2f3440; border: 2px solid var(--orange); }
+#wardrobe .preview .pic img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
+#wardrobe .preview.locked .pic { border: 2px dashed #6b7280; }   /* chưa mở: ảnh vẫn đủ màu để xem trước, viền nét đứt */
+#wardrobe .preview .badge { position: absolute; right: 6px; bottom: 6px; font-size: 30px; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .6)); }
+#wardrobe .preview .cap { display: grid; gap: 8px; justify-items: start; }
+#wardrobe .preview .cap b { font: 800 17px/1.25 "Nunito"; }
+#wardrobe .preview .st { font: 800 12px "Nunito"; padding: 4px 9px; border-radius: 999px; background: #2a2e36; }
+#wardrobe .preview .st.on { background: var(--orange); color: #fff; }
 #wardrobe .item .tx { display: grid; gap: 2px; min-width: 0; }
 #wardrobe .item .tx b { font-weight: 800; }
 #wardrobe .item .tx small { color: var(--muted); font-size: 12.5px; line-height: 1.3; }
@@ -911,4 +927,8 @@ body.short #wardrobe h2 { font-size: 17px; }
 body.short #wardrobe h3 { margin: 8px 0 5px; }
 body.short #wardrobe .item { padding: 6px 10px; grid-template-columns: 30px 1fr auto; }
 body.short #wardrobe .item .ic { font-size: 20px; }
+body.short #wardrobe .item .ic.ph { width: 34px; height: 34px; }
+body.short #wardrobe .preview { grid-template-columns: 84px 1fr; margin-top: 6px; padding: 6px; }
+body.short #wardrobe .preview .pic { width: 84px; height: 84px; }
+body.short #wardrobe .preview .cap b { font-size: 15px; }
 body.short #wardrobe .item .tx small { display: none; }

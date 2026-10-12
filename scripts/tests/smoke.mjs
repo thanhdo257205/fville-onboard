@@ -778,7 +778,12 @@ async function runLook(browser, base, look) {
         if (wopen) await page.click("#wardrobe .item[data-kind=outfit][data-id=dau_ngay]");
         const day1 = await wait(() => window.__game?.model.outfit === "dau_ngay", 5000);
         const d1 = await ev(() => ({ morph: __game.model.morph, saved: JSON.parse(localStorage.getItem("fville.save.v1") || "{}").player?.outfit,
-          badge: !!document.querySelector("#wardrobe .item.on[data-id=dau_ngay]") }));
+          badge: !!document.querySelector("#wardrobe .item.on[data-id=dau_ngay]"), preview: __game.wardrobe.preview,
+          thumbs: __game.wardrobe.items.filter((x) => x.kind === "outfit").every((x) => /portrait/.test(x.img || "")) }));
+        // rê chuột vào Áo Cam (chưa mặc) → khung xem trước đổi sang chân dung mặc Áo Cam, chưa thay áo
+        await page.hover("#wardrobe .item[data-kind=outfit][data-id=ao_cam]");
+        const pv = await wait(() => window.__game?.wardrobe.preview?.item === "ao_cam" && window.__game.model.outfit === "dau_ngay", 3000)
+          && await ev(() => __game.wardrobe.preview.img);
         await page.keyboard.press("KeyI");
         const shut = await wait(() => !window.__game?.wardrobe.open && window.__game._game.mode === "play", 5000);
         const btn = shut && await wait(() => { window.__game._game.ui.wardrobe.update(); return window.__game.wardrobe.button; }, 5000);
@@ -792,9 +797,9 @@ async function runLook(browser, base, look) {
         const morphOk = !("ao_cam" in (d1.morph || {})) || d1.morph.ao_cam === 0;
         await check(mbtn && wopen && worn && /Head$/.test(cap?.bone || "") && cap.top > cap.headTop && cap.top < cap.headTop + 0.15 && cap.bottom < cap.headTop - 0.05
           && cap.fit.scale > 0.8 && cap.fit.scale < 2 && cap.saved?.includes("cap") && day1 && morphOk && d1.saved === "dau_ngay" && d1.badge
-          && shut && btn && reopen && orange && done && !con3.length,
-          `tủ đồ: menu Esc → Tủ đồ → đội mũ (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), mặc lại Đồ ngày đầu${"ao_cam" in (d1.morph || {}) ? ` (morph ${d1.morph.ao_cam})` : ""}, lưu; I đóng → nút 👕 mở → phím 2 Áo Cam → Esc`,
-          JSON.stringify({ mbtn, wopen, worn, cap, day1, d1, shut, btn, reopen, orange, done, console: con3.slice(0, 5) }));
+          && /portrait_dau_ngay/.test(d1.preview?.img || "") && d1.thumbs && /portrait\.png/.test(pv || "") && shut && btn && reopen && orange && done && !con3.length,
+          `tủ đồ: menu Esc → Tủ đồ → đội mũ (xương ${cap?.bone}, tỉ lệ ${cap?.fit?.scale}, vòm cao hơn đỉnh đầu ${cap ? Math.round((cap.top - cap.headTop) * 100) : "?"} cm), mặc lại Đồ ngày đầu${"ao_cam" in (d1.morph || {}) ? ` (morph ${d1.morph.ao_cam})` : ""}, lưu, ảnh xem trước theo bộ (rê chuột → Áo Cam, chưa thay); I đóng → nút 👕 mở → phím 2 Áo Cam → Esc`,
+          JSON.stringify({ mbtn, wopen, worn, cap, day1, d1, pv, shut, btn, reopen, orange, done, console: con3.slice(0, 5) }));
         // đã xong ngày đầu → menu Esc có mục "Đi tới" (6 zone, zone đang đứng khoá nút): bấm zone_02 → sang zone_02, về chế độ
         // chơi, không tự mở hội thoại / cảnh chuyển; rồi __game.travel về zone đã đứng; console sạch
         {
