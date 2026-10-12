@@ -1,0 +1,346 @@
+{
+  "_ghi_chu": "Breakdance Pack do người dùng cung cấp. 34 điệu / biến thể, dùng cho cả 4 model người chơi. FBX nguồn chỉ ở source/ trên máy làm việc; xuất animation gắn vào model game, không phát tán FBX hoặc gói animation thô. Mỗi lựa chọn phát một lượt, di chuyển / tương tác sẽ dừng.",
+  "source_zip_sha256": "e784e820df7472dd8c830bb1e6da75863dff711b2328eb83001ce843e5dc2c7c",
+  "dances": [
+    {
+      "id": "dance_brooklyn_uprock",
+      "anim": "dance_brooklyn_uprock",
+      "source": "brooklyn uprock.fbx",
+      "label": {
+        "en": "Brooklyn Uprock",
+        "vi": "Bước Brooklyn"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_crossleg_freeze",
+      "anim": "dance_crossleg_freeze",
+      "source": "crossleg freeze.fbx",
+      "label": {
+        "en": "Crossleg Freeze",
+        "vi": "Giữ chéo chân"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_ending_1",
+      "anim": "dance_breakdance_ending_1",
+      "source": "breakdance ending 1.fbx",
+      "label": {
+        "en": "Ending 1",
+        "vi": "Kết thúc 1"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_ending_2",
+      "anim": "dance_breakdance_ending_2",
+      "source": "breakdance ending 2.fbx",
+      "label": {
+        "en": "Ending 2",
+        "vi": "Kết thúc 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_ending_3",
+      "anim": "dance_breakdance_ending_3",
+      "source": "breakdance ending 3.fbx",
+      "label": {
+        "en": "Ending 3",
+        "vi": "Kết thúc 3"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_footwork_2",
+      "anim": "dance_breakdance_footwork_2",
+      "source": "breakdance footwork 2.fbx",
+      "label": {
+        "en": "Footwork 2",
+        "vi": "Bước chân 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_footwork_3",
+      "anim": "dance_breakdance_footwork_3",
+      "source": "breakdance footwork 3.fbx",
+      "label": {
+        "en": "Footwork 3",
+        "vi": "Bước chân 3"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_footwork_to_idle",
+      "anim": "dance_breakdance_footwork_to_idle",
+      "source": "breakdance footwork to idle.fbx",
+      "label": {
+        "en": "Footwork To Idle",
+        "vi": "Bước → Đứng"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_freezes",
+      "anim": "dance_breakdance_freezes",
+      "source": "breakdance freezes.fbx",
+      "label": {
+        "en": "Freezes",
+        "vi": "Chuỗi Freeze"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_flair",
+      "anim": "dance_flair",
+      "source": "flair.fbx",
+      "label": {
+        "en": "Flair",
+        "vi": "Xoay Flair"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_flair_2",
+      "anim": "dance_flair_2",
+      "source": "flair (2).fbx",
+      "label": {
+        "en": "Flair 2",
+        "vi": "Xoay Flair 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_flair_3",
+      "anim": "dance_flair_3",
+      "source": "flair (3).fbx",
+      "label": {
+        "en": "Flair 3",
+        "vi": "Xoay Flair 3"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_footwork_1",
+      "anim": "dance_breakdance_footwork_1",
+      "source": "breakdance footwork 1.fbx",
+      "label": {
+        "en": "Footwork 1",
+        "vi": "Bước chân 1"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_footwork_to_freeze",
+      "anim": "dance_breakdance_footwork_to_freeze",
+      "source": "breakdance footwork to freeze.fbx",
+      "label": {
+        "en": "Footwork To Freeze",
+        "vi": "Bước → Giữ"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_footwork_to_idle_2",
+      "anim": "dance_breakdance_footwork_to_idle_2",
+      "source": "breakdance footwork to idle (2).fbx",
+      "label": {
+        "en": "Footwork To Idle 2",
+        "vi": "Bước → Đứng 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_freeze_var_1",
+      "anim": "dance_breakdance_freeze_var_1",
+      "source": "breakdance freeze var 1.fbx",
+      "label": {
+        "en": "Freeze Var 1",
+        "vi": "Giữ dáng 1"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_freeze_var_2",
+      "anim": "dance_breakdance_freeze_var_2",
+      "source": "breakdance freeze var 2.fbx",
+      "label": {
+        "en": "Freeze Var 2",
+        "vi": "Giữ dáng 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_freeze_var_3",
+      "anim": "dance_breakdance_freeze_var_3",
+      "source": "breakdance freeze var 3.fbx",
+      "label": {
+        "en": "Freeze Var 3",
+        "vi": "Giữ dáng 3"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_freeze_var_4",
+      "anim": "dance_breakdance_freeze_var_4",
+      "source": "breakdance freeze var 4.fbx",
+      "label": {
+        "en": "Freeze Var 4",
+        "vi": "Giữ dáng 4"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_1990",
+      "anim": "dance_breakdance_1990",
+      "source": "breakdance 1990.fbx",
+      "label": {
+        "en": "1990",
+        "vi": "Xoay 1990"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_1990_2",
+      "anim": "dance_breakdance_1990_2",
+      "source": "breakdance 1990 (2).fbx",
+      "label": {
+        "en": "1990 2",
+        "vi": "Xoay 1990 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_1990_3",
+      "anim": "dance_breakdance_1990_3",
+      "source": "breakdance 1990 (3).fbx",
+      "label": {
+        "en": "1990 3",
+        "vi": "Xoay 1990 3"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_ready",
+      "anim": "dance_breakdance_ready",
+      "source": "breakdance ready.fbx",
+      "label": {
+        "en": "Ready",
+        "vi": "Khởi động"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_ready_2",
+      "anim": "dance_breakdance_ready_2",
+      "source": "breakdance ready (2).fbx",
+      "label": {
+        "en": "Ready 2",
+        "vi": "Khởi động 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_ready_3",
+      "anim": "dance_breakdance_ready_3",
+      "source": "breakdance ready (3).fbx",
+      "label": {
+        "en": "Ready 3",
+        "vi": "Khởi động 3"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_swipes",
+      "anim": "dance_breakdance_swipes",
+      "source": "breakdance swipes.fbx",
+      "label": {
+        "en": "Swipes",
+        "vi": "Quét chân"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock",
+      "anim": "dance_breakdance_uprock",
+      "source": "breakdance uprock.fbx",
+      "label": {
+        "en": "Uprock",
+        "vi": "Nhảy Uprock"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock_2",
+      "anim": "dance_breakdance_uprock_2",
+      "source": "breakdance uprock (2).fbx",
+      "label": {
+        "en": "Uprock 2",
+        "vi": "Nhảy Uprock 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock_to_ground",
+      "anim": "dance_breakdance_uprock_to_ground",
+      "source": "breakdance uprock to ground.fbx",
+      "label": {
+        "en": "Uprock To Ground",
+        "vi": "Uprock → Sàn"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock_to_ground_2",
+      "anim": "dance_breakdance_uprock_to_ground_2",
+      "source": "breakdance uprock to ground (2).fbx",
+      "label": {
+        "en": "Uprock To Ground 2",
+        "vi": "Uprock → Sàn 2"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock_var_1_end",
+      "anim": "dance_breakdance_uprock_var_1_end",
+      "source": "breakdance uprock var 1 end.fbx",
+      "label": {
+        "en": "Uprock Var 1 End",
+        "vi": "Uprock 1 kết thúc"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock_var_1",
+      "anim": "dance_breakdance_uprock_var_1",
+      "source": "breakdance uprock var 1.fbx",
+      "label": {
+        "en": "Uprock Var 1",
+        "vi": "Uprock 1"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock_var_1_start",
+      "anim": "dance_breakdance_uprock_var_1_start",
+      "source": "breakdance uprock var 1 start.fbx",
+      "label": {
+        "en": "Uprock Var 1 Start",
+        "vi": "Uprock 1 mở đầu"
+      },
+      "icon": "🕺"
+    },
+    {
+      "id": "dance_breakdance_uprock_var_2",
+      "anim": "dance_breakdance_uprock_var_2",
+      "source": "breakdance uprock var 2.fbx",
+      "label": {
+        "en": "Uprock Var 2",
+        "vi": "Uprock 2"
+      },
+      "icon": "🕺"
+    }
+  ]
+}

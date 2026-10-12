@@ -7,6 +7,7 @@
     "error": "Something went wrong: {message}",
     "zone_error": "Couldn't open {zone}.",
     "zone_timeout": "Loading took longer than {s} seconds.",
+    "zone_stalled": "Loading made no progress for {s} seconds.",
     "zone_retry": "Retry",
     "zone_back": "Back to {zone}",
     "zone_reload": "Reload page"
@@ -126,6 +127,9 @@
   },
   "menu": {
     "title": "Paused",
+    "group_sound": "Sound & language",
+    "group_controls": "Controls & guide",
+    "group_display": "Display",
     "resume": "Resume",
     "graphics": "Graphics",
     "auto": "Auto",
@@ -144,15 +148,13 @@
     "guide": "Objective markers",
     "on": "On",
     "off": "Off",
-    "guide_note": "The \"!\" above your next goal, and an arrow at the screen edge when it's out of view.",
+    "guide_note": "An orange arrow over your next goal, and at the screen edge when it's out of view.",
     "play_again": "Play again",
     "play_again_confirm": "Start over? Your progress will be erased.",
     "yes": "Yes, start over",
     "no": "Cancel",
     "players": "Show other players",
     "accessories_note": "Unlocked by finishing your first day.",
-    "wardrobe": "👕 Wardrobe",
-    "wardrobe_note": "Change outfits and accessories — or press I while walking around.",
     "view_summary": "View summary",
     "travel": "Go to",
     "travel_note": "Unlocked after your first day: jump straight to any place you visited.",
@@ -439,7 +441,7 @@
   "touch": {
     "_note": "Touch controls (game/src/ui/touch.js): buttons are icons, these are their labels (screen readers, long-press tooltips). say_from / say_to: in-game hints that say \"press E\" read as say_to when playing by touch.",
     "chat": "Chat",
-    "emote": "Wave & quick phrases",
+    "emote": "Actions",
     "help": "Help",
     "app": "My FPT app",
     "wardrobe": "Wardrobe",
@@ -451,5 +453,18 @@
     "rotate": "Turn your phone sideways to play.",
     "say_from": "press E",
     "say_to": "tap the action button"
+  },
+  "actions": {
+    "title": "Actions",
+    "dance": "Dance",
+    "social": "Social",
+    "stop": "Stop",
+    "close": "Close actions",
+    "categories": "Action categories",
+    "prev": "Previous choices",
+    "next": "Next choices",
+    "choices": "choices",
+    "loading": "Preparing your dance…",
+    "load_error": "Couldn't load the dance. Try again."
   }
 }
