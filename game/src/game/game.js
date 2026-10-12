@@ -31,6 +31,7 @@ import { sound } from "../core/sound.js";
 import { PoolTable } from "../pool/table.js";
 import { Footsteps } from "./footsteps.js";
 import { replaceGrass, grassTexture } from "../world/grass.js";
+import { IdCard } from "../characters/idcard.js";
 
 // áp hiệu ứng (GameState.apply → events.kinds) → tiếng, theo thứ tự ưu tiên
 const EFFECT_SOUNDS = ["reward", "checklist", "value", "quest", "grain", "item", "advice"];
@@ -51,6 +52,7 @@ export class Game {
     this.outfitOverride = null;   // vd đang chụp check-in: mặc thử Áo Cam FPT
     this.zoneTime = 0;            // giây đã chơi trong zone hiện tại (sự kiện theo giờ, vd Tú kêu mất balo)
     this.interaction = new Interaction(this, content);
+    this.idCard = new IdCard(this);           // thẻ nhân viên cầm tay: lễ tân đưa (zone 3), quẹt ở cửa (zone 4)
     this.runner = new DialogueRunner({ content, state: progress, ui: ui.dialogue, hooks: {
       speakerInfo: (role) => this.speakerInfo(role),
       effects: (e) => this.applyEffects(e),
@@ -242,6 +244,7 @@ export class Game {
   // silent: tải sau màn tối của cảnh chuyển — không hiện màn chờ, thẻ tên zone, hội thoại vào zone
   async _enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false, zoneCard = true } = {}) {
     this.state.phase = "transition";
+    this.idCard.clear();
     // đang hội thoại / mini-game / mở app / chơi bi-a thì đóng lại trước khi rời zone
     if (this.pool?.active) this.pool.leave();
     if (this.runner.active) this.runner.abort();
@@ -636,7 +639,14 @@ export class Game {
 
   // ---------- tiến trình, tương tác, hội thoại ----------
   applyEffects(e) {
-    if (e?.banner) hud.banner(tx(e.banner));                        // chữ lớn giữa màn hình (vd "First card tap!")
+    if (e?.banner) hud.banner(tx(e.banner));
+    // thẻ nhân viên cầm tay: card = "give" (lễ tân đưa — anim reach của lễ tân đặt ở câu thoại) | { do: "tap", face: node, reader:
+    // tên vật đầu đọc, stand_m } (người chơi bước tới trước đầu đọc, quay vào, đưa thẻ chạm) — characters/idcard.js
+    if (e?.card) {
+      const c = typeof e.card === "string" ? { do: e.card } : e.card, node = c.face && this.zone?.nodes.get(c.face);
+      if (node) this.faceTarget = worldPos(node);
+      this.idCard.play(c.do, c);
+    }                        // chữ lớn giữa màn hình (vd "First card tap!")
     for (const w of [].concat(e?.walk || [])) this.walkActor(w);     // NPC / Tú đi chỗ khác (rồi khuất)
     // cờ của màn mờ chuyển giờ (vd lunch_done) lưu ngay, trước khi mờ màn hình: tải lại giữa chừng vẫn đúng buổi chiều
     // (cờ chỉ đổi ánh sáng / giờ qua applyVariant, gọi sau khi màn đã tối)
@@ -1010,6 +1020,7 @@ export class Game {
 
   update(dt) {
     this.dances?.update(dt);
+    this.idCard.update(dt);
     if (this.preview) { this.preview.update(dt); return; }   // nền màn tiêu đề: chỉ camera trôi
     this.footsteps.update(dt);   // cả lúc cảnh chuyển dắt người chơi / Tú đi
     if (this.cutscene) { this.input.consumeDrag(); this.guide.update(dt, { cutscene: true }); if (!this.debugHold?.(this.cutscene)) { this.cutscene.update(dt); this.seeThrough.update(dt, null); } return; }   // debugHold: __game.holdCutscene (chụp ảnh từng nhịp)

@@ -158,9 +158,9 @@
       "place": "near_node",
       "node": "INT_cua_quet_the",
       "offset": [
-        1.9,
+        2.5,
         0,
-        0.6
+        0.7
       ],
       "yaw_deg": -70,
       "hide_if": {
@@ -168,7 +168,7 @@
           "stranger_done"
         ]
       },
-      "_ghi_chu": "zone_04: người lạ (model van_phong_nam) đứng cạnh đầu đọc thẻ, ngoài khung cửa (thế giới ≈ 4,2; 0; −0,9 — docs/zone45_check.md), nhìn về phía người chơi đi tới từ đầu hành lang đông (yaw −70°). Xong tình huống đi ké (cờ stranger_done) thì không đặt lại."
+      "_ghi_chu": "zone_04: người lạ (model van_phong_nam) đứng cạnh đầu đọc thẻ, ngoài khung cửa (thế giới ≈ 4,8; 0; −0,8 — docs/zone45_check.md; 13/10/2026 dời từ 4,2; −0,9 để không chắn đầu đọc khi người chơi đưa thẻ quẹt), nhìn về phía người chơi đi tới từ đầu hành lang đông (yaw −70°). Xong tình huống đi ké (cờ stranger_done) thì không đặt lại."
     },
     "mentor": {
       "model": "nga",
@@ -543,7 +543,8 @@
         "sit_down": "sit_down",
         "sit_type": "sit_type",
         "cheer": "cheer",
-        "stand_up": "stand_up"
+        "stand_up": "stand_up",
+        "reach": "reach"
       },
       "loop": [
         "idle",
@@ -562,7 +563,8 @@
         "point",
         "press",
         "sit_down",
-        "stand_up"
+        "stand_up",
+        "reach"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -579,7 +581,8 @@
         "sit_down": 2.233,
         "sit_type": 16.467,
         "cheer": 2.0,
-        "stand_up": 2.233
+        "stand_up": 2.233,
+        "reach": 2.8
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1080,7 +1083,8 @@
         "sit_down": "sit_down",
         "sit_type": "sit_type",
         "cheer": "cheer",
-        "stand_up": "stand_up"
+        "stand_up": "stand_up",
+        "reach": "reach"
       },
       "loop": [
         "idle",
@@ -1099,7 +1103,8 @@
         "point",
         "press",
         "sit_down",
-        "stand_up"
+        "stand_up",
+        "reach"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1116,7 +1121,8 @@
         "sit_down": 2.233,
         "sit_type": 16.467,
         "cheer": 2.0,
-        "stand_up": 2.233
+        "stand_up": 2.233,
+        "reach": 2.6333
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1182,7 +1188,8 @@
         "sit_down": "sit_down",
         "sit_type": "sit_type",
         "cheer": "cheer",
-        "stand_up": "stand_up"
+        "stand_up": "stand_up",
+        "reach": "reach"
       },
       "loop": [
         "idle",
@@ -1201,7 +1208,8 @@
         "point",
         "press",
         "sit_down",
-        "stand_up"
+        "stand_up",
+        "reach"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1218,7 +1226,8 @@
         "sit_down": 2.233,
         "sit_type": 16.467,
         "cheer": 2.0,
-        "stand_up": 2.233
+        "stand_up": 2.233,
+        "reach": 2.6333
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1283,7 +1292,8 @@
         "sit_down": "sit_down",
         "sit_type": "sit_type",
         "cheer": "cheer",
-        "stand_up": "stand_up"
+        "stand_up": "stand_up",
+        "reach": "reach"
       },
       "loop": [
         "idle",
@@ -1302,7 +1312,8 @@
         "point",
         "press",
         "sit_down",
-        "stand_up"
+        "stand_up",
+        "reach"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1319,7 +1330,8 @@
         "sit_down": 2.233,
         "sit_type": 16.467,
         "cheer": 2.0,
-        "stand_up": 2.233
+        "stand_up": 2.233,
+        "reach": 2.6333
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1383,7 +1395,8 @@
         "sit_down": "sit_down",
         "sit_type": "sit_type",
         "cheer": "cheer",
-        "stand_up": "stand_up"
+        "stand_up": "stand_up",
+        "reach": "reach"
       },
       "loop": [
         "idle",
@@ -1402,7 +1415,8 @@
         "point",
         "press",
         "sit_down",
-        "stand_up"
+        "stand_up",
+        "reach"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1419,7 +1433,8 @@
         "sit_down": 2.233,
         "sit_type": 16.467,
         "cheer": 2.0,
-        "stand_up": 2.233
+        "stand_up": 2.233,
+        "reach": 2.6333
       },
       "speed_mps": {
         "walk": 1.4,

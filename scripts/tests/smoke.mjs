@@ -849,6 +849,13 @@ async function runLook(browser, base, look) {
         await check(!miss.length && steps > 0 && !ac.failed && ac.state === "running",
           `zone 0 → 4: âm thanh — ${ac.played} tiếng đã phát (${Object.keys(ac.counts).length} loại, ${steps} bước chân), không file hỏng`, JSON.stringify({ miss, failed: ac.failed, state: ac.state, counts: ac.counts }));
       }
+      // thẻ nhân viên cầm tay (characters/idcard.js): lễ tân cầm thẻ đưa (zone 3, câu "đây là thẻ nhân viên"), người chơi rút thẻ
+      // quẹt ở cửa (zone 4) — smoke bấm qua hội thoại nhanh, đi ngay → chỉ đòi thẻ đã hiện trong tay đúng người
+      if (zone === "zone_04" && !onlyZone && !failed) {
+        const ic = await ev(() => __game.idCard);
+        await check(ic.stats.give >= 1 && ic.stats.hold_le_tan >= 1 && ic.stats.tap >= 1 && ic.stats.hold_player >= 1 && !ic.visible,
+          `zone 3 → 4: thẻ nhân viên — lễ tân cầm thẻ đưa (${ic.stats.give}), người chơi cầm thẻ quẹt cửa (${ic.stats.tap}), đã cất`, JSON.stringify(ic));
+      }
       if (failed || onlyZone && !st.complete) break;
       if (st.complete) {
         // ---------- màn tổng kết ----------

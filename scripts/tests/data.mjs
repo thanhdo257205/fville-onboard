@@ -211,6 +211,37 @@ for (const id of accIds) {
 }
 report("tủ đồ", wErrs, `${outfits.length} áo (${outfits.map((o) => o.id).join(", ")}) × ${playerModels.length} model người chơi, ${accIds.length} phụ kiện`);
 
+// thẻ nhân viên cầm tay (game/src/characters/idcard.js): hội thoại có hiệu ứng card (give: lễ tân đưa, tap: người chơi quẹt) →
+// model vai lễ tân + mọi model người chơi có clip "reach" trong GLB (scripts/blender/characters/build_reach.py) và khai trong
+// models.<id>.animations; câu thoại anim "reach" chỉ dùng cho vai có clip; mô hình thẻ có chất liệu "card_face"; vật đầu đọc
+// (card.reader) có trong GLB bối cảnh
+const cardErrs = [], cardUses = [];
+const glbAnims = (f) => { const b = readFileSync(f), n = b.readUInt32LE(12); return new Set((JSON.parse(b.subarray(20, 20 + n).toString("utf8")).animations || []).map((x) => x.name)); };
+const hasReach = (model) => {
+  const m = chars.models[model], f = m && join(ROOT, m.glb?.low ?? m.glb?.high ?? "");
+  return !!m && m.animations?.reach === "reach" && existsSync(f) && glbAnims(f).has("reach");
+};
+for (const [id, d] of content.dialogues) for (const [k, n] of Object.entries(d.nodes || {})) {
+  const c = n.effects?.card;
+  if (n.anim === "reach") {
+    const model = chars.roles[n.speaker]?.model;
+    if (!model || !hasReach(model)) cardErrs.push(`hội thoại ${id}/${k}: ${n.speaker} (model ${model}) không có clip reach`);
+  }
+  if (!c) continue;
+  const kind = typeof c === "string" ? c : c.do;
+  cardUses.push(`${id}/${k}:${kind}`);
+  if (!["give", "tap"].includes(kind)) cardErrs.push(`hội thoại ${id}/${k}: card "${kind}" lạ (give | tap)`);
+  for (const m of playerModels) if (!hasReach(m)) cardErrs.push(`hội thoại ${id}/${k}: model người chơi ${m} không có clip reach`);
+  if (kind === "give" && !hasReach(chars.roles.le_tan?.model)) cardErrs.push(`hội thoại ${id}/${k}: lễ tân (${chars.roles.le_tan?.model}) không có clip reach`);
+  if (c.reader && !Object.values(names).some((set) => set.has(c.reader))) cardErrs.push(`hội thoại ${id}/${k}: không có vật đầu đọc ${c.reader} trong GLB bối cảnh`);
+}
+{
+  const f = join(ROOT, "assets/props/id_card/id_card.glb");
+  if (!existsSync(f)) cardErrs.push("thiếu assets/props/id_card/id_card.glb");
+  else { const b = readFileSync(f), n = b.readUInt32LE(12); const mats = (JSON.parse(b.subarray(20, 20 + n).toString("utf8")).materials || []).map((m) => m.name); if (!mats.includes("card_face")) cardErrs.push(`id_card.glb: không có chất liệu card_face (${mats.join(", ")})`); }
+}
+report("thẻ nhân viên cầm tay", cardErrs, `${cardUses.join(", ") || "không có"}; clip reach: ${[chars.roles.le_tan?.model, ...playerModels].join(", ")}`);
+
 // 6. Tú: khác giới với người chơi; đại từ của Tú trong chữ là biến {tu_he}/{tu_his}/{tu_him}/{tu_himself} (+ viết hoa
 //    {Tu_he}…), không viết cứng he/his/him/she/her. "Nhắc tới Tú" = tên đứng gần nhất trước đại từ là Tú; câu dẫn
 //    (narrator) không có tên nào → xét người nói ở nút hội thoại liền trước (Tú vừa nói → câu dẫn nói về Tú).

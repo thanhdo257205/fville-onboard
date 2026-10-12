@@ -26,6 +26,13 @@ do người dùng cung cấp, chỉ nằm trong texture.
   người chơi. `tai_xe_for_mixamo.fbx` là mô hình tham chiếu, không phải điệu nhảy và không được đưa vào game.
   Các file nguồn giữ riêng trên máy; game tải biến thể nhân vật đã nén `*_dances.glb` khi chọn nhảy lần đầu.
 
+## Thẻ nhân viên
+- `assets/props/id_card/id_card.glb`: khung nhựa + mặt thẻ lấy từ mô hình thẻ nhân viên do người dùng cung cấp (12/10/2026, nguồn /
+  giấy phép: *chờ người dùng xác nhận*); đã bỏ dây đeo và ảnh mặt thẻ mẫu, mặt thẻ do game vẽ bằng code
+  (`scripts/blender/props/build_id_card.py`, `game/src/characters/idcard.js`).
+- Animation đưa / nhận / quẹt thẻ: Adobe Mixamo "Reaching Out" (đoạn đầu), retarget sang lễ tân và bốn ngoại hình người chơi
+  (`scripts/blender/characters/build_reach.py`); file FBX gốc chỉ có trên máy làm việc.
+
 ## Phụ kiện
 - Mũ lưỡi trai cam (`assets/accessories/cap/cap.glb`): dáng mũ lấy từ mô hình tạo bằng Meshy (meshy.ai), giấy phép
   CC BY 4.0 (file gốc không có trên repo; `scripts/blender/accessories/build_cap.py` dựng lại lưới thấp bám theo mô hình
