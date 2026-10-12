@@ -7,6 +7,7 @@ import { tx, draftMark } from "../content/content.js";
 import { t } from "../i18n.js";
 import { sound } from "../core/sound.js";
 import { photo } from "./photo.js";
+import myFptLogo from "../assets/myfpt-logo.png";
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const kbd = (k) => `<kbd>${k}</kbd>`;
@@ -26,7 +27,7 @@ const install_app = {
     const steps = ctx.data.steps;
     const order = shuffle(steps.map((_, i) => i));
     let next = 0, busy = false;
-    ctx.body.innerHTML = `<div class="phone-mock"><div class="phone-top">My FPT · ${t("minigame.setup")}</div>
+    ctx.body.innerHTML = `<div class="phone-mock"><div class="phone-top"><img class="app-logo" src="${myFptLogo}" width="32" height="32" alt="" aria-hidden="true">My FPT · ${t("minigame.setup")}</div>
       <ol class="steps">${order.map((si, k) => `<li data-k="${k}">${kbd(k + 1)}<span>${esc(tx(steps[si].text))}</span><i></i></li>`).join("")}</ol>
       <div class="progress"><div class="label"></div><div class="bar"><i></i></div></div></div>`;
     const lis = [...ctx.body.querySelectorAll(".steps li")];

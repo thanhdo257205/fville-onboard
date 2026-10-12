@@ -625,12 +625,14 @@ async function runLook(browser, base, look) {
           const img = document.querySelector("#myfpt .map img");
           if (img && !img.complete) await new Promise((r) => { img.onload = img.onerror = r; });
           const pos = (sel) => { const el = document.querySelector(`#myfpt .map ${sel}`); return el ? [parseFloat(el.style.left), parseFloat(el.style.top)] : null; };
-          return { img: img ? [img.naturalWidth, img.naturalHeight] : null, me: pos(".mk.me"), goal: pos(".mk.goal"), line: document.querySelector("#myfpt .map-goal span")?.textContent.trim() ?? null, map: __game.map };
+          const logo = document.querySelector("#myfpt .appbar .app-logo");
+          return { logo: !!logo?.complete && logo.naturalWidth > 0 && logo.naturalWidth === logo.naturalHeight,
+            img: img ? [img.naturalWidth, img.naturalHeight] : null, me: pos(".mk.me"), goal: pos(".mk.goal"), line: document.querySelector("#myfpt .map-goal span")?.textContent.trim() ?? null, map: __game.map };
         });
         await page.keyboard.press("Tab");
         m.closed = await wait(() => document.getElementById("myfpt").hidden && __game._game.mode === "play", 5000);
         const inside = (p) => p && p.every((v) => v >= 0 && v <= 100);
-        await check(opened && drawn && m.img?.[0] > 100 && m.img[1] > 100 && inside(m.me) && inside(m.goal) && m.line && m.closed,
+        await check(opened && drawn && m.logo && m.img?.[0] > 100 && m.img[1] > 100 && inside(m.me) && inside(m.goal) && m.line && m.closed,
           `${zone}: app → tab Bản đồ — ảnh ${m.map?.w}×${m.map?.h} (${m.map?.ms} ms), dấu bạn + mục tiêu "${m.line}" trong ảnh, đóng app`, JSON.stringify(m));
       }
       // zone_05: ngồi vào bàn làm việc rồi đứng dậy (hội thoại desk_main khi còn việc khác chưa xong) → ra chỗ trống, đi được.

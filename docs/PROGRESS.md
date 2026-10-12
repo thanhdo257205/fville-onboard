@@ -7,6 +7,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Logo MyFPT theo ảnh người dùng (12/10/2026, nhánh `codex/myfpt-logo`):** dùng ảnh icon F Next được cung cấp,
+  hiển thị ở thanh đầu app MyFPT và mini-game cài app. PNG nằm trong `game/src/assets/`, Vite đóng gói / tạo tên hash;
+  icon 36 px trong app, 32 px trong mini-game, giữ tỉ lệ ảnh. Smoke trên CI kiểm tra logo tải được ở app;
+  các kiểm thử trình duyệt chạy trên GitHub Actions theo lựa chọn của người dùng.
+
 - **Nền cỏ từ model người dùng (12/10/2026, nhánh `codex/grass-ground-model`, PR #31):** Simple Grass Ground của Shun Koizumi
   (CC BY 4.0), 6.890.736 → 77.600 byte; giữ mặt phẳng tối thiểu 2 tam giác, chỉ texture màu 512 px WebP + Draco.
   `scripts/tools/prepare_grass.py` dựng lại asset từ file gốc. Game thay mặt cỏ thấp ở zone 1–4 và vành đất xa,
