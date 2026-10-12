@@ -1696,7 +1696,7 @@ Hội thoại #69 `well_intro` / n1 (Tú giới thiệu cách canh vạch vào v
   bản lưu không ảnh hưởng). `data/interactables.json → minigames.well`: bỏ các câu trên + `speed`, `zone_width`, `assist_width`.
 - `game/src/minigames/games.js` (well): bỏ thanh vạch chạy / vùng xanh / bấm sai — bấm Kéo (Space) lên 1 gàu + câu chuyện,
   Tiếp (Enter) sang gàu sau, 3 gàu; phần thưởng, quest `z2_well` giữ nguyên. CSS `.well .meter / .zone / .mark` bỏ.
-  GDD cập nhật. Đo: test:data, smoke `--zone 2` 14/14, `--mobile ui` 20/20 (chạm qua giếng); xem bằng mắt.
+  GDD cập nhật. Đo: test:data, smoke `--zone 2` 14/14, `--mobile ui` 20/20 (chạm qua giếng); xem bằng mắt. **Đã deploy** gh-pages af95a65 (từ main ac5cc4f).
 
 ### Tài liệu và repo
 - `docs/CHECKLIST.md` (10/10/2026): bảng việc chung của nhóm — cách nhận / đánh dấu việc, quy tắc làm chung (nhánh riêng →
