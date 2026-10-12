@@ -7,6 +7,12 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Phòng Hạt Lúa + giới thiệu F-Ville 1 ở chỗ chụp ảnh (12/10/2026, nhánh `feat/rice-room`):** mini-game Dòng thời gian thay bằng
+  **Hạt Lúa** (`minigames.rice_grain`, `games.js rice_grain`): hạt lúa lớn khắc tên Top Performer theo năm, chạm hạt lúa nhỏ / phím
+  1–6 → dòng tên sáng lên + thẻ chi tiết, sáng hết là xong (quest `z3_rice_room`, Hiểu biết +10). Tên chưa có nguồn công khai →
+  `draft` "chờ HR" (2020–2025). Hội thoại `rice_grain_intro` (người dẫn chuyện + Tú) thay `timeline_intro`. Chụp ảnh check-in:
+  `checkin_intro` thêm 4 câu người dẫn chuyện (lần đầu) — F-Ville 1 tòa nhà đầu tiên của FPT Software tại Hòa Lạc (2013, 1.800 nhân
+  viên), làng quê Bắc Bộ / văn minh lúa nước, ngôi làng công nghệ, sân rộng = sân đình (nội dung người dùng cung cấp).
 - **Breakdance và menu hành động tròn (12/10/2026, nhánh `codex/breakdance-wheel`):** 34 điệu từ gói ZIP người dùng
   cung cấp, retarget sang cả bốn ngoại hình người chơi. Phím T / nút 🕺 mở vòng chọn, 8 điệu mỗi trang (4 trên màn
   thấp), tên Anh / Việt; chọn để nhảy một lần, đi lại / tương tác / nút Dừng để ngắt. Dùng được offline.
@@ -1832,7 +1838,7 @@ Bảng việc của cả nhóm (ai nhận gì, ưu tiên P1–P3): `docs/CHECKLI
 7–12. Tên tiếng Anh của 6 giá trị: Respect, Innovation, Teamwork, Fairness, Role Model, Wisdom.
 13. Dòng giải thích huy hiệu 6 giá trị.
 14. 3 mẩu thông tin trong mini-game kéo nước giếng.
-15. 5 mốc của mini-game dòng thời gian (1988, 1999, 2006, 2018, 2019): năm và cách viết.
+15. Tên Top Performer FPT Software từng năm cho mini-game Hạt Lúa (12/10/2026 thay mini-game dòng thời gian; đang để 2020–2025 · "chờ HR").
 16. Biển sứ mệnh FSA ở cửa phòng FSA (zone 4).
 17. Mini-game Lộ trình học: 3 khóa gợi ý cho mỗi vị trí intern (zone 4).
 18. Mục tiêu của team trong lời Manager (zone 5).

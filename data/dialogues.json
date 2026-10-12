@@ -157,7 +157,11 @@
     {
       "id": "checkin_intro", "start": "check",
       "nodes": {
-        "check": { "branch": [{ "if": { "flags": ["checkin_intro_heard"] }, "next": "go" }], "next": "n1" },
+        "check": { "branch": [{ "if": { "flags": ["checkin_intro_heard"] }, "next": "go" }], "next": "fv1" },
+        "fv1": {"speaker": "narrator", "text": {"en": "F-Ville 1 was FPT Software's first building in Hòa Lạc. It opened in 2013, with room for 1,800 people.", "vi": "F-Ville 1 là tòa nhà đầu tiên của FPT Software tại Hòa Lạc, đi vào hoạt động từ năm 2013 với sức chứa 1.800 nhân viên."}, "next": "fv2"},
+        "fv2": {"speaker": "narrator", "text": {"en": "The building is inspired by a traditional village of northern Vietnam. Vietnam grew up on wet rice farming, and that culture touches every corner of daily life.", "vi": "Ý tưởng của tòa nhà là làng quê truyền thống Bắc Bộ. Việt Nam là nước nông nghiệp với nền văn minh lúa nước, ảnh hưởng mạnh mẽ đến mọi góc đời sống."}, "next": "fv3"},
+        "fv3": {"speaker": "narrator", "text": {"en": "For Vietnamese people, the village means closeness and good cheer — a place where you live, work, and are looked after by everyone around you. F-Ville wants to be a tech village just like that.", "vi": "Với người Việt, nhắc đến làng là nhắc đến sự gần gũi, vui vẻ — nơi người ta sống, làm việc và được cả làng bao bọc, hỗ trợ. F-Ville cũng muốn xây dựng một ngôi làng công nghệ như vậy."}, "next": "fv4"},
+        "fv4": {"speaker": "narrator", "text": {"en": "This wide courtyard stands for the đình yard — the village square where a northern village holds its most important festivals.", "vi": "Khoảng sân rộng này tượng trưng cho sân đình — nơi làng quê Bắc Bộ tổ chức các lễ hội quan trọng của làng."}, "next": "n1"},
         "n1": { "speaker": "tu", "anim": "wave", "text": { "en": "Our first photo at F-Ville! Pick a pose, then take the shot — and yes, I'm jumping in too.", "vi": "Tấm ảnh đầu tiên của tụi mình ở F-Ville! Cậu chọn dáng rồi bấm chụp nhé — mình cũng chen vào chụp chung đấy." }, "effects": { "flags": ["checkin_intro_heard"] }, "next": "go" },
         "go": { "action": "minigame:checkin_photo", "next": null }
       }
@@ -171,11 +175,12 @@
       }
     },
     {
-      "id": "timeline_intro", "start": "check",
+      "id": "rice_grain_intro", "start": "check",
       "nodes": {
-        "check": { "branch": [{ "if": { "flags": ["timeline_intro_heard"] }, "next": "go" }], "next": "n1" },
-        "n1": { "speaker": "tu", "anim": "point", "text": { "en": "These cards are FPT milestones. Let's put them in order — oldest at the top — then press Check.", "vi": "Mấy tấm thẻ này là các cột mốc của FPT. Tụi mình xếp theo thứ tự — mốc sớm nhất ở trên cùng — rồi bấm Kiểm tra nhé." }, "effects": { "flags": ["timeline_intro_heard"] }, "next": "go" },
-        "go": { "action": "minigame:timeline", "next": null }
+        "check": { "branch": [{ "if": { "flags": ["rice_grain_intro_heard"] }, "next": "go" }], "next": "r1" },
+        "r1": {"speaker": "narrator", "text": {"en": "The Rice Grain Room. F-Ville is a village born from wet rice culture, so the whole space is built around one golden rice grain — and carved on it are the names of FPT Software's Top Performers, year after year.", "vi": "Phòng Hạt Lúa. F-Ville là ngôi làng sinh ra từ văn hóa lúa nước, nên cả không gian lấy một hạt lúa vàng làm điểm chính — trên đó khắc tên những Top Performer của FPT Software qua từng năm."}, "next": "r2"},
+        "r2": {"speaker": "tu", "anim": "point", "text": {"en": "Each little grain is one year. Let's light them all up and see whose names shine!", "vi": "Mỗi hạt lúa nhỏ là một năm đấy. Tụi mình thắp sáng hết xem tên ai sáng lên nhé!"}, "effects": {"flags": ["rice_grain_intro_heard"]}, "next": "go"},
+        "go": { "action": "minigame:rice_grain", "next": null }
       }
     },
     {

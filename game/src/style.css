@@ -318,6 +318,36 @@ button { font-family: "Nunito", sans-serif; }
 .timeline .cards li .grip { color: var(--muted); }
 .timeline .cards li b { margin-left: auto; color: #ffd27a; }
 .timeline .check { width: 100%; margin-top: 10px; }
+/* Hạt Lúa (Phòng Hạt Lúa): hạt lúa lớn khắc tên Top Performer theo năm, các hạt nhỏ để thắp sáng (thiết kế phẳng) */
+.rice .about { margin: 0 0 10px; color: #d9dde3; font-size: 14px; line-height: 1.45; }
+.rice .stage { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.rice .grain { position: relative; width: 230px; height: 340px; flex: none; background: #e2b13c; border: 3px solid #b9861e;
+  border-radius: 50% 50% 48% 48% / 62% 62% 38% 38%; display: grid; place-items: center; overflow: hidden; }
+.rice .grain .husk { position: absolute; left: 50%; top: 4%; bottom: 4%; width: 2px; background: #c99a2c; transform: translateX(-50%); }
+.rice .lines { position: relative; list-style: none; margin: 0; padding: 0 30px; display: grid; gap: 4px; text-align: center; }
+.mg .rice .lines li, .mg .rice .lines li:hover { display: block; background: none; cursor: default; font-weight: 700; color: rgba(74, 47, 5, .28); font-size: 11px; line-height: 1.2;
+  transition: color .4s, background .4s; border-radius: 8px; padding: 2px 6px; }
+.mg .rice .lines li b { display: block; font-size: 13px; }
+.mg .rice .lines li.lit { color: #4a2f05; }
+.mg .rice .lines li.now { background: rgba(255, 248, 225, .75); }
+.rice .side { display: grid; gap: 10px; width: min(300px, 100%); }
+.rice .seeds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rice .seed { display: flex; align-items: center; gap: 6px; justify-content: center; min-height: 44px; background: #2a2e36; color: var(--fg); border: 2px solid transparent;
+  border-radius: 12px; font: 800 14px "Nunito"; cursor: pointer; padding: 4px 8px; }
+.rice .seed i { width: 12px; height: 18px; border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%; background: #6b5a35; flex: none; }
+.rice .seed.lit { background: #3a3220; border-color: #e2b13c; }
+.rice .seed.lit i { background: #e2b13c; }
+.rice .seed.glow { border-color: var(--orange); }
+.rice .seed kbd { font-size: 11px; }
+.rice .card { min-height: 64px; background: #22262d; border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
+.rice .card b { color: #ffd27a; font-size: 18px; }
+.rice .card small { color: var(--muted); }
+.rice .count { color: var(--muted); font-size: 13px; text-align: center; }
+body.short .rice .about { font-size: 12px; margin-bottom: 6px; }
+body.short .rice .grain { width: 170px; height: 230px; }
+body.short .rice .lines { gap: 1px; padding: 0 22px; }
+body.short .mg .rice .lines li { font-size: 8.5px; padding: 1px 4px; }
+body.short .mg .rice .lines li b { font-size: 10px; }
 /* chụp ảnh: bảng dưới màn hình, thấy cảnh 3D */
 #minigame.mg-photo { background: none; place-items: end center; pointer-events: none; }
 #minigame.mg-photo .panel { pointer-events: auto; margin-bottom: 16px; width: min(720px, calc(100vw - 32px)); background: rgba(27, 30, 36, .94); }
