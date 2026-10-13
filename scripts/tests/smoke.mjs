@@ -893,6 +893,13 @@ async function runLook(browser, base, look) {
         await check(!fg.bad.length && fg.feet > 0.06 && fg.camY > fg.feet + 0.12,
           `${zone}: sân gạch — chân đứng trên mặt gạch (${fg.feet} m), camera hạ thấp nhất vẫn trên mặt gạch (${fg.camY} m), không còn ô sàn lún`, JSON.stringify(fg));
       }
+      // cửa mở được (scene_fixes → doors): mở hết cỡ, cánh không cắt tường / vách và không kẹt sát sau vách (< 0,25 m — cửa kính
+      // dưới cầu thang zone 4 từng mở vào trong, cánh phải lún sau vách cầu thang lấn vào ô cửa 0,2 m)
+      if (SCENE_FIXES[zone]?.doors?.length && look === looks[0]) {
+        const dc = await ev(() => __game.doorClips());
+        const badDoor = dc.filter((r) => r.hits > 0 || Math.min(...r.gap) < 0.25);
+        await check(dc.length && !badDoor.length, `${zone}: ${dc.length} cánh cửa mở hết cỡ không cắt tường, không kẹt sau vách (khoảng trống nhỏ nhất ${Math.min(...dc.flatMap((r) => r.gap)).toFixed(2)} m)`, JSON.stringify(dc));
+      }
       // video trên TV (scene_fixes → screens, world/screens.js): đứng trước TV đầu → video tải (định dạng trình duyệt phát được),
       // hiện tấm màn, đang phát và thời gian chạy; mọi TV của zone cùng một <video>; về chỗ cũ xa mọi TV → dừng giải mã
       if (SCENE_FIXES[zone]?.screens?.length && look === looks[0]) {

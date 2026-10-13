@@ -12,6 +12,7 @@
 //   __game.cameraCeiling()    → camera chơi ngẩng / lùi hết cỡ ở chỗ người chơi + mọi SPAWN_: có lên xuyên trần không
 //   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
 //   __game.gaps(opts)         → chỗ hở của mô hình zone đang chơi: từ chỗ đứng trong nhà bắn tia, tia lọt ra trời (world/gaps.js)
+//   __game.doorClips()        → cửa mở được (scene_fixes → doors) mở hết cỡ: cánh nào cắt lưới bối cảnh (tường, vách)
 //   __game.screens            → video trên TV (scene_fixes → screens): file đã chọn, đã có khung, đang phát, giây, vị trí tấm màn
 //   __game.seats              → chỗ ngồi tự do của zone (data/seats.json): số ghế, ghế đang nhắc "Sit down", ghế có NPC ngồi
 //   __game.findSeats(opts)    → dò ứng viên chỗ ngồi theo hình (world/seats.js; scripts/tools/find_seats.mjs gom mọi zone)
@@ -79,6 +80,39 @@ export function installDebug(game, loop) {
     get net() { return game.net?.info(); },
     // video trên TV của zone đang chơi (world/screens.js): đã tải, đang phát, giây, các tấm màn
     get screens() { return screensInfo(game.zone); },
+    // cửa mở được (scene_fixes → doors): đặt mọi cánh ở góc mở hết, lấy lưới 8 × 6 điểm trên mặt cánh (bỏ 15 % gần bản lề và
+    // mép — cánh chạm khung ở đó), bắn tia ngắn xuyên bề dày cánh (±6 cm theo pháp tuyến) vào zone.view (mesh hiển thị trừ cánh
+    // cửa, cây): trúng = cánh mở lún vào tường / vách; khoảng trống 2 phía mặt cánh (gap). Xong trả cánh về như cũ
+    doorClips() {
+      const out = [], ray = new THREE.Ray(), up = new THREE.Vector3(0, 1, 0), bt = game.zone.view.geometry.boundsTree;
+      for (const d of game.doors || []) for (const l of d.leaves) {
+        const keep = l.node.quaternion.clone();
+        l.node.quaternion.copy(l.to); l.node.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(l.node), hinge = l.node.getWorldPosition(new THREE.Vector3());
+        // hướng dọc cánh (bản lề → mép xa, ngang) + pháp tuyến mặt cánh
+        const far = box.getCenter(new THREE.Vector3()).sub(hinge).setY(0), len = far.length() * 2;
+        far.normalize();
+        const n = new THREE.Vector3().crossVectors(up, far).normalize();
+        let hits = 0, n0 = 0;
+        const gap = [[], []];      // khoảng trống từ mặt cánh tới vật gần nhất, 2 phía (m, tối đa 2)
+        for (let i = 0; i < 8; i++) for (let j = 0; j < 6; j++) {
+          const p = hinge.clone().addScaledVector(far, len * (0.15 + 0.7 * (i / 7))).setY(box.min.y + (box.max.y - box.min.y) * (0.1 + 0.8 * (j / 5)));
+          ray.set(p.clone().addScaledVector(n, -0.06), n);
+          n0++;
+          if (bt.raycastFirst(ray, THREE.DoubleSide, 0, 0.12)) hits++;
+          for (const [k, sg] of [[0, -1], [1, 1]]) {
+            ray.set(p.clone().addScaledVector(n, sg * 0.06), n.clone().multiplyScalar(sg));
+            gap[k].push(bt.raycastFirst(ray, THREE.DoubleSide, 0, 2)?.distance ?? 2);
+          }
+        }
+        l.node.quaternion.copy(keep); l.node.updateMatrixWorld(true);
+        const med = (a) => +a.sort((x, y) => x - y)[a.length >> 1].toFixed(2);
+        // hits: tia xuyên bề dày cánh trúng lưới (cánh cắt tường); gap: trung vị khoảng trống 2 phía — cả hai < 0,3 m = cánh mở
+        // kẹt trong khe giữa 2 bức tường (khuất, nhìn như xuyên tường)
+        out.push({ door: d.cfg.card?.id ?? d.cfg.col?.[0] ?? null, leaf: l.node.name, hits, of: n0, gap: gap.map(med) });
+      }
+      return out;
+    },
     // khung chat (nhắn tin tự do — game/src/ui/chat.js): trạng thái + open(tab, dmWith) / close() / send(text) (gửi ở tab đang mở) /
     // chat(ch, text, to) (gửi thẳng qua net, trả true | mã lỗi)
     get chat() {
