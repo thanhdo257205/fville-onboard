@@ -214,7 +214,7 @@ export class Character {
     return this._play(entry, { fade, randomStart, loop: this.model.loop.includes(name) });
   }
 
-  _play(clip, { fade = 0.3, randomStart = false, loop = true } = {}) {
+  _play(clip, { fade = 0.3, randomStart = false, loop = true, timeScale = 1 } = {}) {
     const act = this.actions[clip];
     if (!act) return null;
     if (this.loco) {                        // rời chế độ đi/đứng
@@ -224,7 +224,7 @@ export class Character {
     act.reset().setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
     act.clampWhenFinished = !loop;
     act.enabled = true;
-    act.setEffectiveTimeScale(1).setEffectiveWeight(1);
+    act.setEffectiveTimeScale(timeScale).setEffectiveWeight(1);
     if (this.current && this.current !== act) { act.play(); this.current.crossFadeTo(act, fade, false); }
     else act.fadeIn(fade).play();
     if (randomStart) act.time = Math.random() * act.getClip().duration;

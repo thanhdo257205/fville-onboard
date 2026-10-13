@@ -15,6 +15,7 @@ const HAND = "mixamorigRightHand";
 // đứng thẳng (mặt trước · hướng tới người nhận = 1, trục dọc thẻ · trục Y thế giới = 1)
 const HOLD = { pos: [0.0, 0.1, 0.025], rot: [-1.5, -0.15, -0.75] };
 const FACE_PX = [432, 688];        // 54 × 86 mm × 8
+const TAP_SPEED = 1.6;            // quẹt thẻ: phát clip reach nhanh hơn (đưa tay lên đầu đọc gọn, không lề mề)
 const CARD_SCALE = 1.3;            // thẻ thật 54 × 86 mm gần như khuất trong bàn tay ở góc máy chơi → phóng to cho dễ thấy
 const LOOK_PITCH = 0.45;           // rad: cúi đầu nhìn thẻ trên quầy (xoay quanh trục X của xương đầu)
 
@@ -219,21 +220,28 @@ export class IdCard {
     return new Promise((done) => { this.look = { t: 0, in: 0.35, hold: ms / 1000, out: 0.35, done }; });
   }
 
-  // bước tới cách điểm `pos` `dist` m (theo hướng từ điểm đó về người chơi), quay mặt vào điểm đó
-  // force: không huỷ khi va chạm đẩy lệch (dàn cảnh chào — game/greet.js, đường đi có thể sượt capsule NPC)
-  stepToPoint(pos, dist, ms, { force = false } = {}) {
+  // bước tới cách điểm `pos` `dist` m (theo hướng từ điểm đó về người chơi), tới nơi thì quay mặt vào điểm đó. Đi bộ thật
+  // (Player.walkTo: animation walk, va chạm); force: không tránh capsule NPC (dàn cảnh đứng sát người khác — game/greet.js)
+  // → Promise<boolean> (false: bị huỷ — vd có việc khác dịch chuyển người chơi)
+  async stepToPoint(pos, dist, ms, { force = false } = {}) {
     const g = this.g, p = g.player?.position;
-    if (!p) return Promise.resolve();
+    if (!p) return false;
     const d = new THREE.Vector3(p.x - pos.x, 0, p.z - pos.z);
-    g.faceTarget = pos.clone();
-    if (d.length() <= dist + 0.05) return Promise.resolve();
-    const to = new THREE.Vector3(pos.x, p.y, pos.z).addScaledVector(d.normalize(), dist);
-    return new Promise((done) => { this.walk = { t: 0, dur: ms / 1000, from: p.clone(), to, done, force }; });
+    let ok = true;
+    if (d.length() > dist + 0.05) {
+      const to = new THREE.Vector3(pos.x, p.y, pos.z).addScaledVector(d.normalize(), dist);
+      this.walking = true;
+      g.faceTarget = null;                                             // đi thẳng về phía trước, không đi ngang
+      ok = await g.player.walkTo(to, { obstacles: !force });
+      this.walking = false;
+    }
+    if (ok) g.faceTarget = pos.clone();
+    return ok;
   }
 
   clear() {
     if (this.tween) { const d = this.tween.done; this.tween = null; d(false); }
-    if (this.walk) { const w = this.walk; this.walk = null; w.done(); }
+    if (this.walking) { this.walking = false; this.g.player?.autoStop(); }
     if (this.look) { const l = this.look; this.look = null; l.done(); }
     this.token = null;
     if (!this.card) return;
@@ -249,9 +257,8 @@ export class IdCard {
   // tư thế đưa tay)
   update(dt = 0) {
     this.stepTween(dt);
-    this.stepWalk(dt);
     const g = this.g, ch = g.player?.character;
-    if (!this.token || this.walk || g.mode !== "play" || !(g.player?.speed > 0.15)) return;
+    if (!this.token || this.walking || g.mode !== "play" || !(g.player?.speed > 0.15)) return;
     this.clear();
     if (ch && !ch.loco && ch.current?.getClip().name === (ch.model.animations?.reach ?? "reach")) ch.enableLocomotion();
     this.log.push("walk_away");
@@ -261,10 +268,10 @@ export class IdCard {
   wait(ms, token) { return new Promise((r) => setTimeout(() => r(this.token === token), ms)); }
 
   // người chơi bước tới đứng trước vật `name` (đầu đọc thẻ gắn tường), cách `dist` m theo pháp tuyến mặt đầu đọc, quay mặt vào —
-  // trượt êm trong `ms` (quãng ngắn trong hành lang, không xét va chạm). → toạ độ tâm vật (null: không có trong zone)
-  stepTo(name, dist, ms) {
+  // đi bộ thật (Player.walkTo). → toạ độ tâm vật (null: không có trong zone / bị huỷ)
+  async stepTo(name, dist) {
     const g = this.g, obj = name && g.zone?.root.getObjectByName(name);
-    if (!obj || !g.player) return Promise.resolve(null);
+    if (!obj || !g.player) return null;
     const box = new THREE.Box3().setFromObject(obj), c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
     const p = g.player.position;
     // pháp tuyến mặt đầu đọc: trục mỏng nhất (ngang) của hộp bao, hướng về phía người chơi
@@ -272,29 +279,14 @@ export class IdCard {
     // đứng thẳng trước mặt đầu đọc, lệch sang trái 15 cm → bàn tay phải (clip reach: tay cách giữa người ~0,15 m) ngay trước đầu đọc
     const right = new THREE.Vector3().crossVectors(n.clone().negate(), new THREE.Vector3(0, 1, 0));
     const to = new THREE.Vector3(c.x, p.y, c.z).addScaledVector(n, dist).addScaledVector(right, -0.15);
+    this.walking = true;
+    g.faceTarget = null;
+    const ok = await g.player.walkTo(to);
+    this.walking = false;
+    if (!ok) return null;
     g.faceTarget = c.clone();
-    return new Promise((done) => { this.walk = { t: 0, dur: ms / 1000, from: p.clone(), to, done: () => done(c) }; });
-  }
-
-  stepWalk(dt) {
-    const w = this.walk, pl = this.g.player;
-    if (!w || !pl) return;
-    // có việc khác vừa dời người chơi (vd dịch chuyển, đổi zone, đi ngay khi vừa đóng hội thoại) → thôi bước tới, cất thẻ
-    if (!w.force && w.last && pl.position.distanceTo(w.last) > 0.25) {
-      this.walk = null; w.done();
-      const ch = pl.character;
-      this.clear();
-      if (ch && !ch.loco) ch.enableLocomotion();
-      this.log.push("walk_cancel");
-      return;
-    }
-    w.t += dt;
-    const k = THREE.MathUtils.smoothstep(Math.min(1, w.t / w.dur), 0, 1);
-    w.last = w.from.clone().lerp(w.to, k);
-    pl.body.teleport(w.last);
-    pl.sync?.();
-    w.last = pl.position.clone();
-    if (k >= 1) { this.walk = null; w.done(); }
+    for (let k = 0; k < 8; k++) await new Promise((r) => setTimeout(r, 40));    // quay mặt vào đầu đọc
+    return c;
   }
 
   async play(kind, opt = {}) {
@@ -308,7 +300,7 @@ export class IdCard {
     if (this.token !== token || g.state.zone !== zone) { this.clear(); return; }
     this.log.push(kind);
     this.stats[kind] = (this.stats[kind] || 0) + 1;
-    const reach = async (ch) => { if (!ch?.actions[ch.model.animations?.reach ?? "reach"]) return; await ch.playOnce("reach", { fade: 0.25 }); };
+    const reach = async (ch, timeScale = 1) => { if (!ch?.actions[ch.model.animations?.reach ?? "reach"]) return; await ch.playOnce("reach", { fade: 0.2, timeScale }); };
     if (kind === "give") {
       const n = g.npc("le_tan");
       if (!n || !this.hold(n.character, "le_tan")) return this.clear();
@@ -334,8 +326,7 @@ export class IdCard {
       this.ownMode = true;
       try {
         const at = spot?.p ?? this.card.getWorldPosition(new THREE.Vector3());
-        await this.stepToPoint(at, 0.5, 650);                          // bước tới sát quầy
-        if (this.token !== token) return;
+        if (!(await this.stepToPoint(at, 0.5, 650)) || this.token !== token) return this.clear();   // bước tới sát quầy
         await this.lookDown(1100);                                       // nhìn thẻ một lát
         if (this.token !== token) return;
         // 3) đưa tay phải cầm thẻ lên
@@ -356,11 +347,15 @@ export class IdCard {
       }
     } else if (kind === "tap") {
       // bước tới trước đầu đọc (data: card.reader, card.stand_m) rồi mới rút thẻ đưa vào
-      if (opt.reader) { await this.stepTo(opt.reader, opt.stand_m ?? 0.55, 600); if (this.token !== token) return; }
+      if (opt.reader) {
+        const at = await this.stepTo(opt.reader, opt.stand_m ?? 0.55);
+        if (this.token !== token) return;
+        if (!at) { this.log.push("walk_cancel"); return this.clear(); }
+      }
       if (!player || !this.hold(player, "player")) return this.clear();
-      const r = reach(player);
+      const r = reach(player, TAP_SPEED);
       // thẻ chạm đầu đọc ở cuối clip (tay đã ngang đầu đọc): bíp, cửa mở (Game.tapDoor) — không đợi hết clip
-      if (!(await this.wait((player.model.durations_s?.reach ?? 2.6) * 800, token))) return;
+      if (!(await this.wait((player.model.durations_s?.reach ?? 2.6) * 800 / TAP_SPEED, token))) return;
       opt.onTap?.();
       await r;
       if (this.token !== token) return;

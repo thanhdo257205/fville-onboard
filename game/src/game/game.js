@@ -872,8 +872,8 @@ export class Game {
   // cửa mở khi đạt open_if. auto_close { away_m, reopen_m, min_s } (scene_fixes): người chơi và Tú cùng cách tâm cửa > away_m,
   // đã mở ít nhất min_s giây, không đang quẹt thẻ → tự đóng, trả hộp va chạm col; tới gần (< reopen_m) → tự mở lại.
   // card { id, reader, stand_m, outside: [x, z] } (cửa quẹt thẻ, 13/10/2026): từ phía ngoài (outside = hướng glTF về phía có đầu
-  // đọc) người chơi PHẢI quẹt thẻ mỗi lần vào (phím E "Quẹt thẻ" — tapDoor); từ phía trong tới gần thì tự mở (nút ra); Tú tới gần
-  // phía nào cũng mở (Tú cũng có thẻ — không bị kẹt ngoài)
+  // đọc) người chơi PHẢI quẹt thẻ mỗi lần vào (phím E "Quẹt thẻ" — tapDoor); từ phía trong tới gần thì tự mở (nút ra) — cả Tú; Tú bị
+  // bỏ lại phía ngoài thì tự dịch chuyển lại gần người chơi (follower.js), không kẹt
   updateDoors(dt, instant = false) {
     const p = this.player?.position, tu = this.follower && !this.follower.gone ? this.follower.position : null;
     for (const d of this.doors || []) {
@@ -886,7 +886,7 @@ export class Game {
         else {
           const near = (q) => dist(q) < (ac.reopen_m ?? 1.6);
           const inside = (q) => !d.cfg.card || !q || (q.x - d.center.x) * d.cfg.card.outside[0] + (q.z - d.center.z) * d.cfg.card.outside[1] < 0;
-          want = (!instant && !d.wasOk) || d.tapped || (near(p) && inside(p)) || near(tu);
+          want = (!instant && !d.wasOk) || d.tapped || (near(p) && inside(p)) || (near(tu) && inside(tu));
         }
         d.tapped = false;
       }
@@ -1030,7 +1030,7 @@ export class Game {
     const others = new Set();
     if (tu) tu.speak(null);
     try {
-      if (npc) await npc.engage(p.position.clone());
+      if (npc) await npc.engage(p.position);
       const cast = {   // ai đang nói thì người đó diễn; NPC khác trong cảnh nói (vd người lạ ở cửa quẹt thẻ) → quay về người chơi
         speak: (anim, speaker) => {
           if (speaker === "tu") return tu?.speak(anim);

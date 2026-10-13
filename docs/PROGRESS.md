@@ -7,6 +7,17 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Chỉnh văn phòng / quẹt thẻ (13/10/2026, nhánh `fix/office-polish`, góp ý người dùng):**
+  quẹt thẻ: người chơi **đi bộ thật** tới đầu đọc (`Player.walkTo`: animation walk, va chạm, kẹt 0,8 s → dịch chuyển nốt; bị
+  dịch chuyển giữa chừng → huỷ) thay vì trượt, clip `reach` phát nhanh ×1,6 (`TAP_SPEED`); Tú chỉ mở cửa quẹt thẻ từ phía trong
+  (trước đây Tú đi theo tới gần là cửa mở luôn). Chị Nga quay mặt vào tường: bắt chuyện lúc NPC đang quay về hướng cũ bị bỏ
+  qua → giờ quay lại người chơi; đang nói chuyện NPC luôn hướng mặt theo người chơi (`Npc.talkRef`). Mũi tên thừa khi vào khu
+  phòng họp: điểm dẫn đường `z5_prajith` / `z5_manager` còn theo phòng họp cũ (x −18 / −27, trước PR #35) → cửa phòng mới
+  (x −46 / −38,5). Prajith đi xuyên bàn: bàn họp phòng của anh dời 0,9 m về phía TV (`office.json → table_dx`, build lại zone
+  5, `seats.json` 6 ghế dời theo); cảnh chào đi vòng sau bàn làm việc → lối giữa bàn làm việc và bàn họp (`greet.npc_path`,
+  `Npc.walkPath`), về ghế theo đường ngược lại.
+  Nói chuyện xong anh Prajith **về ghế, ngồi gõ máy tiếp** (`Npc.seatHome`: NPC vốn ngồi, đứng dậy ra đón — `arrive` — thì
+  `release` đi về chỗ ngồi gốc rồi `sit_down` → `sit_type`; smoke cập nhật theo).
 - **Video trên TV (13/10/2026, nhánh `feat/tv-video`):** video giới thiệu FPT Software Academy (người dùng gửi) cắt còn ~65 s
   (7 đoạn theo chỗ chuyển cảnh), 480 × 270, bỏ tiếng → `assets/video/fpt_academy.webm` (VP9) + `.mp4` (H.264), mỗi file ~2,3 MB
   (trình duyệt chỉ tải 1 file, chỉ khi vào zone có TV). Phát trên 2 TV đứng sảnh zone 3 (mặt màn hình trong GLB quay vào vách gỗ
