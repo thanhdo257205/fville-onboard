@@ -7,6 +7,12 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Mạng: không tự ngắt khi đi liên tục (13/10/2026, nhánh `fix/net-heartbeat`):** cứ khoảng 50 giây "N online" và ô chat
+  biến mất vài giây. Nguyên nhân: máy khách chỉ ping khi 20 s chưa *gửi* gì, nhưng đang đi thì vị trí gửi đều; máy chủ không trả
+  vị trí của mình về cho mình → một mình trong zone / người khác đứng yên thì không *nhận* gì → quá `dead_after_s` (50 s) máy khách
+  tưởng rớt mạng, tự đóng rồi kết nối lại. Sửa `net/client.js heartbeat`: ping cả khi 20 s chưa nhận được gì (ping do runtime
+  Cloudflare tự trả, không đánh thức Durable Object). Thử với máy chủ local (heartbeat 4 s, dead 9 s, đi 16 s): bản cũ kết nối lại
+  4 lần, bản sửa 0 lần. Smoke (phần mạng): bước "đi liên tục 16 s … không tự ngắt".
 - **Ghế tulip zone 5: thấp lại, đứng dậy không kẹt (13/10/2026, nhánh `fix/tulip-seat`):** ghế tulip cạnh bàn tròn cao 0,66 m
   (cao hơn mặt ngồi người chơi) → `scene_fixes → zone_05.lower_parts` hạ cốc ghế + đầu trụ 0,18 m (mặt ngồi 0,48 m, mặt bàn
   0,69–0,72 m giữ nguyên), `seats.json` tulip `h` 0,48. Đứng dậy bị kẹt: hộp `COL_ban_tulip` 2 × 2 m bao cả bàn lẫn 3 ghế, mà
