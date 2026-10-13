@@ -1,11 +1,22 @@
 # Tiến độ — Ngày Đầu Ở F-Ville
 
-Cập nhật: 12/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
+Cập nhật: 13/10/2026. Bản chơi thử: https://thanhdo257205.github.io/fville-onboard/game/ (xem bối cảnh:
 `/viewer/`).
 
 Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và push nhánh `main`.
 
 ## Đã xong
+
+- **Bàn Prajith và Breakdance liên tục (13/10/2026, nhánh `codex/prajith-dance-sequence`):** dựa trên main sau PR #45.
+  Phòng đầu giữ bàn họp giữa, thêm bộ CEO phía sau và máy tính Apple quay về ghế. Prajith ngồi gõ máy, tự đứng khi
+  người chơi vào phòng rồi bước sang chỗ trống để nói chuyện; E trong lúc đứng chờ chuyển động hoàn tất. Ms. Nga ở
+  Trạch Xá, giữ nguyên cốt truyện và thứ tự nhiệm vụ. Ghế đo 0,447 m, không áp dụng mức hạ của ghế bàn intern.
+  Hai prop rút từ 66.484 xuống 4.140 tam giác, khoảng 51 KB, texture tối đa 512 px, gộp còn 19 primitive. GLB nền
+  59.970 tam giác / 633.736 byte; nền cộng prop mới 64.110 tam giác (không tính NPC / cây có sẵn).
+  Vòng hành động chỉ có một bài Breakdance: 34 clip thành một timeline 4.106 khung / 136,83 giây, 33 đoạn chuyển tư
+  thế 0,4 giây, có chỉnh lún sàn. Bốn rig giữ nguyên mesh, tải khi cần; Worker mới quảng bá `dance_sequence` để tránh
+  gửi ID mới tới máy chủ cũ. Nút Dừng gửi `emote_stop`, gồm hủy cả clip đang tải trên máy khách. Cần deploy Worker để đồng bộ bài mới.
+  Dựng / kiểm tra hình bằng Blender MCP; kiểm thử chức năng thực hiện trên GitHub, không mở Chrome local.
 
 - **Thiết kế lại ba phòng họp và cửa tương tác (13/10/2026, nhánh `codex/meeting-room-redesign`):** nội thất theo video
   phòng họp mới: bàn trắng, ghế đen khung kim loại, sàn be/xám, rèm cuốn, tường xanh nhạt / TV, đồng hồ, tranh và quạt.

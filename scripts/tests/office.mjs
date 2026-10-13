@@ -77,3 +77,26 @@ for (const name of ['NPC_mentor', 'NPC_manager', 'NPC_dong_nghiep_1', 'NPC_dong_
   assert.ok(nodes.has(name), `missing gameplay node ${name}`);
 }
 console.log(`✓ office: 3 rooms on correct side, named doors, connected floors, capsule clearance, ${report.triangles_visible} triangles, ${(bytes.length/1024).toFixed(0)} KiB`);
+
+const characters = JSON.parse(readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8'));
+const manager = characters.roles.manager;
+assert.equal(manager.pose, 'seated');
+assert.equal(manager.node_marks, 'seat');
+assert.equal(manager.chair_drop, false, 'executive chair must retain its measured height');
+assert.ok(nodes.has(manager.entry_area));
+const at = name => new THREE.Vector3().setFromMatrixPosition(world(nodes.get(name).i));
+const boss = at('NPC_manager'), mentor = at('NPC_mentor');
+assert.ok(boss.x > -40 && boss.x < -34 && boss.z < -8, 'Prajith must sit behind the centre table in room 1');
+assert.ok(mentor.x > -46 && mentor.x < -40, 'Ms. Nga must occupy room 2');
+assert.ok(supported(new THREE.Vector3(...manager.arrival_exit)) && clear(new THREE.Vector3(...manager.arrival_exit)), 'boss needs a clear standing position');
+let extraTris = 0, extraBytes = 0;
+for (const id of ['ceo_office', 'apple_desktop']) {
+  const prop = readFileSync(new URL(`../../assets/props/${id}/${id}.glb`, import.meta.url));
+  const data = JSON.parse(prop.subarray(20, 20 + prop.readUInt32LE(12)).toString('utf8'));
+  const tris = data.meshes.reduce((n, m) => n + m.primitives.reduce((s, p) => s + data.accessors[p.indices].count / 3, 0), 0);
+  extraTris += tris; extraBytes += prop.length;
+  assert.ok(!data.animations && !data.cameras && !data.extensions?.KHR_lights_punctual);
+  assert.ok(data.extensionsUsed.includes('KHR_draco_mesh_compression'));
+}
+assert.ok(extraTris <= 4500 && extraBytes < 128 * 1024, 'executive furniture exceeds its separate runtime budget');
+console.log(`✓ executive: seated boss in room 1, mentor in room 2, clear standing exit, +${extraTris} triangles / ${extraBytes} bytes`);

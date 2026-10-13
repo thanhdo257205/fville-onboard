@@ -469,6 +469,17 @@ export class Game {
     }
   }
 
+  checkNpcEntries() {
+    if (this.mode !== "play" || this.state.phase !== "playing") return;
+    const p = this.player.position.clone();
+    p.y += 0.9;
+    for (const npc of this.npcs) {
+      const area = this.characters.role(npc.role)?.entry_area;
+      const trigger = area && this.zone.triggers.find(t => t.name === area);
+      if (trigger && inTrigger(trigger, p)) npc.arrive(this.player.position.clone());
+    }
+  }
+
   // ánh sáng / trời / sương riêng của zone (zones.json → mood), vd zone_00 sáng sớm có sương mỏng
   // trời: vòm 2 màu sky_top → sky_horizon (render/sky.js); sương màu chân trời, mood.fog hoặc backdrop.json → default_fog
   applyMood(mood) {
@@ -512,7 +523,8 @@ export class Game {
         let yaw = node.userData.yaw_deg ?? 0;
         if (r.place === "near_node") { pos.add(new THREE.Vector3(...(r.offset || [1, 0, 0]))); yaw = r.yaw_deg ?? 0; }
         const npc = new Npc(await this.characters.create(role, tier), { role, node: nodeName, pos, yaw, pose: r.pose, nodeMarks: r.node_marks,
-          chairHeight: r.chair_height_m != null ? r.chair_height_m - (this.zone.chairDrop || 0) : null });
+          chairHeight: r.chair_height_m != null ? r.chair_height_m - (r.chair_drop === false ? 0 : this.zone.chairDrop || 0) : null,
+          arrivalExit: r.arrival_exit });
         npc.start();
         this.scene.add(npc.character.root);
         this.nametags.add(npc.character.root, this.characters.displayName(role), npc.character.model.height_m).userData.role = role;   // role: đổi ngôn ngữ → viết lại tên
@@ -1070,6 +1082,7 @@ export class Game {
     if (this.followerWait && this.follower?.waiting && this.progress.check(this.followerWait)) { this.follower.stopWaiting(); this.followerWait = null; }
     this.checkBoarding();
     this.checkZoneEvents(dt);
+    this.checkNpcEntries();
     this.updateDoors(dt);
     this.roomDoors?.update(dt);
     this.checkTuReturn();

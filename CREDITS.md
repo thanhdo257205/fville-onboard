@@ -24,7 +24,7 @@ do người dùng cung cấp, chỉ nằm trong texture.
 ## Điệu nhảy
 - 34 animation từ `Breakdance Pack.zip` do người dùng cung cấp (FBX có bộ xương Mixamo), retarget sang bốn ngoại hình
   người chơi. `tai_xe_for_mixamo.fbx` là mô hình tham chiếu, không phải điệu nhảy và không được đưa vào game.
-  Các file nguồn giữ riêng trên máy; game tải biến thể nhân vật đã nén `*_dances.glb` khi chọn nhảy lần đầu.
+  Toàn bộ 34 clip được ghép thành một chuỗi với chuyển tư thế 0,4 giây. Các file nguồn giữ riêng trên máy; game tải biến thể nhân vật đã nén `*_dances.glb` khi chọn nhảy lần đầu.
 
 ## Thẻ nhân viên
 - `assets/props/id_card/id_card.glb`: khung nhựa + mặt thẻ lấy từ mô hình thẻ nhân viên do người dùng cung cấp (12/10/2026, nguồn /
@@ -101,3 +101,5 @@ Danh sách đầy đủ từng file, nguồn, SHA-256 và giấy phép: `docs/au
 
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.
+
+- Bàn/ghế executive (`assets/props/ceo_office/ceo_office.glb`, nguồn `ceo_01.glb`) và máy tính (`assets/props/apple_desktop/apple_desktop.glb`, nguồn `apple_desktop.glb`): người dùng cung cấp cho phòng Prajith. Game chỉ dùng bản mesh/texture đã rút gọn; file nguồn giữ riêng trên máy.
