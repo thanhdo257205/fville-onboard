@@ -958,6 +958,7 @@ export class Game {
   // phím E
   interact() {
     if (this.mode !== "play" || this.state.phase !== "playing") return null;
+    if (this.dances?.active) { this.actionsWheel.show(); return null; }
     const e = this.interaction.current;
     if (!e) return null;
     const [kind, id] = e.item.action.split(":");
@@ -1130,7 +1131,7 @@ export class Game {
     this.follower?.update(dt, this.player, this.zone.collider, { view: this.camera.position, obstacles: [...npcCaps, this.player.capsule()] });
     if (this.cameraOverride) { this.cameraOverride(dt); this.talkCam.overridden(); }
     else {
-      this.cam.update(dt, this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider, false, this.zone.view);
+      this.cam.update(dt, this.dances?.position ?? this.player.position, this.mode === "play" ? drag : { dx: 0, dy: 0, wheel: 0 }, this.zone.collider, false, this.zone.view);
       // màn thấp: phần khung còn thấy phía trên hộp thoại → camera hội thoại đặt mặt 2 người vào đó (player/talkcam.js)
       // (đo DOM 5 lần / giây — mỗi khung thì bắt trình duyệt tính lại bố cục liên tục; camera đổi êm nên không thấy giật)
       const dlg = this.ui.dialogue;

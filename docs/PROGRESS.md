@@ -7,6 +7,15 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Đồng bộ và quỹ đạo Breakdance (13/10/2026, nhánh `codex/dance-sync-continuity`):** máy chủ đang chạy thiếu
+  `dance_sequence`, nên bản web không gửi điệu nhảy. Thêm trạng thái nhảy / thời gian vào bản tin vị trí và danh sách
+  người cùng zone (`dance_state`): nhận được trước khi dựng model, vào sau / kết nối lại vẫn nhảy đúng đoạn;
+  không phụ thuộc cooldown câu chat. Giữ tương thích emote / stop của bản web cũ và máy chủ cũ.
+  Bốn rig ghép quỹ đạo ngang liên tục qua 34 clip; nối tư thế cuối sang đầu ở vị trí cuối, runtime tích lũy độ dời
+  mỗi vòng. Nhảy lặp đến khi bấm Dừng, mở vòng / Esc / phím đi không ngắt; E mở vòng hành động để dừng. Camera và
+  bảng tên theo người đang nhảy; Dừng trả về mốc ban đầu. Chuyển zone / đổi model dọn phiên nhảy.
+  CI kiểm quỹ đạo tại 33 đoạn nối, tư thế nối vòng, nút Dừng và người xem kết nối lại giữa bài. Test trên GitHub.
+
 - **Bàn làm việc: tay chạm bàn phím, bỏ vật trắng trước bàn phím, ngồi yên ở ghế không có máy tính (13/10/2026, nhánh
   `feat/desk-sitting`):** đo trong game: tay của `sit_type` cách bàn phím 15–25 cm → `desktop_computer.build(kb_forward=0,15)`
   đẩy bàn phím + chuột về phía người ngồi (`zone_05.py PC_KB_FORWARD`), build lại zone 5 (node giữ nguyên). Vật trắng là bảng
@@ -14,6 +23,7 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `bang_ten` pos / face). Hoạt ảnh Mixamo "Sitting" → clip `sit_idle` (lặp, hông dời khớp chỗ ngồi cuối của `sit_down`) cho 4
   ngoại hình người chơi (`build_reach.py --clip sit_idle …`). `seats.json → typing_groups` (bàn văn phòng, bàn intern, khu làm
   việc phụ) ngồi gõ phím; ghế khác (bàn cộng tác, phòng họp, sofa, ghế đôn, ghế chờ) ngồi yên (`Player.sit(…, pose)`).
+
 - **Lối cửa phòng họp, bàn phím và tường chập chờn (13/10/2026, nhánh `codex/meeting-room-clearance-fixes`):**
   ba phòng sâu thêm 1,5 m, bàn / ghế dịch vào 0,75 m; khoảng từ đầu cánh cửa mở tới dãy ghế gần nhất khoảng 90 cm.
   Giữ bố cục chữ T của phòng Prajith. Máy tính lùi 17 cm, bàn phím từ nhô 12 cm / nổi 3,5 cm thành nằm trọn trên

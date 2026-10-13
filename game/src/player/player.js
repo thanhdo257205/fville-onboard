@@ -25,6 +25,7 @@ export class Player {
   // đổi model (vd đổi mức đồ hoạ: bản 6k ↔ 15k), giữ vị trí và hướng
   setCharacter(character) {
     this.leaveSeat();
+    this.dancing = false;
     const rot = this.character.root.rotation.y;
     this.character.dispose();
     this.character = character;
@@ -118,6 +119,7 @@ export class Player {
 
   update(dt, input, cam, collider, obstacles = null) {
     this.collider = collider;
+    if (this.dancing) { this.character.update(dt); this.sync(); return; }
     if (this.seated) { this.character.update(dt); this.sync(); return; }      // đang ngồi: không đi lại, không trọng lực
     const { walk, run } = this.character.model.speed_mps;
     const want = new THREE.Vector3()

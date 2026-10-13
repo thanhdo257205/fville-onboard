@@ -33,6 +33,7 @@ const IDLE_MS = (S.idle_kick_s ?? 60) * 1000;
 const NAME_MAX = S.name_max ?? 20;
 const ORIGINS = S.allowed_origins || [];
 const EMOTES = new Set((net.emotes || []).map((e) => e.id));
+const DANCES = new Set((net.emotes || []).filter(e => e.dance).map(e => e.id));
 const PHRASES = new Set((net.phrases || []).map((p) => p.id));
 const ANIMS = new Set(["idle", "walk", "run", "sit"]);
 const ZONE_RE = /^zone_\d{2}$/;
@@ -57,7 +58,7 @@ const poolRules = (env) => (String(env?.POOL_RULES ?? "2") === "1" ? 1 : 2);
 // "chat" = có nhắn tin tự do (máy chủ cũ: chỉ có câu chat soạn sẵn). POOL_RULES = "1" giả trọn máy chủ bản cũ: chỉ "pool"
 // (máy chủ vẫn nhận tin chat, nhưng máy khách thấy không có "chat" nên không hiện khung chat)
 // "pool_spin" = cú bi-a có xoáy (spin / roll), máy chủ kiểm tra giới hạn rồi chuyển tiếp (server/src/pool.js)
-const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts", "pool_spin", "chat", "dance", "dance_sequence"] : ["pool"]);
+const features = (env) => (poolRules(env) === 2 ? ["pool", "pool_rules2", "pool_facts", "pool_spin", "chat", "dance", "dance_sequence", "dance_state"] : ["pool"]);
 // phòng 1 giữ tên DO cũ "fville" (không đổi phòng của bản đã chạy)
 const roomName = (n) => (n <= 1 ? "fville" : `fville-${n}`);
 // request WebSocket kèm số phòng (header) — chuyển nguyên request sang DO khác vẫn giữ nâng cấp WebSocket
@@ -76,7 +77,8 @@ export function cleanName(s) {
 }
 const fin = (v, lim) => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= lim;
 const r2 = (v) => Math.round(v * 100) / 100;
-const pub = (a) => ({ id: a.id, name: a.name, model: a.model, outfit: a.outfit, acc: a.acc || [], pos: a.pos, yaw: a.yaw, anim: a.anim });
+const pub = (a) => ({ id: a.id, name: a.name, model: a.model, outfit: a.outfit, acc: a.acc || [], pos: a.pos, yaw: a.yaw, anim: a.anim,
+  dance: a.dance ? { id: a.dance.id, time: r2(a.dance.time + Math.max(0, Date.now() - a.dance.at) / 1000) } : null });
 
 function originOk(origin) {
   if (!origin) return true;                     // không phải trình duyệt (công cụ thử) — giới hạn vẫn áp
@@ -285,11 +287,17 @@ export class FVilleRoom extends DurableObject {
         const ok = m.t === "emote" ? EMOTES.has(m.id) : PHRASES.has(m.id);
         if (!ok || now - (a.cool || 0) < COOLDOWN_MS) return;
         a.cool = now;
+        if (m.t === "emote" && DANCES.has(m.id)) {
+          a.dance = { id: m.id, time: 0, at: now }; a.legacyDance = true;
+          this.save(ws, a);
+          this.toZone(a.zone, { t: "state", id: a.id, pos: a.pos, yaw: a.yaw, anim: a.anim, dance: pub(a).dance }, ws);
+        }
         this.toZone(a.zone, m.t === "emote" ? { t: "emote", id: a.id, e: m.id } : { t: "phrase", id: a.id, p: m.id }, ws);
         return;
       }
       case "emote_stop":
         if (a.joined && a.shown && EMOTES.has(m.id) && m.id.startsWith("dance_")) {
+          if (a.dance?.id === m.id) { a.dance = null; this.save(ws, a); }
           this.toZone(a.zone, { t: "emote_stop", id: a.id, e: m.id }, ws);
         }
         return;
@@ -354,15 +362,19 @@ export class FVilleRoom extends DurableObject {
     const p = m.pos;
     if (!Array.isArray(p) || p.length !== 3 || !p.every((v) => fin(v, 5000)) || !fin(m.yaw, 1000)) return;
     const anim = ANIMS.has(m.anim) ? m.anim : "idle";
+    const dance = DANCES.has(m.dance?.id) && fin(m.dance.time, 86400) && m.dance.time >= 0
+      ? { id: m.dance.id, time: r2(m.dance.time), at: Date.now() }
+      : !("dance" in m) && a.legacyDance && anim === "idle" && m.zone === a.zone ? a.dance : null;
+    if ("dance" in m) a.legacyDance = false;
     const pos = p.map(r2), yaw = r2(Math.atan2(Math.sin(m.yaw), Math.cos(m.yaw)));
     if (m.zone !== a.zone) {
       this.leaveZone(ws, a);
-      Object.assign(a, { zone: m.zone, pos, yaw, anim });
+      Object.assign(a, { zone: m.zone, pos, yaw, anim, dance });
       this.enterZone(ws, a);
     } else {
-      Object.assign(a, { pos, yaw, anim });
+      Object.assign(a, { pos, yaw, anim, dance });
       if (!a.shown) { a.shown = true; this.toZone(a.zone, { t: "join", p: pub(a) }, ws); }
-      else this.toZone(a.zone, { t: "state", id: a.id, pos, yaw, anim }, ws);
+      else this.toZone(a.zone, { t: "state", id: a.id, pos, yaw, anim, dance: pub(a).dance }, ws);
     }
     this.save(ws, a);
   }

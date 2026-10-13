@@ -7,7 +7,7 @@ import * as THREE from "three";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { Character } from "../characters/characters.js";
-import { loadDanceClips } from "../characters/dances.js";
+import { loadDanceClips, startDancePlayback, seekDancePlayback, stopDancePlayback, dancePosition } from "../characters/dances.js";
 import { applyTint, setTint } from "../characters/tint.js";
 import { loadGLTF, url } from "../core/assets.js";
 import { blocked } from "../world/collision.js";
@@ -51,10 +51,11 @@ class Remote {
     if (this.model && p.model !== this.model) { this.rebuild = true; this.failed = false; }   // đổi model → dựng lại
     this.model = p.model || "";
     if (this.nameTag) this.nameTag.element.textContent = this.name;
-    if (p.pos) this.push(p.pos, p.yaw, p.anim, true);
+    if (p.pos) this.push(p.pos, p.yaw, p.anim, true, p.dance);
   }
-  push(pos, yaw, anim, fresh = false) {
+  push(pos, yaw, anim, fresh = false, dance = undefined) {
     const now = performance.now(), last = this.buf[this.buf.length - 1];
+    if (dance !== undefined) this.dance = dance ? { ...dance, at: now } : null;
     const v = new THREE.Vector3(...pos);
     if (!last || fresh || last.pos.distanceTo(v) > SNAP_M) this.buf = [];
     // đứng yên một lúc rồi mới đi: đặt lại mốc của bản tin trước ngay trước bản tin này (không trượt chậm suốt quãng đứng yên)
@@ -102,7 +103,7 @@ export class RemotePlayers {
     if (r) r.profile(p);
     else this.list.set(p.id, new Remote(p));
   }
-  state(m) { this.list.get(m.id)?.push(m.pos, m.yaw, m.anim); }
+  state(m) { this.list.get(m.id)?.push(m.pos, m.yaw, m.anim, false, m.dance); }
   remove(id) {
     const r = this.list.get(id);
     if (!r) return;
@@ -116,8 +117,11 @@ export class RemotePlayers {
     if (anim.startsWith("dance_")) {
       r.pendingDance = anim;
       try { await loadDanceClips(ch); } catch { return; }
-      if (this.list.get(id) !== r || r.ch !== ch || r.emoteSerial !== serial || r.speed > 0.4) return;
+      if (this.list.get(id) !== r || r.ch !== ch || r.emoteSerial !== serial) return;
       r.pendingDance = null;
+      r.sitting = false;
+      r.emoting = startDancePlayback(ch, anim, r.dance ? r.dance.time + (performance.now() - r.dance.at) / 1000 : 0);
+      return;
     }
     const act = ch.playOnce(anim);
     const action = r.emoting = ch.current;
@@ -126,11 +130,13 @@ export class RemotePlayers {
   stopEmote(id, anim) {
     const r = this.list.get(id);
     if (!r || r.pendingDance !== anim && r.emoting?.getClip().name !== anim) return;
+    if (r.dance?.id === anim) r.dance = null;
     r.emoteSerial = (r.emoteSerial || 0) + 1;
     r.pendingDance = null;
     if (r.emoting?.getClip().name === anim) {
       const action = r.emoting;
       r.emoting = null;
+      stopDancePlayback(r.ch);
       if (r.ch?.current === action) r.ch.enableLocomotion();
     }
   }
@@ -195,7 +201,10 @@ export class RemotePlayers {
     } finally { r.loading = false; }
   }
   dispose(r, keepEntry = false) {
+    r.emoteSerial = (r.emoteSerial || 0) + 1;
+    r.pendingDance = r.emoting = null;
     if (!r.ch) return;
+    stopDancePlayback(r.ch);
     for (const o of [r.nameTag, r.bubble]) o?.element.remove();
     r.ch.dispose();
     r.ch = null;
@@ -224,6 +233,13 @@ export class RemotePlayers {
       if ((!r.ch || r.rebuild) && !r.loading && !r.failed && g.state.phase === "playing") { this.build(r); if (!r.ch) continue; }
       if (!r.ch) continue;
       const ch = r.ch, root = ch.root;
+      if (r.dance) {
+        if (r.emoting?.getClip().name !== r.dance.id && r.pendingDance !== r.dance.id) void this.emote(r.id, r.dance.id);
+        if (ch.dancePlayback) {
+          const elapsed = r.dance.time + Math.max(0, performance.now() - r.dance.at) / 1000;
+          if (Math.abs(ch.dancePlayback.elapsed - elapsed) > .5) seekDancePlayback(ch, elapsed);
+        }
+      } else if (r.dance === null && (r.pendingDance || ch.dancePlayback)) this.stopEmote(r.id, r.pendingDance || ch.dancePlayback.action.getClip().name);
       // bộ đồ
       const o = g.characters.role("player")?.outfit;
       if (r.outfitShown !== r.outfit) {
@@ -247,7 +263,7 @@ export class RemotePlayers {
       root.rotation.y = wasVisible ? lerpAngle(root.rotation.y, s.yaw, Math.min(1, dt * 12)) : s.yaw;
       const moved = wasVisible && dt > 0 ? Math.hypot(root.position.x - before.x, root.position.z - before.z) / dt : 0;
       r.speed = THREE.MathUtils.lerp(r.speed, s.anim === "idle" && moved < 0.3 ? 0 : Math.min(moved, 6), Math.min(1, dt * 8));
-      if (r.emoting && r.speed > 0.4) { r.emoting = null; ch.enableLocomotion(); }
+      if (r.emoting && !ch.dancePlayback && r.speed > 0.4) { r.emoting = null; ch.enableLocomotion(); }
       if (s.anim === "sit" && !r.emoting) {
         if (!r.sitting) { r.sitting = true; ch.playOnce("sit_down"); }
       } else if (r.sitting) { r.sitting = false; ch.enableLocomotion(); }
@@ -260,7 +276,12 @@ export class RemotePlayers {
       r.visible = !hide;
       const near = root.position.distanceTo(cam) < OUTLINE_M;
       if (r.outlined !== near) { r.outlined = near; for (const m of r.mats) m.userData.outlineParameters = { ...m.userData.outlineParameters, visible: near }; }
-      if (!hide) ch.update(dt);
+      if (!hide || ch.dancePlayback) ch.update(dt);
+      if (r.nameTag && r.bubble) {
+        const offset = root.worldToLocal(dancePosition(ch).clone());
+        r.nameTag.position.set(offset.x, ch.model.height_m + (g.nametags.above ?? .28), offset.z);
+        r.bubble.position.set(offset.x, ch.model.height_m + .55, offset.z);
+      }
       if (checkTags && r.nameTag) {
         r.nameTag.getWorldPosition(_p);
         const d = _p.distanceTo(cam);
