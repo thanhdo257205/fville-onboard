@@ -949,6 +949,8 @@ export class Game {
     const e = this.interaction.current;
     if (!e) return null;
     const [kind, id] = e.item.action.split(":");
+    if (kind === "stand") return this.player.standUp();
+    if (kind === "seat") return this.sitFree(e.seat);
     if (kind === "door") return this.roomDoors?.toggle(id);
     if (kind === "dialogue") return this.runDialogue(id, { npc: this.interaction.npcFor(e), actor: e.item.actor });
     if (kind === "minigame") return this.runMinigame(id);
@@ -991,7 +993,7 @@ export class Game {
       if (tu) tu.endTalk();
       this.setMode("play");
       // đang ngồi (vd bàn làm việc) → đứng dậy; sắp vào cảnh kết thì ngồi nguyên (cảnh kết đặt lại người chơi)
-      if (this.player.seated && !this.finishPending) this.player.standUp();
+      if (this.player.seated && !this.player.seated.free && !this.finishPending) this.player.standUp();
       this.flushAfterDialogue();
     }
   }
@@ -1009,6 +1011,15 @@ export class Game {
     if (!o) { console.warn(`[ngồi] không có ${node} trong ${this.state.zone}`); return; }
     const h = this.characters.role("player")?.chair_height_m;
     await this.player.sit(worldPos(o), THREE.MathUtils.degToRad(o.userData.yaw_deg ?? 0) + Math.PI, h != null ? h - (this.zone.chairDrop || 0) : null);
+  }
+
+  // ngồi tự do vào ghế bất kỳ (data/seats.json — interaction.js): như sitAt nhưng chỗ ghế / độ cao mặt ghế lấy từ dữ liệu;
+  // seated.free → E lần nữa hoặc bước đi thì đứng dậy, hội thoại tự mở (tin nhắn…) xong vẫn ngồi nguyên
+  sitFree(s) {
+    if (!s || this.player.seated) return;
+    const done = this.player.sit(new THREE.Vector3(...s.at), THREE.MathUtils.degToRad(s.yaw_deg ?? 0) + Math.PI, s.h ?? null);
+    if (this.player.seated) this.player.seated.free = true;
+    return done;
   }
 
   // câu của người đối thoại / người chơi → camera qua vai (tới hết hội thoại); lời dẫn (narrator) và tin nhắn điện thoại
@@ -1090,9 +1101,14 @@ export class Game {
     // capsule nhân vật: người chơi không xuyên NPC / Tú; Tú tránh NPC + người chơi
     const npcCaps = this.npcs.map((n) => n.capsule()).filter(Boolean);
     const tuCap = this.follower?.capsule();
+    // ngồi tự do: bước đi (phím / cần điều khiển) → đứng dậy
+    if (this.mode === "play" && this.player.seated?.free && this.player.seated.state === "seated") {
+      const mv = this.input.move();
+      if (Math.abs(mv.x) > 0.2 || Math.abs(mv.y) > 0.2) this.player.standUp();
+    }
     this.player.update(dt, this.mode === "play" ? this.input.move() : still, this.cam, this.zone.collider, tuCap ? [...npcCaps, tuCap] : npcCaps);
     this.idCard.late(dt);                     // cúi đầu nhìn thẻ (sau animation của người chơi)
-    if (this.faceTarget) {
+    if (this.faceTarget && !this.player.seated?.free) {   // đang ngồi tự do: hội thoại tự mở không xoay người trên ghế
       const p = this.player.position;
       this.player.character.faceDir(new THREE.Vector3(this.faceTarget.x - p.x, 0, this.faceTarget.z - p.z), dt, 6);
     }
