@@ -1,0 +1,15 @@
+{
+  "provider": "ActorCore",
+  "anim": "dance_graceful",
+  "source_sha256": "2d2334462e6dd69033ddddeb83548657910bacf1b6013b7e7f07adb84410559a",
+  "fps": 30,
+  "source_frames": 697,
+  "frames": 710,
+  "duration_s": 23.633333333333333,
+  "loop_bridge_frames": 13,
+  "mapped_bones": 22,
+  "lowest_before_m": -0.03194839879870415,
+  "lowest_after_m": 0.001999899046495557,
+  "floor_lift_max_m": 0.03394839879870415,
+  "bytes": 276332
+}

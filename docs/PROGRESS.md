@@ -7,6 +7,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Graceful Dance từ ActorCore (13/10/2026, nhánh `codex/actorcore-graceful-dance`):** thêm ô “Nhảy uyển chuyển”
+  cạnh Breakdance. Motion 697 khung / 23,2 giây, chuyển CC3 → 22 xương của bốn rig người chơi, bù khác biệt
+  tư thế nghỉ / bone roll và tỷ lệ hông, chỉnh chân chạm sàn; thêm 13 khung nối vòng, tổng 23,63 giây.
+  GLB giữ nguyên lưới nhân vật, nén Meshopt, tải riêng khi chọn qua `dance_glbs`; giữ nút Dừng / về mốc và
+  đồng bộ trạng thái cho người xem vào sau. Nguồn FBX / JSON không đưa lên repo. Kiểm hình bằng Blender,
+  CI kiểm đủ clip / rig / đoạn nối vòng, chọn hai ô, đổi bài khi đang nhảy và kết nối lại giữa bài ActorCore.
+
 - **Đồng bộ và quỹ đạo Breakdance (13/10/2026, nhánh `codex/dance-sync-continuity`):** máy chủ đang chạy thiếu
   `dance_sequence`, nên bản web không gửi điệu nhảy. Thêm trạng thái nhảy / thời gian vào bản tin vị trí và danh sách
   người cùng zone (`dance_state`): nhận được trước khi dựng model, vào sau / kết nối lại vẫn nhảy đúng đoạn;
