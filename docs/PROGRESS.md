@@ -1772,6 +1772,21 @@ Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem tr
 - Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
   sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390. **Đã deploy** gh-pages 0125625 (từ main 7500094).
 
+### Zone 5: lời dẫn phòng họp + khoang làm việc (13/10/2026, nhánh `feat/zone5-narration`)
+
+Người dùng: thêm lời dẫn khi ở phòng họp (tên theo làng nổi tiếng, thiết bị hiện đại) và khoang làm việc (tông màu làng quê).
+
+- `data/dialogues.json`: `z5_meeting_rooms_intro` (2 câu: phòng họp F-Ville 1 đặt tên theo làng nổi tiếng — Bát Tràng, Làng Sen,
+  Ngọc Hà, Đông Hồ… như Trạch Xá, Ước Lễ ngay đây; thiết bị hiện đại cho nhiều mục đích), `z5_workspace_intro` (khoang làm việc
+  theo tông màu làng quê: xanh cây cỏ, nâu đất, vàng lúa) — người dẫn chuyện, en + vi.
+- Sự kiện zone (`zones.json → <zone>.events`) thêm `area` (hộp `{ center, size }` toạ độ glTF hoặc tên TRIGGER_) + `once_flag` (cờ
+  lưu bản lưu → cả ngày 1 lần, đi lại / tải lại không lặp) — `Game.checkZoneEvents`, `Game.inArea`. zone_05: hộp hành lang trước 3
+  phòng họp (x −53 … −33, z −1,3 … 1,5), hộp khu bàn làm việc chính (x −34 … −10, z 2,6 … 13).
+- Smoke zone_05 (ngoại hình đầu, chạy đầu tiên trong zone): bước vào từng hộp → đúng lời dẫn mở, ra vào lại không mở nữa, cờ đã lưu.
+  `__game.trySeat`: "đi tiếp được" thử 4 hướng (trước mặt có thể là bàn — bước này từng đỏ khi chạy `--zone 5` riêng).
+- Đo: test:data, smoke `--zone 5` 31/31, test:quick 72/72. Ghi chú: `--zone 5 --look intern_nu --lang vi` đỏ 2 bước bi-a cả trên
+  main 06dd727 (lỗi có sẵn khi chạy riêng zone 5, CI chạy zone 0 → 5 vẫn xanh) — không thuộc thay đổi này.
+
 ### Ngồi ở bất kỳ ghế nào (13/10/2026, nhánh `feat/sit-anywhere`)
 
 Người dùng: người chơi ngồi được ở mọi chỗ có ghế (trước: chỉ ghế bàn intern zone 5, qua hội thoại).

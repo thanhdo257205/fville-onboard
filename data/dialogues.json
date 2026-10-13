@@ -329,6 +329,21 @@
       }
     },
     {
+      "id": "z5_meeting_rooms_intro", "start": "n1",
+      "_ly_do": "Người dùng 13/10/2026 — lời dẫn khi tới hành lang phòng họp (zones.json → zone_05.events, area). Biển tên trong game: Trạch Xá, Ước Lễ (data/office.json).",
+      "nodes": {
+        "n1": { "speaker": "narrator", "text": { "en": "The meeting rooms of F-Ville 1 are named after famous Vietnamese villages — Bát Tràng, Làng Sen, Ngọc Hà, Đông Hồ… — like Trạch Xá and Ước Lễ right here.", "vi": "Các phòng họp của F-Ville 1 được đặt tên theo những ngôi làng nổi tiếng: Bát Tràng, Làng Sen, Ngọc Hà, Đông Hồ… — như Trạch Xá, Ước Lễ ngay đây." }, "next": "n2" },
+        "n2": { "speaker": "narrator", "text": { "en": "Each room is fitted with modern equipment for all kinds of uses, from team meetings to online calls.", "vi": "Phòng nào cũng được trang bị thiết bị hiện đại cho nhiều mục đích sử dụng khác nhau, từ họp nhóm đến họp trực tuyến." }, "next": null }
+      }
+    },
+    {
+      "id": "z5_workspace_intro", "start": "n1",
+      "_ly_do": "Người dùng 13/10/2026 — lời dẫn khi bước vào khu bàn làm việc chính (zones.json → zone_05.events, area).",
+      "nodes": {
+        "n1": { "speaker": "narrator", "text": { "en": "The workspace is designed in the colours of the Vietnamese countryside: the green of grass and trees, the brown of the earth, the yellow of ripening rice.", "vi": "Khoang làm việc được thiết kế theo các tông màu điển hình của làng quê Việt Nam: màu xanh của cây cỏ, màu nâu của đất, màu vàng của lúa." }, "next": null }
+      }
+    },
+    {
       "id": "z5_app_meeting", "start": "n1",
       "nodes": {
         "n1": { "speaker": "app", "style": "phone", "text": { "en": "📅 09:15 · Meeting with Ms. Nga — mentor meeting room, left side of the office.", "vi": "📅 09:15 · Gặp chị Nga — phòng họp mentor, bên trái văn phòng." }, "next": "n2" },
