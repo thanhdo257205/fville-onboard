@@ -7,6 +7,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Prajith mô hình mới — áo polo cam FPT, đeo kính (13/10/2026, nhánh `feat/prajith-v3`):** model `prajith_v3` từ Meshy (58.264
+  → 25.000 tam giác cho Mixamo, `--protect-face`; bản game 6.000 tam giác, 0,69 MB, cao 1,75 m). Logo FPT ngực trái
+  (`chest_logo.json`: tâm dời lên 1,34 m để không vắt đường nối UV ngang ngực — chỗ cũ 1,31 m làm rách chữ F). Animation lấy
+  từ file của `prajith` như `prajith_polo` (`mixamo/actions.json`), thêm `handshake` (`build_reach.py --lean 0.35 --step 0.5`).
+  Vai `manager` đổi sang `prajith_v3`; `prajith_polo`, `prajith` giữ nguyên (viewer so sánh, nguồn animation). Đã xem trong
+  game: ngồi gõ máy khớp ghế / bàn phím, cúi chào → bắt tay hai tay gặp nhau. `test:data`, smoke zone 5 đạt.
+
 - **Chỉnh văn phòng / quẹt thẻ (13/10/2026, nhánh `fix/office-polish`, góp ý người dùng):**
   quẹt thẻ: người chơi **đi bộ thật** tới đầu đọc (`Player.walkTo`: animation walk, va chạm, kẹt 0,8 s → dịch chuyển nốt; bị
   dịch chuyển giữa chừng → huỷ) thay vì trượt, clip `reach` phát nhanh ×1,6 (`TAP_SPEED`); Tú chỉ mở cửa quẹt thẻ từ phía trong

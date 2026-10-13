@@ -1,0 +1,20 @@
+{
+  "_ghi_chu": "prajith_v3 (Prajith áo polo cam FPT, đeo kính — vai manager, thay model prajith_polo 13/10/2026): file gốc prajith_v3_rigged.fbx tải từ Mixamo (tư thế chữ A tĩnh, gắn xương trên file prepare_for_mixamo 25k tam giác) → idle và 13 animation lấy từ file của prajith (retarget, hông nhân theo tỉ lệ độ cao hông), như prajith_polo. Texture lấy từ textures/prajith_v3_basecolor.jpg (đã dán logo FPT — chest_logo.json).",
+  "base": [
+    "prajith_v3_rigged.fbx",
+    "idle"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "idle_file": "Standing Idle.fbx",
+  "fold_missing_bones": true,
+  "_fold_ghi_chu": "Mixamo có thể gắn xương Standard (có ngón) — file của prajith không có đủ ngón → dồn trọng số lên bàn tay.",
+  "speed_mps": {
+    "walk": 1.4,
+    "run": 4.39
+  },
+  "decimate_protect": {
+    "face_keep_tris": 2200,
+    "face_detail_pct": 0.12
+  },
+  "_decimate_ghi_chu": "Bản 6k: mặt trước ~4.000 tam giác (prepare_for_mixamo --protect-face) — lượt 0 giảm phần phẳng mặt trước còn ~2.200, giữ 12% đỉnh tương phản cao (mắt, kính, lông mày, miệng); lượt 2 giữ đầu, giảm thân."
+}
