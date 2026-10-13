@@ -144,9 +144,9 @@
    { "group": "phong_phu", "at": [-67.35, 0, 3.475], "yaw_deg": 180, "h": 0.455 },
    { "group": "phong_phu", "at": [-65.85, 0, 5.525], "yaw_deg": 0, "h": 0.455 },
    { "group": "phong_phu", "at": [-65.95, 0, 3.475], "yaw_deg": 180, "h": 0.455 },
-   { "group": "tulip", "at": [-3.45, 0, 3.0], "yaw_deg": 90, "h": 0.66 },
-   { "group": "tulip", "at": [-4.575, 0, 2.35], "yaw_deg": 210, "h": 0.66 },
-   { "group": "tulip", "at": [-4.575, 0, 3.65], "yaw_deg": 330, "h": 0.66 }
+   { "group": "tulip", "at": [-3.45, 0, 3.0], "yaw_deg": 90, "h": 0.48 },
+   { "group": "tulip", "at": [-4.575, 0, 2.35], "yaw_deg": 210, "h": 0.48 },
+   { "group": "tulip", "at": [-4.575, 0, 3.65], "yaw_deg": 330, "h": 0.48 }
   ]
  }
 }
