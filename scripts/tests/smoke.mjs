@@ -444,6 +444,9 @@ async function runLook(browser, base, look) {
       const areaEvs = (zonesCfg.zones[zone]?.events || []).filter((e) => e.area?.center && e.once_flag);
       if (areaEvs.length && look === looks[0]) {
         const back = await ev(() => __game.player.pos);
+        // hội thoại on_enter (vd tin app "09:15 · Meeting with Ms. Nga" zone_05) mở sau 600 ms hẹn giờ thật kể từ lúc vào zone →
+        // chờ qua mốc đó rồi giải, kẻo nó bật lên giữa chừng thay cho lời dẫn (từng hỏng trên CI khi đi từ zone_04 sang)
+        await wait(() => performance.now() - (__game._game.state.readyAt || 0) > 900, 5000);
         await ev(() => __game.resolve());
         const got = [];
         for (const e of areaEvs) {
