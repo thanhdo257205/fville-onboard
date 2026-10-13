@@ -2,6 +2,7 @@
 // trigger chuyển zone có màn mờ (điều kiện từ quests.json), mức đồ hoạ (tự chọn / menu / tự hạ khi FPS < 40),
 // tương tác (interactables.json) → hội thoại (dialogues.json) / mini-game / nhặt vật; hiệu ứng → tiến trình (lưu trình duyệt).
 import * as THREE from "three";
+import { RoomDoors } from "./roomdoors.js";
 import { device } from "../core/device.js";
 import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, placeProps, prefetchZone, pendingPrefetch } from "../world/zone.js";
 import { buildCollider } from "../world/collision.js";
@@ -320,6 +321,8 @@ export class Game {
     await this.spawnActors();
     this.zoneProgress("actors");
     this.setupDoors();
+    this.roomDoors ??= new RoomDoors(this);
+    this.roomDoors.setup();
     this.interaction.setup(zone, this.scene);
     this.guide.reset();
     this.progress.zone = zoneId;
@@ -901,6 +904,7 @@ export class Game {
     const e = this.interaction.current;
     if (!e) return null;
     const [kind, id] = e.item.action.split(":");
+    if (kind === "door") return this.roomDoors?.toggle(id);
     if (kind === "dialogue") return this.runDialogue(id, { npc: this.interaction.npcFor(e), actor: e.item.actor });
     if (kind === "minigame") return this.runMinigame(id);
     if (kind === "pool") return this.pool?.enter();          // bàn bi-a (pool:play): tập một mình / bàn chung qua máy chủ
@@ -1034,6 +1038,7 @@ export class Game {
     this.checkBoarding();
     this.checkZoneEvents(dt);
     this.updateDoors(dt);
+    this.roomDoors?.update(dt);
     this.checkTuReturn();
     this.interaction.animate(dt);
     // capsule nhân vật: người chơi không xuyên NPC / Tú; Tú tránh NPC + người chơi

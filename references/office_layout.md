@@ -30,10 +30,18 @@ Tọa độ Blender: Z lên, X/Y trên sàn. Trục +X đi từ phòng phụ v�
 | Phòng phụ | −70 … −52 | −8 … 8 |
 
 Phòng họp nằm phía +Y của hành lang: bên trái khi nhìn theo +X, bên phải khi nhìn theo −X.
-Tên tạm **Phòng họp 1 / 2 / 3**, từ gần phòng chính tới gần phòng phụ.
+Tên **Phòng họp 1 / Trạch Xá / Ước Lễ**, từ gần phòng chính tới gần phòng phụ (yêu cầu 13/10/2026).
 Đổi trường `meeting_rooms[].name` trong `data/office.json`, sau đó build lại zone 5.
-Cửa phòng họp mở sẵn vào trong 85° để đi được, có cánh, khung, tay nắm và va chạm;
-chưa thêm cơ chế đóng / mở cửa bằng thao tác người chơi.
+Cửa kính khung đen đóng mặc định, có tay nắm hai mặt, ba dải kính mờ, bảng Available và biển gỗ hình hạt lúa
+trên cánh. Người chơi bấm E / nút tương tác để mở vào trong 85° hoặc đóng lại. Biển tên quay cùng cánh cửa;
+va chạm đổi theo trạng thái cửa, tránh đóng xuyên nhân vật trong vùng quét của cánh. Trạng thái riêng từng
+người chơi và được đặt lại khi vào zone.
+
+Nội thất ba phòng dựa trên `2aOboR593oqc4HZ2PX6p52wWuWFrrncXv1aXDFvE.mp4`:
+bàn họp trắng có rãnh dây và tablet, ghế đen khung kim loại, sàn caro be/xám, rèm cuốn,
+tường xanh nhạt gắn màn hình, đồng hồ, tranh hình học và quạt đứng. Bố trí sáu ghế mỗi phòng,
+giữ khoảng trống của game; cửa sổ chung phía ngoài (+Y), vách chia phòng kín. Không dùng khung hình video
+làm texture. Cửa / biển lấy hình dáng từ ảnh người dùng gửi; phòng 1 còn tên tạm.
 
 Giữ ID `INT_phong_hop_mentor`, `INT_phong_hop_manager`, NPC và spawn tương ứng
 để tiến trình nhiệm vụ hiện tại tiếp tục hoạt động; phòng họp thứ ba dành cho nội dung sau.
@@ -48,6 +56,8 @@ dùng chung mesh / material và gộp lượt vẽ khi tải zone. Cả hai phò
   khoảng trống capsule dọc hành lang và cửa, các node nhiệm vụ còn đủ.
 - Smoke trên GitHub: capsule thật đi hai chiều và vào ba cửa; bàn phụ được gộp;
   luồng chơi, bi-a, camera, map và bộ nhớ dùng các kiểm tra hiện có.
+- Kiểm tra từng cửa: đóng chặn capsule, mở đi được, đóng lại đúng góc, không đóng khi có người;
+  nhắc Mở / Đóng thay đổi theo trạng thái. GLB kiểm tên và biển gắn đúng bản lề.
 - Dò khe hở zone 5 tăng tầm tia lên 100 m vì chiều dài văn phòng mới trên 70 m;
   không dùng giới hạn 60 m cũ để kết luận nhầm hành lang dài là khe hở.
 - Có mặt sân thấp hơn sàn 4,2 m phía ngoài cửa sổ (2 tam giác, không thêm vùng đi),

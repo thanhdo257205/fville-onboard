@@ -1,4 +1,9 @@
 {
+  "meeting_doors": {
+    "open": "Open door · {room}",
+    "close": "Close door · {room}",
+    "blocked": "The doorway is occupied. Step clear before closing."
+  },
   "_note": "Every on-screen string, English. Vietnamese: vi.json with the same keys (style guide: docs/vi_style.md). Proper names stay in Vietnamese: Tú, Huyền, Lan, Minh, Hà, Khang, F-Ville, Hòa Lạc.",
   "app": {
     "title": "First Day at F-Ville",

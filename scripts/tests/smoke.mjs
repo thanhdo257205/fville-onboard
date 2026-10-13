@@ -411,6 +411,7 @@ async function runLook(browser, base, look) {
       // Rebuilt office: exercise the real capsule solver on both corridor directions
       // and each meeting-room doorway without advancing quests or moving the player.
       if (zone === "zone_05" && look === looks[0]) {
+        await ev(() => __game.resolve());
         const office = await ev(() => {
           const g = __game._game, V = g.player.position.constructor;
           const body = new g.player.body.constructor();
@@ -427,18 +428,51 @@ async function runLook(browser, base, look) {
             legs.push({ to: [x, z], reached: distance < 0.1, floor: Math.abs(body.position.y) < 0.05 });
           };
           go(-68, 0); go(-2, 0);
-          const names = [];
+          const names = [], doors = [];
           for (const id of ["phong_hop_mentor", "phong_hop_manager", "phong_hop_3"]) {
             const room = g.zone.nodes.get(`INT_${id}`), p = room?.getWorldPosition(new V());
             if (!p) { legs.push({ reached: false, missing: id }); continue; }
             names.push(room.userData.label);
-            go(p.x, 0); go(p.x, -3.1); go(p.x, 0);
+            go(p.x, 0);
+            const approach = body.position.clone();
+            go(p.x, -3.1);
+            const blockedClosed = !legs.pop().reached;
+            body.teleport(approach);
+            const d = g.roomDoors.list.find(d => d.cfg.id === id);
+            const opened = g.roomDoors.toggle(id);
+            for (let k = 0; k < 60; k++) g.roomDoors.update(1 / 60);
+            const rotated = d.node.quaternion.angleTo(d.from) > 1.4;
+            go(p.x, -3.1); go(p.x, 0);
+            const original = g.player.position.clone();
+            g.player.body.teleport(new V(p.x, 0.05, -1.5));
+            const safe = g.roomDoors.toggle(id) === false && d.target;
+            g.player.body.teleport(original);
+            const closed = g.roomDoors.toggle(id);
+            for (let k = 0; k < 60; k++) g.roomDoors.update(1 / 60);
+            const settled = !d.target && !d.moving && d.node.quaternion.angleTo(d.from) < .001;
+            doors.push({ opened, rotated, blockedClosed, safe, closed, settled });
           }
           const batches = []; g.zone.root.traverse(o => { if (o.userData.batchGroup === "ENV_ban_phu") batches.push(o.name); });
-          return { legs, names, batches };
+          return { legs, names, batches, doors };
         });
-        await check(office.legs.every(l => l.reached && l.floor) && office.names.length === 3 && office.batches.length > 0,
-          "zone_05: phòng chính ↔ phòng phụ, đi qua cửa 3 phòng họp, sàn liên tục và bàn phụ được gộp lượt vẽ", JSON.stringify(office));
+        await check(office.legs.every(l => l.reached && l.floor) && office.names.length === 3 && office.batches.length > 0
+          && office.doors.every(d => Object.values(d).every(Boolean)),
+          "zone_05: 3 cửa đóng chặn capsule, mở đi qua, biển xoay theo cánh; không đóng khi có người; hành lang / sàn liên tục", JSON.stringify(office));
+        // Exercise the same E callback / live prompt used by the touch action button.
+        await ev(() => __game.resolve());
+        const doorUi = await ev(() => {
+          const g = __game._game, p = g.player.position.clone();
+          g.player.body.teleport(new p.constructor(-49, .05, -.4));
+          const before = g.interaction.update(g.player.position);
+          const current = g.interaction.current?.item.action;
+          g.interact(); g.roomDoors.update(1);
+          const after = g.interaction.update(g.player.position);
+          g.interact(); g.roomDoors.update(1);
+          g.player.body.teleport(p);
+          return { before, after, current, closed: !g.roomDoors.list[2].target };
+        });
+        await check(doorUi.current === "door:phong_hop_3" && doorUi.before !== doorUi.after && doorUi.closed,
+          "cửa Ước Lễ: tương tác E / nút cảm ứng đổi Mở ↔ Đóng theo trạng thái", JSON.stringify(doorUi));
       }
       // cây / bụi tre mô hình Sketchfab (zone 0–3): bản sao dùng chung lưới đã gộp thành vài mesh (world/zone.js
       // batchInstances), mỗi bản sao = 1 cây riêng để làm mờ (số cây khác nhau, camera giữa tán → cây mờ), lá cắt alpha

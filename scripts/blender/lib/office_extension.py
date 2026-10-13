@@ -8,7 +8,7 @@ import os
 
 import bpy
 
-from . import interior as it, kit, markers as mk, materials
+from . import interior as it, kit, markers as mk, materials, meeting_rooms
 from .mesh import MeshBuilder
 
 
@@ -60,50 +60,6 @@ def ceiling_lights(b, rect, height):
         for k in range(4):
             b.box((x + 0.7, (y0 + y1) / 2 + (k - 1.5) * 0.07, height - 0.04), (0.35, 0.025, 0.012), "black")
         x += 3
-
-
-def nameplate(name, text, x, y, collection):
-    """Chữ thật trên biển phòng, dùng cùng palette để không tăng texture / material."""
-    curve = bpy.data.curves.new(name, "FONT")
-    curve.body = text
-    curve.align_x = "CENTER"
-    curve.size = 0.15
-    curve.resolution_u = 2
-    font_path = os.path.join(os.environ.get("WINDIR", ""), "Fonts", "arial.ttf")
-    if os.path.isfile(font_path):
-        curve.font = bpy.data.fonts.load(font_path, check_existing=True)
-    obj = bpy.data.objects.new(name, curve)
-    collection.objects.link(obj)
-    obj.location = (x, y, 1.92)
-    obj.rotation_euler = (math.pi / 2, 0, 0)   # hướng ra hành lang (-Y)
-    bpy.context.view_layer.objects.active = obj
-    obj.select_set(True)
-    bpy.ops.object.convert(target="MESH")
-    obj = bpy.context.view_layer.objects.active
-    obj.data.materials.append(materials.get("palette"))
-    color = obj.data.color_attributes.new("Color", "BYTE_COLOR", "CORNER")
-    for c in color.data:
-        c.color_srgb = (0.96, 0.96, 0.93, 1)
-    obj.select_set(False)
-    obj["room_name"] = text
-    return obj
-
-
-def door_leaf(key, center_x, wall_y, width, height, collection):
-    """Cánh kính mở sẵn 85° vào phòng: lối vào thông, cánh có bản lề và tay nắm."""
-    hinge = mk.empty(f"ENV_cua_{key}", (center_x - width / 2, wall_y, 0), collection, yaw_deg=85)
-    hinge["hinge"] = True
-    b = MeshBuilder()
-    b.box((width / 2, 0, height / 2), (width - 0.04, 0.035, height), "glass_meeting", mat="glass")
-    for x in (0.025, width - 0.025):
-        b.box((x, 0, height / 2), (0.045, 0.07, height), "black")
-    b.box((width / 2, 0, height - 0.025), (width, 0.07, 0.05), "black")
-    b.box((width / 2, 0, 1.02), (width, 0.055, 0.24), "sign_white")
-    for y in (-0.065, 0.065):
-        b.box((width - 0.16, y, 1.16), (0.025, 0.025, 0.45), "concrete_grey", mat="gloss")
-    leaf = b.to_object(f"ENV_canh_{key}", collection, bevel=0)
-    leaf.parent = hinge
-    return hinge
 
 
 def shell(cols, cfg, height, floor_color):
@@ -161,37 +117,7 @@ def shell(cols, cfg, height, floor_color):
 
 
 def rooms(cols, cfg, height):
-    out = {}
-    for item in cfg["meeting_rooms"]:
-        key, label = item["id"], item["name"]
-        x0, x1, y0, y1 = item["bounds"]
-        cx = (x0 + x1) / 2
-        width = cfg["door_width_m"]
-        b = MeshBuilder()
-        it.floor_tiles(b, x0, y0, x1, y1, 0, ["office_tile_md", "office_tile_lt"], cell=1.2, mat="gloss")
-        it.meeting_room(b, x0, y0, x1, y1, ("S", cx - width / 2, cx + width / 2), h=height)
-        for a, z in ((x0, cx - width / 2), (cx + width / 2, x1)):
-            kit.seg_box(b, (a, y0 - 0.01), (z, y0 - 0.01), 0.1, 0.92, 1.2, "sign_white")
-        b.box((cx + 1.9, y0 - 0.075, 1.98), (1.35, 0.06, 0.38), "black")
-        # Khung cửa riêng nhìn thấy rõ ở lối vào từng phòng.
-        for x in (cx - width / 2, cx + width / 2):
-            b.box((x, y0, 1.3), (0.07, 0.12, 2.6), "black")
-        b.box((cx, y0, 2.6), (width + 0.07, 0.12, 0.07), "black")
-        for x in (cx - 1.2, cx + 1.2):
-            b.box((x, (y0 + y1) / 2, height - 0.025), (0.6, 0.6, 0.03), "lamp_white", mat="light")
-        mesh = b.to_object(f"{key}_mesh", cols["INT"], bevel=0)
-        root = mk.interactive(key, label, (cx, (y0 + y1) / 2, 0), cols["INT"])
-        mk.parent(mesh, root)
-        root["room_number"] = cfg["meeting_rooms"].index(item) + 1
-        door_leaf(key, cx, y0, width - 0.08, 2.5, cols["ENV"])
-        nameplate(f"ENV_bien_{key}", label, cx + 1.9, y0 - 0.112, cols["ENV"])
-        C = cols["COLLISION"]
-        mk.collider(f"{key}_san", (cx, (y0 + y1) / 2, -0.2), (x1 - x0, y1 - y0, 0.4), C)
-        mk.collider(f"{key}_bac", (cx, y1, height / 2), (x1 - x0, 0.2, height), C)
-        # Cánh mở 85° nằm bên trái ngưỡng, không chặn khoảng mở 1.8 m.
-        mk.collider(f"{key}_canh", (cx - width / 2 + 0.08, y0 + 0.85, 1.25), (width - 0.08, 0.08, 2.5), C, yaw_deg=85)
-        out[key] = (x0, x1, y0, y1)
-    return out
+    return meeting_rooms.build_rooms(cols, cfg, height)
 
 
 def desks(cols, cfg, width):

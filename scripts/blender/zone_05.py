@@ -299,14 +299,7 @@ def build_colliders(col, rooms):
     C("ban_tulip", (-4.2, -3.0, 0.4), (2.0, 2.0, 0.8), col)
     for x, y in ((-1.0, 5.2), (-7.2, 5.2)):   # 2 chậu cọ khu nghỉ (build_break_area) — trước đây đi xuyên được
         C(f"chau_cay_{x:+.0f}_{y:+.0f}", (x, y, 0.6), (0.8, 0.8, 1.2), col)
-    for key, (x0, x1, y0, y1) in rooms.items():
-        cx = (x0 + x1) / 2
-        d0, d1 = cx - ROOM_DOOR / 2, cx + ROOM_DOOR / 2
-        C(f"{key}_nam_trai", ((x0 + d0) / 2, y0, H / 2), (d0 - x0, 0.2, H), col)
-        C(f"{key}_nam_phai", ((d1 + x1) / 2, y0, H / 2), (x1 - d1, 0.2, H), col)
-        C(f"{key}_tay", (x0, (y0 + y1) / 2, H / 2), (0.2, y1 - y0, H), col)
-        C(f"{key}_dong", (x1, (y0 + y1) / 2, H / 2), (0.2, y1 - y0, H), col)
-        C(f"{key}_ban", (cx, (y0 + y1) / 2, 0.4), (x1 - x0 - 2.2, 1.3, 0.8), col)
+    # Meeting-room collision is exported alongside its new interior / door geometry.
     for cy in CLUSTERS_Y:
         for cx in CLUSTERS_X:
             C(f"cum_ban_{cx:+.0f}_{cy:+.0f}", (cx, cy, 0.55), (4 * DESK_W, 1.5, 1.1), col)

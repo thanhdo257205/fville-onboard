@@ -6,8 +6,8 @@
   "door_width_m": 1.8,
   "meeting_rooms": [
     { "id": "phong_hop_mentor", "name": "Phòng họp 1", "bounds": [-40, -34, 1.5, 7.5] },
-    { "id": "phong_hop_manager", "name": "Phòng họp 2", "bounds": [-46, -40, 1.5, 7.5] },
-    { "id": "phong_hop_3", "name": "Phòng họp 3", "bounds": [-52, -46, 1.5, 7.5] }
+    { "id": "phong_hop_manager", "name": "Trạch Xá", "bounds": [-46, -40, 1.5, 7.5] },
+    { "id": "phong_hop_3", "name": "Ước Lễ", "bounds": [-52, -46, 1.5, 7.5] }
   ],
   "secondary_clusters": [[-57, -4.5], [-65, -4.5]],
   "reference_roles": {
