@@ -919,8 +919,8 @@
         "vi": "Lộ trình học"
       },
       "line": {
-        "en": "Put the three courses on your first-week calendar, basics first: drag a card onto the calendar, or click it / press 1–3 to fill the next free day.",
-        "vi": "Xếp ba khóa học vào lịch tuần đầu, khóa cơ bản trước: kéo thả thẻ vào lịch, hoặc bấm vào thẻ / nhấn 1–3 để điền vào ngày trống tiếp theo."
+        "en": "Plan your first week your way: put the three courses on the calendar in any order. The small line on each card is just a suggestion. Drag a card onto a day, or click it / press 1–3 to fill the next free day; click a day to change it.",
+        "vi": "Tự lên lịch tuần đầu theo cách của bạn: xếp ba khóa học vào lịch theo thứ tự nào cũng được, dòng chữ nhỏ trên thẻ chỉ là gợi ý. Kéo thả thẻ vào một ngày, hoặc bấm vào thẻ / nhấn 1–3 để điền vào ngày trống tiếp theo; bấm vào ngày đã xếp để đổi."
       },
       "days": [
         {
@@ -944,8 +944,8 @@
               "vi": "Git & Code Review cơ bản"
             },
             "tag": {
-              "en": "Start here",
-              "vi": "Bắt đầu từ đây"
+              "en": "Suggested first",
+              "vi": "Gợi ý: học trước"
             }
           },
           {
@@ -954,8 +954,8 @@
               "vi": "Clean Code trong thực tế"
             },
             "tag": {
-              "en": "After: Git & Code Review",
-              "vi": "Sau: Git & Code Review"
+              "en": "Suggested after Git & Code Review",
+              "vi": "Gợi ý: sau Git & Code Review"
             }
           },
           {
@@ -964,8 +964,8 @@
               "vi": "Nhập môn Unit Testing"
             },
             "tag": {
-              "en": "After: Clean Code",
-              "vi": "Sau: Clean Code"
+              "en": "Suggested after Clean Code",
+              "vi": "Gợi ý: sau Clean Code"
             }
           }
         ],
@@ -976,8 +976,8 @@
               "vi": "Kiểm thử phần mềm cơ bản"
             },
             "tag": {
-              "en": "Start here",
-              "vi": "Bắt đầu từ đây"
+              "en": "Suggested first",
+              "vi": "Gợi ý: học trước"
             }
           },
           {
@@ -986,8 +986,8 @@
               "vi": "Viết test case tốt"
             },
             "tag": {
-              "en": "After: Testing Fundamentals",
-              "vi": "Sau: Kiểm thử phần mềm"
+              "en": "Suggested after Testing Fundamentals",
+              "vi": "Gợi ý: sau Kiểm thử phần mềm"
             }
           },
           {
@@ -996,8 +996,8 @@
               "vi": "Nhập môn kiểm thử tự động"
             },
             "tag": {
-              "en": "After: Good Test Cases",
-              "vi": "Sau: Viết test case"
+              "en": "Suggested after Good Test Cases",
+              "vi": "Gợi ý: sau Viết test case"
             }
           }
         ],
@@ -1008,8 +1008,8 @@
               "vi": "Phân tích nghiệp vụ cơ bản"
             },
             "tag": {
-              "en": "Start here",
-              "vi": "Bắt đầu từ đây"
+              "en": "Suggested first",
+              "vi": "Gợi ý: học trước"
             }
           },
           {
@@ -1018,8 +1018,8 @@
               "vi": "Viết user story"
             },
             "tag": {
-              "en": "After: BA Basics",
-              "vi": "Sau: Phân tích nghiệp vụ"
+              "en": "Suggested after BA Basics",
+              "vi": "Gợi ý: sau Phân tích nghiệp vụ"
             }
           },
           {
@@ -1028,8 +1028,8 @@
               "vi": "Tổ chức workshop lấy yêu cầu"
             },
             "tag": {
-              "en": "After: User Stories",
-              "vi": "Sau: User story"
+              "en": "Suggested after User Stories",
+              "vi": "Gợi ý: sau User story"
             }
           }
         ],
@@ -1040,8 +1040,8 @@
               "vi": "Design Thinking cơ bản"
             },
             "tag": {
-              "en": "Start here",
-              "vi": "Bắt đầu từ đây"
+              "en": "Suggested first",
+              "vi": "Gợi ý: học trước"
             }
           },
           {
@@ -1050,8 +1050,8 @@
               "vi": "UI pattern & khả năng tiếp cận"
             },
             "tag": {
-              "en": "After: Design Thinking",
-              "vi": "Sau: Design Thinking"
+              "en": "Suggested after Design Thinking",
+              "vi": "Gợi ý: sau Design Thinking"
             }
           },
           {
@@ -1060,34 +1060,20 @@
               "vi": "Làm prototype cho luồng đầu tiên"
             },
             "tag": {
-              "en": "After: UI Patterns",
-              "vi": "Sau: UI pattern"
+              "en": "Suggested after UI Patterns",
+              "vi": "Gợi ý: sau UI pattern"
             }
           }
         ]
       },
-      "hints": [
-        {
-          "en": "Hint: start with the basics — the card marked \"Start here\".",
-          "vi": "Gợi ý: bắt đầu từ khóa cơ bản — thẻ ghi \"Bắt đầu từ đây\"."
-        },
-        {
-          "en": "Hint: next comes the course that builds on {prev}.",
-          "vi": "Gợi ý: tiếp theo là khóa học sau {prev}."
-        },
-        {
-          "en": "Hint: the last course builds on {prev}.",
-          "vi": "Gợi ý: khóa cuối là khóa học sau {prev}."
-        }
-      ],
       "placed": {
-        "en": "{course} → {day} ✓",
-        "vi": "{course} → {day} ✓"
+        "en": "{course} → {day}",
+        "vi": "{course} → {day}"
       },
       "idle": {
         "place": {
-          "en": "Look at the small line on each card: it says which course it builds on. Put the next one on {day}.",
-          "vi": "Xem dòng chữ nhỏ trên mỗi thẻ: nó cho biết khóa đó học sau khóa nào. Đặt khóa tiếp theo vào {day}."
+          "en": "Which course do you want on {day}? Any order works — the small line on each card shows a suggested order if you'd like one.",
+          "vi": "Bạn muốn học khóa nào vào {day}? Thứ tự nào cũng được — nếu cần, dòng chữ nhỏ trên mỗi thẻ là thứ tự gợi ý."
         },
         "goal": {
           "en": "Pick a goal of your own (1–3), or press 4 for \"Not now\".",
@@ -1095,8 +1081,8 @@
         }
       },
       "goal_question": {
-        "en": "Nice plan! Want to add a learning goal of your own, beyond the suggested path?",
-        "vi": "Kế hoạch hay lắm! Bạn có muốn thêm một mục tiêu học tập của riêng mình, ngoài lộ trình gợi ý không?"
+        "en": "Your first week is planned! Want to add a learning goal of your own, beyond the suggested courses?",
+        "vi": "Xong lịch tuần đầu rồi! Bạn có muốn thêm một mục tiêu học tập của riêng mình, ngoài các khóa gợi ý không?"
       },
       "goals": [
         {

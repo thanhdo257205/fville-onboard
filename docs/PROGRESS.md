@@ -1727,6 +1727,21 @@ Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem tr
 - Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
   sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390. **Đã deploy** gh-pages 0125625 (từ main 7500094).
 
+### Lộ trình học: bỏ kiểu đúng / sai (13/10/2026, nhánh `fix/learning-path-free`)
+
+Người dùng: mini-game Lộ trình học (phòng FSA, zone 4) không nên theo kiểu đúng sai (trước: phải xếp "khóa cơ bản trước", xếp
+khác → báo sai, rung khung, đếm lỗi; xếp đúng → chữ xanh "✓").
+
+- `game/src/minigames/games.js learning_path`: xếp thứ tự nào cũng được, không `mistake` / `correct` khi xếp — chỉ ghi
+  "{khóa} → {ngày}" (màu chữ thường); kéo thả vào đúng ngày muốn (hoặc bấm / phím 1–3 → ngày trống đầu); bấm ngày đã xếp → lấy
+  thẻ ra để đổi; ngày đã xếp màu cam nhạt (không còn xanh "đúng"). Gợi ý khi đứng yên / sau thời gian dài vẫn làm sáng khóa theo
+  thứ tự gợi ý. Mục tiêu riêng (ô Đổi mới) giữ nguyên.
+- Chữ (en + vi): dòng hướng dẫn, thẻ "Start here" / "After: …" → "Suggested first" / "Suggested after …" ("Gợi ý: học trước" /
+  "Gợi ý: sau …"), câu nhắc khi đứng yên, câu hỏi mục tiêu ("Your first week is planned!"), lời Tú / người dẫn chuyện ở phòng
+  FSA; bỏ `hints` (gợi ý khi xếp sai) vì không còn dùng.
+- Smoke zone_04: mở trò, xếp ngược thứ tự gợi ý bằng phím → 0 lỗi, không "✓", bấm ngày → lấy thẻ ra, đủ 3 ngày → câu hỏi mục
+  tiêu, Esc đóng. Đo: test:data, smoke --zone 4 14/14, test:quick 65/65.
+
 ### Bộ lọc từ chat: thêm tiếng Việt (12/10/2026, nhánh `feat/chat-filter-vi`)
 
 Người dùng muốn bộ lọc nhắn tin lọc được cả từ tiếng Việt. Trước: 15 từ có dấu + ~20 viết tắt.
