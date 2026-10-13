@@ -5,7 +5,8 @@ import { readFileSync } from 'node:fs';
 import * as THREE from '../../game/node_modules/three/build/three.module.js';
 
 const cfg = JSON.parse(readFileSync(new URL('../../data/office.json', import.meta.url), 'utf8'));
-const doors = JSON.parse(readFileSync(new URL('../../data/scene_fixes.json', import.meta.url), 'utf8')).zone_05.room_doors;
+const fixes = JSON.parse(readFileSync(new URL('../../data/scene_fixes.json', import.meta.url), 'utf8')).zone_05;
+const doors = fixes.room_doors;
 const doorCols = new Set(doors.map(d => d.col_closed));
 const bytes = readFileSync(new URL('../../assets/glb/low/zone_05_office.glb', import.meta.url));
 const glb = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString('utf8'));
@@ -45,7 +46,7 @@ const supported = p => colliders.some(({ box }) => Math.abs(box.max.y) < 0.05 &&
 const clear = p => !colliders.some(({ box }) => box.max.y > 0.45 && box.min.y < 1.75 &&
   p.x > box.min.x - 0.3 && p.x < box.max.x + 0.3 && p.z > box.min.z - 0.3 && p.z < box.max.z + 0.3);
 // Centre route must have a floor and capsule clearance in both directions.
-for (let x = -1.5; x >= -68; x -= 0.25) {
+for (let x = -1.5; x >= cfg.secondary[0] + 2; x -= 0.25) {
   const p = new THREE.Vector3(x, 0, 0);
   assert.ok(supported(p), `missing floor on office route at ${x}`);
   assert.ok(clear(p), `blocked office route at ${x}`);
@@ -86,8 +87,18 @@ assert.equal(manager.chair_drop, false, 'executive chair must retain its measure
 assert.ok(nodes.has(manager.entry_area));
 const at = name => new THREE.Vector3().setFromMatrixPosition(world(nodes.get(name).i));
 const boss = at('NPC_manager'), mentor = at('NPC_mentor');
-assert.ok(boss.x > -40 && boss.x < -34 && boss.z < -8, 'Prajith must sit behind the centre table in room 1');
-assert.ok(mentor.x > -46 && mentor.x < -40, 'Ms. Nga must occupy room 2');
+const [rx0, rx1, ry0, ry1] = cfg.meeting_rooms[0].bounds;
+const [mx0, mx1] = cfg.meeting_rooms[1].bounds;
+assert.ok(boss.x > rx1 - 1.3 && boss.x < rx1 - .3 && -boss.z > ry0 && -boss.z < ry1, 'Prajith must sit beneath the east-wall clock / artwork');
+assert.ok(mentor.x > mx0 && mentor.x < mx1, 'Ms. Nga must occupy room 2');
+const desk = fixes.props.find(p => p.model === 'ceo_office'), pc = fixes.props.find(p => p.model === 'apple_desktop');
+assert.equal(desk.yaw_deg, -90, 'executive desk must be perpendicular to the conference table');
+assert.equal(pc.yaw_deg, 90, 'computer screen must face the seated boss');
+assert.equal(nodes.get('NPC_manager').n.extras.yaw_deg, 90);
+const executive = at('COL_executive_desk'), conference = at('COL_phong_hop_mentor_ban');
+assert.ok(Math.abs(executive.z - conference.z) < .01, 'both tabletop centres must share the conference-table axis');
+assert.ok(Math.abs(-executive.z - nodes.get('INT_phong_hop_mentor').n.extras.clock_wall_axis_y) < .01, 'desk must align with the clock / central artwork');
+assert.ok(executive.x > conference.x + 2, 'executive desk must occupy the head of the conference table');
 assert.ok(supported(new THREE.Vector3(...manager.arrival_exit)) && clear(new THREE.Vector3(...manager.arrival_exit)), 'boss needs a clear standing position');
 let extraTris = 0, extraBytes = 0;
 for (const id of ['ceo_office', 'apple_desktop']) {

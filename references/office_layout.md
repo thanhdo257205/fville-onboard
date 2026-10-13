@@ -25,9 +25,9 @@ Tọa độ Blender: Z lên, X/Y trên sàn. Trục +X đi từ phòng phụ v�
 | --- | --- | --- |
 | Lối vào / khu nghỉ | −8 … 0 | −6 … 6 |
 | Phòng chính | −34 … −8 | −14 … 8 |
-| Hành lang | −52 … −34 | −1,5 … 1,5 |
-| Ba phòng họp | −52 … −34 | 1,5 … 7,5 |
-| Phòng phụ | −70 … −52 | −8 … 8 |
+| Hành lang | −55 … −34 | −1,5 … 1,5 |
+| Ba phòng họp | −55 … −34 | 1,5 … 7,5 |
+| Phòng phụ | −73 … −55 | −8 … 8 |
 
 Phòng họp nằm phía +Y của hành lang: bên trái khi nhìn theo +X, bên phải khi nhìn theo −X.
 Tên **Phòng họp 1 / Trạch Xá / Ước Lễ**, từ gần phòng chính tới gần phòng phụ (yêu cầu 13/10/2026).
@@ -67,6 +67,8 @@ dùng chung mesh / material và gộp lượt vẽ khi tải zone. Cả hai phò
 
 ## Bàn Prajith trong phòng đầu tiên (13/10/2026)
 
-Phòng 1 mở rộng về phía bắc tới Y = 10,5 m, giữ bàn họp trắng ở giữa. Bộ CEO do người dùng cung cấp đặt tại (−37; 9,2; 0), phía sau bàn họp; máy tính xoay 180° nhìn về người ngồi. Ghế cao 0,447 m. Prajith ngồi gõ máy; khi người chơi bước qua cửa, đứng dậy và ra chỗ trống cạnh bàn. Ms. Nga chuyển sang Trạch Xá; thứ tự nhiệm vụ gặp Nga rồi Prajith giữ nguyên.
+Phòng 1 rộng 9 × 6 m (X −43 … −34; Y 1,5 … 7,5). Bàn CEO đặt dưới đồng hồ / ba bức tranh trên tường đông, ở đầu bàn họp, xoay −90° tạo bố cục chữ T. Tâm hai mặt bàn và đồng hồ / tranh giữa cùng trục Y = 4,8 m. Bộ CEO ở (−35,3; 4,69; 0), máy tính ở (−35,51; 4,885; 0,762), xoay 90° nhìn về người ngồi. Ghế cao 0,447 m. Prajith ngồi gõ máy, khi người chơi vào sẽ đứng rồi ra chỗ trống phía cạnh bàn (−35,3; 6,55; 0).
 
-Hai prop thêm 4.140 tam giác, khoảng 51 KB, giới hạn texture 512 px. GLB bối cảnh có 59.970 tam giác; tổng bối cảnh cộng hai prop là 64.110, chưa tính nhân vật và các prop cây dùng chung có sẵn.
+Trạch Xá, Ước Lễ và phòng phụ dịch 3 m về phía tây để dành chiều ngang cho phòng 1; hành lang dài thêm 3 m, các cửa / spawn / bàn phụ và va chạm cùng dịch theo cấu hình. Văn phòng chính / khu nghỉ giữ vị trí. Ms. Nga ở Trạch Xá; thứ tự nhiệm vụ gặp Nga rồi Prajith giữ nguyên.
+
+Hai prop thêm 4.140 tam giác, 51.108 byte, texture tối đa 512 px. GLB bối cảnh có 59.992 tam giác / 633.872 byte; nền cộng hai prop là 64.132 tam giác, chưa tính NPC và các prop cây có sẵn. Các khe của điều hòa trần chỉ giữ mặt dưới nhìn thấy để duy trì ngân sách 60.000 của GLB nền.

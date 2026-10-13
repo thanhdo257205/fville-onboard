@@ -1,7 +1,7 @@
 {
   "zone": "zone_05_office",
   "quality": "low",
-  "triangles_visible": 59970,
+  "triangles_visible": 59992,
   "triangles_collision": 888,
   "materials": [
     "M_anh_team_1",
@@ -76,10 +76,10 @@
       "COL_phu_nam",
       "COL_phu_san",
       "COL_phu_tay",
-      "COL_phu_tu_-59.5",
       "COL_phu_tu_-62.5",
       "COL_phu_tu_-65.5",
       "COL_phu_tu_-68.5",
+      "COL_phu_tu_-71.5",
       "COL_phu_vach_kinh",
       "COL_san",
       "COL_tu_chinh_0",

@@ -164,20 +164,24 @@ def build_rooms(cols, cfg, height):
         b.box((x0 + .146, cy + .3, 1.65), (.015, 1.78, .96), "screen", mat="gloss")
         b.box((x0 + .15, cy + .3, 2.24), (.04, .68, .065), "meeting_chrome")
         fan(b, x1 - .55, y1 - .56)
-        # Clock + abstract craft pictures, no video frame used as a texture.
-        b.torus((x1 - .1, cy, 2.2), .18, .016, "black", seg=12, seg2=3, rot=(0, 90, 0))
-        verts = [(x1 - .105, cy + .171 * math.cos(i * math.tau / 12), 2.2 + .171 * math.sin(i * math.tau / 12)) for i in range(12)]
+        # Align the first room's clock / artwork with the two table centres.
+        art_y = cy + .3 if room == cfg["meeting_rooms"][0] else cy
+        b.torus((x1 - .1, art_y, 2.2), .18, .016, "black", seg=12, seg2=3, rot=(0, 90, 0))
+        verts = [(x1 - .105, art_y + .171 * math.cos(i * math.tau / 12), 2.2 + .171 * math.sin(i * math.tau / 12)) for i in range(12)]
         b.raw(verts, [tuple(reversed(range(12)))], "sign_white")
-        b.tube((x1 - .11, cy, 2.2), (x1 - .11, cy + .06, 2.29), .008, "black", segments=4)
-        b.tube((x1 - .11, cy, 2.2), (x1 - .11, cy - .12, 2.2), .006, "black", segments=4)
+        b.tube((x1 - .11, art_y, 2.2), (x1 - .11, art_y + .06, 2.29), .008, "black", segments=4)
+        b.tube((x1 - .11, art_y, 2.2), (x1 - .11, art_y - .12, 2.2), .006, "black", segments=4)
         for i, color in enumerate(("meeting_oak", "meeting_green", "meeting_beige")):
-            yy = cy + (i - 1) * .52
+            yy = art_y + (i - 1) * .52
             b.box((x1 - .075, yy, 1.71), (.04, .48, .36), "black")
             b.quad([(x1 - .102, yy - .215, 1.555), (x1 - .102, yy - .215, 1.865), (x1 - .102, yy + .215, 1.865), (x1 - .102, yy + .215, 1.555)], color)
             b.quad([(x1 - .115, yy - .085, 1.64), (x1 - .115, yy - .085, 1.78), (x1 - .115, yy + .085, 1.78), (x1 - .115, yy + .085, 1.64)], "reception_white")
         b.box((cx, cy, height - .035), (.68, .68, .07), "sign_white")
         for i in range(5):
-            b.box((cx, cy + (i - 2) * .08, height - .076), (.46, .027, .012), "meeting_grey")
+            # Only the underside of each thin grille is seen from inside.
+            yy, z = cy + (i - 2) * .08, height - .082
+            b.quad([(cx - .23, yy - .0135, z), (cx - .23, yy + .0135, z),
+                    (cx + .23, yy + .0135, z), (cx + .23, yy - .0135, z)], "meeting_grey")
         for xx in (cx - 1.8, cx + 1.8):
             for yy in (cy - 1.5, cy + 1.5):
                 verts = [(xx + .07 * math.cos(i * math.tau / 8), yy + .07 * math.sin(i * math.tau / 8), height - .025) for i in range(8)]
@@ -186,6 +190,7 @@ def build_rooms(cols, cfg, height):
         root = mk.interactive(key, label, (cx, cy, 0), cols["INT"])
         mk.parent(mesh, root)
         root["room_number"] = cfg["meeting_rooms"].index(room) + 1
+        root["clock_wall_axis_y"] = art_y
         door(cols, room, width)
         C = cols["COLLISION"]
         for name, pos, size in (
