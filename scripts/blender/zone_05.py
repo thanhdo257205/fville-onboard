@@ -60,6 +60,10 @@ INTERN = (CLUSTERS_X[0] + 1.5 * DESK_W, CLUSTERS_Y[0])  # bàn đầu dãy gần
 # Toạ độ cục bộ của bàn (desk_unit: vách ngăn y = 0, người ngồi phía -Y): tâm đế màn hình thẳng ghế (x 0.05), lùi sát
 # vách ngăn; mặt bàn z 0.75. Màn hình riêng monitor_screen (màn đăng nhập "My FPT", game đổi texture được).
 PC_LOCAL = (0.05, -0.16, 0.75)
+# bàn phím + chuột đẩy về phía người ngồi (m) để tay của animation gõ phím (sit_type) chạm phím — đo trong game 13/10/2026:
+# tay ở cách mép bàn ~4 cm, bàn phím gốc cách tay 15–25 cm
+PC_KB_FORWARD = 0.15
+NAMEPLATE_LOCAL = (0.5, -0.037, 0.95)    # tâm bảng tên, toạ độ bàn (vách ngăn mặt trước y −0,03; màn hình x −0,23…0,33; giấy nhớ bên trái)
 
 
 def office_floor_color(i, j):
@@ -236,7 +240,9 @@ def build_desks(cols, rng):
     it.desk_unit(b, plant=True, gear=False)
     b.box((-0.5, -0.45, 0.85), (0.3, 0.22, 0.18), "fpt_orange")                     # hộp quà chào mừng
     b.box((-0.5, -0.45, 0.85), (0.31, 0.04, 0.19), "fpt_green")
-    b.box((0.0, -0.66, 0.8), (0.3, 0.04, 0.1), "sign_white", rot=(-30, 0, 0))     # bảng tên (để trống)
+    # bảng tên (để trống — game in tên người chơi lên: interactables.json → bang_ten): dán trên vách ngăn phía sau, bên phải
+    # màn hình (13/10/2026 — trước đây đặt nghiêng ở mép trước bàn, chắn trước bàn phím)
+    b.box(NAMEPLATE_LOCAL, (0.3, 0.012, 0.1), "sign_white")
     desk = b.to_object("ban_lam_viec_mesh", cols["INT"], location=(x, y, 0))
     desk.rotation_euler = (0, 0, math.radians(yaw))
     root = mk.interactive("ban_lam_viec", "Bàn làm việc của bạn", (x, y, 0), cols["INT"])
@@ -245,7 +251,7 @@ def build_desks(cols, rng):
     lx, ly, lz = PC_LOCAL
     pc, _, _ = desktop_computer.build(cols["INT"], "desktop_computer",
                                       (x + math.cos(r) * lx - math.sin(r) * ly, y + math.sin(r) * lx + math.cos(r) * ly, lz),
-                                      yaw_deg=yaw)
+                                      yaw_deg=yaw, kb_forward=PC_KB_FORWARD)
     mk.parent(pc, root)
     return intern_pos
 

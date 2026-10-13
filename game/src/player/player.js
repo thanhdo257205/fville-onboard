@@ -48,9 +48,10 @@ export class Player {
   capsule() { const p = this.body.position; return { x: p.x, z: p.z, y: p.y, height: this.body.height, radius: this.body.radius }; }
 
   // ---------- ngồi ghế ----------
-  // chair: chỗ ghế (thế giới, y = sàn); yaw: hướng nhìn (root.rotation.y, model nhìn +Z); chairHeight: mặt ghế thật (m).
+  // chair: chỗ ghế (thế giới, y = sàn); yaw: hướng nhìn (root.rotation.y, model nhìn +Z); chairHeight: mặt ghế thật (m);
+  // pose: clip khi đã ngồi — "sit_type" (gõ phím, bàn có máy tính) | "sit_idle" (ngồi yên, tay trên đùi; model thiếu → sit_type).
   // → Promise khi đã ngồi xong
-  async sit(chair, yaw, chairHeight = null) {
+  async sit(chair, yaw, chairHeight = null, pose = "sit_type") {
     if (this.seated) return;
     const ch = this.character, seat = ch.model.seat || {};
     const from = this.body.position.clone();          // chỗ đứng trước khi ngồi (đi tới được) → đứng dậy thì lùi về phía này
@@ -70,7 +71,7 @@ export class Player {
     this.sync();
     await waitMax(ch.playOnce("sit_down"));
     if (this.seated !== s) return;                     // đã đứng dậy / đổi zone trong lúc ngồi xuống
-    ch.play("sit_type", { fade: 0.2 });
+    ch.play(ch.actions[ch.model.animations?.[pose] ?? pose] ? pose : "sit_type", { fade: 0.2 });
     s.state = "seated";
   }
   async standUp() {
