@@ -3,6 +3,36 @@
   "default_radius": 2.0,
   "items": [
     {
+      "zone": "zone_05",
+      "node": "INT_cua_phong_hop_mentor",
+      "radius": 1.8,
+      "action": "door:phong_hop_mentor",
+      "prompt": {
+        "en": "Open / close Phòng họp 1",
+        "vi": "Đóng / mở cửa Phòng họp 1"
+      }
+    },
+    {
+      "zone": "zone_05",
+      "node": "INT_cua_phong_hop_manager",
+      "radius": 1.8,
+      "action": "door:phong_hop_manager",
+      "prompt": {
+        "en": "Open / close Trạch Xá",
+        "vi": "Đóng / mở cửa Trạch Xá"
+      }
+    },
+    {
+      "zone": "zone_05",
+      "node": "INT_cua_phong_hop_3",
+      "radius": 1.8,
+      "action": "door:phong_hop_3",
+      "prompt": {
+        "en": "Open / close Ước Lễ",
+        "vi": "Đóng / mở cửa Ước Lễ"
+      }
+    },
+    {
       "zone": "zone_00",
       "node": "INT_bien_xe_1",
       "radius": 3.0,

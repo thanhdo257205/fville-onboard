@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs';
 import * as THREE from '../../game/node_modules/three/build/three.module.js';
 
 const cfg = JSON.parse(readFileSync(new URL('../../data/office.json', import.meta.url), 'utf8'));
+const doors = JSON.parse(readFileSync(new URL('../../data/scene_fixes.json', import.meta.url), 'utf8')).zone_05.room_doors;
+const doorCols = new Set(doors.map(d => d.col_closed));
 const bytes = readFileSync(new URL('../../assets/glb/low/zone_05_office.glb', import.meta.url));
 const glb = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString('utf8'));
 const report = JSON.parse(readFileSync(new URL('../../assets/glb/low/zone_05_office.report.json', import.meta.url), 'utf8'));
@@ -31,7 +33,7 @@ function world(i) {
 const nodes = new Map(glb.nodes.map((n, i) => [n.name, { n, i }]));
 const colliders = [];
 glb.nodes.forEach((n, i) => {
-  if (!n.name?.startsWith('COL_') || n.mesh == null) return;
+  if (!n.name?.startsWith('COL_') || n.mesh == null || doorCols.has(n.name)) return;
   for (const p of glb.meshes[n.mesh].primitives) {
     const a = glb.accessors[p.attributes.POSITION];
     const box = new THREE.Box3(new THREE.Vector3().fromArray(a.min), new THREE.Vector3().fromArray(a.max)).applyMatrix4(world(i));
@@ -57,11 +59,19 @@ for (const room of cfg.meeting_rooms) {
   assert.ok(Math.abs(p.x - cx) < 0.01 && Math.abs(p.z + (y0 + y1) / 2) < 0.01);
   assert.equal(node.n.extras?.label, room.name);
   assert.ok(nodes.has(`ENV_cua_${room.id}`) && nodes.has(`ENV_bien_${room.id}`), 'room needs a door and nameplate');
+  const door = doors.find(d => d.id === room.id);
+  assert.ok(door && door.name === room.name && door.seconds > 0 && door.degrees === 85);
+  assert.ok(nodes.get(door.leaf).n.extras?.hinge && nodes.get(door.leaf).n.extras?.dynamic);
+  assert.ok(nodes.has(door.col_closed) && nodes.has(door.col_open) && nodes.has(`INT_cua_${room.id}`));
+  assert.equal(nodes.get(`ENV_bien_${room.id}`).n.extras?.room_name, room.name);
+  assert.equal(parents.get(nodes.get(`ENV_bien_${room.id}`).i), nodes.get(door.leaf).i, 'sign must turn with door');
   for (let y = 0; y <= 3.1; y += 0.1) {
     const entry = new THREE.Vector3(cx, 0, -y);
     assert.ok(supported(entry) && clear(entry), `room ${room.id} entrance blocked at ${y}`);
   }
 }
+assert.equal(cfg.meeting_rooms[1].name, 'Trạch Xá');
+assert.equal(cfg.meeting_rooms[2].name, 'Ước Lễ');
 for (const name of ['NPC_mentor', 'NPC_manager', 'NPC_dong_nghiep_1', 'NPC_dong_nghiep_2', 'NPC_dong_nghiep_3',
   'SPAWN_ban_lam_viec', 'SPAWN_phong_phu', 'SPAWN_hanh_lang_phong_hop', 'pool_table', 'INT_ban_lam_viec']) {
   assert.ok(nodes.has(name), `missing gameplay node ${name}`);

@@ -238,7 +238,7 @@ export class Interaction {
       if (d < bestD && !this.hiddenPerson(e, playerPos)) { bestD = d; best = e; }
     }
     this.current = best;
-    return best ? tx(best.item.prompt) : null;
+    return best ? best.item.action.startsWith("door:") ? this.game.roomDoors?.prompt(best.item.action.split(":")[1]) : tx(best.item.prompt) : null;
   }
 
   // nói chuyện với người (NPC_ / Tú) mà bị COL_ chắn giữa hai người (vd đứng bên kia thân xe) → không hiện lời nhắc.

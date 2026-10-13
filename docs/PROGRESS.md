@@ -7,6 +7,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Thiết kế lại ba phòng họp và cửa tương tác (13/10/2026, nhánh `codex/meeting-room-redesign`):** nội thất theo video
+  phòng họp mới: bàn trắng, ghế đen khung kim loại, sàn be/xám, rèm cuốn, tường xanh nhạt / TV, đồng hồ, tranh và quạt.
+  Cửa theo ảnh: kính khung đen, tay nắm hai phía, dải kính mờ, bảng Available và biển hạt lúa trên cánh.
+  Tên phòng 2 Trạch Xá, phòng 3 Ước Lễ; phòng 1 giữ tên tạm. E / nút tương tác mở đóng, va chạm theo trạng thái,
+  tránh đóng xuyên nhân vật; trạng thái riêng mỗi người và đặt lại khi vào zone. Zone 5 giữ dưới 60.000 tam giác,
+  GLB Draco / WebP khoảng 617 KiB. Kiểm thử cửa và đường đi trên GitHub, không mở Chrome local.
+
 - **Thẻ nhân viên cầm tay — lễ tân đưa thẻ, người chơi quẹt thẻ (13/10/2026, nhánh `feat/id-card`):** mô hình thẻ người dùng gửi
   → `assets/props/id_card/id_card.glb` (bỏ dây đeo + ảnh mặt thẻ mẫu của người khác; 138 tam giác, 10 KB); mặt thẻ vẽ bằng code
   (ảnh thẻ người chơi chụp ở quầy, tên, vị trí · Intern, FV-2026). Animation Mixamo "Reaching Out" (tay vươn quá vai ở cuối) cắt

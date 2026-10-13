@@ -114,6 +114,11 @@ PALETTE = {
     "stool_blue":     "#3A78C9",
     "pavement":       "#B8A99A",  # gạch vỉa hè phố
     "pavement_2":     "#A99A8B",
+    "meeting_green":  "#CDD58D",
+    "meeting_beige":  "#C9C2AE",
+    "meeting_grey":   "#8F8B80",
+    "meeting_chrome": "#BBC2C4",
+    "meeting_oak":    "#A57943",
 }
 
 
