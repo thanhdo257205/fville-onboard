@@ -5,7 +5,7 @@
   "secondary": [-73, -55, -8, 8],
   "door_width_m": 1.8,
   "meeting_rooms": [
-    { "id": "phong_hop_mentor", "name": "Phòng họp 1", "bounds": [-43, -34, 1.5, 9.0] },
+    { "id": "phong_hop_mentor", "name": "Phòng họp 1", "bounds": [-43, -34, 1.5, 9.0], "table_dx": -0.9, "_table_ghi_chu": "13/10/2026: bàn họp dời 0,9 m về phía TV — lối đi ~1 m giữa bàn họp và bàn làm việc của anh Prajith (cảnh chào, game/greet.js)" },
     { "id": "phong_hop_manager", "name": "Trạch Xá", "bounds": [-49, -43, 1.5, 9.0] },
     { "id": "phong_hop_3", "name": "Ước Lễ", "bounds": [-55, -49, 1.5, 9.0] }
   ],
