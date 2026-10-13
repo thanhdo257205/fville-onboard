@@ -890,6 +890,25 @@ async function runLook(browser, base, look) {
         await check(!fg.bad.length && fg.feet > 0.06 && fg.camY > fg.feet + 0.12,
           `${zone}: sân gạch — chân đứng trên mặt gạch (${fg.feet} m), camera hạ thấp nhất vẫn trên mặt gạch (${fg.camY} m), không còn ô sàn lún`, JSON.stringify(fg));
       }
+      // video trên TV (scene_fixes → screens, world/screens.js): đứng trước TV đầu → video tải (định dạng trình duyệt phát được),
+      // hiện tấm màn, đang phát và thời gian chạy; mọi TV của zone cùng một <video>; về chỗ cũ xa mọi TV → dừng giải mã
+      if (SCENE_FIXES[zone]?.screens?.length && look === looks[0]) {
+        const back = await ev(() => __game.player.pos);
+        await ev(() => {
+          const g = __game._game, m = g.zone.screens[0].meshes[0], V = m.position.constructor;
+          const n = new V(Math.sin(m.rotation.y), 0, Math.cos(m.rotation.y));
+          g.player.body.teleport(m.position.clone().addScaledVector(n, 2.5).setY(m.position.y - 1.6)); g.player.sync();
+          __game.simulate(0.3, undefined, { render: false });
+        });
+        const ready = await wait(() => { const e = __game.screens[0]; return e?.ready && e.playing && e.time > 0.5; }, 15000);
+        const near = await ev(() => __game.screens);
+        await ev((p) => { const P = __game._game.player; P.body.teleport(new P.body.position.constructor(p[0], p[1] + 0.05, p[2])); P.sync(); __game.simulate(0.3, undefined, { render: false }); }, back);
+        const farOk = await ev(() => { const g = __game._game, eye = g.camera.position; return g.zone.screens.every((e) => e.meshes.every((m) => m.position.distanceTo(eye) > e.play_m)); });
+        const paused = farOk ? await wait(() => __game.screens.every((e) => !e.playing), 3000) : null;
+        const want = SCENE_FIXES[zone].screens.length, shown = near.flatMap((e) => e.screens).filter((x) => x.visible).length;
+        await check(ready && near.length === 1 && shown === want && /\.(webm|mp4)$/.test(near[0].src) && paused !== false,
+          `${zone}: video trên ${want} TV — ${near[0]?.src.split("/").pop()} ${near[0]?.size.join("×")}, đứng trước TV → phát (${near[0]?.time} s)${paused == null ? "" : ", đi xa → dừng"}`, JSON.stringify({ ready, near, farOk, paused }));
+      }
       // ngồi tự do (data/seats.json, game/src/game/interaction.js + Game.sitFree): mỗi nhóm ghế của zone 1 ghế — đứng
       // cạnh ghế → lời nhắc "Sit down", E → ngồi đúng hướng ghế, nâng lên mặt ghế, nhắc "Stand up"; đứng dậy bằng bước đi / E lần
       // nữa (xen kẽ), chỗ đứng không lồng COL_, đi tiếp được. Xong về chỗ cũ

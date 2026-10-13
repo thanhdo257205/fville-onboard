@@ -7,6 +7,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Video trên TV (13/10/2026, nhánh `feat/tv-video`):** video giới thiệu FPT Software Academy (người dùng gửi) cắt còn ~65 s
+  (7 đoạn theo chỗ chuyển cảnh), 480 × 270, bỏ tiếng → `assets/video/fpt_academy.webm` (VP9) + `.mp4` (H.264), mỗi file ~2,3 MB
+  (trình duyệt chỉ tải 1 file, chỉ khi vào zone có TV). Phát trên 2 TV đứng sảnh zone 3 (mặt màn hình trong GLB quay vào vách gỗ
+  → video ở mặt lưng quay ra sảnh) và TV 3 phòng họp zone 5. `game/src/world/screens.js`: tấm phẳng sát trước mặt TV, 1 `<video>`
+  mỗi zone, tắt tiếng + lặp, ẩn tới khi có khung đầu, camera xa mọi TV quá 18 m / tab ẩn → dừng; dọn cùng zone. `test:data`:
+  file có thật, ≤ 4 MB, đủ 2 định dạng, có nguồn, TV hợp lệ; `privacy_scan.py` chỉ cho `.mp4` đã khai. Smoke zone 3 + 5: video tải,
+  hiện trên mọi TV, đang phát; đi xa → dừng. Dev server Vite trả Range cho video.
 - **Mạng: không tự ngắt khi đi liên tục (13/10/2026, nhánh `fix/net-heartbeat`):** cứ khoảng 50 giây "N online" và ô chat
   biến mất vài giây. Nguyên nhân: máy khách chỉ ping khi 20 s chưa *gửi* gì, nhưng đang đi thì vị trí gửi đều; máy chủ không trả
   vị trí của mình về cho mình → một mình trong zone / người khác đứng yên thì không *nhận* gì → quá `dead_after_s` (50 s) máy khách

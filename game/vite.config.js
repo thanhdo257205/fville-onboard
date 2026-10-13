@@ -11,8 +11,8 @@ import { TIERS } from "./src/core/quality.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
-const SHARED = ["/assets/glb/", "/assets/characters/", "/assets/accessories/", "/assets/sfx/", "/assets/music/", "/assets/props/", "/data/"];
-const TYPES = { ".glb": "model/gltf-binary", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".mp3": "audio/mpeg" };
+const SHARED = ["/assets/glb/", "/assets/characters/", "/assets/accessories/", "/assets/sfx/", "/assets/music/", "/assets/props/", "/assets/video/", "/data/"];
+const TYPES = { ".glb": "model/gltf-binary", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".mp3": "audio/mpeg", ".webm": "video/webm", ".mp4": "video/mp4" };
 
 // model chờ người thật đồng ý (data/characters.json → models.<id>.consent_pending): không bao giờ vào bản build
 function pendingModels() {      // JSON lỗi → build dừng (không lặng lẽ chép hết)
@@ -43,6 +43,8 @@ function wanted(rel, pending = new Set()) {
   if (rel.startsWith("assets/props/")) { const p = rel.split("/"); return p.length === 4 && p[3] === `${p[2]}.glb`; }
   // nhạc nền: chỉ assets/music/<id>.mp3 (không licenses/)
   if (rel.startsWith("assets/music/")) return rel.split("/").length === 3 && rel.endsWith(".mp3");
+  // video TV (scene_fixes → videos): chỉ assets/video/<id>.webm / .mp4
+  if (rel.startsWith("assets/video/")) return rel.split("/").length === 3 && /\.(webm|mp4)$/.test(rel);
   if (rel.startsWith("data/")) return rel.endsWith(".json");
   return false;
 }
@@ -87,13 +89,25 @@ function sharedAssets() {
         if (!file.startsWith(ROOT + sep) || !wanted(rel) || !existsSync(file) || !statSync(file).isFile()) return next();
         res.setHeader("Content-Type", TYPES[extname(file)] || "application/octet-stream");
         res.setHeader("Cache-Control", "no-cache");
+        // video: trình duyệt đọc từng đoạn (Range) — phát lặp / tua không tải lại cả file
+        const size = statSync(file).size, m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || "");
+        res.setHeader("Accept-Ranges", "bytes");
+        if (m) {
+          const start = m[1] ? +m[1] : Math.max(0, size - +m[2]), end = m[1] && m[2] ? Math.min(+m[2], size - 1) : size - 1;
+          if (start >= size || start > end) { res.statusCode = 416; res.setHeader("Content-Range", `bytes */${size}`); return res.end(); }
+          res.statusCode = 206;
+          res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
+          res.setHeader("Content-Length", end - start + 1);
+          return createReadStream(file, { start, end }).pipe(res);
+        }
+        res.setHeader("Content-Length", size);
         createReadStream(file).pipe(res);
       });
     },
     closeBundle() {
       let n = 0;
       const pending = pendingModels();
-      for (const top of ["assets/glb", "assets/characters", "assets/accessories", "assets/sfx", "assets/music", "assets/props", "data"]) {
+      for (const top of ["assets/glb", "assets/characters", "assets/accessories", "assets/sfx", "assets/music", "assets/props", "assets/video", "data"]) {
         const dir = join(ROOT, top);
         if (!existsSync(dir)) continue;
         for (const f of walk(dir)) {
