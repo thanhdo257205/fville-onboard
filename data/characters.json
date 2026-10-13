@@ -780,7 +780,8 @@
         "sit_down": "sit_down",
         "sit_type": "sit_type",
         "cheer": "cheer",
-        "stand_up": "stand_up"
+        "stand_up": "stand_up",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -799,7 +800,8 @@
         "point",
         "press",
         "sit_down",
-        "stand_up"
+        "stand_up",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -816,7 +818,8 @@
         "sit_down": 2.233,
         "sit_type": 16.467,
         "cheer": 2.0,
-        "stand_up": 2.233
+        "stand_up": 2.233,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1150,7 +1153,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1171,7 +1176,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1190,7 +1197,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1261,7 +1270,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1282,7 +1293,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1301,7 +1314,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1371,7 +1386,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1392,7 +1409,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1411,7 +1430,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1480,7 +1501,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1501,7 +1524,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1520,7 +1545,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
