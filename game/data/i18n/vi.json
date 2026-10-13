@@ -469,5 +469,9 @@
     "choices": "lựa chọn",
     "loading": "Đang tải điệu nhảy…",
     "load_error": "Chưa tải được điệu nhảy. Bạn thử lại nhé."
+  },
+  "seat": {
+    "sit": "Ngồi xuống",
+    "stand": "Đứng dậy"
   }
 }
