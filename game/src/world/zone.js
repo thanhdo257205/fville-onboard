@@ -63,7 +63,29 @@ export function batchInstances(root) {
   return nodes.length;
 }
 
-// overrides (data/collision.json → <zone>): { remove: [tên COL_], add: [hộp] } — chỉnh va chạm bằng code, không sửa GLB
+// mesh va chạm chỉ gồm các mặt nằm ngang (|pháp tuyến.y| > 0,7) của mesh hiển thị m, toạ độ thế giới (không gắn vào cảnh)
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _n = new THREE.Vector3();
+function floorMesh(m) {
+  m.updateWorldMatrix(true, false);
+  const pos = m.geometry.attributes.position, idx = m.geometry.index, cnt = idx ? idx.count : pos.count, out = [];
+  for (let i = 0; i < cnt; i += 3) {
+    const v = [0, 1, 2].map((k) => (idx ? idx.getX(i + k) : i + k));
+    _a.fromBufferAttribute(pos, v[0]).applyMatrix4(m.matrixWorld);
+    _b.fromBufferAttribute(pos, v[1]).applyMatrix4(m.matrixWorld);
+    _c.fromBufferAttribute(pos, v[2]).applyMatrix4(m.matrixWorld);
+    _n.subVectors(_b, _a).cross(_c.clone().sub(_a));
+    if (_n.lengthSq() < 1e-12 || Math.abs(_n.normalize().y) <= 0.7) continue;
+    out.push(_a.x, _a.y, _a.z, _b.x, _b.y, _b.z, _c.x, _c.y, _c.z);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  const mesh = new THREE.Mesh(g);
+  mesh.name = `COL_floor_${m.name}`;
+  mesh.updateMatrixWorld(true);
+  return mesh;
+}
+
+// overrides (data/collision.json → <zone>): { remove: [tên COL_], add: [hộp], floors: [regex mesh hiển thị làm sàn] } — chỉnh va chạm bằng code, không sửa GLB
 export async function loadZone(id, file, tier, overrides = {}) {
   const gltf = await loadGLTF(url(`assets/glb/${tier}/${file}.glb`));
   const root = gltf.scene;
@@ -84,6 +106,14 @@ export async function loadZone(id, file, tier, overrides = {}) {
   zone.colRemoved = zone.colMeshes.filter((m) => removed.has(m.name)).map((m) => m.name);
   zone.colMeshes = zone.colMeshes.filter((m) => !removed.has(m.name));
   zone.colAdded = (overrides.add || []).map((b) => b.name);
+  // sàn hiển thị cao hơn sàn COL_ (vd sân lát gạch zone_02 cao 8 cm trên COL_ground → chân lún vào gạch, camera hạ thấp chui
+  // xuống dưới lớp gạch thấy cỏ): overrides.floors = [regex tên mesh] → mặt nằm ngang của các mesh đó thành sàn va chạm
+  zone.colFloors = [];
+  if (overrides.floors?.length) {
+    const re = new RegExp(overrides.floors.join("|"));
+    root.traverse((o) => { if (o.isMesh && re.test(o.name) && !o.name.startsWith("COL_")) zone.colFloors.push(floorMesh(o)); });
+    zone.colMeshes.push(...zone.colFloors);
+  }
   zone.collider = buildCollider(zone.colMeshes, overrides.add || []);
   zone.applyMaterials = () => {
     let lm = false;
@@ -296,4 +326,5 @@ export function disposeZone(zone) {
   disposeTree(zone.root);
   zone.collider.geometry.dispose();
   zone.view?.geometry.dispose();
+  for (const f of zone.colFloors || []) f.geometry.dispose();
 }

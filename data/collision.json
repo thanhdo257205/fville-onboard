@@ -96,6 +96,13 @@
       }
     ]
   },
+  "zone_02": {
+    "floors": [
+      "^ENV_paving",
+      "^ENV_ground"
+    ],
+    "_floors_ly_do": "Sân lát gạch (ENV_paving) và mặt đất có viền / bồn (ENV_ground) cao hơn COL_ground 8 cm → chân nhân vật lún vào gạch; hạ camera thấp thì camera chui xuống dưới lớp gạch, chỉ thấy cỏ (người dùng báo 13/10/2026). Mặt nằm ngang của 2 mesh này thành sàn va chạm (game/src/world/zone.js floorMesh) — không sửa GLB."
+  },
   "zone_03": {
     "add": [
       {

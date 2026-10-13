@@ -865,6 +865,25 @@ async function runLook(browser, base, look) {
         await check(grass.count > 0 && grass.count === grass.meshes && grass.after <= grass.before && grass.width === 512 && grass.height === 512 && grass.normalsUp && grass.noOutline && grass.surface,
           `${zone}: nền cỏ WebP 512 px, ${grass.before} → ${grass.after} tam giác, ${grass.count} mesh, không viền`, JSON.stringify(grass));
       }
+      // sàn hiển thị cao hơn sàn va chạm (data/collision.json → floors; __game.floorGaps): zone_02 sân lát gạch / mặt đất không còn
+      // ô nào chân lún (ENV_paving, ENV_ground cao 8 cm trên COL_ground — người dùng báo 13/10/2026); đứng trên sân gạch, camera hạ
+      // thấp nhất ngước lên vẫn ở trên mặt gạch (camera.js + clampCeiling chiều xuống). Xong về chỗ cũ
+      if (zone === "zone_02" && look === looks[0]) {
+        const fg = await ev(async () => {
+          const r = __game.floorGaps(), bad = Object.keys(r.names).filter((k) => /^ENV_(paving|ground)/.test(k));
+          const g = __game._game, P = g.player, back = P.position.clone(), cam = g.cam, keep = [cam.yaw, cam.pitch, cam.distance];
+          P.body.teleport(new P.body.position.constructor(26, 0.6, -56)); P.sync();
+          __game.simulate(0.6, undefined, { render: false });
+          cam.yaw = 0; cam.pitch = -0.25; cam.distance = 7;
+          __game.simulate(0.4, undefined, { render: false });
+          const out = { bad, feet: +P.position.y.toFixed(3), camY: +g.camera.position.y.toFixed(3) };
+          [cam.yaw, cam.pitch, cam.distance] = keep;
+          P.body.teleport(back.setY(back.y + 0.05)); P.sync(); __game.simulate(0.3, undefined, { render: false });
+          return out;
+        });
+        await check(!fg.bad.length && fg.feet > 0.06 && fg.camY > fg.feet + 0.12,
+          `${zone}: sân gạch — chân đứng trên mặt gạch (${fg.feet} m), camera hạ thấp nhất vẫn trên mặt gạch (${fg.camY} m), không còn ô sàn lún`, JSON.stringify(fg));
+      }
       // ngồi tự do (data/seats.json, game/src/game/interaction.js + Game.sitFree): mỗi nhóm ghế của zone 1 ghế — đứng
       // cạnh ghế → lời nhắc "Sit down", E → ngồi đúng hướng ghế, nâng lên mặt ghế, nhắc "Stand up"; đứng dậy bằng bước đi / E lần
       // nữa (xen kẽ), chỗ đứng không lồng COL_, đi tiếp được. Xong về chỗ cũ

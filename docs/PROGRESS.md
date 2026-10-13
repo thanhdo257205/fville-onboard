@@ -1796,6 +1796,23 @@ Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem tr
 - Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
   sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390. **Đã deploy** gh-pages 0125625 (từ main 7500094).
 
+### Zone 2: chân lún vào sân gạch, camera chui xuống dưới gạch (13/10/2026, nhánh `fix/floor-visual-height`)
+
+Người dùng: lia camera xuống thấp ở zone 2 thì thấy chân nhân vật chạm nền cỏ, không chạm nền gạch.
+
+- Nguyên nhân: sân lát gạch `ENV_paving` (và phần mặt đất có viền `ENV_ground`) cao hơn sàn va chạm `COL_ground` 8 cm → nhân vật
+  (người chơi, Tú, người chơi khác) lún 8 cm vào gạch; camera chỉ tránh COL_ nên hạ thấp nhất (pitch −0,25) thì xuống dưới mặt gạch,
+  nhìn thấy cỏ bên dưới. Đo bằng `__game.floorGaps()` (mới: lưới ô 1 m, sàn hiển thị cao hơn sàn COL_ 4–60 cm, tên mesh): zone_02
+  ~2.000 ô (gần hết sân), zone 0 / 1 vỉa hè 15 cm ở chỗ không đi tới, zone 3–5 chỉ vài ô lẻ (bậc thềm, mép đồ đạc).
+- Sửa bằng dữ liệu (không sửa GLB): `data/collision.json → zone_02.floors = ["^ENV_paving", "^ENV_ground"]` — mặt nằm ngang của 2 mesh
+  này thành sàn va chạm (`world/zone.js floorMesh`, dọn khi đổi zone). Sau sửa: zone_02 còn ~160 ô, toàn mép viền mỏng < 25 cm
+  (bồn cây, bó vỉa) và bậc thềm trước sảnh (12–16 cm).
+- Camera: `clampCeiling` xét cả chiều xuống — camera dừng trên mặt nằm ngang của lưới hiển thị ít nhất 15 cm (không chui xuống dưới
+  sàn / bậc / bồn cây chỉ có hình, không có COL_).
+- Smoke zone_02: không còn ô sàn lún ở ENV_paving / ENV_ground; đứng trên sân gạch: chân trên mặt gạch, camera hạ thấp nhất vẫn trên
+  mặt gạch. Đo: test:data, test:quick 75/75, `--mobile ui` 21/21. Ảnh kiểm tra: camera thấp nhất ngước lên toà nhà gạch cạnh luống
+  ngô — thấy nền gạch, chân đứng trên gạch.
+
 ### Zone 5: lời dẫn phòng họp + khoang làm việc (13/10/2026, nhánh `feat/zone5-narration`)
 
 Người dùng: thêm lời dẫn khi ở phòng họp (tên theo làng nổi tiếng, thiết bị hiện đại) và khoang làm việc (tông màu làng quê).
