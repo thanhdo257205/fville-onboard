@@ -5,10 +5,11 @@
   "secondary": [-70, -52, -8, 8],
   "door_width_m": 1.8,
   "meeting_rooms": [
-    { "id": "phong_hop_mentor", "name": "Phòng họp 1", "bounds": [-40, -34, 1.5, 7.5] },
+    { "id": "phong_hop_mentor", "name": "Phòng họp 1", "bounds": [-40, -34, 1.5, 10.5] },
     { "id": "phong_hop_manager", "name": "Trạch Xá", "bounds": [-46, -40, 1.5, 7.5] },
     { "id": "phong_hop_3", "name": "Ước Lễ", "bounds": [-52, -46, 1.5, 7.5] }
   ],
+  "executive": { "at": [-37, 9.2, 0], "seat": [-37.195, 9.63, 0], "computer_at": [-37.195, 8.99, 0.762], "seat_height_m": 0.447 },
   "secondary_clusters": [[-57, -4.5], [-65, -4.5]],
   "reference_roles": {
     "main": "VanPhongLamViec.mp4",

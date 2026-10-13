@@ -114,12 +114,25 @@ export class RemotePlayers {
     if (!r?.ch || !anim) return;
     const ch = r.ch, serial = r.emoteSerial = (r.emoteSerial || 0) + 1;
     if (anim.startsWith("dance_")) {
+      r.pendingDance = anim;
       try { await loadDanceClips(ch); } catch { return; }
       if (this.list.get(id) !== r || r.ch !== ch || r.emoteSerial !== serial || r.speed > 0.4) return;
+      r.pendingDance = null;
     }
     const act = ch.playOnce(anim);
     const action = r.emoting = ch.current;
     act.then(() => { if (r.ch === ch && r.emoting === action && ch.current === action) { r.emoting = null; ch.enableLocomotion(); } });
+  }
+  stopEmote(id, anim) {
+    const r = this.list.get(id);
+    if (!r || r.pendingDance !== anim && r.emoting?.getClip().name !== anim) return;
+    r.emoteSerial = (r.emoteSerial || 0) + 1;
+    r.pendingDance = null;
+    if (r.emoting?.getClip().name === anim) {
+      const action = r.emoting;
+      r.emoting = null;
+      if (r.ch?.current === action) r.ch.enableLocomotion();
+    }
   }
   say(id, text, seconds = null) {
     const r = this.list.get(id);

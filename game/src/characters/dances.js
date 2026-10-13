@@ -56,10 +56,11 @@ export class DanceController {
       const done = ch.playOnce(item.anim);
       const action = ch.current;
       this.active = { id, ch, action, zone, serial };
-      // Old live servers simply do not advertise dances. Local playback still works.
-      if (g.net?.connected && g.net.features.includes("dance") && g.net.cooldown <= 0) {
+      // The combined clip needs a server that advertises the new allowlist / stop message.
+      if (g.net?.connected && g.net.features.includes("dance_sequence") && g.net.cooldown <= 0) {
         g.net.cooldown = g.net.cfg.cooldown_s ?? 1.5;
         g.net.client.send({ t: "emote", id });
+        this.active.sent = true;
       }
       done.then(() => {
         if (this.active?.serial === serial && ch.current === action) this.stop();
@@ -83,6 +84,9 @@ export class DanceController {
     this.active = null;
     this.loading = false;
     this.pendingCharacter = null;
+    if (active?.sent && this.g.net?.connected && this.g.net.features.includes("dance_sequence")) {
+      this.g.net.client.send({ t: "emote_stop", id: active.id });
+    }
     if (active && active.ch.current === active.action) active.ch.enableLocomotion();
   }
   update() {

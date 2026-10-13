@@ -64,3 +64,9 @@ dùng chung mesh / material và gộp lượt vẽ khi tải zone. Cả hai phò
   tránh nhìn xiên qua kính thấy khoảng trống. Zone 5 yêu cầu không còn tia nhìn xuống lọt ra trời.
 - Hiệu năng trên GPU của người chơi cần đo riêng; số tam giác / dung lượng và test CI
   không tương đương phép đo FPS trên máy thật. Không chạy Chrome local theo lựa chọn người dùng.
+
+## Bàn Prajith trong phòng đầu tiên (13/10/2026)
+
+Phòng 1 mở rộng về phía bắc tới Y = 10,5 m, giữ bàn họp trắng ở giữa. Bộ CEO do người dùng cung cấp đặt tại (−37; 9,2; 0), phía sau bàn họp; máy tính xoay 180° nhìn về người ngồi. Ghế cao 0,447 m. Prajith ngồi gõ máy; khi người chơi bước qua cửa, đứng dậy và ra chỗ trống cạnh bàn. Ms. Nga chuyển sang Trạch Xá; thứ tự nhiệm vụ gặp Nga rồi Prajith giữ nguyên.
+
+Hai prop thêm 4.140 tam giác, khoảng 51 KB, giới hạn texture 512 px. GLB bối cảnh có 59.970 tam giác; tổng bối cảnh cộng hai prop là 64.110, chưa tính nhân vật và các prop cây dùng chung có sẵn.

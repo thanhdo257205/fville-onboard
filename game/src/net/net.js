@@ -190,7 +190,7 @@ export class Net {
   onMessage(m) {
     const r = this.remotes;
     // đang trên xe (transit_zone): bỏ qua người khác (người cùng xe ở zone khác toạ độ) tới khi xuống xe
-    if (this.inTransit && ["join", "state", "emote", "phrase"].includes(m.t)) return;
+    if (this.inTransit && ["join", "state", "emote", "emote_stop", "phrase"].includes(m.t)) return;
     switch (m.t) {
       case "welcome":
         this.myId = m.id; this.online = m.online; this.joined = true;
@@ -209,6 +209,11 @@ export class Net {
       case "emote": {
         const e = this.emotes.find((x) => x.id === m.e);
         if (e) { r.emote(m.id, e.anim); this.log.push({ from: m.id, emote: m.e }); }
+        break;
+      }
+      case "emote_stop": {
+        const e = this.emotes.find(x => x.id === m.e && x.dance);
+        if (e) r.stopEmote(m.id, e.anim);
         break;
       }
       case "phrase": {

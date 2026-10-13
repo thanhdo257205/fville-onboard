@@ -1,0 +1,208 @@
+{
+  "fps": 30,
+  "frames": 4106,
+  "joins": [
+    {
+      "next": "dance_breakdance_ready_2",
+      "from_frame": 44,
+      "to_frame": 57
+    },
+    {
+      "next": "dance_breakdance_ready_3",
+      "from_frame": 89,
+      "to_frame": 102
+    },
+    {
+      "next": "dance_brooklyn_uprock",
+      "from_frame": 165,
+      "to_frame": 178
+    },
+    {
+      "next": "dance_breakdance_uprock",
+      "from_frame": 324,
+      "to_frame": 337
+    },
+    {
+      "next": "dance_breakdance_uprock_2",
+      "from_frame": 400,
+      "to_frame": 413
+    },
+    {
+      "next": "dance_breakdance_uprock_var_1_start",
+      "from_frame": 521,
+      "to_frame": 534
+    },
+    {
+      "next": "dance_breakdance_uprock_var_1",
+      "from_frame": 579,
+      "to_frame": 592
+    },
+    {
+      "next": "dance_breakdance_uprock_var_2",
+      "from_frame": 655,
+      "to_frame": 668
+    },
+    {
+      "next": "dance_breakdance_uprock_var_1_end",
+      "from_frame": 828,
+      "to_frame": 841
+    },
+    {
+      "next": "dance_breakdance_uprock_to_ground",
+      "from_frame": 903,
+      "to_frame": 916
+    },
+    {
+      "next": "dance_breakdance_footwork_1",
+      "from_frame": 952,
+      "to_frame": 965
+    },
+    {
+      "next": "dance_breakdance_footwork_2",
+      "from_frame": 1060,
+      "to_frame": 1073
+    },
+    {
+      "next": "dance_breakdance_footwork_3",
+      "from_frame": 1121,
+      "to_frame": 1134
+    },
+    {
+      "next": "dance_flair",
+      "from_frame": 1271,
+      "to_frame": 1284
+    },
+    {
+      "next": "dance_flair_2",
+      "from_frame": 1358,
+      "to_frame": 1371
+    },
+    {
+      "next": "dance_flair_3",
+      "from_frame": 1401,
+      "to_frame": 1414
+    },
+    {
+      "next": "dance_breakdance_swipes",
+      "from_frame": 1464,
+      "to_frame": 1477
+    },
+    {
+      "next": "dance_breakdance_1990",
+      "from_frame": 1567,
+      "to_frame": 1580
+    },
+    {
+      "next": "dance_breakdance_1990_2",
+      "from_frame": 1654,
+      "to_frame": 1667
+    },
+    {
+      "next": "dance_breakdance_1990_3",
+      "from_frame": 1682,
+      "to_frame": 1695
+    },
+    {
+      "next": "dance_breakdance_footwork_to_freeze",
+      "from_frame": 1800,
+      "to_frame": 1813
+    },
+    {
+      "next": "dance_crossleg_freeze",
+      "from_frame": 1923,
+      "to_frame": 1936
+    },
+    {
+      "next": "dance_breakdance_freezes",
+      "from_frame": 1997,
+      "to_frame": 2010
+    },
+    {
+      "next": "dance_breakdance_freeze_var_1",
+      "from_frame": 2211,
+      "to_frame": 2224
+    },
+    {
+      "next": "dance_breakdance_freeze_var_2",
+      "from_frame": 2348,
+      "to_frame": 2361
+    },
+    {
+      "next": "dance_breakdance_freeze_var_3",
+      "from_frame": 2507,
+      "to_frame": 2520
+    },
+    {
+      "next": "dance_breakdance_freeze_var_4",
+      "from_frame": 2705,
+      "to_frame": 2718
+    },
+    {
+      "next": "dance_breakdance_ending_1",
+      "from_frame": 2867,
+      "to_frame": 2880
+    },
+    {
+      "next": "dance_breakdance_ending_2",
+      "from_frame": 3075,
+      "to_frame": 3088
+    },
+    {
+      "next": "dance_breakdance_ending_3",
+      "from_frame": 3329,
+      "to_frame": 3342
+    },
+    {
+      "next": "dance_breakdance_footwork_to_idle",
+      "from_frame": 3534,
+      "to_frame": 3547
+    },
+    {
+      "next": "dance_breakdance_uprock_to_ground_2",
+      "from_frame": 3656,
+      "to_frame": 3669
+    },
+    {
+      "next": "dance_breakdance_footwork_to_idle_2",
+      "from_frame": 3805,
+      "to_frame": 3818
+    }
+  ],
+  "order": [
+    "dance_breakdance_ready",
+    "dance_breakdance_ready_2",
+    "dance_breakdance_ready_3",
+    "dance_brooklyn_uprock",
+    "dance_breakdance_uprock",
+    "dance_breakdance_uprock_2",
+    "dance_breakdance_uprock_var_1_start",
+    "dance_breakdance_uprock_var_1",
+    "dance_breakdance_uprock_var_2",
+    "dance_breakdance_uprock_var_1_end",
+    "dance_breakdance_uprock_to_ground",
+    "dance_breakdance_footwork_1",
+    "dance_breakdance_footwork_2",
+    "dance_breakdance_footwork_3",
+    "dance_flair",
+    "dance_flair_2",
+    "dance_flair_3",
+    "dance_breakdance_swipes",
+    "dance_breakdance_1990",
+    "dance_breakdance_1990_2",
+    "dance_breakdance_1990_3",
+    "dance_breakdance_footwork_to_freeze",
+    "dance_crossleg_freeze",
+    "dance_breakdance_freezes",
+    "dance_breakdance_freeze_var_1",
+    "dance_breakdance_freeze_var_2",
+    "dance_breakdance_freeze_var_3",
+    "dance_breakdance_freeze_var_4",
+    "dance_breakdance_ending_1",
+    "dance_breakdance_ending_2",
+    "dance_breakdance_ending_3",
+    "dance_breakdance_footwork_to_idle",
+    "dance_breakdance_uprock_to_ground_2",
+    "dance_breakdance_footwork_to_idle_2"
+  ],
+  "duration_s": 136.83333333333334
+}

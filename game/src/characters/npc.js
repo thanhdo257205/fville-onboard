@@ -10,7 +10,7 @@ const TURN_RATE = 6;
 const _hip = new THREE.Vector3();
 
 export class Npc {
-  constructor(character, { role, node, pos, yaw, pose = "stand", nodeMarks = "stand", chairHeight = null }) {
+  constructor(character, { role, node, pos, yaw, pose = "stand", nodeMarks = "stand", chairHeight = null, arrivalExit = null }) {
     Object.assign(this, { character, role, node, pose });
     this.homeYaw = THREE.MathUtils.degToRad(yaw) + Math.PI;   // model nhìn +Z
     const seat = character.model.seat || {};
@@ -26,6 +26,7 @@ export class Npc {
     character.root.rotation.y = this.homeYaw;
     this.state = "idle";
     this._turn = null;
+    this.arrivalExit = arrivalExit && new THREE.Vector3(...arrivalExit);
   }
 
   start() {
@@ -59,7 +60,23 @@ export class Npc {
   turnTo(angle) { return new Promise((res) => { this._turn = { angle, res }; }); }
   faceAngleTo(p) { const r = this.character.root.position; return Math.atan2(p.x - r.x, p.z - r.z); }
 
+  // Prajith greets an entrant once, then remains standing for the existing story.
+  arrive(playerPos) {
+    if (this.arrived || this.hidden || this.busy) return;
+    this.arrived = true;
+    this._arrival = (async () => {
+      if (this.state === "seated") { this.state = "standing_up"; await this.character.playOnce("stand_up"); }
+      this.pose = "stand";
+      if (this.arrivalExit) await new Promise(done => this.walkTo(this.arrivalExit, { speed: 1.1, done }));
+      this.state = "turning";
+      this.character.play("idle", { fade: 0.2 });
+      await this.turnTo(this.faceAngleTo(playerPos));
+      this.state = "idle";
+    })().finally(() => { this._arrival = null; });
+  }
+
   async engage(playerPos) {
+    if (this._arrival) await this._arrival;
     if (this.state === "talking" || this.busy) return;
     if (this.state === "seated") { this.state = "standing_up"; await this.character.playOnce("stand_up"); }
     this.state = "turning";

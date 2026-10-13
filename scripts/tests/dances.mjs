@@ -5,11 +5,15 @@ import { MeshoptDecoder } from '../../game/node_modules/three/examples/jsm/libs/
 await MeshoptDecoder.ready;
 const root = new URL('../../', import.meta.url);
 const cfg = JSON.parse(readFileSync(new URL('data/characters.json', root), 'utf8'));
-const dances = JSON.parse(readFileSync(new URL('data/dances.json', root), 'utf8')).dances;
+const manifest = JSON.parse(readFileSync(new URL('data/dances.json', root), 'utf8'));
+const dances = manifest.dances;
+assert.equal(manifest.segments.length, 34);
+assert.deepEqual(new Set(manifest.order), new Set(manifest.segments.map(s => s.id)));
+assert.equal(manifest.order.length, 34);
 const emotes = JSON.parse(readFileSync(new URL('data/net.json', root), 'utf8')).emotes;
-assert.equal(dances.length, 34);
+assert.equal(dances.length, 1);
 const ids = new Set(dances.map(d => d.id));
-assert.equal(ids.size, 34);
+assert.equal(ids.size, 1);
 const glb = path => {
   const b = readFileSync(new URL(path, root));
   const end = 20 + b.readUInt32LE(12);
@@ -20,6 +24,10 @@ const boneNames = j => j.skins[0].joints.map(i => j.nodes[i].name).sort();
 let total = 0;
 for (const id of Object.values(cfg.roles.player.looks).flat()) {
   const model = cfg.models[id];
+  const sequence = JSON.parse(readFileSync(new URL(`assets/characters/${id}/${id}_dances.report.json`, root), 'utf8'));
+  assert.deepEqual(sequence.order, manifest.order);
+  assert.equal(sequence.joins.length, 33);
+  assert.ok(sequence.joins.every(j => (j.to_frame - j.from_frame - 1) / sequence.fps >= .35), 'each join needs a pose blend');
   assert.ok(model.dance_glb, `${id} missing dance asset`);
   const base = glb(model.glb.low).data, { bytes, data: pack, binary } = glb(model.dance_glb);
   total += bytes;
@@ -65,7 +73,8 @@ for (const id of Object.values(cfg.roles.player.looks).flat()) {
       assert.ok(input.count > 1);
       assert.equal(input.count, output.count);
       const times = floats(input), values = floats(output);
-      assert.ok(times.at(-1) > 0 && times.at(-1) < 60, 'dance duration must be finite and short');
+      assert.ok(Math.abs(times.at(-1) - sequence.duration_s) < .04, 'all 34 segments must be present in the baked timeline');
+      assert.ok(times.at(-1) > 0 && times.at(-1) < 600, 'combined dance duration must be finite and bounded');
       assert.ok(values.every(Number.isFinite), `${anim.name} contains nonfinite transforms`);
       assert.ok(times.every((v, i) => Number.isFinite(v) && (!i || v > times[i - 1])), 'key times must increase');
     }
@@ -75,4 +84,4 @@ for (const d of dances) {
   assert.ok(d.label.en && d.label.vi && d.id === d.anim);
   assert.ok(emotes.some(e => e.id === d.id && e.anim === d.anim && e.dance), 'server must allow dance messages');
 }
-console.log(`✓ dances: 34 animations × 4 matching playable rigs, unchanged meshes, network allowlist, ${(total/1024/1024).toFixed(2)} MiB total loaded on demand`);
+console.log(`✓ dances: 1 continuous animation from 34 clips × 4 matching playable rigs, unchanged meshes, network allowlist, ${(total/1024/1024).toFixed(2)} MiB total loaded on demand`);

@@ -373,7 +373,7 @@ async function runLook(browser, base, look) {
       let fits = true;
       for (let p = 0; opened && p < pages; p++) {
         const v = await visible(); v.ids.forEach(id => seen.add(id)); fits &&= v.ok && !v.overlap;
-        await clickShown("#emotes [data-a=next]");
+        if (pages > 1) await clickShown("#emotes [data-a=next]");
         await wait(n => __game._game.actionsWheel.page === n, 3000, (p + 1) % pages);
       }
       mkdirSync(OUT, { recursive: true });
@@ -399,8 +399,8 @@ async function runLook(browser, base, look) {
       await page.keyboard.press("Escape");
       const closed = await wait(() => !__game._game.actionsWheel.open && __game._game.mode === "play" && document.getElementById("menu").hidden, 5000);
       await page.setViewportSize({ width: 640, height: 360 });
-      await check(opened && fits && seen.size === 34 && playing && bound.count === 34 && !bound.loco && !bound.connected && stopped && short.ok && !short.overlap && closed,
-        "Hành động T: vòng tròn đủ 34 điệu, tải / nhảy offline, đi lại dừng nhảy, màn thấp 230 px và Esc đóng", JSON.stringify({ opened, fits, seen: seen.size, playing, bound, stopped, short, closed }));
+      await check(opened && fits && seen.size === 1 && playing && bound.count === 1 && !bound.loco && !bound.connected && stopped && short.ok && !short.overlap && closed,
+        "Hành động T: vòng tròn 1 bài ghép đủ 34 clip, tải / nhảy offline, đi lại dừng nhảy, màn thấp 230 px và Esc đóng", JSON.stringify({ opened, fits, seen: seen.size, playing, bound, stopped, short, closed }));
     }
 
     const pauses = (st) => zoneIsLast(st.zone) ? [...(st.lunch ? [] : ["time_skip"]), ...(st.login ? [] : ["login"]), ...(st.reloaded || look !== looks[0] ? [] : ["ending:lan"])] : [];
@@ -473,6 +473,31 @@ async function runLook(browser, base, look) {
         });
         await check(doorUi.current === "door:phong_hop_3" && doorUi.before !== doorUi.after && doorUi.closed,
           "cửa Ước Lễ: tương tác E / nút cảm ứng đổi Mở ↔ Đóng theo trạng thái", JSON.stringify(doorUi));
+        const boss = await ev(async () => {
+          const g = __game._game, npc = g.npcs.find(n => n.role === "manager"), p = g.player.position.clone();
+          const initial = { state: npc.state, clip: npc.character.current?.getClip().name };
+          const props = g.zone.fixes.props.filter(n => /ceo_office|apple_desktop/.test(n));
+          g.checkNpcEntries();
+          const stayed = !npc.arrived;
+          g.player.body.teleport(new p.constructor(-37, .05, -3));
+          g.checkNpcEntries();
+          const rising = npc.state === "standing_up";
+          // Interacting during stand-up must wait for the greeting before speaking.
+          const talk = npc.engage(g.player.position.clone());
+          for (let i = 0; i < 600; i++) { npc.update(1 / 60); await Promise.resolve(); }
+          const speaking = npc.state === "talking";
+          if (speaking) await talk;
+          const exit = npc.arrivalExit.distanceTo(npc.character.root.position) < .01;
+          npc.release();
+          for (let i = 0; i < 260; i++) { npc.update(1 / 60); await Promise.resolve(); }
+          g.checkNpcEntries();
+          const idle = npc.state === "idle" && npc.pose === "stand" && !npc._arrival;
+          g.player.body.teleport(p);
+          return { initial, props, stayed, rising, speaking, exit, idle };
+        });
+        await check(boss.initial.state === "seated" && boss.initial.clip === "sit_type" && boss.props.length === 2
+          && boss.stayed && boss.rising && boss.speaking && boss.exit && boss.idle,
+          "Prajith: gõ máy tại bàn mới → vào phòng 1 đứng dậy, ra chỗ trống; E chờ đứng xong, nói xong tiếp tục đứng", JSON.stringify(boss));
       }
       // cây / bụi tre mô hình Sketchfab (zone 0–3): bản sao dùng chung lưới đã gộp thành vài mesh (world/zone.js
       // batchInstances), mỗi bản sao = 1 cây riêng để làm mờ (số cây khác nhau, camera giữa tán → cây mờ), lá cắt alpha
@@ -1625,7 +1650,7 @@ async function runChat(browser, base, srv) {
     };
     await Promise.all([free(A), free(B)]);
     // Dance packets must play on the other player's existing rig as well.
-    const dancerId = await A.ev(() => __game.net.id), danceId = "dance_breakdance_uprock_var_2";
+    const dancerId = await A.ev(() => __game.net.id), danceId = "dance_breakdance_full";
     const remoteReady = await B.wait(id => !!__game._game.net.remotes.list.get(id)?.ch, 20000, dancerId);
     await A.wait(() => performance.now() - __game._game.state.readyAt > 1200, 5000);
     await free(A);
@@ -1639,9 +1664,13 @@ async function runChat(browser, base, srv) {
       const r = __game._game.net.remotes.list.get(who);
       return r?.emoting?.getClip().name === dance && r.emoting.time > 0 && !r.ch.loco;
     }, 30000, { who: dancerId, dance: danceId });
-    await check(danceSent && remoteDance && C.features.includes("dance"), "Breakdance gửi qua máy chủ: người chơi khác tải clip và nhảy trên rig của An", JSON.stringify({ localDance, remoteReady, remoteDance, features: C.features }));
+    await check(danceSent && remoteDance && C.features.includes("dance_sequence"), "Breakdance gửi qua máy chủ: người chơi khác tải clip và nhảy trên rig của An", JSON.stringify({ localDance, remoteReady, remoteDance, features: C.features }));
     await A.ev(() => { const g = __game._game; g.dances.stop(); g.player.character.mixer.timeScale = 1; });
-    if (remoteReady) await B.ev(id => { const r = __game._game.net.remotes.list.get(id); r.emoting = null; r.ch.mixer.timeScale = 1; r.ch.enableLocomotion(); }, dancerId);
+    const remoteStopped = remoteReady && await B.wait(id => {
+      const r = __game._game.net.remotes.list.get(id); return !r?.emoting && r?.ch?.loco;
+    }, 5000, dancerId);
+    await check(remoteStopped, "Dừng bài nhảy dài: máy khách khác trở lại đi lại, không chạy tiếp 2 phút", JSON.stringify({ remoteStopped }));
+    if (remoteReady) await B.ev(id => { __game._game.net.remotes.list.get(id).ch.mixer.timeScale = 1; }, dancerId);
     const [a0, b0] = await Promise.all([chatOf(A), chatOf(B)]);
     // Enter mở khung chat: thẻ quy tắc lần đầu, game đứng yên ở chế độ "chat"
     // tin nhắn app của zone_05 có thể tự mở hội thoại đúng lúc bấm Enter (Enter khi đó là "nói tiếp") → giải xong rồi thử lại
