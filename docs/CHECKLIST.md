@@ -225,6 +225,16 @@ Bản đồ; máy chủ Cloudflare chưa `wrangler deploy` bản mới → bàn 
 
 ## 5. Tính năng
 
+- [x] P2 Ngồi ở bất kỳ ghế nào trong game (13/10/2026, nhánh `feat/sit-anywhere`; người dùng yêu cầu): đứng gần ghế → **E** / nút
+  hành động "Ngồi xuống", ngồi đúng hướng ghế, nâng theo độ cao mặt ghế; **E** lần nữa hoặc bước đi → "Đứng dậy". 134 ghế
+  (`data/seats.json`): ghế băng mái chờ xe buýt (zone 0), 2 ghế băng dưới giàn leo (zone 1), đôn Phòng Hạt Lúa + đôn lục giác
+  sảnh (zone 3), ghế bàn làm việc, bàn cộng tác, phòng phụ, 3 phòng họp, ghế băng khu nghỉ, ghế tulip (zone 5). Việc khác ở gần
+  (nói chuyện, nhặt đồ, bàn intern) được nhắc trước; ghế có NPC ngồi sẵn bỏ qua; người chơi khác thấy mình ngồi (mạng gửi "sit").
+  Ghế nằm chung lưới với bàn → dò bằng `scripts/tools/find_seats.mjs` rồi lọc tay. Smoke: zone 0, 1, 3, 5 mỗi nhóm ghế ngồi /
+  đứng thử 1 ghế — Phụ trách: Claude
+  - [ ] P3 Chưa ngồi được (cần sửa / build lại zone trên máy có Blender): ghế đẩu nhựa quán vỉa hè zone 0 (cao 0,3 m — thấp hơn
+    animation ngồi), ghế băng tầng trên + tầng trệt zone 4 và dãy ghế sát cửa kính bàn cộng tác zone 5 (COL_ chắn, không có chỗ
+    đứng tới được) — Phụ trách: —
 - [x] P2 Xong ngày đầu → đi tự do giữa các zone (12/10/2026, nhánh `feat/potted-plant` c1cd732; người dùng yêu cầu): menu Esc có
   mục **Đi tới** ngay dưới tiêu đề, chỉ hiện khi đã có cờ `game_complete` — 6 zone (giờ + tên; zone 1 lúc hoàng hôn sau cảnh
   kết), zone đang đứng khoá nút; vào zone ở điểm bắt đầu (`Game.travel`, `__game.travel`), không lặp lại hội thoại / cảnh chuyển.

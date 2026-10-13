@@ -12,6 +12,8 @@
 //   __game.cameraCeiling()    → camera chơi ngẩng / lùi hết cỡ ở chỗ người chơi + mọi SPAWN_: có lên xuyên trần không
 //   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
 //   __game.gaps(opts)         → chỗ hở của mô hình zone đang chơi: từ chỗ đứng trong nhà bắn tia, tia lọt ra trời (world/gaps.js)
+//   __game.seats              → chỗ ngồi tự do của zone (data/seats.json): số ghế, ghế đang nhắc "Sit down", ghế có NPC ngồi
+//   __game.findSeats(opts)    → dò ứng viên chỗ ngồi theo hình (world/seats.js; scripts/tools/find_seats.mjs gom mọi zone)
 //   __game.talkCam            → camera hội thoại (đang bật, vai trái/phải, điểm chọn vai, người đối thoại)
 //   __game.guide              → hướng dẫn: mục tiêu, vị trí dấu "!", mũi tên, giờ đứng yên, các lần nhắc; help() = phím H
 //   __game.acts               → 4 Act: Act hiện tại, tiến độ từng Act, các thẻ Act đã hiện; __game.cards = thẻ giữa màn hình gần đây
@@ -29,6 +31,7 @@ import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
 import { penetration } from "./world/collision.js";
 import { findGaps } from "./world/gaps.js";
+import { findSeats } from "./world/seats.js";
 import { hud } from "./ui/hud.js";
 import { pickChoice } from "./game/autoplay.js";
 import { tx } from "./content/content.js";
@@ -41,7 +44,7 @@ export function installDebug(game, loop) {
     get player() {
       const p = game.player;
       return p && { pos: v3(p.position), speed: +p.speed.toFixed(2), onGround: p.body.onGround, yaw: +THREE.MathUtils.radToDeg(p.character.root.rotation.y).toFixed(1), fellOut: p.fellOut || 0,
-        seated: p.seated?.state ?? null, sits: p.sits || 0, rootY: +p.character.root.position.y.toFixed(3),   // ngồi ghế: sitting_down | seated | standing_up
+        seated: p.seated?.state ?? null, seatFree: !!p.seated?.free, sits: p.sits || 0, rootY: +p.character.root.position.y.toFixed(3),   // ngồi ghế: sitting_down | seated | standing_up
         pen: game.zone ? +penetration(game.zone.collider, p.position, p.body.radius, p.body.height).toFixed(3) : null };   // capsule lồng vào COL_ (m)
     },
     get zone() { return game.state.zone; },
@@ -394,6 +397,52 @@ export function installDebug(game, loop) {
       const from = [game.player.position];
       game.zone.root.traverse((o) => { if (/^(SPAWN|NPC|INT)_/.test(o.name)) from.push(o.getWorldPosition(new THREE.Vector3())); });
       return findGaps(game.zone, from, { skip: new RegExp(game.seeThrough.cfg.meshes), ...opts }); },
+    // chỗ ngồi tự do của zone đang chơi (data/seats.json): danh sách, ghế đang được nhắc (E: Sit down), ghế có NPC ngồi sẵn
+    get seats() {
+      const list = game.interaction.list.filter((e) => e.seat), cur = game.interaction.current;
+      return { count: list.length, current: cur?.seat ? list.indexOf(cur) : null, standPrompt: cur?.item.action === "stand:",
+        occupied: list.map((e, i) => (game.interaction.occupied(e) ? i : -1)).filter((i) => i >= 0),
+        list: list.map((e) => ({ at: e.seat.at, yaw_deg: e.seat.yaw_deg, h: e.seat.h, group: e.seat.group })) };
+    },
+    // thử ngồi ghế thứ i (smoke): đứng ở chỗ trống gần ghế (vòng 0,4–1,2 m) → lời nhắc phải là ghế đó → E → chờ ngồi xong (rootY,
+    // hướng) → standBy "move" (bước đi) | "key" (E lần nữa) → chờ đứng dậy, chỗ đứng không lồng COL_. → kết quả để kiểm tra
+    async trySeat(i, standBy = "move") {
+      const list = game.interaction.list.filter((e) => e.seat), e = list[i];
+      if (!e) return { ok: false, why: `không có ghế ${i}` };
+      const s = e.seat, c = new THREE.Vector3(...s.at), col = game.zone.collider, p = game.player;
+      let spot = null;
+      for (let r = 0.4; r <= 1.2001 && !spot; r += 0.1) for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2, q = new THREE.Vector3(c.x + Math.sin(a) * r, c.y + 0.02, c.z + Math.cos(a) * r);
+        if (penetration(col, q, p.body.radius, p.body.height) < 0.02) { spot = q; break; }
+      }
+      if (!spot) return { ok: false, why: "không có chỗ đứng gần ghế" };
+      p.body.teleport(spot); p.velocity.set(0, 0, 0); p.sync();
+      api.simulate(0.3, undefined, { render: false });
+      const cur = game.interaction.current, got = cur?.seat || null;   // ghế bên cạnh gần hơn thì lời nhắc là ghế đó — vẫn được
+      const out = { i, group: s.group, prompt: hud.promptText, seat: got ? list.indexOf(cur) : null };
+      if (!got) return { ...out, ok: false, why: "lời nhắc không phải ghế" };
+      c.set(...got.at);
+      game.interact();
+      for (let k = 0; k < 120 && p.seated?.state !== "seated"; k++) { api.simulate(0.05, undefined, { render: false }); await new Promise((r) => setTimeout(r, 0)); }
+      const yaw = THREE.MathUtils.radToDeg(p.character.root.rotation.y - Math.PI);
+      out.seated = p.seated?.state ?? null;
+      out.free = !!p.seated?.free;
+      out.yawErr = +Math.abs(((yaw - (got.yaw_deg ?? 0)) % 360 + 540) % 360 - 180).toFixed(1);
+      out.h = got.h;
+      out.lift = +(p.character.root.position.y - c.y).toFixed(3);
+      api.simulate(0.2, undefined, { render: false });
+      out.standPrompt = hud.promptText;
+      if (standBy === "key") game.interact();
+      else api.simulate(0.3, { x: 0, y: 1, run: false }, { render: false });
+      for (let k = 0; k < 120 && p.seated; k++) { api.simulate(0.05, undefined, { render: false }); await new Promise((r) => setTimeout(r, 0)); }
+      out.stood = !p.seated;
+      out.pen = +penetration(col, p.position, p.body.radius, p.body.height).toFixed(3);
+      api.simulate(0.5, { x: 0, y: 1, run: false }, { render: false });
+      out.walked = +Math.hypot(p.position.x - c.x, p.position.z - c.z).toFixed(2);
+      return out;
+    },
+    // ứng viên chỗ ngồi của zone đang chơi (world/seats.js — dò theo hình, xem lại rồi chép vào data/seats.json)
+    findSeats(opts) { return findSeats(game.zone, { skip: new RegExp(game.seeThrough.cfg.meshes), ...opts }); },
     // cảm ứng (ui/touch.js): bật chưa, cần điều khiển đang đẩy, tâm nút hành động / hàng nút / vùng cần điều khiển (toạ độ màn
     // hình — smoke chạm đúng chỗ); touchPick() = lựa chọn hội thoại đang chờ mà resolve() sẽ chọn (autoplay.pickChoice)
     get touch() { return game.touch?.info() ?? null; },

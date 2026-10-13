@@ -64,6 +64,7 @@ const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 
 const I18N = { en: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "en.json"), "utf8")), vi: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "vi.json"), "utf8")) };
 const SCENE_FIXES = JSON.parse(readFileSync(join(ROOT, "data", "scene_fixes.json"), "utf8"));
 const OFFICE = JSON.parse(readFileSync(join(ROOT, "data", "office.json"), "utf8"));
+const SEATS = JSON.parse(readFileSync(join(ROOT, "data", "seats.json"), "utf8"));
 const ACH = JSON.parse(readFileSync(join(ROOT, "data", "achievements.json"), "utf8")).final.title;   // tên thành tựu cuối theo ngôn ngữ
 const QUESTS = JSON.parse(readFileSync(join(ROOT, "data", "quests.json"), "utf8")).quests;
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
@@ -476,16 +477,18 @@ async function runLook(browser, base, look) {
         });
         await check(doorUi.current === "door:phong_hop_3" && doorUi.before !== doorUi.after && doorUi.closed,
           "cửa Ước Lễ: tương tác E / nút cảm ứng đổi Mở ↔ Đóng theo trạng thái", JSON.stringify(doorUi));
-        const surfaces = await ev(rooms => {
+        const surfaces = await ev(({ rooms, seats }) => {
           const g = __game._game, V = g.player.position.constructor;
           const points = rooms.flatMap(r => {
             const [x0, x1, y0, y1] = r.bounds;
             return [y0 + 1.15, (y0 + y1) / 2 - .4, y1 - .45].map(y => ({ room: r.id, x: x1 - .1, y: 1.37, z: -y, hits: 0 }));
           });
-          const gaps = [];
+          const gaps = [], seatSupport = [];
           for (const r of rooms) {
             const room = g.zone.nodes.get(`INT_${r.id}`), cx = (r.bounds[0] + r.bounds[1]) / 2, cy = (r.bounds[2] + r.bounds[3]) / 2;
             let nearest = Infinity, tip = -Infinity;
+            const roomSeats = seats.filter(s => s.group === r.id).map(s => ({ ...s, hits: 0 }));
+            const areaXZ = (a, b, c) => (b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x);
             g.zone.nodes.get(`${r.id}_mesh`).traverse(o => {
               const a = o.geometry?.attributes.position;
               if (!a) return;
@@ -493,7 +496,18 @@ async function runLook(browser, base, look) {
                 const v = new V().fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld), y = -v.z;
                 if (v.y > .03 && v.y < 1.2 && Math.abs(v.x - cx) < 1.8 && y > r.bounds[2] + .5 && y < cy) nearest = Math.min(nearest, y);
               }
+              const index = o.geometry.index;
+              for (let i = 0, n = index?.count ?? a.count; i < n; i += 3) {
+                const v = [0, 1, 2].map(k => new V().fromBufferAttribute(a, index ? index.getX(i + k) : i + k).applyMatrix4(o.matrixWorld));
+                if (Math.abs(areaXZ(...v)) < 1e-8) continue;
+                for (const s of roomSeats) {
+                  if (!v.every(p => Math.abs(p.y - (s.at[1] + s.h)) < .008)) continue;
+                  const p = new V(...s.at), d = [areaXZ(v[0], v[1], p), areaXZ(v[1], v[2], p), areaXZ(v[2], v[0], p)];
+                  if (d.every(x => x >= -1e-6) || d.every(x => x <= 1e-6)) s.hits++;
+                }
+              }
             });
+            seatSupport.push(...roomSeats);
             const col = g.zone.nodes.get(`COL_cua_${r.id}_open`);
             col.traverse(o => {
               const a = o.geometry?.attributes.position;
@@ -517,11 +531,13 @@ async function runLook(browser, base, look) {
               }
             }
           });
-          return { gaps, points };
-        }, OFFICE.meeting_rooms);
+          return { gaps, points, seatSupport };
+        }, { rooms: OFFICE.meeting_rooms, seats: SEATS.zones.zone_05 });
         await check(surfaces.gaps.every(g => Number.isFinite(g.metres) && g.metres >= .85)
           && surfaces.points.every(p => p.hits === 1),
           "phòng họp: cửa mở cách dãy ghế ≥ 85 cm; tường sau sếp / vách chung chỉ một mặt tại 9 điểm (không z-fighting)", JSON.stringify(surfaces));
+        await check(surfaces.seatSupport.length === 18 && surfaces.seatSupport.every(s => s.hits > 0),
+          "phòng họp: 18 vị trí ngồi tự do nằm trên mặt ghế thật sau khi nới phòng", JSON.stringify(surfaces.seatSupport));
         const boss = await ev(async () => {
           const g = __game._game, npc = g.npcs.find(n => n.role === "manager"), p = g.player.position.clone();
           const initial = { state: npc.state, clip: npc.character.current?.getClip().name };
@@ -795,6 +811,30 @@ async function runLook(browser, base, look) {
         });
         await check(grass.count > 0 && grass.count === grass.meshes && grass.after <= grass.before && grass.width === 512 && grass.height === 512 && grass.normalsUp && grass.noOutline && grass.surface,
           `${zone}: nền cỏ WebP 512 px, ${grass.before} → ${grass.after} tam giác, ${grass.count} mesh, không viền`, JSON.stringify(grass));
+      }
+      // ngồi tự do (data/seats.json, game/src/game/interaction.js + Game.sitFree): mỗi nhóm ghế của zone 1 ghế — đứng
+      // cạnh ghế → lời nhắc "Sit down", E → ngồi đúng hướng ghế, nâng lên mặt ghế, nhắc "Stand up"; đứng dậy bằng bước đi / E lần
+      // nữa (xen kẽ), chỗ đứng không lồng COL_, đi tiếp được. Xong về chỗ cũ
+      if (SEATS.zones?.[zone]?.length && look === looks[0]) {
+        // ban_intern: lời nhắc là việc ở bàn intern (INT_ban_lam_viec — có bước kiểm tra riêng ở zone 5)
+        const list = SEATS.zones[zone], groups = [...new Set(list.map((x) => x.group))].filter((g) => g !== "ban_intern").slice(0, zone === "zone_05" ? 8 : 6);
+        const back = await ev(() => __game.player.pos);
+        await ev(() => __game.resolve());
+        const tries = [];
+        // ghế có việc khác ở gần (vd chào Tú cạnh ghế băng mái chờ) thì việc kia được nhắc trước → thử ghế khác cùng nhóm
+        for (const [k, gname] of groups.entries()) {
+          let r = null;
+          for (const i of list.map((x, j) => (x.group === gname ? j : -1)).filter((j) => j >= 0).slice(-4).reverse()) {
+            r = await ev(([i, by]) => __game.trySeat(i, by), [i, k % 2 ? "key" : "move"]);
+            if (r.seat != null) break;
+          }
+          tries.push(r);
+        }
+        await ev((p) => { const P = __game._game.player; P.body.teleport(new P.body.position.constructor(p[0], p[1] + 0.05, p[2])); P.sync(); __game.simulate(0.3, undefined, { render: false }); }, back);
+        const L = I18N[lang].seat, bad = tries.filter((r) => !(r.prompt === L.sit && r.seated === "seated" && r.free && r.yawErr < 5 && r.lift > -0.06 && r.lift < r.h
+          && r.standPrompt === L.stand && r.stood && r.pen < 0.05 && r.walked > 0.1));
+        await check(!bad.length, `${zone}: ngồi tự do ${tries.length} nhóm ghế (${groups.join(", ")} — ${list.length} ghế): "${L.sit}" → ngồi đúng hướng, nâng ${tries.map((r) => r.lift).join(" / ")} m, "${L.stand}" → đứng dậy (bước đi / E), không kẹt`,
+          JSON.stringify(bad.length ? bad : tries));
       }
       // zone trong nhà: kéo chuột ngẩng hết cỡ + lăn chuột lùi xa nhất → camera vẫn dưới trần (trần không có COL_; trước
       // đây camera bay lên tận nóc nhà). Đối chứng: cùng các góc khi camera chỉ tránh COL_ (số lần xuyên trần trước khi sửa)

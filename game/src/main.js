@@ -46,7 +46,7 @@ async function boot() {
   await loadStrings(pickLang({ param: params.get("lang"), saved: settings.lang, nav: navigator.languages?.length ? navigator.languages : [navigator.language] }));
   document.title = t("app.title");
   hud.loading(t("app.loading"));
-  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds, chatCfg, backdrop, dancesCfg] = await Promise.all([
+  const [zones, chars, collision, sceneFixes, content, netCfg, poolCfg, sounds, chatCfg, backdrop, dancesCfg, seats] = await Promise.all([
     loadJSON(url("data/zones.json")), loadJSON(url("data/characters.json")),
     loadJSON(url("data/collision.json")), loadJSON(url("data/scene_fixes.json")), loadContent(),
     loadJSON(url("data/net.json")).catch(() => ({ url: "" })),   // chơi nhiều người: thiếu / lỗi file → tắt mạng
@@ -55,6 +55,7 @@ async function boot() {
     loadJSON(url("data/chat.json")).catch(() => ({})),            // nhắn tin: giới hạn (máy chủ lọc từ — thiếu file vẫn chat được)
     loadJSON(url("data/backdrop.json")).catch(() => null),        // bầu trời + phông nền xa (thiếu → trời mặc định, không phông nền)
     loadJSON(url("data/dances.json")),
+    loadJSON(url("data/seats.json")).catch(() => null),           // chỗ ngồi tự do (thiếu → chỉ ngồi ở bàn làm việc zone 5)
   ]);
   // âm thanh: AudioContext chỉ tạo được sau lần bấm / phím đầu tiên (trình duyệt chặn tự phát) — core/sound.js
   sound.configure(sounds);
@@ -128,7 +129,7 @@ async function boot() {
     if (sp.length) console.warn(`[bản lưu mẫu]\n${sp.join("\n")}`);
     if (created) save.store(progress);
   }
-  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes, pool: poolCfg, backdrop }, characters,
+  const game = new Game({ renderer, data: { zones, quests: content.raw.quests, collision, sceneFixes, pool: poolCfg, backdrop, seats }, characters,
     input, settings, nametags, content, progress, ui });
   ui.wardrobe = new Wardrobe({ game });                 // tủ đồ (nút 👕, phím I)
   game.validation = { problems, nodes: nodeCheck };
