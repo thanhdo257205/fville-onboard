@@ -1,0 +1,328 @@
+{
+  "id": "prajith_v3",
+  "variant": "low",
+  "single": true,
+  "bones_before": 41,
+  "folded_bones": [
+    "mixamorig:LeftHandThumb1",
+    "mixamorig:LeftHandThumb2",
+    "mixamorig:LeftHandThumb3",
+    "mixamorig:LeftHandThumb4",
+    "mixamorig:RightHandThumb1",
+    "mixamorig:RightHandThumb2",
+    "mixamorig:RightHandThumb3",
+    "mixamorig:RightHandThumb4"
+  ],
+  "anim_dir": "assets/characters/prajith/mixamo",
+  "rest_hips_m": 1.0109,
+  "decimate": {
+    "tris_before": 25000,
+    "tris_after": 5998,
+    "head_before": 6240,
+    "head_after": 4223,
+    "zones_before": {
+      "head_front": 4236,
+      "head_back": 2566,
+      "regions": 0,
+      "face_detail_verts_pct": 0.121,
+      "face_plain_tris": 3441,
+      "head_front_after_pass0": 2220
+    },
+    "zones_after": {
+      "head_front": 2220,
+      "head_back": 2566,
+      "regions": 0,
+      "body_rest": 1212
+    },
+    "opts": {
+      "face_keep_tris": 2200,
+      "face_detail_pct": 0.12
+    }
+  },
+  "influences_before": 7,
+  "influences_after": 4,
+  "removed_bones": [
+    "mixamorig:HeadTop_End",
+    "mixamorig:LeftHandIndex4",
+    "mixamorig:RightHandIndex4",
+    "mixamorig:LeftToe_End",
+    "mixamorig:RightToe_End"
+  ],
+  "bones": 28,
+  "actions": {
+    "idle": {
+      "file": "Standing Idle.fbx",
+      "rest_diff_m": 0.07999999821186066,
+      "joint_err_mm": 78.7,
+      "hips_scale": 1.0491,
+      "base_static": true,
+      "frames": 181,
+      "duration_s": 6.0,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/91",
+        "lowest_min_cm": 0.4,
+        "lowest_max_cm": 0.4,
+        "foot_slide_cm": 0.1
+      }
+    },
+    "walk": {
+      "file": "Walking.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 79.2,
+      "hips_scale": 1.044,
+      "drift_m": 1.798,
+      "locked": true,
+      "drift_after_m": 0.0,
+      "root_motion_speed": 1.74,
+      "stance_speed": 1.803,
+      "cycle_s": 1.033,
+      "stride_m": 1.863,
+      "frames": 32,
+      "duration_s": 1.033,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/16",
+        "lowest_min_cm": -1.0,
+        "lowest_max_cm": 0.5,
+        "foot_slide_cm": null
+      }
+    },
+    "run": {
+      "file": "Running.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 108.1,
+      "hips_scale": 1.044,
+      "drift_m": 3.239,
+      "locked": true,
+      "drift_after_m": 0.0,
+      "root_motion_speed": 4.627,
+      "stance_speed": 4.889,
+      "cycle_s": 0.7,
+      "stride_m": 3.422,
+      "frames": 22,
+      "duration_s": 0.7,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/11",
+        "lowest_min_cm": -0.7,
+        "lowest_max_cm": 9.8,
+        "foot_slide_cm": null
+      }
+    },
+    "talk": {
+      "file": "Talking_1.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 85.9,
+      "hips_scale": 1.044,
+      "frames": 119,
+      "duration_s": 3.933,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/60",
+        "lowest_min_cm": -0.5,
+        "lowest_max_cm": -0.4,
+        "foot_slide_cm": 0.6
+      }
+    },
+    "talk_2": {
+      "file": "Talking_2.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 79.9,
+      "hips_scale": 1.044,
+      "frames": 114,
+      "duration_s": 3.767,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/57",
+        "lowest_min_cm": -0.5,
+        "lowest_max_cm": -0.5,
+        "foot_slide_cm": 0.3
+      }
+    },
+    "wave": {
+      "file": "Waving.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 79.1,
+      "hips_scale": 1.044,
+      "frames": 96,
+      "duration_s": 3.167,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/48",
+        "lowest_min_cm": -0.4,
+        "lowest_max_cm": -0.2,
+        "foot_slide_cm": 1.3
+      }
+    },
+    "nod": {
+      "file": "Hard Head Nod.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 74.2,
+      "hips_scale": 1.044,
+      "amplitude_deg": 33.0,
+      "softened": true,
+      "amplitude_after_deg": 17.0,
+      "frames": 50,
+      "duration_s": 1.633,
+      "checks": {
+        "hand_in_body_cm": 1.4,
+        "hand_in_body_frames": "4/25",
+        "lowest_min_cm": -0.4,
+        "lowest_max_cm": -0.3,
+        "foot_slide_cm": 0.1
+      }
+    },
+    "think": {
+      "file": "Thinking.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 106.8,
+      "hips_scale": 1.044,
+      "frames": 128,
+      "duration_s": 4.233,
+      "checks": {
+        "hand_in_body_cm": 4.7,
+        "hand_in_body_frames": "32/64",
+        "lowest_min_cm": -0.2,
+        "lowest_max_cm": 0.1,
+        "foot_slide_cm": 11.3
+      }
+    },
+    "point": {
+      "file": "Pointing.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 74.8,
+      "hips_scale": 1.044,
+      "frames": 84,
+      "duration_s": 2.767,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/42",
+        "lowest_min_cm": 0.9,
+        "lowest_max_cm": 0.9,
+        "foot_slide_cm": 0.2
+      }
+    },
+    "phone": {
+      "file": "Texting.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 84.5,
+      "hips_scale": 1.044,
+      "frames": 557,
+      "duration_s": 18.533,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/279",
+        "lowest_min_cm": -0.2,
+        "lowest_max_cm": -0.0,
+        "foot_slide_cm": 0.3
+      }
+    },
+    "press": {
+      "file": "Button Pushing.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 79.3,
+      "hips_scale": 1.044,
+      "frames": 98,
+      "duration_s": 3.233,
+      "checks": {
+        "hand_in_body_cm": 1.8,
+        "hand_in_body_frames": "3/49",
+        "lowest_min_cm": -0.1,
+        "lowest_max_cm": -0.0,
+        "foot_slide_cm": 0.1
+      }
+    },
+    "sit_down": {
+      "file": "Stand To Sit.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 86.0,
+      "hips_scale": 1.044,
+      "seat_height_m": 0.42,
+      "seat_xy_m": [
+        0.011,
+        0.445
+      ],
+      "hips_m": [
+        -0.001,
+        0.494,
+        0.588
+      ],
+      "frames": 68,
+      "duration_s": 2.233,
+      "checks": {
+        "hand_in_body_cm": 5.7,
+        "hand_in_body_frames": "19/34",
+        "lowest_min_cm": -0.5,
+        "lowest_max_cm": 4.0,
+        "foot_slide_cm": 9.7
+      }
+    },
+    "sit_type": {
+      "file": "Typing.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 77.6,
+      "hips_scale": 1.044,
+      "aligned_to": "sit_down",
+      "shift_m": [
+        -0.004,
+        0.488
+      ],
+      "seat_height_m": 0.422,
+      "seat_xy_m": [
+        0.007,
+        0.443
+      ],
+      "hips_m": [
+        -0.003,
+        0.494,
+        0.589
+      ],
+      "frames": 495,
+      "duration_s": 16.467,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/248",
+        "lowest_min_cm": 3.9,
+        "lowest_max_cm": 4.1,
+        "foot_slide_cm": 0.1
+      }
+    },
+    "cheer": {
+      "file": "Happy Idle.fbx",
+      "rest_diff_m": 0.7480000257492065,
+      "joint_err_mm": 73.5,
+      "hips_scale": 1.044,
+      "frames": 61,
+      "duration_s": 2.0,
+      "checks": {
+        "hand_in_body_cm": 0.0,
+        "hand_in_body_frames": "0/31",
+        "lowest_min_cm": -0.3,
+        "lowest_max_cm": 0.1,
+        "foot_slide_cm": 0.3
+      }
+    },
+    "stand_up": {
+      "reverse_of": "sit_down",
+      "seat_height_m": 0.42,
+      "seat_xy_m": [
+        0.011,
+        0.445
+      ],
+      "hips_m": [
+        -0.001,
+        0.494,
+        0.588
+      ],
+      "frames": 68,
+      "duration_s": 2.233
+    }
+  },
+  "height_m": 1.751,
+  "idle_first_frame_min_z": 0.0043,
+  "triangles": 5998,
+  "validate_ok": true,
+  "glb_mb": 0.69,
+  "raw_glb_mb": 1.714
+}
