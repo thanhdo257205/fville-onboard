@@ -6,8 +6,8 @@ import { hud } from "../ui/hud.js";
 import * as THREE from "three";
 
 const packs = new Map();
-export async function loadDanceClips(ch) {
-  const path = ch.model.dance_glb;
+export async function loadDanceClips(ch, anim = null) {
+  const path = ch.model.dance_glbs?.[anim] ?? ch.model.dance_glb;
   if (!path) return false;
   if (!packs.has(path)) {
     packs.set(path, loadGLTF(url(path)).then(gltf => {
@@ -103,7 +103,7 @@ export class DanceController {
     this.pendingCharacter = ch;
     hud.toast(t("actions.loading"));
     try {
-      await loadDanceClips(ch);
+      await loadDanceClips(ch, item.anim);
       if (serial !== this.serial || g.player?.character !== ch || g.state.zone !== zone || g.mode !== "play") return false;
       if (!ch.actions[item.anim]) throw new Error(`Missing dance clip: ${item.anim}`);
       this.loading = false;

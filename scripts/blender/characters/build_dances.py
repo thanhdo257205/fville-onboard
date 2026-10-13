@@ -250,7 +250,7 @@ def main():
     bpy.ops.wm.save_as_mainfile(filepath=str(work / "sequence_preview.blend"), compress=True)
     merged = work / "merged.raw.glb"
     count = merge_dances(original, exported, merged)
-    assert count == len(manifest["dances"])
+    assert count == 1
     pruned = work / "pruned.raw.glb"
     output = char_dir / f"{cid}_dances.glb"
     for command in (["gltf-transform", "prune", str(merged), str(pruned)],
