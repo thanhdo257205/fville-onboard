@@ -184,6 +184,15 @@
       }
     },
     {
+      "id": "office_card", "start": "reach",
+      "nodes": {
+        "reach": { "speaker": "narrator", "text": { "en": "One more reader by the office door. You take out your card again and hold it up.", "vi": "Cạnh cửa văn phòng cũng có một đầu đọc. Bạn lại lấy thẻ ra, đưa lên." },
+          "effects": { "card": { "do": "tap", "face": "INT_cua_phong_fsa", "reader": "dau_doc_the_fsa", "stand_m": 0.65 } }, "next": "tap" },
+        "tap": { "speaker": "narrator", "sfx": "card_ok", "text": { "en": "Beep — green light! The office doors swing open.", "vi": "Bíp — đèn xanh! Cửa văn phòng mở ra." },
+          "effects": { "quest": "z4_office_card" }, "next": null }
+      }
+    },
+    {
       "id": "card_gate", "start": "reach",
       "nodes": {
         "reach": { "speaker": "narrator", "text": { "en": "You take out your brand-new employee card — your photo, your name — and reach for the reader.", "vi": "Bạn lấy tấm thẻ nhân viên mới tinh ra — có ảnh, có tên mình hẳn hoi — rồi đưa về phía đầu đọc." },

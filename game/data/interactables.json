@@ -325,6 +325,7 @@
       },
       "_ly_do": "GDD zone 4: lần quẹt thẻ đầu tiên → cửa mở (data/scene_fixes.json zone_04.doors), rồi tình huống người lạ xin đi ké và thẻ của Tú báo đỏ (hội thoại card_gate)."
     },
+    {"zone": "zone_04", "node": "INT_cua_phong_fsa", "area": "TRIGGER_cua_phong_fsa", "prompt": {"en": "Tap your card to enter the office", "vi": "Quẹt thẻ vào văn phòng"}, "action": "dialogue:office_card", "requires": {"quests": ["z4_fsa"]}, "hide_if": {"quests": ["z4_office_card"]}, "_ly_do": "13/10/2026 (người dùng chốt): xong Lộ trình học thì quẹt thẻ ở đầu đọc cạnh cửa Phòng FSA để vào văn phòng (zone 5) — như cửa kính dưới cầu thang."},
     {
       "zone": "zone_04",
       "node": "INT_cua_phong_fsa",
