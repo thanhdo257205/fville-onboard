@@ -18,6 +18,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   `Npc.walkPath`), về ghế theo đường ngược lại.
   Nói chuyện xong anh Prajith **về ghế, ngồi gõ máy tiếp** (`Npc.seatHome`: NPC vốn ngồi, đứng dậy ra đón — `arrive` — thì
   `release` đi về chỗ ngồi gốc rồi `sit_down` → `sit_type`; smoke cập nhật theo).
+- **Cửa kính quẹt thẻ zone 4 mở ra ngoài (13/10/2026, nhánh `fix/card-gate-swing`):** mở cửa kính dưới cầu thang thì cánh phải
+  lún sau vách trắng cầu thang (`ENV_cau_thang_2`, mặt vách ở x 3,4 — lấn vào ô cửa 0,2 m so với bản lề x 3,6), nhìn như cửa xuyên
+  tường. Vào trong không có chỗ cho cánh phải (mở 90° → kẹt trong khe 0,17 m; mở ít hơn → cắt ngang vách) → `scene_fixes →
+  zone_04.doors` hai cánh mở ra hành lang 80° (trống, cánh phải cách người đứng ở đầu đọc thẻ ~0,14 m). `__game.doorClips()`:
+  mở hết mọi cửa, tia xuyên bề dày cánh + khoảng trống 2 phía; smoke zone 4: không cắt tường, không kẹt sau vách (≥ 0,25 m).
 - **Smoke zone 5: lời dẫn không bị tin app chen ngang (13/10/2026, nhánh `fix/smoke-z5-narration`):** CI trên main (sau PR #59)
   đỏ 1 bước — khi đi từ zone_04 sang, tin app "09:15 · Meeting with Ms. Nga" (`zones.json → on_enter`, mở sau 600 ms hẹn giờ
   thật) bật lên đúng lúc bài thử lời dẫn khoang làm việc. Bài thử giờ chờ qua mốc on_enter rồi giải hết hội thoại mới bắt đầu.
