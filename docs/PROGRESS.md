@@ -7,6 +7,18 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Lối cửa phòng họp, bàn phím và tường chập chờn (13/10/2026, nhánh `codex/meeting-room-clearance-fixes`):**
+  ba phòng sâu thêm 1,5 m, bàn / ghế dịch vào 0,75 m; khoảng từ đầu cánh cửa mở tới dãy ghế gần nhất khoảng 90 cm.
+  Giữ bố cục chữ T của phòng Prajith. Máy tính lùi 17 cm, bàn phím từ nhô 12 cm / nổi 3,5 cm thành nằm trọn trên
+  bàn, cách mép tối thiểu 5 cm và mặt dưới cao hơn mặt bàn 3 mm. Tường sau Prajith dùng vách văn phòng chính,
+  chỉ nối phần vượt ngoài vách này; hai vách chia phòng mỗi vách một lớp có màu hai phía. Khung tranh / đồng hồ
+  đưa ra khỏi mặt tường để tránh z-fighting. Collider chung cũng bỏ phần trùng; vòng trong quạt giảm chi tiết để
+  giữ GLB 59.908 tam giác / 632.092 byte, thấp hơn bản trước. Không tăng tam giác props.
+  Blender MCP kiểm hình cửa mở và cận bàn phím. CI kiểm footprint máy tính / mặt dưới bàn phím từ GLB, khoảng cửa
+  tới ghế từ vertex đã giải mã, và đếm một mặt tường tại 9 điểm trên ba vách; kiểm thử chức năng trên GitHub.
+  Đồng bộ tính năng ngồi ghế mới từ PR #48: 18 ghế phòng họp theo vị trí / cao độ thực, 16 ghế phòng phụ theo
+  cụm bàn đã dịch; CI kiểm cả 18 điểm ngồi trên mặt ghế thật để tránh ngồi lệch sau khi build lại phòng.
+
 - **Căn bàn Prajith dưới đồng hồ / ba tranh (13/10/2026, nhánh `codex/prajith-desk-alignment`):** bàn CEO xoay −90°,
   nằm ở đầu bàn họp trắng theo bố cục chữ T; hai mặt bàn cùng trục Y = 4,8 m. Máy tính quay 90° về ghế, marker ngồi
   và điểm đứng của Prajith theo vị trí mới. Phòng đầu thành 9 × 6 m; phòng 2/3 và phòng phụ dịch tây 3 m, kéo dài

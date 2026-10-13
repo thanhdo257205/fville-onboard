@@ -8,6 +8,7 @@ import json
 import math
 from pathlib import Path
 import subprocess
+import sys
 
 import bpy
 from mathutils import Matrix, Vector
@@ -69,6 +70,12 @@ def build(cid, budget, scale=1):
         dest = Vector((.30, -.24, (b.z - a.z) * .4 / 2))
         for v in mouse.data.vertices:
             v.co = (v.co - c) * .4 + dest
+        keyboard = next(o for o in objects if o.name.startswith('Keyboard'))
+        a, _ = bounds([keyboard])
+        # Source keyboard floats 3.5 cm above the monitor's ground plane.
+        # Put its bottom directly on the supporting tabletop, with a tiny clearance.
+        for v in keyboard.data.vertices:
+            v.co.z += .003 - a.z
     before = triangles(objects)
     ratio = min(1, budget / max(1, before))
     for o in objects:
@@ -107,9 +114,18 @@ def build(cid, budget, scale=1):
     if cid == 'ceo_office':
         report['seat_local_blender'] = [-.195, .43, .447]
         report['desktop_height_m'] = .762
+    elif cid == 'apple_desktop':
+        a, b = bounds([keyboard])
+        report['keyboard_bounds_blender'] = [list(a), list(b)]
     (path / (cid + '.report.json')).write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(cid, report)
 
 
-build('ceo_office', 2600)
-build('apple_desktop', 1200, .2)
+args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+only = args[args.index('--only') + 1] if '--only' in args else None
+if only not in (None, 'ceo_office', 'apple_desktop'):
+    raise ValueError('Unknown executive prop')
+if only in (None, 'ceo_office'):
+    build('ceo_office', 2600)
+if only in (None, 'apple_desktop'):
+    build('apple_desktop', 1200, .2)

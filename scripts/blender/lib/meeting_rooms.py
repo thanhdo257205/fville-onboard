@@ -121,13 +121,21 @@ def fan(b, x, y):
     b.cylinder((x, y, .06), .025, 1.02, "meeting_chrome", segments=6)
     b.torus((x, y, 1.31), .245, .016, "meeting_grey", seg=12, seg2=3, rot=(90, 0, 0))
     for r in (.08, .16):
-        b.torus((x, y - .018, 1.31), r, .005, "meeting_chrome", seg=12, seg2=3, rot=(90, 0, 0))
+        b.torus((x, y - .018, 1.31), r, .005, "meeting_chrome", seg=8, seg2=3, rot=(90, 0, 0))
     for k in range(8):
         a = k * math.pi / 4
         rod(b, (x, y - .024, 1.31), (x + .23 * math.cos(a), y - .024, 1.31 + .23 * math.sin(a)), .004, "meeting_grey", segments=3)
     for k in range(3):
         a = k * math.tau / 3
         b.box((x + .09 * math.cos(a), y, 1.31 + .09 * math.sin(a)), (.16, .015, .07), "meeting_grey", rot=(0, -math.degrees(a), 0))
+
+
+def partition(b, x, y0, y1, height):
+    """One shared wall, white towards the next room and green towards its TV."""
+    v = [(x - .1, y0, 0), (x - .1, y1, 0), (x - .1, y1, height), (x - .1, y0, height),
+         (x + .1, y0, 0), (x + .1, y1, 0), (x + .1, y1, height), (x + .1, y0, height)]
+    b.raw(v, [(0, 3, 2, 1), (0, 4, 7, 3), (1, 2, 6, 5), (0, 1, 5, 4), (3, 7, 6, 2)], "concrete_white")
+    b.raw(v, [(4, 5, 6, 7)], "meeting_green")
 
 
 def build_rooms(cols, cfg, height):
@@ -143,8 +151,13 @@ def build_rooms(cols, cfg, height):
         for lo, hi in ((x0, cx - width / 2), (cx + width / 2, x1)):
             it.glass_wall(b, (lo, y0), (hi, y0), 0, 2.6, band=(.28, 1.21, "sign_white"))
         it.wall(b, (x0, y0), (x1, y0), 2.6, height)
-        it.wall(b, (x0, y0), (x0, y1), 0, height, color="meeting_green")
-        it.wall(b, (x1, y0), (x1, y1), 0, height)
+        partition(b, x0, y0, y1, height)
+        # Each west wall also closes its neighbour. Room 1 shares the main-office
+        # wall; only add the extension beyond it. Coincident boxes flicker in-game.
+        if room == cfg["meeting_rooms"][0]:
+            shared_end = min(y1, cfg["main"][3])
+            if shared_end < y1:
+                it.wall(b, (x1, shared_end), (x1, y1), 0, height)
         it.wall(b, (x0, y1), (x1, y1), 0, .88)
         it.glass_wall(b, (x0, y1), (x1, y1), .88, 2.7, mullion=1.5)
         it.wall(b, (x0, y1), (x1, y1), 2.7, height)
@@ -166,16 +179,16 @@ def build_rooms(cols, cfg, height):
         fan(b, x1 - .55, y1 - .56)
         # Align the first room's clock / artwork with the two table centres.
         art_y = cy + .3 if room == cfg["meeting_rooms"][0] else cy
-        b.torus((x1 - .1, art_y, 2.2), .18, .016, "black", seg=12, seg2=3, rot=(0, 90, 0))
-        verts = [(x1 - .105, art_y + .171 * math.cos(i * math.tau / 12), 2.2 + .171 * math.sin(i * math.tau / 12)) for i in range(12)]
+        b.torus((x1 - .15, art_y, 2.2), .18, .016, "black", seg=12, seg2=3, rot=(0, 90, 0))
+        verts = [(x1 - .155, art_y + .171 * math.cos(i * math.tau / 12), 2.2 + .171 * math.sin(i * math.tau / 12)) for i in range(12)]
         b.raw(verts, [tuple(reversed(range(12)))], "sign_white")
-        b.tube((x1 - .11, art_y, 2.2), (x1 - .11, art_y + .06, 2.29), .008, "black", segments=4)
-        b.tube((x1 - .11, art_y, 2.2), (x1 - .11, art_y - .12, 2.2), .006, "black", segments=4)
+        b.tube((x1 - .16, art_y, 2.2), (x1 - .16, art_y + .06, 2.29), .008, "black", segments=4)
+        b.tube((x1 - .16, art_y, 2.2), (x1 - .16, art_y - .12, 2.2), .006, "black", segments=4)
         for i, color in enumerate(("meeting_oak", "meeting_green", "meeting_beige")):
             yy = art_y + (i - 1) * .52
-            b.box((x1 - .075, yy, 1.71), (.04, .48, .36), "black")
-            b.quad([(x1 - .102, yy - .215, 1.555), (x1 - .102, yy - .215, 1.865), (x1 - .102, yy + .215, 1.865), (x1 - .102, yy + .215, 1.555)], color)
-            b.quad([(x1 - .115, yy - .085, 1.64), (x1 - .115, yy - .085, 1.78), (x1 - .115, yy + .085, 1.78), (x1 - .115, yy + .085, 1.64)], "reception_white")
+            b.box((x1 - .14, yy, 1.71), (.04, .48, .36), "black")
+            b.quad([(x1 - .166, yy - .215, 1.555), (x1 - .166, yy - .215, 1.865), (x1 - .166, yy + .215, 1.865), (x1 - .166, yy + .215, 1.555)], color)
+            b.quad([(x1 - .173, yy - .085, 1.64), (x1 - .173, yy - .085, 1.78), (x1 - .173, yy + .085, 1.78), (x1 - .173, yy + .085, 1.64)], "reception_white")
         b.box((cx, cy, height - .035), (.68, .68, .07), "sign_white")
         for i in range(5):
             # Only the underside of each thin grille is seen from inside.
@@ -197,10 +210,12 @@ def build_rooms(cols, cfg, height):
             ("san", (cx, cy, -.2), (x1 - x0, y1 - y0, .4)),
             ("bac", (cx, y1, height / 2), (x1 - x0, .16, height)),
             ("tay", (x0, cy, height / 2), (.16, y1 - y0, height)),
-            ("dong", (x1, cy, height / 2), (.16, y1 - y0, height)),
             ("ban", (cx, cy + .3, .4), (3.9, 1.6, .8)),
         ):
             mk.collider(f"{key}_{name}", pos, size, C)
+        if room == cfg["meeting_rooms"][0] and y1 > cfg["main"][3]:
+            shared_end = cfg["main"][3]
+            mk.collider(f"{key}_dong", (x1, (shared_end + y1) / 2, height / 2), (.16, y1 - shared_end, height), C)
         for side, lo, hi in (("trai", x0, cx - width / 2), ("phai", cx + width / 2, x1)):
             mk.collider(f"{key}_{side}", ((lo + hi) / 2, y0, height / 2), (hi - lo, .16, height), C)
         out[key] = tuple(room["bounds"])
