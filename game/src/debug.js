@@ -181,6 +181,7 @@ export function installDebug(game, loop) {
     // tủ đồ (ui/wardrobe.js): .info (mở chưa, nút 👕, món + mở khoá / đang mặc), toggle(), pick(i) → Promise, outfit (áo đang
     // mặc: Game.playerOutfit), wear(id) (mặc thẳng, không qua bảng)
     get idCard() { return game.idCard.info(); },
+    get greet() { return game.greeter.info(); },
     get wardrobe() {
       const w = game.ui.wardrobe;
       return { ...w.info(), outfit: game.playerOutfit(), toggle: () => game.toggleWardrobe(), pick: (i) => w.pick(i), wear: (id) => game.setPlayerOutfit(id) };

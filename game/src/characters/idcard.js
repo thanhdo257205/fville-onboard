@@ -220,14 +220,15 @@ export class IdCard {
   }
 
   // bước tới cách điểm `pos` `dist` m (theo hướng từ điểm đó về người chơi), quay mặt vào điểm đó
-  stepToPoint(pos, dist, ms) {
+  // force: không huỷ khi va chạm đẩy lệch (dàn cảnh chào — game/greet.js, đường đi có thể sượt capsule NPC)
+  stepToPoint(pos, dist, ms, { force = false } = {}) {
     const g = this.g, p = g.player?.position;
     if (!p) return Promise.resolve();
     const d = new THREE.Vector3(p.x - pos.x, 0, p.z - pos.z);
     g.faceTarget = pos.clone();
     if (d.length() <= dist + 0.05) return Promise.resolve();
     const to = new THREE.Vector3(pos.x, p.y, pos.z).addScaledVector(d.normalize(), dist);
-    return new Promise((done) => { this.walk = { t: 0, dur: ms / 1000, from: p.clone(), to, done }; });
+    return new Promise((done) => { this.walk = { t: 0, dur: ms / 1000, from: p.clone(), to, done, force }; });
   }
 
   clear() {
@@ -279,7 +280,7 @@ export class IdCard {
     const w = this.walk, pl = this.g.player;
     if (!w || !pl) return;
     // có việc khác vừa dời người chơi (vd dịch chuyển, đổi zone, đi ngay khi vừa đóng hội thoại) → thôi bước tới, cất thẻ
-    if (w.last && pl.position.distanceTo(w.last) > 0.25) {
+    if (!w.force && w.last && pl.position.distanceTo(w.last) > 0.25) {
       this.walk = null; w.done();
       const ch = pl.character;
       this.clear();

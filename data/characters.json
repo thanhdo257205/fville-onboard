@@ -724,7 +724,8 @@
         "sit_down": "sit_down",
         "sit_type": "sit_type",
         "cheer": "cheer",
-        "stand_up": "stand_up"
+        "stand_up": "stand_up",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -743,7 +744,8 @@
         "point",
         "press",
         "sit_down",
-        "stand_up"
+        "stand_up",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -760,7 +762,8 @@
         "sit_down": 2.233,
         "sit_type": 16.467,
         "cheer": 2.0,
-        "stand_up": 2.233
+        "stand_up": 2.233,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1038,7 +1041,9 @@
     },
     "intern_nam": {
       "dance_glb": "assets/characters/intern_nam/intern_nam_dances.glb",
-      "dance_glbs": { "dance_graceful": "assets/characters/intern_nam/intern_nam_dance_graceful.glb" },
+      "dance_glbs": {
+        "dance_graceful": "assets/characters/intern_nam/intern_nam_dance_graceful.glb"
+      },
       "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam (hư cấu, Meshy + Mixamo), cao 1,70 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nam. Bộ đồ: texture trong GLB = ao_cam (áo polo cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo xanh nhạt #cfe0ee, không logo; quần, giày, da, tóc giữ nguyên), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần, xanh lá giày, vàng da, hồng tóc, đen ngoài UV; scripts/blender/characters/outfit_textures.py) — chỉ có trên máy làm việc, không commit. outfit_portraits: chân dung theo bộ đang mặc (render_portrait.py --outfit).",
       "gender": "male",
       "height_m": 1.7,
@@ -1092,7 +1097,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1113,7 +1120,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1132,7 +1141,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1145,7 +1156,9 @@
     },
     "intern_nu": {
       "dance_glb": "assets/characters/intern_nu/intern_nu_dances.glb",
-      "dance_glbs": { "dance_graceful": "assets/characters/intern_nu/intern_nu_dance_graceful.glb" },
+      "dance_glbs": {
+        "dance_graceful": "assets/characters/intern_nu/intern_nu_dance_graceful.glb"
+      },
       "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ (hư cấu, Meshy + Mixamo), cao 1,60 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Vai player khi giới tính nữ. Bộ đồ, texture_sources: như intern_nam. outfit_textures.tu_dau_ngay: bộ ngày đầu khi intern_nu làm Tú (polo vàng nhạt #f3df8a, giữ nếp vải; outfit_textures.py --outfit tu_dau_ngay --shirt f3df8a). outfit_portraits: chân dung theo bộ đang mặc (render_portrait.py --outfit).",
       "gender": "female",
       "height_m": 1.6,
@@ -1201,7 +1214,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1222,7 +1237,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1241,7 +1258,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1255,7 +1274,9 @@
     },
     "intern_nu_buitoc": {
       "dance_glb": "assets/characters/intern_nu_buitoc/intern_nu_buitoc_dances.glb",
-      "dance_glbs": { "dance_graceful": "assets/characters/intern_nu_buitoc/intern_nu_buitoc_dance_graceful.glb" },
+      "dance_glbs": {
+        "dance_graceful": "assets/characters/intern_nu_buitoc/intern_nu_buitoc_dance_graceful.glb"
+      },
       "_ghi_chu": "Nhân vật NGƯỜI CHƠI nữ thứ 2 (hư cấu, Meshy + Mixamo): tóc búi, cao 1,60 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Áo gốc Meshy là hoodie trắng = bộ dau_ngay (outfit_textures.dau_ngay). Bộ ao_cam (texture trong GLB) là ÁO PHÔNG cam có logo: hoodie không hợp dán logo → morph target 'ao_cam' trong GLB đổi hình khối (tay áo ngắn, mũ trùm xẹp thành cổ tròn, dây rút ép vào ngực — scripts/blender/characters/tee_morph.py, build_character.py khi actions.json có tee_morph); game bật morph trùng tên bộ đang mặc (Character.outfitMorph). outfit_portraits: chân dung theo bộ đang mặc.",
       "gender": "female",
       "height_m": 1.6,
@@ -1309,7 +1330,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1330,7 +1353,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1349,7 +1374,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1362,7 +1389,9 @@
     },
     "intern_nam_kinh": {
       "dance_glb": "assets/characters/intern_nam_kinh/intern_nam_kinh_dances.glb",
-      "dance_glbs": { "dance_graceful": "assets/characters/intern_nam_kinh/intern_nam_kinh_dance_graceful.glb" },
+      "dance_glbs": {
+        "dance_graceful": "assets/characters/intern_nam_kinh/intern_nam_kinh_dance_graceful.glb"
+      },
       "_ghi_chu": "Nhân vật NGƯỜI CHƠI nam đeo kính (hư cấu, Meshy + Mixamo), cao 1,65 m, bản 6k duy nhất, animation retarget từ bộ của prajith. Ngoại hình thứ 2 của giới tính nam (roles.player.looks); sau này dùng làm model Tú (khác giới với người chơi). Bộ đồ: texture trong GLB = ao_cam (áo phông cam + logo FPT, phần thưởng ở cổng zone 2); outfit_textures.dau_ngay = bộ đồ ngày đầu (áo phông xanh ngọc gốc của Meshy, không logo), WebP 1024 cùng UV. texture_sources: ảnh gốc 1024 + mặt nạ vùng 512 px (đỏ áo, xanh dương quần jean, xanh lá giày, vàng da, hồng tóc, xanh lơ kính, đen ngoài UV; outfit_textures.py --original dau_ngay --glasses) — chỉ có trên máy làm việc, không commit. Lọn tóc rủ giữa hai mắt kính đã rút ngắn (mesh_fixes.json). outfit_portraits: chân dung theo bộ đang mặc (render_portrait.py --outfit).",
       "gender": "male",
       "height_m": 1.65,
@@ -1416,7 +1445,9 @@
         "cheer": "cheer",
         "stand_up": "stand_up",
         "reach": "reach",
-        "sit_idle": "sit_idle"
+        "sit_idle": "sit_idle",
+        "bow": "bow",
+        "handshake": "handshake"
       },
       "loop": [
         "idle",
@@ -1437,7 +1468,9 @@
         "press",
         "sit_down",
         "stand_up",
-        "reach"
+        "reach",
+        "bow",
+        "handshake"
       ],
       "durations_s": {
         "idle": 6.0,
@@ -1456,7 +1489,9 @@
         "cheer": 2.0,
         "stand_up": 2.233,
         "reach": 2.6333,
-        "sit_idle": 7.0
+        "sit_idle": 7.0,
+        "bow": 2.7333,
+        "handshake": 4.3667
       },
       "speed_mps": {
         "walk": 1.4,
