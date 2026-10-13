@@ -149,6 +149,14 @@ export function blocked(collider, from, to) {
   return !!collider.geometry.boundsTree.raycastFirst(_ray, THREE.DoubleSide, 0, dist - 0.3);
 }
 
+// Điểm nằm trong một khối COL_ (hộp kín) hoặc dưới gầm vật có COL_: tia đứng từ ngay trên chân chạm mặt nằm ngang của COL_
+// trong `head` m (nắp hộp, mặt bàn) → không phải chỗ đứng được. Xét |pháp tuyến.y| — GLB có thể lật chiều mặt.
+export function insideSolid(collider, pos, head = 1.8) {
+  _ray.set(_p1.set(pos.x, pos.y + 0.05, pos.z), _p2.set(0, 1, 0));
+  for (const h of collider.geometry.boundsTree.raycast(_ray, THREE.DoubleSide, 0, head)) if (Math.abs(h.face.normal.y) > 0.7) return true;
+  return false;
+}
+
 // Capsule có đang lồng vào COL_ không (kiểm tra lỗi va chạm)
 export function penetration(collider, pos, radius = 0.3, height = 1.75) {
   _seg.start.set(pos.x, pos.y + radius, pos.z);

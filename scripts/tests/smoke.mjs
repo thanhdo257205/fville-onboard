@@ -910,7 +910,14 @@ async function runLook(browser, base, look) {
         }
         await ev((p) => { const P = __game._game.player; P.body.teleport(new P.body.position.constructor(p[0], p[1] + 0.05, p[2])); P.sync(); __game.simulate(0.3, undefined, { render: false }); }, back);
         const L = I18N[lang].seat, bad = tries.filter((r) => !(r.prompt === L.sit && r.seated === "seated" && r.free && r.yawErr < 5 && r.lift > -0.06 && r.lift < r.h
-          && r.standPrompt === L.stand && r.stood && r.pen < 0.05 && r.walked > 0.3));
+          && r.standPrompt === L.stand && r.stood && r.pen < 0.05 && !r.inside && r.walked > 0.3));
+        // ghế tulip zone 5: mô hình cao 0,66 m → scene_fixes lower_parts hạ còn 0,48 m; hộp COL_ban_tulip bao cả bộ → đứng dậy ra ngoài hộp
+        if (zone === "zone_05") {
+          const tl = await ev(() => ({ lowered: (__game._game.zone.fixes?.lower_parts || []).map((r) => r.verts) }));
+          const tr = tries.find((r) => r?.group === "tulip");
+          await check(tl.lowered.length && tl.lowered.every((v) => v > 0) && !!tr && tr.h < 0.5 && tr.stood && !tr.inside && tr.walked > 0.3,
+            `${zone}: ghế tulip hạ thấp (${tl.lowered.join(" / ")} đỉnh, mặt ngồi ${tr?.h} m), đứng dậy ra ngoài bộ bàn ghế, đi tiếp ${tr?.walked} m`, JSON.stringify({ tl, tr }));
+        }
         await check(!bad.length, `${zone}: ngồi tự do ${tries.length} nhóm ghế (${groups.join(", ")} — ${list.length} ghế): "${L.sit}" → ngồi đúng hướng, nâng ${tries.map((r) => r.lift).join(" / ")} m, "${L.stand}" → đứng dậy (bước đi / E), không kẹt`,
           JSON.stringify(bad.length ? bad : tries));
       }
