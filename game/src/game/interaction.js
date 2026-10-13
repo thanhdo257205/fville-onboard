@@ -1,6 +1,9 @@
 // Tương tác (data/interactables.json): đứng trong 'radius' (m, đo ngang; mặc định default_radius = 2) hoặc trong hộp
 // 'area' (TRIGGER_) của một đối tượng còn dùng được → hiện gợi ý phím E. 'object' = vật do code đặt (vd chiếc ví),
 // 'actor' = nhân vật do code đặt (vd Tú). Chọn đối tượng gần nhất.
+// Chỗ ngồi tự do (data/seats.json → zones.<zone>): mỗi ghế 1 đối tượng "seat:<i>" (lời nhắc seat.sit) — việc khác trong tầm
+// (nói chuyện, nhặt đồ, bàn làm việc intern…) luôn được chọn trước ghế; ghế có NPC ngồi sẵn (occupied_m) thì bỏ. Đang ngồi tự do
+// → chỉ còn 1 lời nhắc "Đứng dậy" (seat.stand; game.interact đứng dậy).
 import * as THREE from "three";
 import { inTrigger, worldPos, disposeTree } from "../world/zone.js";
 import { blocked } from "../world/collision.js";
@@ -9,6 +12,9 @@ import { t } from "../i18n.js";
 
 const IN_AREA_D = 1.0;  // m
 const MAX_DY = 3.0;   // chênh cao tối đa (vd biển số tuyến trên kính lái xe bus ~3 m)
+const SEAT_DY = 0.6;  // ghế: cùng mặt sàn với người chơi (ghế tầng trên / dưới không tính)
+
+const STAND = { item: { action: "stand:" } };   // lời nhắc "Đứng dậy" khi đang ngồi tự do
 
 const GOLD = new THREE.MeshToonMaterial({ color: 0xf2c14e, emissive: 0x8a5a00, emissiveIntensity: 0.55 });
 GOLD.userData.shared = true;   // dùng chung mọi zone: disposeTree không dọn
@@ -181,6 +187,10 @@ export class Interaction {
       }
       this.list.push(e);
     }
+    const seats = this.game.data?.seats;
+    for (const [i, s] of (seats?.zones?.[zone.id] || []).entries()) {
+      this.list.push({ item: { action: `seat:${i}` }, seat: s, radius: seats.radius_m ?? 1.2, pos: new THREE.Vector3(...s.at), trigger: null, mesh: null });
+    }
     this.refresh();
   }
 
@@ -213,10 +223,23 @@ export class Interaction {
     }
   }
   available(e) {
+    if (e.seat) return !this.occupied(e);
     const it = e.item;
     if (it.action === "none") return false;                     // chỉ để nhìn (vd bảng tên trên bàn)
     if (it.hide_if && this.hideMatch(it.hide_if)) return false;
     return this.game.progress.check(it.requires);
+  }
+
+  // tường / vách kính giữa người chơi và ghế (vd đứng ngoài phòng họp): tia ngang ở 1,5 m — cao hơn hộp COL_ cụm bàn (1,1 m, bọc
+  // luôn ghế) nên chỉ tường chắn
+  wallBetween(playerPos, seatPos) {
+    return blocked(this.game.zone.collider, playerPos.clone().setY(playerPos.y + 1.5), seatPos.clone().setY(seatPos.y + 1.5));
+  }
+
+  // ghế có NPC ngồi sẵn (vd đồng nghiệp ở bàn làm việc zone 5)
+  occupied(e) {
+    const r = this.game.data?.seats?.occupied_m ?? 0.6, p = e.pos;
+    return this.game.npcs.some((n) => n.pose === "seated" && !n.hidden && Math.hypot(n.character.root.position.x - p.x, n.character.root.position.z - p.z) < r);
   }
 
   actorPos(e) {
@@ -225,18 +248,29 @@ export class Interaction {
   }
 
   update(playerPos) {
-    let best = null, bestD = Infinity;
+    // đang ngồi tự do: chỉ còn việc đứng dậy (đang ngồi xuống / đứng lên thì không nhắc gì)
+    const seated = this.game.player?.seated;
+    if (seated) {
+      this.current = seated.free && seated.state === "seated" ? STAND : null;
+      return this.current ? t("seat.stand") : null;
+    }
+    let best = null, bestD = Infinity, seat = null, seatD = Infinity;
     const p = playerPos.clone().setY(playerPos.y + 0.9);
     for (const e of this.list) {
       if (!this.available(e)) continue;
       let d = Infinity;
       const pos = this.actorPos(e);
       const h = pos ? Math.hypot(pos.x - playerPos.x, pos.z - playerPos.z) : Infinity;
+      if (e.seat) {
+        if (Math.abs(pos.y - playerPos.y) <= SEAT_DY && h <= e.radius && h < seatD && !this.wallBetween(playerPos, pos)) { seatD = h; seat = e; }
+        continue;
+      }
       // đứng trong vùng (area) = trong tầm, tính như cách tối đa 1 m → vật nhỏ sát chân (vd hạt lúa cạnh quầy lễ tân) vẫn được chọn
       if (e.trigger && inTrigger(e.trigger, p)) d = Math.min(h, IN_AREA_D);
       if (pos && Math.abs(pos.y - playerPos.y) <= MAX_DY && h <= e.radius) d = Math.min(d, h);
       if (d < bestD && !this.hiddenPerson(e, playerPos)) { bestD = d; best = e; }
     }
+    if (!best && seat) { this.current = seat; return t("seat.sit"); }
     this.current = best;
     return best ? best.item.action.startsWith("door:") ? this.game.roomDoors?.prompt(best.item.action.split(":")[1]) : tx(best.item.prompt) : null;
   }

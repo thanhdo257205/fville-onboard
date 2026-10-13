@@ -537,6 +537,31 @@ for (const [z, cfg] of Object.entries(fx)) {
 }
 report("vật từ GLB riêng (scene_fixes → props, remove_parts)", propErrs, `${propN} vật (${[...propFiles].map((f) => f.split("/").pop()).join(", ") || "—"}), ${removeN} mục gỡ vật cũ`);
 
+// 12. chỗ ngồi tự do (data/seats.json): zone có thật, at 3 số, yaw_deg 0..360, h trong khoảng ghế ngồi được (0,3–0,75 m), group có
+// tên, 2 ghế không trùng chỗ (< 0,3 m); radius_m / occupied_m hợp lệ; chữ seat.sit / seat.stand có ở cả en + vi
+const seatErrs = [], seatCfg = D("seats");
+let seatN = 0;
+if (!seatCfg) seatErrs.push("thiếu data/seats.json");
+else {
+  if (!(seatCfg.radius_m > 0.5 && seatCfg.radius_m <= 2)) seatErrs.push(`radius_m = ${seatCfg.radius_m} (0,5–2)`);
+  if (!(seatCfg.occupied_m > 0 && seatCfg.occupied_m <= 1)) seatErrs.push(`occupied_m = ${seatCfg.occupied_m} (0–1)`);
+  for (const [z, list] of Object.entries(seatCfg.zones || {})) {
+    if (!zones.zones[z]) seatErrs.push(`seats.zones.${z}: không có zone này`);
+    for (const [i, x] of list.entries()) {
+      seatN++;
+      const w = `seats.zones.${z}[${i}]`;
+      if (!(Array.isArray(x.at) && x.at.length === 3 && x.at.every(Number.isFinite))) { seatErrs.push(`${w}: at phải là [x, y, z]`); continue; }
+      if (!(x.yaw_deg >= 0 && x.yaw_deg < 360)) seatErrs.push(`${w}.yaw_deg = ${x.yaw_deg} (0..360)`);
+      if (!(x.h >= 0.3 && x.h <= 0.75)) seatErrs.push(`${w}.h = ${x.h} (0,3–0,75 m)`);
+      if (!x.group) seatErrs.push(`${w}: thiếu group`);
+      const dup = list.findIndex((y, k) => k < i && Math.hypot(y.at[0] - x.at[0], y.at[2] - x.at[2]) < 0.3 && Math.abs(y.at[1] - x.at[1]) < 0.5);
+      if (dup >= 0) seatErrs.push(`${w}: trùng chỗ ghế [${dup}]`);
+    }
+  }
+  for (const l of ["en", "vi"]) for (const k of ["sit", "stand"]) if (!D(`i18n/${l}`)?.seat?.[k]) seatErrs.push(`i18n/${l}.json: thiếu seat.${k}`);
+}
+report("chỗ ngồi tự do (seats.json)", seatErrs, `${seatN} ghế (${Object.entries(seatCfg?.zones || {}).map(([z, l]) => `${z} ${l.length}`).join(", ")})`);
+
 const ms = Math.round(performance.now() - t0);
 console.log(failed ? `✗ test:data: ${failed} mục lỗi (${ms} ms)` : `✓ test:data: đạt hết (${ms} ms)`);
 process.exit(failed ? 1 : 0);

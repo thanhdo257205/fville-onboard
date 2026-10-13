@@ -63,6 +63,7 @@ const langArg = arg("lang");
 const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
 const I18N = { en: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "en.json"), "utf8")), vi: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "vi.json"), "utf8")) };
 const SCENE_FIXES = JSON.parse(readFileSync(join(ROOT, "data", "scene_fixes.json"), "utf8"));
+const SEATS = JSON.parse(readFileSync(join(ROOT, "data", "seats.json"), "utf8"));
 const ACH = JSON.parse(readFileSync(join(ROOT, "data", "achievements.json"), "utf8")).final.title;   // tên thành tựu cuối theo ngôn ngữ
 const QUESTS = JSON.parse(readFileSync(join(ROOT, "data", "quests.json"), "utf8")).quests;
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
@@ -720,6 +721,30 @@ async function runLook(browser, base, look) {
         });
         await check(grass.count > 0 && grass.count === grass.meshes && grass.after <= grass.before && grass.width === 512 && grass.height === 512 && grass.normalsUp && grass.noOutline && grass.surface,
           `${zone}: nền cỏ WebP 512 px, ${grass.before} → ${grass.after} tam giác, ${grass.count} mesh, không viền`, JSON.stringify(grass));
+      }
+      // ngồi tự do (data/seats.json, game/src/game/interaction.js + Game.sitFree): mỗi nhóm ghế của zone 1 ghế (tối đa 6) — đứng
+      // cạnh ghế → lời nhắc "Sit down", E → ngồi đúng hướng ghế, nâng lên mặt ghế, nhắc "Stand up"; đứng dậy bằng bước đi / E lần
+      // nữa (xen kẽ), chỗ đứng không lồng COL_, đi tiếp được. Xong về chỗ cũ
+      if (SEATS.zones?.[zone]?.length && look === looks[0]) {
+        // ban_intern: lời nhắc là việc ở bàn intern (INT_ban_lam_viec — có bước kiểm tra riêng ở zone 5)
+        const list = SEATS.zones[zone], groups = [...new Set(list.map((x) => x.group))].filter((g) => g !== "ban_intern").slice(0, 6);
+        const back = await ev(() => __game.player.pos);
+        await ev(() => __game.resolve());
+        const tries = [];
+        // ghế có việc khác ở gần (vd chào Tú cạnh ghế băng mái chờ) thì việc kia được nhắc trước → thử ghế khác cùng nhóm
+        for (const [k, gname] of groups.entries()) {
+          let r = null;
+          for (const i of list.map((x, j) => (x.group === gname ? j : -1)).filter((j) => j >= 0).slice(-4).reverse()) {
+            r = await ev(([i, by]) => __game.trySeat(i, by), [i, k % 2 ? "key" : "move"]);
+            if (r.seat != null) break;
+          }
+          tries.push(r);
+        }
+        await ev((p) => { const P = __game._game.player; P.body.teleport(new P.body.position.constructor(p[0], p[1] + 0.05, p[2])); P.sync(); __game.simulate(0.3, undefined, { render: false }); }, back);
+        const L = I18N[lang].seat, bad = tries.filter((r) => !(r.prompt === L.sit && r.seated === "seated" && r.free && r.yawErr < 5 && r.lift > -0.06 && r.lift < r.h
+          && r.standPrompt === L.stand && r.stood && r.pen < 0.05 && r.walked > 0.1));
+        await check(!bad.length, `${zone}: ngồi tự do ${tries.length} nhóm ghế (${groups.join(", ")} — ${list.length} ghế): "${L.sit}" → ngồi đúng hướng, nâng ${tries.map((r) => r.lift).join(" / ")} m, "${L.stand}" → đứng dậy (bước đi / E), không kẹt`,
+          JSON.stringify(bad.length ? bad : tries));
       }
       // zone trong nhà: kéo chuột ngẩng hết cỡ + lăn chuột lùi xa nhất → camera vẫn dưới trần (trần không có COL_; trước
       // đây camera bay lên tận nóc nhà). Đối chứng: cùng các góc khi camera chỉ tránh COL_ (số lần xuyên trần trước khi sửa)

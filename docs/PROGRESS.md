@@ -1741,6 +1741,27 @@ Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem tr
 - Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
   sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390. **Đã deploy** gh-pages 0125625 (từ main 7500094).
 
+### Ngồi ở bất kỳ ghế nào (13/10/2026, nhánh `feat/sit-anywhere`)
+
+Người dùng: người chơi ngồi được ở mọi chỗ có ghế (trước: chỉ ghế bàn intern zone 5, qua hội thoại).
+
+- `data/seats.json` (mới): 134 ghế — zone_00 ghế băng mái chờ xe buýt (7 chỗ), zone_01 2 ghế băng giàn leo (18), zone_03 đôn
+  Phòng Hạt Lúa (3) + đôn lục giác sảnh (6, quay về TV), zone_05 ghế bàn làm việc khu chính (47), bàn cộng tác (12), phòng phụ
+  (16), 3 phòng họp (18), ghế băng khu nghỉ (3), ghế tulip (3), ghế bàn intern. Mỗi ghế: điểm giữa mặt ghế trên sàn, hướng nhìn,
+  độ cao mặt ngồi. Ghế nằm chung lưới với bàn / đồ khác (không có node riêng) → `game/src/world/seats.js` dò theo hình (mặt ngang
+  0,33–0,62 m trên sàn COL_, cỡ một chỗ ngồi, ghế băng chia mỗi 0,6 m, lưng ghế / bàn gần → hướng, có chỗ đứng trong 1,2 m),
+  `scripts/tools/find_seats.mjs` chạy qua 6 zone, rồi lọc tay (bỏ bậu cửa sổ nhà xa, thành giếng, bệ tượng Cuder, ghế xe bus,
+  chỗ không tới được). Ghế tulip (cốc trụ) thêm tay theo `interior.tulip_set`.
+- Game: `interaction.js` thêm mỗi ghế 1 đối tượng "Ngồi xuống" (tầm 1,2 m, cùng mặt sàn) — việc khác trong tầm luôn được nhắc trước,
+  ghế có NPC ngồi sẵn bỏ qua; `Game.sitFree` dùng `Player.sit` như bàn intern (độ cao từ dữ liệu); đang ngồi tự do chỉ còn lời nhắc
+  "Đứng dậy" (E / nút hành động), bước đi cũng đứng dậy; tin nhắn / hội thoại tự mở xong vẫn ngồi nguyên. Mạng đã gửi "sit" khi
+  ngồi → người chơi khác thấy. Chữ `seat.sit` / `seat.stand` (en + vi). `__game.seats`, `__game.trySeat(i)`, `__game.findSeats()`.
+- Kiểm thử: `test:data` kiểm tra seats.json (zone, toạ độ, hướng, độ cao, trùng chỗ, chữ); smoke zone 0, 1, 3, 5 mỗi nhóm ghế ngồi /
+  đứng thử 1 ghế (lời nhắc, hướng, độ nâng, đứng dậy bằng bước đi / E, chỗ đứng không lồng COL_). Đo: test:data, test:quick 70/70,
+  `--mobile ui` 21/21. Ảnh kiểm tra: ngồi ghế băng mái chờ (zone 0), ghế bàn làm việc (zone 5).
+- Chưa ngồi được (cần Blender): ghế đẩu nhựa quán vỉa hè zone 0 (0,3 m, thấp hơn animation), ghế băng zone 4 và dãy ghế sát kính
+  bàn cộng tác zone 5 (không có chỗ đứng tới được) — ghi ở CHECKLIST.
+
 ### Lộ trình học: bỏ kiểu đúng / sai (13/10/2026, nhánh `fix/learning-path-free`)
 
 Người dùng: mini-game Lộ trình học (phòng FSA, zone 4) không nên theo kiểu đúng sai (trước: phải xếp "khóa cơ bản trước", xếp

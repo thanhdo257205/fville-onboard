@@ -469,5 +469,9 @@
     "choices": "choices",
     "loading": "Preparing your dance…",
     "load_error": "Couldn't load the dance. Try again."
+  },
+  "seat": {
+    "sit": "Sit down",
+    "stand": "Stand up"
   }
 }
