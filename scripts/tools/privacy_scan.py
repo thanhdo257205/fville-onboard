@@ -36,11 +36,18 @@ def pending_models():
     return {k for k, m in cfg.get("models", {}).items() if m.get("consent_pending")}
 
 
+def tv_videos():
+    """Video TV đã khai (data/scene_fixes.json → videos[].src) — .mp4 duy nhất được phép (main: assets/video/…, gh-pages: game/assets/video/…) (video gốc / tham chiếu vẫn chặn)."""
+    fx = json.loads((ROOT / "data" / "scene_fixes.json").read_text(encoding="utf-8"))
+    return {p for v in fx.get("videos", {}).values() for p in v.get("src", []) if p.startswith("assets/video/")}
+
+
 def scan(repo):
     files = subprocess.run(["git", "-C", str(repo), "ls-files", "-z"], capture_output=True, check=True).stdout
     files = [f for f in files.decode("utf-8").split("\0") if f]
     found = []
     pending = pending_models()
+    videos = tv_videos()
     for f in files:
         p = repo / f
         if not p.exists():
@@ -49,7 +56,7 @@ def scan(repo):
         parts = set(f.split("/")[:-1])
         if low.endswith(BINARY) and any(f"characters/{m}/" in f for m in pending):
             found.append(("consent", f, 0, "nhân vật chưa xác nhận đồng ý dùng hình (consent_pending)"))
-        if low.endswith(BLOCKED_EXT) or (BLOCKED_DIRS & parts and not low.endswith("mixamo/actions.json")):
+        if (low.endswith(BLOCKED_EXT) and not any(f == v or f.endswith("/" + v) for v in videos)) or (BLOCKED_DIRS & parts and not low.endswith("mixamo/actions.json")):
             found.append(("blocked", f, 0, f))
         if p.stat().st_size > MAX_MB * 1024 * 1024:
             found.append(("too_big", f, 0, f"{p.stat().st_size / 1024 / 1024:.1f} MB"))

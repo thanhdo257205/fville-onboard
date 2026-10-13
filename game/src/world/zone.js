@@ -1,6 +1,7 @@
 // Tải 1 zone: GLB theo mức đồ hoạ, chất liệu toon, gom đối tượng game theo tên (REPORT.md mục 8):
 // SPAWN_/NPC_ (empty, yaw_deg), INT_ (vật tương tác, label), TRIGGER_ (hộp [-1,1] × scale), COL_ (va chạm, ẩn).
 import * as THREE from "three";
+import { stopScreens } from "./screens.js";
 import { loadGLTF, url } from "../core/assets.js";
 import { makeZoneMaterial, makeCharacterMaterial } from "../render/renderer.js";
 import { buildCollider } from "./collision.js";
@@ -350,6 +351,7 @@ export function disposeTree(root) {
 }
 
 export function disposeZone(zone) {
+  stopScreens(zone);            // video TV: dừng + thả file trước khi dọn texture
   disposeTree(zone.root);
   zone.collider.geometry.dispose();
   zone.view?.geometry.dispose();

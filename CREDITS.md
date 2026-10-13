@@ -105,3 +105,8 @@ Danh sách đầy đủ từng file, nguồn, SHA-256 và giấy phép: `docs/au
 - three.js (MIT) — trang xem thử `viewer/` và game web.
 
 - Bàn/ghế executive (`assets/props/ceo_office/ceo_office.glb`, nguồn `ceo_01.glb`) và máy tính (`assets/props/apple_desktop/apple_desktop.glb`, nguồn `apple_desktop.glb`): người dùng cung cấp cho phòng Prajith. Game chỉ dùng bản mesh/texture đã rút gọn; file nguồn giữ riêng trên máy.
+
+## Video trên TV
+- `assets/video/fpt_academy.webm`, `assets/video/fpt_academy.mp4` — trích từ "FPT Software Academy Introduction — Official
+  Video" (video chính thức của FPT Software Academy, người dùng gửi 13/10/2026). Cắt 7 đoạn còn ~65 giây, 480 × 270, bỏ
+  tiếng; phát trên TV sảnh zone 3 và TV phòng họp zone 5 (`data/scene_fixes.json` → `videos`, `<zone>.screens`).

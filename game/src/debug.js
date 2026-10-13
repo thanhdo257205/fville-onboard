@@ -12,6 +12,7 @@
 //   __game.cameraCeiling()    → camera chơi ngẩng / lùi hết cỡ ở chỗ người chơi + mọi SPAWN_: có lên xuyên trần không
 //   __game.seeThrough         → cây cối có thể mờ của zone (số cây, cây đang mờ, cây đang che)
 //   __game.gaps(opts)         → chỗ hở của mô hình zone đang chơi: từ chỗ đứng trong nhà bắn tia, tia lọt ra trời (world/gaps.js)
+//   __game.screens            → video trên TV (scene_fixes → screens): file đã chọn, đã có khung, đang phát, giây, vị trí tấm màn
 //   __game.seats              → chỗ ngồi tự do của zone (data/seats.json): số ghế, ghế đang nhắc "Sit down", ghế có NPC ngồi
 //   __game.findSeats(opts)    → dò ứng viên chỗ ngồi theo hình (world/seats.js; scripts/tools/find_seats.mjs gom mọi zone)
 //   __game.talkCam            → camera hội thoại (đang bật, vai trái/phải, điểm chọn vai, người đối thoại)
@@ -30,6 +31,7 @@ import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
 import { penetration, insideSolid } from "./world/collision.js";
+import { screensInfo } from "./world/screens.js";
 import { findGaps } from "./world/gaps.js";
 import { findSeats } from "./world/seats.js";
 import { hud } from "./ui/hud.js";
@@ -75,6 +77,8 @@ export function installDebug(game, loop) {
     // bảng tên đang thấy (toạ độ màn hình) — smoke kiểm tra trên màn thấp không có 2 bảng đè nhau
     get tags() { return game.nametags.visibleRects(); },
     get net() { return game.net?.info(); },
+    // video trên TV của zone đang chơi (world/screens.js): đã tải, đang phát, giây, các tấm màn
+    get screens() { return screensInfo(game.zone); },
     // khung chat (nhắn tin tự do — game/src/ui/chat.js): trạng thái + open(tab, dmWith) / close() / send(text) (gửi ở tab đang mở) /
     // chat(ch, text, to) (gửi thẳng qua net, trả true | mã lỗi)
     get chat() {

@@ -10,7 +10,19 @@
     "near_m": 0.8,
     "min_height_m": 1.2
   },
+  "videos": {
+    "fpt_academy": {
+      "src": ["assets/video/fpt_academy.webm", "assets/video/fpt_academy.mp4"],
+      "aspect": 1.7778,
+      "play_m": 18,
+      "_nguon": "FPT Software Academy Introduction — Official Video (người dùng gửi 13/10/2026, video chính thức của FPT Software Academy). Cắt 7 đoạn còn 64,6 s (0–11,7 · 22,1–28,5 · 38,8–45,8 · 120,4–132,4 · 165,5–176,2 · 186,2–190,8 · 214,9–227,1 s, theo chỗ chuyển cảnh), 480 × 270, 24 fps, bỏ tiếng; WebM VP9 + MP4 H.264 (Chromium không có H.264, Safari cũ không có VP9), mỗi file ~2,3 MB. File gốc không đưa lên repo."
+    }
+  },
   "zone_03": {
+    "screens": [
+      { "video": "fpt_academy", "center": [3.512, 1.725, -11.567], "size": [1.5, 0.85], "yaw_deg": 20, "_tv": "TV đứng nhỏ cạnh khu đôn chờ (zone_03.py tv_stand(3.5, 11.6, yaw=200)). Mặt màn hình trong GLB quay vào vách gỗ → video ở mặt lưng (quay ra sảnh, chỗ người chơi đi qua)" },
+      { "video": "fpt_academy", "center": [1.6, 1.9, -13.165], "size": [2.3, 1.2], "yaw_deg": 0, "_tv": "TV đứng lớn (tv_stand(1.6, 13.2, yaw=180, w=2.4, h=1.3)); như trên — video ở mặt lưng quay ra sảnh" }
+    ],
     "rooms": [
       { "id": "hanh_lang_zone_04", "center": [-17.55, 1.695, -21.5], "size": [7, 3.4, 5], "floor": "#c9c1b0", "wall": "#8f8b84", "ceiling": "#2a2a2a",
         "_ly_do": "Lối sang zone 4 ở đầu tây sảnh (TRIGGER_zone_04_enter x −13,2; __game.gaps: tia nhìn ngang lọt ra trời ở x −14, z −23 … −20). Bên kia là hành lang đầu đông zone 4 (sàn be, tường xám, trần tối). Hộp từ x −14,05 (sát lối đi, không hở khe ở ngưỡng), sàn thấp hơn sàn zone 5 mm, rộng hơn lối đi (tường zone che phần thừa). TẠM: script Blender đã sửa chỗ này (docs/CHECKLIST.md → 'mô hình bối cảnh bị hở'), build lại zone thì bỏ mục này." }
@@ -58,6 +70,11 @@
     ]
   },
   "zone_05": {
+    "screens": [
+      { "video": "fpt_academy", "center": [-42.846, 1.65, -5.55], "size": [1.78, 0.96], "yaw_deg": 90, "_tv": "TV tường tây Phòng họp 1 (meeting_rooms.py: x0 + 0,154, cy + 0,3)" },
+      { "video": "fpt_academy", "center": [-48.846, 1.65, -5.55], "size": [1.78, 0.96], "yaw_deg": 90, "_tv": "TV Trạch Xá" },
+      { "video": "fpt_academy", "center": [-54.846, 1.65, -5.55], "size": [1.78, 0.96], "yaw_deg": 90, "_tv": "TV Ước Lễ" }
+    ],
     "room_doors": [
       {
         "id": "phong_hop_mentor",

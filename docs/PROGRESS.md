@@ -7,6 +7,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Video trên TV (13/10/2026, nhánh `feat/tv-video`):** video giới thiệu FPT Software Academy (người dùng gửi) cắt còn ~65 s
+  (7 đoạn theo chỗ chuyển cảnh), 480 × 270, bỏ tiếng → `assets/video/fpt_academy.webm` (VP9) + `.mp4` (H.264), mỗi file ~2,3 MB
+  (trình duyệt chỉ tải 1 file, chỉ khi vào zone có TV). Phát trên 2 TV đứng sảnh zone 3 (mặt màn hình trong GLB quay vào vách gỗ
+  → video ở mặt lưng quay ra sảnh) và TV 3 phòng họp zone 5. `game/src/world/screens.js`: tấm phẳng sát trước mặt TV, 1 `<video>`
+  mỗi zone, tắt tiếng + lặp, ẩn tới khi có khung đầu, camera xa mọi TV quá 18 m / tab ẩn → dừng; dọn cùng zone. `test:data`:
+  file có thật, ≤ 4 MB, đủ 2 định dạng, có nguồn, TV hợp lệ; `privacy_scan.py` chỉ cho `.mp4` đã khai. Smoke zone 3 + 5: video tải,
+  hiện trên mọi TV, đang phát; đi xa → dừng. Dev server Vite trả Range cho video.
 - **Gặp anh Prajith: cúi chào + bắt tay (13/10/2026, nhánh `feat/bow-handshake`):** Mixamo "Quick Formal Bow" → clip `bow` (4
   ngoại hình), "Shaking Hands 2" → `handshake` (4 ngoại hình + `prajith_polo`; `build_reach.py --lean 0.35 --step 0.5`: giữ 35% độ
   cúi cột sống / cổ / đầu, nửa quãng bước — bản gốc hai người đổ tới, đầu cách 0,35 m → 0,54 m). Hiệu ứng `greet` ở câu đầu

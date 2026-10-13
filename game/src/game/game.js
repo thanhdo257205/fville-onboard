@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { RoomDoors } from "./roomdoors.js";
 import { device } from "../core/device.js";
+import { placeScreens, updateScreens } from "../world/screens.js";
 import { loadZone, disposeZone, inTrigger, worldPos, applySceneFixes, placeProps, prefetchZone, pendingPrefetch } from "../world/zone.js";
 import { buildCollider } from "../world/collision.js";
 import { createLights, DETAIL_LEVELS } from "../render/renderer.js";
@@ -173,6 +174,7 @@ export class Game {
     this.zoneProgress("grass");
     this.sky.groundTexture = await grassTexture();
     await placeProps(zone, this.data.sceneFixes?.[zoneId]?.props);   // vật từ GLB riêng (vd chậu cây) — trước BVH camera
+    placeScreens(zone, this.data.sceneFixes?.[zoneId]?.screens, this.data.sceneFixes?.videos);   // video trên TV (world/screens.js)
     this.zoneProgress("props");
     this.seeThrough.setup(zone, this.data.sceneFixes?.[zoneId]?.see_through);   // trước lần vẽ đầu (vá shader)
     // lưới bối cảnh có BVH (camera hội thoại xét góc nào thấy mặt người đối thoại): mesh hiển thị trừ COL_ và cây (cây tự mờ)
@@ -1137,6 +1139,7 @@ export class Game {
 
   update(dt) {
     this.dances?.update(dt);
+    updateScreens(this.zone, this.camera.position);   // video TV: gần thì phát, xa / tab ẩn thì dừng
     this.idCard.update(dt);
     if (this.preview) { this.preview.update(dt); return; }   // nền màn tiêu đề: chỉ camera trôi
     this.footsteps.update(dt);   // cả lúc cảnh chuyển dắt người chơi / Tú đi

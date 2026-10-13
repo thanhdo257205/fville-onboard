@@ -547,6 +547,36 @@ for (const [z, cfg] of Object.entries(fx)) {
 }
 report("vật từ GLB riêng (scene_fixes → props, remove_parts)", propErrs, `${propN} vật (${[...propFiles].map((f) => f.split("/").pop()).join(", ") || "—"}), ${removeN} mục gỡ vật cũ`);
 
+// 11b. video trên TV (scene_fixes → videos + <zone>.screens, game/src/world/screens.js): video có file thật trong assets/video/
+// (≤ 4 MB mỗi file, cả WebM lẫn MP4 — Chromium không có H.264, Safari cũ không có VP9), ghi nguồn; screens: zone có thật, video
+// có khai, center 3 số, size 2 số > 0, yaw_deg số; file trong assets/video/ không khai → lỗi (không lọt video lạ lên repo công khai)
+const tvErrs = [], VIDEO_MB = 4, videos = fx.videos || {}, tvFiles = new Set();
+for (const [id, v] of Object.entries(videos)) {
+  const src = v.src || [];
+  if (!src.some((f) => f.endsWith(".webm")) || !src.some((f) => f.endsWith(".mp4"))) tvErrs.push(`videos.${id}: cần cả .webm và .mp4`);
+  if (!v._nguon) tvErrs.push(`videos.${id}: thiếu _nguon (video lấy từ đâu)`);
+  for (const f of src) {
+    tvFiles.add(f);
+    if (!/^assets\/video\/[a-z0-9_]+\.(webm|mp4)$/.test(f)) { tvErrs.push(`videos.${id}: ${f} phải nằm trong assets/video/`); continue; }
+    if (!existsSync(join(ROOT, f))) { tvErrs.push(`videos.${id}: thiếu ${f}`); continue; }
+    const mb = statSync(join(ROOT, f)).size / 1024 / 1024;
+    if (mb > VIDEO_MB) tvErrs.push(`${f}: ${mb.toFixed(1)} MB > ${VIDEO_MB} MB`);
+  }
+}
+const vidDir = join(ROOT, "assets", "video");
+for (const f of existsSync(vidDir) ? readdirSync(vidDir) : []) if (!tvFiles.has(`assets/video/${f}`)) tvErrs.push(`assets/video/${f}: không có trong scene_fixes.videos`);
+let tvN = 0;
+for (const [z, cfg] of Object.entries(fx)) for (const [i, sc] of (cfg?.screens || []).entries()) {
+  tvN++;
+  const w = `scene_fixes.${z}.screens[${i}]`;
+  if (!zones.zones[z]) tvErrs.push(`${w}: không có zone này`);
+  if (!videos[sc.video]) tvErrs.push(`${w}: video "${sc.video}" không có trong scene_fixes.videos`);
+  if (!(sc.center?.length === 3 && sc.center.every(Number.isFinite))) tvErrs.push(`${w}: center phải là [x, y, z]`);
+  if (!(sc.size?.length === 2 && sc.size.every((v) => v > 0 && v < 10))) tvErrs.push(`${w}: size phải là [rộng, cao] > 0`);
+  if (!Number.isFinite(sc.yaw_deg ?? 0)) tvErrs.push(`${w}: yaw_deg phải là số`);
+}
+report("video trên TV (scene_fixes → videos, screens)", tvErrs, `${Object.keys(videos).length} video, ${tvN} TV (${Object.entries(fx).filter(([, c]) => c?.screens).map(([z]) => z).join(", ") || "—"})`);
+
 // 12. chỗ ngồi tự do (data/seats.json): zone có thật, at 3 số, yaw_deg 0..360, h trong khoảng ghế ngồi được (0,3–0,75 m), group có
 // tên, 2 ghế không trùng chỗ (< 0,3 m); radius_m / occupied_m hợp lệ; chữ seat.sit / seat.stand có ở cả en + vi
 const seatErrs = [], seatCfg = D("seats");
