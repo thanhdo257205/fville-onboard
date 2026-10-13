@@ -29,7 +29,7 @@
 import * as THREE from "three";
 import { sound as soundLog } from "./core/sound.js";
 import { worldPos, inTrigger } from "./world/zone.js";
-import { penetration } from "./world/collision.js";
+import { penetration, insideSolid } from "./world/collision.js";
 import { findGaps } from "./world/gaps.js";
 import { findSeats } from "./world/seats.js";
 import { hud } from "./ui/hud.js";
@@ -465,6 +465,7 @@ export function installDebug(game, loop) {
       for (let k = 0; k < 120 && p.seated; k++) { api.simulate(0.05, undefined, { render: false }); await new Promise((r) => setTimeout(r, 0)); }
       out.stood = !p.seated;
       out.pen = +penetration(col, p.position, p.body.radius, p.body.height).toFixed(3);
+      out.inside = insideSolid(col, p.position);   // đứng dậy trong hộp COL_ bao cả bộ bàn ghế (ghế tulip) = kẹt
       // đi tiếp được: thử 4 hướng (trước mặt có thể là bàn / tường), lấy quãng dài nhất
       let best = 0;
       for (const [x, y] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {

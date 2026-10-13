@@ -5,7 +5,7 @@
 // Đứng dậy: điểm ngồi nằm lọt giữa bàn và ghế (capsule lồng vào COL_ bàn / ghế → đi đâu cũng kẹt — lỗi cũ) → trong lúc stand_up
 // trượt dần ra chỗ trống gần nhất, ưu tiên trên đường về chỗ đứng trước khi ngồi (exitSpot).
 import * as THREE from "three";
-import { CapsuleBody, penetration } from "../world/collision.js";
+import { CapsuleBody, penetration, insideSolid } from "../world/collision.js";
 
 const ACCEL = 10;          // m/s² — tăng/giảm tốc mượt
 // chờ animation ngồi / đứng tối đa chừng này (giây) — khung trình duyệt ẩn thì mixer không chạy, vẫn không treo hội thoại
@@ -88,7 +88,9 @@ export class Player {
   exitSpot(s) {
     const col = this.collider, r = this.body.radius, h = this.body.height;
     if (!col) return s.from.clone();
-    const free = (p) => penetration(col, p, r, h) < FREE_PEN;
+    // trống = capsule không lồng mặt COL_ và không nằm TRONG một khối COL_ (hộp bọc cả bàn lẫn ghế, vd COL_ban_tulip 2 × 2 m:
+    // giữa hộp không có mặt nào gần → penetration = 0 nhưng đứng đó là bị nhốt trong hộp — lỗi cũ "đứng dậy bị kẹt")
+    const free = (p) => penetration(col, p, r, h) < FREE_PEN && !insideSolid(col, p);
     if (free(s.seat)) return s.seat.clone();
     const p = new THREE.Vector3();
     for (let t = 0.05; t <= 1.0001; t += 0.05) if (free(p.lerpVectors(s.seat, s.from, t))) return p.clone();

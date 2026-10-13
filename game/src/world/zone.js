@@ -202,8 +202,35 @@ export function applySceneFixes(zone, fixes = {}) {
   // thành 1 mesh con), bỏ mọi mảnh lưới rời (tam giác nối nhau qua đỉnh chung) có tâm hộp bao nằm trong một hộp `boxes` (toạ độ
   // glTF). Vd chậu cọ cũ (chậu + thân + từng lá là các mảnh riêng) nằm chung mesh nội thất → thay bằng mô hình mới (props)
   if (fixes.remove_parts?.length) out.remove_parts = fixes.remove_parts.map((r) => removeParts(zone, r));
+  if (fixes.lower_parts?.length) out.lower_parts = fixes.lower_parts.map((r) => lowerParts(zone, r));
   zone.fixes = out;
   return out;
+}
+
+// hạ thấp vật dựng chung mesh với đồ khác (lower_parts, vd ghế tulip zone_05 cao 0,66 m → 0,48 m): đỉnh của mesh khớp `mesh` nằm
+// trong một hộp { center, size } (toạ độ glTF), cao hơn from_y (và thấp hơn to_y nếu có — chừa mặt bàn ngay cạnh) được hạ xuống drop_m (chân đế dưới from_y giữ nguyên, trụ ngắn
+// lại). Mesh dùng chung lưới (bản sao) chỉ sửa 1 lần.
+function lowerParts(zone, r) {
+  const re = new RegExp(r.mesh), boxes = r.boxes.map((b) => new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(...b.center), new THREE.Vector3(...b.size)));
+  const v = new THREE.Vector3(), inv = new THREE.Matrix4(), done = new Set();
+  let verts = 0;
+  zone.root.updateMatrixWorld(true);
+  zone.root.traverse((m) => {
+    if (!m.isMesh || !(re.test(m.name) || re.test(m.parent?.name || "")) || done.has(m.geometry.uuid)) return;
+    done.add(m.geometry.uuid);
+    inv.copy(m.matrixWorld).invert();
+    const pos = m.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+      if (v.y <= r.from_y || v.y >= (r.to_y ?? Infinity) || !boxes.some((b) => b.containsPoint(v))) continue;
+      v.y -= r.drop_m;
+      v.applyMatrix4(inv);
+      pos.setXYZ(i, v.x, v.y, v.z);
+      verts++;
+    }
+    if (verts) { pos.needsUpdate = true; m.geometry.computeBoundingBox(); m.geometry.computeBoundingSphere(); }
+  });
+  return { mesh: r.mesh, drop_m: r.drop_m, verts };
 }
 
 function removeParts(zone, r) {

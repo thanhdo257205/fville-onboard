@@ -7,6 +7,11 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Ghế tulip zone 5: thấp lại, đứng dậy không kẹt (13/10/2026, nhánh `fix/tulip-seat`):** ghế tulip cạnh bàn tròn cao 0,66 m
+  (cao hơn mặt ngồi người chơi) → `scene_fixes → zone_05.lower_parts` hạ cốc ghế + đầu trụ 0,18 m (mặt ngồi 0,48 m, mặt bàn
+  0,69–0,72 m giữ nguyên), `seats.json` tulip `h` 0,48. Đứng dậy bị kẹt: hộp `COL_ban_tulip` 2 × 2 m bao cả bàn lẫn 3 ghế, mà
+  `Player.exitSpot` chỉ đo độ lồng mặt tam giác → điểm nằm giữa hộp được coi là trống. Thêm `insideSolid` (tia đứng chạm nắp
+  hộp COL_ trong 1,8 m = trong khối) → chỗ đứng dậy ra ngoài hộp. Smoke: `trySeat` báo `inside`, bước riêng cho ghế tulip.
 - **Cửa quẹt thẻ mỗi lần vào; đóng cửa phòng họp từ trong (13/10/2026, nhánh `feat/card-doors`):** cửa kính dưới cầu thang +
   cửa Phòng FSA (`scene_fixes → doors[].card`): sau lần đầu (quest), đi xa thì tự đóng; từ phía ngoài tới gần **không tự mở** —
   phím E "Quẹt thẻ" (`card:cua_kinh` / `card:cua_fsa`, `Game.tapDoor`): khoá điều khiển, bước tới đầu đọc, tay phải đưa thẻ, bíp ở
