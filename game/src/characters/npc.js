@@ -21,6 +21,7 @@ export class Npc {
       root.z -= -ox * s + oz * c;
     }
     this.baseY = root.y;
+    this.seatHome = pose === "seated" ? root.clone() : null;   // chỗ ngồi gốc: đứng dậy đi chỗ khác xong thì về đây ngồi lại
     this.lift = pose === "seated" && chairHeight != null && seat.height_m != null ? chairHeight - seat.height_m : 0;
     character.root.position.copy(root);
     character.root.rotation.y = this.homeYaw;
@@ -44,6 +45,11 @@ export class Npc {
     this.state = "walking";
     this.character.enableLocomotion(0.2);
     this._walk = { target: target.clone(), speed, done };
+  }
+
+  // đi lần lượt qua các điểm (vd vòng qua bàn làm việc) → Promise khi tới điểm cuối
+  async walkPath(points, speed = 1.0) {
+    for (const p of points) await new Promise((res) => this.walkTo(p, { speed, done: res }));
   }
 
   // capsule va chạm (người chơi / Tú không đi xuyên): tâm theo xương hông → ngồi thì nằm trên ghế
@@ -75,8 +81,12 @@ export class Npc {
     })().finally(() => { this._arrival = null; });
   }
 
+  // playerPos: vị trí người chơi (giữ tham chiếu: lúc nói chuyện NPC luôn hướng mặt theo người chơi — update)
   async engage(playerPos) {
     if (this._arrival) await this._arrival;
+    this.talkRef = playerPos;
+    // đang quay về hướng cũ sau lần nói trước → thôi quay, bắt chuyện tiếp (trước đây bỏ qua: NPC nói mà quay mặt vào tường)
+    if (this.state === "turning_back" && this._turn) { const r = this._turn.res; this._turn = null; r(); this.state = "idle"; }
     if (this.state === "talking" || this.busy) return;
     if (this.state === "seated") { this.state = "standing_up"; await this.character.playOnce("stand_up"); }
     this.state = "turning";
@@ -99,11 +109,20 @@ export class Npc {
 
   async release() {
     if (this.state !== "talking") return;
+    this.talkRef = null;
     // đã bước ra chỗ khác (vd ra chào, bắt tay — game/greet.js) → đi về chỗ cũ rồi mới quay lại / ngồi
     if (this.returnTo) {
-      const home = this.returnTo;
+      const home = this.returnTo, path = this.returnPath || [];
       this.returnTo = null;
-      await new Promise((res) => this.walkTo(home, { speed: 1.0, done: res }));
+      this.returnPath = null;
+      await this.walkPath([...path, home]);
+      this.state = "talking";
+    }
+    // vốn ngồi làm việc nhưng đã đứng dậy ra đón (arrive — vd anh Prajith) → nói xong về ghế, ngồi làm việc tiếp
+    if (this.seatHome && this.pose === "stand") {
+      const r = this.character.root.position;
+      if (Math.hypot(r.x - this.seatHome.x, r.z - this.seatHome.z) > 0.05) await this.walkPath([this.seatHome]);
+      this.pose = "seated";
       this.state = "talking";
     }
     this.state = "turning_back";
@@ -140,6 +159,8 @@ export class Npc {
     if (this._turn) {
       const left = this.character.turnToward(this._turn.angle, dt, TURN_RATE);
       if (left < THREE.MathUtils.degToRad(3)) { const r = this._turn.res; this._turn = null; r(); }
+    } else if (this.state === "talking" && this.talkRef) {    // đang nói chuyện: hướng mặt theo người chơi (người chơi dịch chỗ)
+      this.character.turnToward(this.faceAngleTo(this.talkRef), dt, 3);
     }
     this.character.update(dt);
     if (this.lift) this.character.root.position.y = this.baseY + this.lift * THREE.MathUtils.smoothstep(this.seatedness(), 0, 1);

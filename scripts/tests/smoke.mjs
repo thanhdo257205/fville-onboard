@@ -616,16 +616,19 @@ async function runLook(browser, base, look) {
           const speaking = npc.state === "talking";
           if (speaking) await talk;
           const exit = npc.arrivalExit.distanceTo(npc.character.root.position) < .01;
+          // nói xong: về ghế, ngồi gõ máy tiếp (13/10/2026, người dùng chốt — trước đây đứng nguyên ở chỗ trống)
           npc.release();
-          for (let i = 0; i < 260; i++) { npc.update(1 / 60); await Promise.resolve(); }
+          for (let i = 0; i < 900 && npc.state !== "seated"; i++) { npc.update(1 / 60); await Promise.resolve(); }
           g.checkNpcEntries();
-          const idle = npc.state === "idle" && npc.pose === "stand" && !npc._arrival;
+          const r = npc.character.root.position, home = npc.seatHome;
+          const idle = npc.state === "seated" && npc.pose === "seated" && npc.character.current?.getClip().name === "sit_type"
+            && Math.hypot(r.x - home.x, r.z - home.z) < .02 && !npc._arrival && npc.arrived;
           g.player.body.teleport(p);
           return { initial, props, stayed, rising, speaking, exit, idle };
         });
         await check(boss.initial.state === "seated" && boss.initial.clip === "sit_type" && boss.props.length === 2
           && boss.stayed && boss.rising && boss.speaking && boss.exit && boss.idle,
-          "Prajith: gõ máy tại bàn mới → vào phòng 1 đứng dậy, ra chỗ trống; E chờ đứng xong, nói xong tiếp tục đứng", JSON.stringify(boss));
+          "Prajith: gõ máy tại bàn mới → vào phòng 1 đứng dậy, ra chỗ trống; E chờ đứng xong, nói xong về ghế gõ máy tiếp", JSON.stringify(boss));
       }
       // cây / bụi tre mô hình Sketchfab (zone 0–3): bản sao dùng chung lưới đã gộp thành vài mesh (world/zone.js
       // batchInstances), mỗi bản sao = 1 cây riêng để làm mờ (số cây khác nhau, camera giữa tán → cây mờ), lá cắt alpha

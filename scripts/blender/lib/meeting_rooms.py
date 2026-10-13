@@ -164,13 +164,15 @@ def build_rooms(cols, cfg, height):
         for xx in (x0 + .8, cx, x1 - .8):
             b.box((xx, y1 - .075, 2.31), (1.45, .04, .76), "reception_white")
             b.tube((xx + .68, y1 - .105, 2.67), (xx + .68, y1 - .105, 1.4), .006, "meeting_chrome", segments=4)
-        # White table with a narrow centre cable strip / conference tablet.
-        b.box((cx, cy + .3, .75), (3.9, 1.6, .07), "sign_white", mat="gloss")
-        b.box((cx, cy + .3, .789), (3.85, .04, .004), "black")
-        for xx in (cx - 1.2, cx + 1.2):
+        # White table with a narrow centre cable strip / conference tablet. table_dx: dời bàn + ghế theo X (phòng có bàn làm
+        # việc của quản lý: chừa lối đi giữa bàn họp và bàn làm việc — 13/10/2026)
+        tx = cx + room.get("table_dx", 0.0)
+        b.box((tx, cy + .3, .75), (3.9, 1.6, .07), "sign_white", mat="gloss")
+        b.box((tx, cy + .3, .789), (3.85, .04, .004), "black")
+        for xx in (tx - 1.2, tx + 1.2):
             b.box((xx, cy + .3, .37), (.06, 1.2, .72), "sign_white")
-        b.box((cx - .65, cy + .06, .9), (.24, .03, .22), "black", rot=(25, 0, 0))
-        for xx in (cx - 1.35, cx, cx + 1.35):
+        b.box((tx - .65, cy + .06, .9), (.24, .03, .22), "black", rot=(25, 0, 0))
+        for xx in (tx - 1.35, tx, tx + 1.35):
             chair(b, xx, cy - .87, 1)
             chair(b, xx, cy + 1.47, -1)
         b.box((x0 + .085, cy + .3, 1.69), (.1, 1.98, 1.25), "black")
@@ -210,7 +212,7 @@ def build_rooms(cols, cfg, height):
             ("san", (cx, cy, -.2), (x1 - x0, y1 - y0, .4)),
             ("bac", (cx, y1, height / 2), (x1 - x0, .16, height)),
             ("tay", (x0, cy, height / 2), (.16, y1 - y0, height)),
-            ("ban", (cx, cy + .3, .4), (3.9, 1.6, .8)),
+            ("ban", (cx + room.get("table_dx", 0.0), cy + .3, .4), (3.9, 1.6, .8)),
         ):
             mk.collider(f"{key}_{name}", pos, size, C)
         if room == cfg["meeting_rooms"][0] and y1 > cfg["main"][3]:

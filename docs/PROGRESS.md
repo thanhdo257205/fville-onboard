@@ -7,6 +7,17 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Chỉnh văn phòng / quẹt thẻ (13/10/2026, nhánh `fix/office-polish`, góp ý người dùng):**
+  quẹt thẻ: người chơi **đi bộ thật** tới đầu đọc (`Player.walkTo`: animation walk, va chạm, kẹt 0,8 s → dịch chuyển nốt; bị
+  dịch chuyển giữa chừng → huỷ) thay vì trượt, clip `reach` phát nhanh ×1,6 (`TAP_SPEED`); Tú chỉ mở cửa quẹt thẻ từ phía trong
+  (trước đây Tú đi theo tới gần là cửa mở luôn). Chị Nga quay mặt vào tường: bắt chuyện lúc NPC đang quay về hướng cũ bị bỏ
+  qua → giờ quay lại người chơi; đang nói chuyện NPC luôn hướng mặt theo người chơi (`Npc.talkRef`). Mũi tên thừa khi vào khu
+  phòng họp: điểm dẫn đường `z5_prajith` / `z5_manager` còn theo phòng họp cũ (x −18 / −27, trước PR #35) → cửa phòng mới
+  (x −46 / −38,5). Prajith đi xuyên bàn: bàn họp phòng của anh dời 0,9 m về phía TV (`office.json → table_dx`, build lại zone
+  5, `seats.json` 6 ghế dời theo); cảnh chào đi vòng sau bàn làm việc → lối giữa bàn làm việc và bàn họp (`greet.npc_path`,
+  `Npc.walkPath`), về ghế theo đường ngược lại.
+  Nói chuyện xong anh Prajith **về ghế, ngồi gõ máy tiếp** (`Npc.seatHome`: NPC vốn ngồi, đứng dậy ra đón — `arrive` — thì
+  `release` đi về chỗ ngồi gốc rồi `sit_down` → `sit_type`; smoke cập nhật theo).
 - **Cửa kính quẹt thẻ zone 4 mở ra ngoài (13/10/2026, nhánh `fix/card-gate-swing`):** mở cửa kính dưới cầu thang thì cánh phải
   lún sau vách trắng cầu thang (`ENV_cau_thang_2`, mặt vách ở x 3,4 — lấn vào ô cửa 0,2 m so với bản lề x 3,6), nhìn như cửa xuyên
   tường. Vào trong không có chỗ cho cánh phải (mở 90° → kẹt trong khe 0,17 m; mở ít hơn → cắt ngang vách) → `scene_fixes →

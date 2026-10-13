@@ -187,7 +187,7 @@
       ]
     },
     "z5_prajith": {
-      "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.2 }, { "pos": [-18.0, 0, -3.7], "r": 0.9 }],
+      "route": [{ "pos": [-46.0, 0, -0.5], "r": 1.2 }, { "pos": [-46.0, 0, -2.6], "r": 0.9 }],
       "_route_ly_do": "Phòng họp chỉ mở cửa phía lối đi chính (giữa vách nam, x −19,3 … −16,7): dấu \"!\" dẫn tới trước cửa, vào hẳn trong cửa rồi mới tới mentor (đi thẳng từ trước cửa tới mentor thì vướng mép vách).",
       "help": { "en": "Ms. Nga is waiting in the mentor meeting room on the left side of the office. Walk in and press E to talk.", "vi": "Chị Nga đang đợi ở phòng họp mentor bên trái văn phòng. Đi vào rồi nhấn E để nói chuyện." },
       "phone": [
@@ -196,7 +196,7 @@
       ]
     },
     "z5_manager": {
-      "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.5 }, { "pos": [-27.0, 0, -1.4], "r": 1.2 }, { "pos": [-27.0, 0, -3.7], "r": 0.9 }],
+      "route": [{ "pos": [-38.5, 0, -0.5], "r": 1.2 }, { "pos": [-38.5, 0, -2.6], "r": 0.9 }],
       "_route_ly_do": "Từ phòng mentor ra cửa, đi dọc lối chính tới trước cửa phòng quản lý (Prajith), vào hẳn trong cửa rồi tới quản lý.",
       "help": { "en": "Prajith, the manager, is in the room next to the mentor meeting room, a little further down the corridor. Press E to talk to him.", "vi": "Phòng anh Prajith (quản lý) ở cạnh phòng họp mentor, đi thêm một chút dọc hành lang. Nhấn E để nói chuyện với anh ấy." },
       "phone": [

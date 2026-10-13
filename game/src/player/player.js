@@ -45,6 +45,14 @@ export class Player {
     this.sync();
   }
 
+  // tự đi bộ tới điểm `to` (thế giới): như bấm phím đi — animation walk, va chạm tường; obstacles: false = không tránh capsule
+  // NPC (dàn cảnh đứng sát người khác). Kẹt (không tiến 0,8 s) → dịch chuyển nốt. → Promise khi tới nơi / bị huỷ (autoStop)
+  walkTo(to, { speed = null, obstacles = true, tol = 0.06 } = {}) {
+    this.autoStop();
+    return new Promise((done) => { this.auto = { to: to.clone(), speed, obstacles, tol, done, best: Infinity, stuck: 0 }; });
+  }
+  autoStop() { const a = this.auto; this.auto = null; a?.done(false); }
+
   // capsule để nhân vật khác (Tú) tránh
   capsule() { const p = this.body.position; return { x: p.x, z: p.z, y: p.y, height: this.body.height, radius: this.body.radius }; }
 
@@ -129,6 +137,21 @@ export class Player {
       .addScaledVector(cam.right(), input.x);
     if (want.lengthSq() > 1) want.normalize();
     want.multiplyScalar(input.run ? run : walk);
+    let a = this.auto;
+    // có việc khác vừa dịch chuyển người chơi (vd smoke, đổi zone) → thôi tự đi
+    if (a?.last && this.body.position.distanceTo(a.last) > 0.4) { this.autoStop(); a = null; }
+    if (a) {                                            // tự đi tới điểm (walkTo): thay phím đi bằng hướng tới đích, chậm dần khi gần
+      const d = new THREE.Vector3(a.to.x - this.body.position.x, 0, a.to.z - this.body.position.z), len = d.length();
+      if (len <= a.tol) { this.auto = null; this.velocity.set(0, 0, 0); a.done(true); want.set(0, 0, 0); }
+      else {
+        want.copy(d).multiplyScalar(Math.min(a.speed ?? walk, len * 3) / len);
+        if (len < a.best - 0.01) { a.best = len; a.stuck = 0; } else if ((a.stuck += dt) > 0.8) {
+          this.body.teleport(new THREE.Vector3(a.to.x, this.body.position.y, a.to.z));
+          this.auto = null; this.velocity.set(0, 0, 0); a.done(true); want.set(0, 0, 0);
+        }
+        if (!a.obstacles) obstacles = null;
+      }
+    }
     // tiến dần tới vận tốc mong muốn
     const diff = want.clone().sub(this.velocity);
     const maxStep = ACCEL * (input.run ? 1.6 : 1) * dt;
@@ -143,6 +166,7 @@ export class Player {
     if (want.lengthSq() > 1e-4) this.character.faceDir(want, dt);
     this.character.setSpeed(this.speed);
     this.character.update(dt);
+    if (this.auto) this.auto.last = this.body.position.clone();
     // rơi khỏi bản đồ (lỗi va chạm) → về chỗ đứng vững gần nhất. Trước đây về "vị trí khung trước + 1 m" — đã ở dưới sàn
     // từ lâu (y ≈ −9) nên rơi mãi quanh y −9 … −10, không lên lại được
     if (this.body.onGround) (this.safe ??= new THREE.Vector3()).copy(this.body.position);

@@ -15,7 +15,8 @@ export class Greeter {
 
   stop() { this.token = null; }
 
-  // cfg: { who, npc_at: [x, z] (glTF), face: [x, z] (hướng NPC nhìn khi chào), gap_m, side_m }
+  // cfg: { who, npc_path: [[x, z], …] (đi vòng qua bàn — glTF), npc_at: [x, z] (chỗ đứng chào), face: [x, z] (hướng NPC nhìn
+//   khi chào), gap_m, side_m }
   async run(cfg) {
     const g = this.g, n = g.npc(cfg.who), pl = g.player, pc = pl?.character, nc = n?.character;
     if (!n || !pc || !nc) return;
@@ -26,8 +27,10 @@ export class Greeter {
     // 1) NPC bước ra chỗ trống (đã đứng dậy ở Npc.engage)
     while (n.state === "standing_up" || n.state === "turning") { await frame(); if (!alive()) return; }
     n.returnTo ??= nc.root.position.clone();
-    const A = new THREE.Vector3(cfg.npc_at[0], nc.root.position.y, cfg.npc_at[1]);
-    await new Promise((res) => n.walkTo(A, { speed: 1.0, done: res }));
+    const y = nc.root.position.y, pts = (cfg.npc_path || []).map(([x, z]) => new THREE.Vector3(x, y, z));
+    const A = new THREE.Vector3(cfg.npc_at[0], y, cfg.npc_at[1]);
+    n.returnPath = pts.slice().reverse();                               // về chỗ cũ theo đường ngược lại (Npc.release)
+    await n.walkPath([...pts, A]);
     if (!alive()) return;
     n.state = "greeting";
     const f = new THREE.Vector3(cfg.face[0], 0, cfg.face[1]).normalize();
@@ -36,7 +39,7 @@ export class Greeter {
     // 2) người chơi đứng đối diện, cách gap_m; lệch side_m sang phải người chơi (tay phải hai người cùng hơi lệch về trái mỗi người)
     const right = new THREE.Vector3(f.z, 0, -f.x);                      // bên phải của người chơi (người chơi nhìn ngược f)
     const B = A.clone().addScaledVector(f, cfg.gap_m ?? 1.08).addScaledVector(right, cfg.side_m ?? 0.1);
-    await g.idCard.stepToPoint(B, 0, 700, { force: true });            // trượt êm tới B (dùng chung bước đi của thẻ)
+    if (!(await g.idCard.stepToPoint(B, 0, 700, { force: true })) || !alive()) return;   // đi bộ tới B
     g.faceTarget = A.clone();
     for (let k = 0; k < 10; k++) { await frame(); if (!alive()) return; }
     // 3) cúi chào — NPC gật đầu đáp
