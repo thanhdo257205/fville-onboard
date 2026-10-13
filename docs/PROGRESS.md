@@ -7,6 +7,14 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Căn bàn Prajith dưới đồng hồ / ba tranh (13/10/2026, nhánh `codex/prajith-desk-alignment`):** bàn CEO xoay −90°,
+  nằm ở đầu bàn họp trắng theo bố cục chữ T; hai mặt bàn cùng trục Y = 4,8 m. Máy tính quay 90° về ghế, marker ngồi
+  và điểm đứng của Prajith theo vị trí mới. Phòng đầu thành 9 × 6 m; phòng 2/3 và phòng phụ dịch tây 3 m, kéo dài
+  hành lang để các phòng không chồng lên nhau. Các collider xoay cùng đồ vật; cửa và spawn theo cấu hình.
+  GLB nền 59.992 tam giác / 633.872 byte; props không tăng. Chỉ giữ mặt dưới khe điều hòa trần nhìn thấy để giữ
+  ngân sách 60.000. Kiểm tra hình bằng Blender MCP; CI kiểm trục hai bàn, hướng bàn / màn hình / NPC, vị trí dưới
+  tường đồng hồ, khoảng trống đứng và đường đi tới phòng phụ. Kiểm thử chức năng trên GitHub, không chạy Chrome local.
+
 - **Bàn Prajith và Breakdance liên tục (13/10/2026, nhánh `codex/prajith-dance-sequence`):** dựa trên main sau PR #45.
   Phòng đầu giữ bàn họp giữa, thêm bộ CEO phía sau và máy tính Apple quay về ghế. Prajith ngồi gõ máy, tự đứng khi
   người chơi vào phòng rồi bước sang chỗ trống để nói chuyện; E trong lúc đứng chờ chuyển động hoàn tất. Ms. Nga ở

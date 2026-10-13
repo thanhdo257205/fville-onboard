@@ -427,7 +427,8 @@ async function runLook(browser, base, look) {
             }
             legs.push({ to: [x, z], reached: distance < 0.1, floor: Math.abs(body.position.y) < 0.05 });
           };
-          go(-68, 0); go(-2, 0);
+          const far = g.zone.nodes.get('SPAWN_phong_phu').getWorldPosition(new V());
+          go(far.x - 10, 0); go(-2, 0);
           const names = [], doors = [];
           for (const id of ["phong_hop_mentor", "phong_hop_manager", "phong_hop_3"]) {
             const room = g.zone.nodes.get(`INT_${id}`), p = room?.getWorldPosition(new V());
@@ -462,7 +463,8 @@ async function runLook(browser, base, look) {
         await ev(() => __game.resolve());
         const doorUi = await ev(() => {
           const g = __game._game, p = g.player.position.clone();
-          g.player.body.teleport(new p.constructor(-49, .05, -.4));
+          const door = g.zone.nodes.get('INT_cua_phong_hop_3').getWorldPosition(new p.constructor());
+          g.player.body.teleport(new p.constructor(door.x, .05, door.z + 1.1));
           const before = g.interaction.update(g.player.position);
           const current = g.interaction.current?.item.action;
           g.interact(); g.roomDoors.update(1);
@@ -479,7 +481,8 @@ async function runLook(browser, base, look) {
           const props = g.zone.fixes.props.filter(n => /ceo_office|apple_desktop/.test(n));
           g.checkNpcEntries();
           const stayed = !npc.arrived;
-          g.player.body.teleport(new p.constructor(-37, .05, -3));
+          const room = g.zone.nodes.get('INT_phong_hop_mentor').getWorldPosition(new p.constructor());
+          g.player.body.teleport(new p.constructor(room.x, .05, -3));
           g.checkNpcEntries();
           const rising = npc.state === "standing_up";
           // Interacting during stand-up must wait for the greeting before speaking.

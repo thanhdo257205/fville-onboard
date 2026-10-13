@@ -261,7 +261,8 @@ def build_markers(g, intern):
         x0, x1, y0, y1 = room
         cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
         pos = tuple(OFFICE_CONFIG["executive"]["seat"]) if key == "manager" else (x1 - 0.8, cy, 0.0)
-        mk.npc(key, pos, "Mentor" if key == "mentor" else "Manager", yaw_deg=180 if key == "manager" else 90, collection=g)
+        yaw = (OFFICE_CONFIG["executive"]["yaw_deg"] + 180) % 360 if key == "manager" else 90
+        mk.npc(key, pos, "Mentor" if key == "mentor" else "Manager", yaw_deg=yaw, collection=g)
         if key == "manager":
             mk.trigger("manager_entry", (cx, cy, 1.2), (x1 - x0 - .3, y1 - y0 - .3, 2.4), g)
         mk.trigger(f"phong_hop_{key}", (cx, y0 + 0.2, 1.2), (ROOM_DOOR, 1.6, 2.4), g)
@@ -304,8 +305,13 @@ def build_colliders(col, rooms):
         C(f"chau_cay_{x:+.0f}_{y:+.0f}", (x, y, 0.6), (0.8, 0.8, 1.2), col)
     # Meeting-room collision is exported alongside its new interior / door geometry.
     ex, ey, _ = OFFICE_CONFIG["executive"]["at"]
-    C("executive_desk", (ex - .110, ey - .577, .381), (2.134, 1.219, .762), col)
-    C("executive_cabinet", (ex + .872, ey, .305), (.61, 2.438, .61), col)
+    yaw = OFFICE_CONFIG["executive"]["yaw_deg"]
+    r = math.radians(yaw)
+    def executive_part(key, offset, size):
+        x, y, z = offset
+        C(key, (ex + math.cos(r) * x - math.sin(r) * y, ey + math.sin(r) * x + math.cos(r) * y, z), size, col, yaw_deg=yaw)
+    executive_part("executive_desk", (-.110, -.577, .381), (2.134, 1.219, .762))
+    executive_part("executive_cabinet", (.872, 0, .305), (.61, 2.438, .61))
     for cy in CLUSTERS_Y:
         for cx in CLUSTERS_X:
             C(f"cum_ban_{cx:+.0f}_{cy:+.0f}", (cx, cy, 0.55), (4 * DESK_W, 1.5, 1.1), col)
