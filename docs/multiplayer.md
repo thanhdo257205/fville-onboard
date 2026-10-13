@@ -18,7 +18,7 @@ tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ �
 | `server/src/pool.js` | Bàn bi-a chung của một phòng: ghế, lượt, vị trí bi, kiểm tra cú đánh, luật (JS thuần, thử bằng Node) |
 | `game/src/pool/rules.js` | Luật 8 bi (luật chuẩn `applyShotV2` + luật rút gọn cũ `applyShot`) + mã hoá bàn — dùng chung cho game và máy chủ |
 | `data/net.json` | URL máy chủ, nhịp gửi, độ trễ nội suy, số người hiện tối đa, danh sách emote và câu chat, giới hạn của máy chủ (mục `server`: cả `room_size`, `max_rooms`, `pool_turn_s`). **Máy chủ đọc file này (và `data/pool.json`) lúc `wrangler deploy`** |
-| `game/src/net/client.js` | Kết nối WebSocket: thử lại theo backoff, ping khi đứng yên, phát hiện rớt mạng |
+| `game/src/net/client.js` | Kết nối WebSocket: thử lại theo backoff, ping khi đứng yên hoặc lâu không nhận được gì, phát hiện rớt mạng |
 | `game/src/net/remotes.js` | Hiện người chơi khác: model, bộ đồ, bảng tên, animation, nội suy, bong bóng câu chat |
 | `game/src/net/net.js` | Nối vào game: gửi vị trí, emote, câu chat; góc "N online · M in this zone" |
 | `game/src/ui/emotes.js` | Vòng chọn nhảy và tab Giao tiếp (phím T / nút 🕺) |
@@ -77,7 +77,7 @@ tự do** (kênh zone / cả phòng / nhắn riêng, lọc từ ở máy chủ �
 | client → máy chủ | `join {name, model, outfit, acc, zone}` | Gửi lại khi đổi bộ đồ (vd vừa nhận Áo Cam FPT) hoặc đội / bỏ phụ kiện (`acc`: vd `["cap"]`, tối đa 4 id) |
 | | `state {zone, pos, yaw, anim}` | Tối đa 5 lần/giây và chỉ khi có thay đổi (> 2 cm, > 2°, đổi anim hoặc zone). Đổi zone cũng bằng tin này |
 | | `emote {id}` · `phrase {id}` · `leave` | |
-| | `ping` | Đứng yên 20 giây thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
+| | `ping` | Đứng yên 20 giây, hoặc 20 giây không nhận được tin nào (đang đi liên tục mà máy chủ không trả gì về cho mình), thì gửi. Runtime của Cloudflare tự trả `pong`, không đánh thức Durable Object |
 | | `pool_join {r, cf, sp}` · `pool_leave` · `pool_rerack` · `pool_poke` | Bi-a (chỉ nhận ở zone của bàn): xin ghế (`r: 2` = máy khách hiểu luật chuẩn, `cf: 1` = gửi sự kiện cú, `sp: 1` = hiểu xoáy), rời ghế, xếp lại / ván mới, báo đối thủ hết giờ |
 | | `pool_choice {c}` | Luật chuẩn, sau cú phá không hợp lệ của đối thủ: `"rerack"` (xếp lại và tự phá) / `"play"` (đánh tiếp) |
 | | `chat {ch, to?, text}` | Nhắn tin tự do (`ch`: `zone` / `all` / `dm`; `to`: id phiên người nhận khi `dm`), tối đa 120 ký tự |

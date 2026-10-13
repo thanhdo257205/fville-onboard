@@ -1,6 +1,6 @@
 // Kết nối WebSocket tới máy chủ chơi nhiều người (data/net.json → url). Không bao giờ chặn game và không ghi lỗi ra
 // console: rớt mạng / máy chủ tắt → tự thử lại (retry_s: 2, 4, 8… giây, cộng ngẫu nhiên); trình duyệt báo mất mạng
-// (navigator.onLine) → không thử, chờ sự kiện "online". Đứng yên lâu → ping (máy chủ tự trả "pong"); không nhận được gì
+// (navigator.onLine) → không thử, chờ sự kiện "online". Đứng yên lâu / lâu không nhận được gì → ping (máy chủ tự trả "pong"); không nhận được gì
 // dead_after_s giây → coi như rớt, kết nối lại. Phòng đầy (mã 4001) → chờ full_retry_s.
 export class NetClient {
   constructor(cfg, { onOpen, onMessage, onClose } = {}) {
@@ -93,6 +93,9 @@ export class NetClient {
     if (!this.open) return;
     const now = performance.now();
     if (!document.hidden && now - this.lastRecv > (this.cfg.dead_after_s ?? 50) * 1000) { this.ws.close(4000, "no reply"); return; }
-    if (now - this.lastSent >= (this.cfg.heartbeat_s ?? 20) * 1000) this.send('{"t":"ping"}');
+    // ping cả khi lâu không NHẬN được gì: đang đi liên tục thì vị trí gửi đều (lastSent mới) nhưng máy chủ không trả lại cho chính
+    // mình — một mình trong zone / người khác đứng yên → 50 s không nhận gì → tự ngắt nhầm, mất "N online" + ô chat vài giây
+    const hb = (this.cfg.heartbeat_s ?? 20) * 1000;
+    if (now - this.lastSent >= hb || now - this.lastRecv >= hb) this.send('{"t":"ping"}');
   }
 }

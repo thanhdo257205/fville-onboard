@@ -7,6 +7,12 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Mạng: không tự ngắt khi đi liên tục (13/10/2026, nhánh `fix/net-heartbeat`):** cứ khoảng 50 giây "N online" và ô chat
+  biến mất vài giây. Nguyên nhân: máy khách chỉ ping khi 20 s chưa *gửi* gì, nhưng đang đi thì vị trí gửi đều; máy chủ không trả
+  vị trí của mình về cho mình → một mình trong zone / người khác đứng yên thì không *nhận* gì → quá `dead_after_s` (50 s) máy khách
+  tưởng rớt mạng, tự đóng rồi kết nối lại. Sửa `net/client.js heartbeat`: ping cả khi 20 s chưa nhận được gì (ping do runtime
+  Cloudflare tự trả, không đánh thức Durable Object). Thử với máy chủ local (heartbeat 4 s, dead 9 s, đi 16 s): bản cũ kết nối lại
+  4 lần, bản sửa 0 lần. Smoke (phần mạng): bước "đi liên tục 16 s … không tự ngắt".
 - **Cửa quẹt thẻ mỗi lần vào; đóng cửa phòng họp từ trong (13/10/2026, nhánh `feat/card-doors`):** cửa kính dưới cầu thang +
   cửa Phòng FSA (`scene_fixes → doors[].card`): sau lần đầu (quest), đi xa thì tự đóng; từ phía ngoài tới gần **không tự mở** —
   phím E "Quẹt thẻ" (`card:cua_kinh` / `card:cua_fsa`, `Game.tapDoor`): khoá điều khiển, bước tới đầu đọc, tay phải đưa thẻ, bíp ở

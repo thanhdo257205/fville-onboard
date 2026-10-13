@@ -1395,6 +1395,24 @@ async function runNetZone4(browser, base, srv) {
     const con2 = problems.splice(0);
     await check(ok2 && s2.tier === "low" && !s2.zoneError && sec2 <= 20 && r2.seen && !con2.length,
       `zone_03 → cổng (${g}) → zone_04 trong ${sec2} s, thấy lại bot, console sạch`, JSON.stringify({ ok2, ...s2, step: { ok: st.ok, why: st.why, goal: st.goal }, ...r2, console: con2.slice(0, 5) }));
+    // đi liên tục mà không nhận được gì (bot đứng yên — máy chủ không trả vị trí của mình về cho mình): trước đây không ping vì
+    // vị trí gửi đều → quá dead_after_s thì tự ngắt nhầm, "N online" + ô chat mất vài giây. Rút ngắn: heartbeat 4 s, dead 9 s, đi 16 s
+    const kept = await ev(async () => {
+      const n = __game._game.net, c = n.client, keep = [c.cfg.heartbeat_s, c.cfg.dead_after_s], before = c.stats.connects;
+      Object.assign(c.cfg, { heartbeat_s: 4, dead_after_s: 9 });
+      const s0 = c.stats.sent;
+      let hidden = 0;
+      for (let i = 0; i < 160; i++) {
+        __game.simulate(0.1, { x: 0, y: Math.floor(i / 5) % 2 ? 1 : -1, run: false }, { render: false });
+        n.update(0.1);        // gửi vị trí ngay (vòng lặp vẽ có thể chưa tới khung kế)
+        if (n.hudEl.hidden) hidden++;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      [c.cfg.heartbeat_s, c.cfg.dead_after_s] = keep;
+      return { connects: c.stats.connects - before, open: c.status === "open" && n.connected, sent: c.stats.sent - s0, hidden, lastClose: c.stats.lastClose };
+    });
+    await check(kept.connects === 0 && kept.open && kept.sent > 40 && kept.hidden === 0,
+      `đi liên tục 16 s không nhận tin nào (heartbeat 4 s, dead 9 s): vẫn ping, không tự ngắt — "N online" + ô chat không mất (${kept.sent} bản tin)`, JSON.stringify(kept));
   } catch (e) {
     results.push({ look: label, ok: false, text: e.message });
     line(false, `${label} · lỗi script: ${e.message.split("\n")[0]}`);
