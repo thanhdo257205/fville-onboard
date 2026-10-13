@@ -59,6 +59,7 @@
     "click_to_look": "Bấm chuột để nhìn quanh",
     "objective_explore": "Khám phá {zone}",
     "zone_locked": "Lối này sẽ mở ở bản cập nhật sau.",
+    "card_needed": "Quẹt thẻ vào đầu đọc để mở cửa (E).",
     "tier_auto_low": "Đã chuyển đồ họa sang mức Thấp cho mượt hơn.",
     "detail_lowered": "Đã giảm độ nét cho mượt hơn (Esc → Độ nét).",
     "interact": "{key} {action}",
