@@ -461,12 +461,24 @@ export class Game {
     const evs = this.zoneCfg(this.state.zone)?.events;
     if (!evs) return;
     if (this.mode !== "play") return;
+    // area: chỉ khi người chơi đứng trong hộp { center, size } (toạ độ glTF) hoặc vùng TRIGGER_ (tên) — vd lời dẫn chuyện khi
+    // bước vào hành lang phòng họp; once_flag: cờ lưu trong bản lưu → cả ngày chỉ một lần (đi lại zone / tải lại trang không lặp)
+    const p = this.player.position.clone().setY(this.player.position.y + 0.9);
     for (const [i, ev] of evs.entries()) {
-      if (this.firedEvents.has(i) || this.zoneTime < ev.after_s || !this.progress.check(ev.if)) continue;
+      if (this.firedEvents.has(i) || this.zoneTime < (ev.after_s ?? 0) || !this.progress.check(ev.if)) continue;
+      if (ev.once_flag && this.progress.flags.has(ev.once_flag)) continue;
+      if (ev.area && !this.inArea(ev.area, p)) continue;
       this.firedEvents.add(i);
+      if (ev.once_flag) this.progress.flags.add(ev.once_flag);
       if (ev.dialogue) this.runDialogue(ev.dialogue, { actor: ev.actor || null });
       return;
     }
+  }
+
+  inArea(area, p) {
+    if (typeof area === "string") { const tr = this.zone.triggers.find((t) => t.name === area); return !!tr && inTrigger(tr, p); }
+    const [cx, cy, cz] = area.center, [sx, sy, sz] = area.size;
+    return Math.abs(p.x - cx) <= sx / 2 && Math.abs(p.y - cy) <= sy / 2 && Math.abs(p.z - cz) <= sz / 2;
   }
 
   checkNpcEntries() {
@@ -1018,7 +1030,9 @@ export class Game {
   // seated.free → E lần nữa hoặc bước đi thì đứng dậy, hội thoại tự mở (tin nhắn…) xong vẫn ngồi nguyên
   sitFree(s) {
     if (!s || this.player.seated) return;
-    const done = this.player.sit(new THREE.Vector3(...s.at), THREE.MathUtils.degToRad(s.yaw_deg ?? 0) + Math.PI, s.h ?? null);
+    // bàn có bàn phím + máy tính (seats.json → typing_groups) → gõ phím; ghế khác → ngồi yên (sit_idle)
+    const pose = (this.data.seats?.typing_groups || []).includes(s.group) ? "sit_type" : "sit_idle";
+    const done = this.player.sit(new THREE.Vector3(...s.at), THREE.MathUtils.degToRad(s.yaw_deg ?? 0) + Math.PI, s.h ?? null, pose);
     if (this.player.seated) this.player.seated.free = true;
     return done;
   }

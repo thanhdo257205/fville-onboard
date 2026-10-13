@@ -437,8 +437,14 @@ export function installDebug(game, loop) {
       for (let k = 0; k < 120 && p.seated; k++) { api.simulate(0.05, undefined, { render: false }); await new Promise((r) => setTimeout(r, 0)); }
       out.stood = !p.seated;
       out.pen = +penetration(col, p.position, p.body.radius, p.body.height).toFixed(3);
-      api.simulate(0.5, { x: 0, y: 1, run: false }, { render: false });
-      out.walked = +Math.hypot(p.position.x - c.x, p.position.z - c.z).toFixed(2);
+      // đi tiếp được: thử 4 hướng (trước mặt có thể là bàn / tường), lấy quãng dài nhất
+      let best = 0;
+      for (const [x, y] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+        const q = p.position.clone();
+        api.simulate(0.4, { x, y, run: false }, { render: false });
+        best = Math.max(best, Math.hypot(p.position.x - q.x, p.position.z - q.z));
+      }
+      out.walked = +best.toFixed(2);
       return out;
     },
     // ứng viên chỗ ngồi của zone đang chơi (world/seats.js — dò theo hình, xem lại rồi chép vào data/seats.json)

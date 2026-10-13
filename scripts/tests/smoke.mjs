@@ -421,6 +421,31 @@ async function runLook(browser, base, look) {
       const zone = order[zi], next = order[zi + 1], zt = Date.now();
       const required = await ev((z) => __game._game.content.quests.filter((q) => q.zone === z && q.required).map((q) => q.id), zone);
       const ps = { zone, lunch: false, login: false, reloaded: false };
+      // lời dẫn khi bước vào vùng (zones.json → events có area + once_flag): zone_05 hành lang phòng họp, khu bàn làm việc — bước
+      // vào hộp → đúng hội thoại lời dẫn mở, giải xong rồi ra vào lại không mở nữa (cờ lưu bản lưu). Xong về chỗ cũ. Chạy đầu tiên trong zone: các
+      // bước sau dịch chuyển vào các vùng này (cửa phòng họp, Prajith, ghế…) không bị lời dẫn mở chen ngang
+      const areaEvs = (zonesCfg.zones[zone]?.events || []).filter((e) => e.area?.center && e.once_flag);
+      if (areaEvs.length && look === looks[0]) {
+        const back = await ev(() => __game.player.pos);
+        await ev(() => __game.resolve());
+        const got = [];
+        for (const e of areaEvs) {
+          got.push(await ev(async (e) => {
+            const g = __game._game, P = g.player, at = (dz) => { P.body.teleport(new P.body.position.constructor(e.area.center[0], 0.05, e.area.center[2] + dz)); P.velocity.set(0, 0, 0); P.sync(); __game.simulate(0.4, undefined, { render: false }); };
+            at(0);
+            const opened = g.runner.active?.id ?? null, text = document.querySelector("#dialogue")?.textContent?.slice(0, 80) ?? "";
+            await __game.resolve();
+            P.body.teleport(new P.body.position.constructor(e.area.center[0], 0.05, e.area.center[2] + e.area.size[2] / 2 + 3)); P.sync(); __game.simulate(0.3, undefined, { render: false });
+            at(0);
+            const again = g.runner.active?.id ?? null;
+            await __game.resolve();
+            return { want: e.dialogue, opened, again, flag: g.progress.flags.has(e.once_flag), text };
+          }, e));
+        }
+        await ev((p) => { const P = __game._game.player; P.body.teleport(new P.body.position.constructor(p[0], p[1] + 0.05, p[2])); P.sync(); __game.simulate(0.3, undefined, { render: false }); }, back);
+        await check(got.every((r) => r.opened === r.want && !r.again && r.flag),
+          `${zone}: lời dẫn khi bước vào vùng — ${got.map((r) => r.want).join(", ")}: mở 1 lần, ra vào lại không lặp`, JSON.stringify(got));
+      }
       // Rebuilt office: exercise the real capsule solver on both corridor directions
       // and each meeting-room doorway without advancing quests or moving the player.
       if (zone === "zone_05" && look === looks[0]) {
@@ -843,7 +868,7 @@ async function runLook(browser, base, look) {
         }
         await ev((p) => { const P = __game._game.player; P.body.teleport(new P.body.position.constructor(p[0], p[1] + 0.05, p[2])); P.sync(); __game.simulate(0.3, undefined, { render: false }); }, back);
         const L = I18N[lang].seat, bad = tries.filter((r) => !(r.prompt === L.sit && r.seated === "seated" && r.free && r.yawErr < 5 && r.lift > -0.06 && r.lift < r.h
-          && r.standPrompt === L.stand && r.stood && r.pen < 0.05 && r.walked > 0.1));
+          && r.standPrompt === L.stand && r.stood && r.pen < 0.05 && r.walked > 0.3));
         await check(!bad.length, `${zone}: ngồi tự do ${tries.length} nhóm ghế (${groups.join(", ")} — ${list.length} ghế): "${L.sit}" → ngồi đúng hướng, nâng ${tries.map((r) => r.lift).join(" / ")} m, "${L.stand}" → đứng dậy (bước đi / E), không kẹt`,
           JSON.stringify(bad.length ? bad : tries));
       }

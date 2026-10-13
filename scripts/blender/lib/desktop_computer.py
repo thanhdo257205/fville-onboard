@@ -246,8 +246,9 @@ def _finish(obj, mat):
 
 
 # ---------- dựng ----------
-def build(collection, name, location, yaw_deg=0.0, log=print):
+def build(collection, name, location, yaw_deg=0.0, kb_forward=0.0, log=print):
     """Dựng máy tại `location` (toạ độ Blender, z = mặt bàn), xoay `yaw_deg` quanh Z (0 = mặt trước nhìn -Y).
+    kb_forward: đẩy bàn phím + chuột về phía người ngồi (m, theo mặt trước) — tay của animation gõ phím (sit_type) chạm phím.
     → (object máy, object màn hình `monitor_screen` (con của máy), báo cáo)."""
     parts = load_source(collection)
     src_tris = sum(_tris(o) for o in parts.values())
@@ -263,6 +264,9 @@ def build(collection, name, location, yaw_deg=0.0, log=print):
     # tỉ lệ theo bề rộng ngoài của màn hình; gốc = tâm đáy đế
     width = float(np.ptp(_co(parts["computer"])[:, 0]))
     s = SCREEN_W / width
+    if kb_forward:                        # bàn phím + chuột lại gần mép bàn (hệ toạ độ gốc: mặt trước nhìn -Y, chưa nhân tỉ lệ)
+        for k in ("key_board", "mouse", "mouse_wheel"):
+            parts[k].data.transform(Matrix.Translation((0, -kb_forward / s, 0)))
     bc = _co(parts["base"])
     pivot = Vector(((bc[:, 0].min() + bc[:, 0].max()) / 2, (bc[:, 1].min() + bc[:, 1].max()) / 2, floor))
     screen, (sw, sh) = split_screen(parts["computer"], collection)
