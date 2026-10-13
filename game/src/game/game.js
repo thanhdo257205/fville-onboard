@@ -886,13 +886,24 @@ export class Game {
         else {
           const near = (q) => dist(q) < (ac.reopen_m ?? 1.6);
           const inside = (q) => !d.cfg.card || !q || (q.x - d.center.x) * d.cfg.card.outside[0] + (q.z - d.center.z) * d.cfg.card.outside[1] < 0;
-          want = (!instant && !d.wasOk) || d.tapped || (near(p) && inside(p)) || (near(tu) && inside(tu));
+          if ((!instant && !d.wasOk) || d.tapped) d.pendingOpen = true;           // vừa quẹt thẻ (lần đầu theo quest / tapDoor)
+          want = d.pendingOpen || (near(p) && inside(p)) || (near(tu) && inside(tu));
+          // cánh cửa mở ra phía ngoài (PR #61) quét qua chỗ người chơi đang đứng (vd ngay trước đầu đọc) → bước ra giữa lối cửa
+          // rồi mới mở (cửa không xuyên người)
+          if (want && d.cfg.card && !instant) {
+            if (d.clearing || this.idCard?.token) want = false;          // đang quẹt thẻ (tay còn đưa thẻ) / đang bước ra: chờ
+            else {
+              const spot = this.doorClearSpot(d);
+              if (spot) { want = false; d.clearing = this.player.walkTo(spot).then(() => { d.clearing = null; }); }
+            }
+          }
         }
         d.tapped = false;
       }
       d.wasOk = ok;
       if (want !== d.open) {
         d.open = want;
+        if (want) d.pendingOpen = false;
         d.since = 0;
         if (instant) d.t = want ? 1 : 0;
         if (d.cfg.col?.length) want ? this.removeColliders(d.cfg.col, d) : this.restoreColliders(d);
@@ -908,6 +919,22 @@ export class Game {
       const k = THREE.MathUtils.smootherstep(d.t, 0, 1);
       for (const l of d.leaves) l.node.quaternion.slerpQuaternions(l.from, l.to, k);
     }
+  }
+  // chỗ đứng an toàn khi cửa mở: người chơi (capsule 0,3 m) chạm hộp bao một cánh ở tư thế mở → giữa lối cửa, lùi ra phía ngoài clear_m (mặc định 1,7 m)
+  doorClearSpot(d) {
+    const p = this.player?.position, o = d.cfg.card?.outside;
+    if (!p || !o || !d.center) return null;
+    const hit = d.leaves.some((l) => {
+      const keep = l.node.quaternion.clone();
+      l.node.quaternion.copy(l.to);
+      l.node.updateWorldMatrix(true, true);
+      const box = new THREE.Box3().setFromObject(l.node).expandByScalar(0.3);
+      l.node.quaternion.copy(keep);
+      l.node.updateWorldMatrix(true, true);
+      return p.x > box.min.x && p.x < box.max.x && p.z > box.min.z && p.z < box.max.z;
+    });
+    const back = d.cfg.card.clear_m ?? 1.7;                              // cánh dài ~1,3 m + bán kính người 0,3 m
+    return hit ? new THREE.Vector3(d.center.x + o[0] * back, p.y, d.center.z + o[1] * back) : null;
   }
   // cửa quẹt thẻ đang đóng, người chơi ở phía ngoài (phía đầu đọc) → có lời nhắc "Quẹt thẻ" (interaction.js action card:<id>)
   cardDoorReady(id) {
@@ -927,6 +954,8 @@ export class Game {
         sound.play("card_ok", { pos: d.center });
         d.tapped = true;
       } });
+      // cửa chưa mở vì đang bước ra khỏi vùng cánh cửa (updateDoors) → chờ cửa mở mới trả điều khiển
+      for (let k = 0; k < 80 && d.pendingOpen && !d.open; k++) await new Promise((r) => setTimeout(r, 50));
     } finally {
       this.faceTarget = null;
       if (this.mode === "cutscene" && !this.cutscene && !this.timeSkipping) this.setMode("play");
