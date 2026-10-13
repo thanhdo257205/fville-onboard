@@ -41,13 +41,16 @@
         "leaves": { "cua_quet_the_canh_trai": 90, "cua_quet_the_canh_phai": -90 },
         "col": ["COL_cua_quet_the"],
         "open_if": { "quests": ["z4_card_gate"] },
-        "seconds": 0.9
+        "seconds": 0.9,
+        "auto_close": { "away_m": 2.6, "reopen_m": 1.7, "min_s": 2.5 },
+        "_auto_close_ghi_chu": "13/10/2026 (người dùng chốt): đi qua rồi cửa tự đóng (người chơi và Tú cùng cách tâm cửa > away_m, đã mở ít nhất min_s, không đang quẹt thẻ) → trả hộp va chạm; quay lại gần (< reopen_m) thì tự mở như cửa cảm biến (đã quẹt thẻ một lần)."
       },
       {
-        "_ghi_chu": "Cửa Phòng FSA (tầng trên, đầu tây). Xong Lộ trình học (quest z4_fsa) → 2 cánh mở vào phía văn phòng (−X). Giữ COL_cua_phong_fsa: TRIGGER_zone_05_enter nằm trước hộp này, chạm cửa là sang zone 5.",
+        "_ghi_chu": "Cửa Phòng FSA (tầng trên, đầu tây) — lối vào văn phòng zone 5. Quẹt thẻ ở đầu đọc dau_doc_the_fsa (quest z4_office_card, 13/10/2026; trước đó mở khi xong Lộ trình học z4_fsa) → 2 cánh mở vào phía văn phòng (−X). Giữ COL_cua_phong_fsa: TRIGGER_zone_05_enter nằm trước hộp này, chạm cửa là sang zone 5.",
         "leaves": { "cua_phong_fsa_canh_trai": 90, "cua_phong_fsa_canh_phai": -90 },
-        "open_if": { "quests": ["z4_fsa"] },
-        "seconds": 0.9
+        "open_if": { "quests": ["z4_office_card"] },
+        "seconds": 0.9,
+        "auto_close": { "away_m": 2.6, "reopen_m": 1.7, "min_s": 2.5 }
       }
     ]
   },

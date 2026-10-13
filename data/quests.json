@@ -9,6 +9,7 @@
     { "id": "rice_room", "zone": "zone_03", "title": { "en": "Rice Grain Room", "vi": "Phòng Hạt Lúa" } },
     { "id": "card_gate", "zone": "zone_04", "title": { "en": "Card Gate", "vi": "Cửa quẹt thẻ" } },
     { "id": "fsa", "zone": "zone_04", "title": { "en": "FSA Room", "vi": "Phòng FSA" } },
+    { "id": "office_card", "zone": "zone_04", "title": { "en": "Office Door", "vi": "Cửa văn phòng" } },
     { "id": "meet_prajith", "zone": "zone_05", "title": { "en": "Meet your mentor", "vi": "Gặp mentor" } },
     { "id": "meet_manager", "zone": "zone_05", "title": { "en": "Meet the manager", "vi": "Gặp quản lý" } },
     { "id": "hello_team", "zone": "zone_05", "title": { "en": "Say Hello to the Team", "vi": "Chào cả team" } },
@@ -31,6 +32,7 @@
     { "id": "z3_wallet", "zone": "zone_03", "required": false, "target": "vi_danh_roi", "title": { "en": "Return the lost wallet", "vi": "Trả lại ví bị đánh rơi" }, "visible_if": { "flags": ["wallet_taken"] } },
     { "id": "z4_card_gate", "zone": "zone_04", "checklist": "card_gate", "required": true, "target": "INT_cua_quet_the", "title": { "en": "Tap your card at the card gate", "vi": "Quẹt thẻ ở cửa kính" } },
     { "id": "z4_fsa", "zone": "zone_04", "checklist": "fsa", "required": true, "target": "INT_cua_phong_fsa", "title": { "en": "Plan your first week at the FSA Room upstairs", "vi": "Lên Phòng FSA lập kế hoạch tuần đầu" } },
+    { "id": "z4_office_card", "zone": "zone_04", "checklist": "office_card", "required": true, "target": "INT_cua_phong_fsa", "past_zone_done": true, "title": { "en": "Tap your card to enter the office", "vi": "Quẹt thẻ vào văn phòng" }, "_ly_do": "13/10/2026 (người dùng chốt): quẹt thẻ ở cửa Phòng FSA dẫn vào văn phòng. past_zone_done: bản lưu cũ đã sang zone sau thì coi như đã xong (GameState.repair)." },
     { "id": "z5_prajith", "zone": "zone_05", "checklist": "meet_prajith", "required": true, "target": "NPC_mentor", "title": { "en": "09:15 · Meet Ms. Nga in the meeting room on the left", "vi": "09:15 · Gặp chị Nga ở phòng họp bên trái" } },
     { "id": "z5_manager", "zone": "zone_05", "checklist": "meet_manager", "required": true, "target": "NPC_manager", "title": { "en": "Meet Prajith, the manager, in the room next door", "vi": "Gặp anh Prajith (quản lý) ở phòng bên cạnh" } },
     { "id": "z5_lan", "zone": "zone_05", "checklist": "hello_team", "required": true, "target": "NPC_dong_nghiep_1", "title": { "en": "Say hello to Lan", "vi": "Chào chị Lan" } },
@@ -46,7 +48,7 @@
     { "zone": "zone_03", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_from_zone_03", "requires": [] },
     { "zone": "zone_03", "node": "TRIGGER_zone_04_enter", "to_zone": "zone_04", "to_spawn": "SPAWN_zone_04_from_zone_03", "requires": ["z3_card", "z3_rice_room"], "blocked_dialogue": "tu_remind_zone3" },
     { "zone": "zone_04", "node": "TRIGGER_zone_03_enter", "to_zone": "zone_03", "to_spawn": "SPAWN_zone_03_from_zone_04", "requires": [] },
-    { "zone": "zone_04", "node": "TRIGGER_zone_05_enter", "to_zone": "zone_05", "to_spawn": "SPAWN_zone_05_from_zone_04", "requires": ["z4_card_gate", "z4_fsa"], "blocked_dialogue": "fsa_remind" },
+    { "zone": "zone_04", "node": "TRIGGER_zone_05_enter", "to_zone": "zone_05", "to_spawn": "SPAWN_zone_05_from_zone_04", "requires": ["z4_card_gate", "z4_fsa", "z4_office_card"], "blocked_dialogue": "fsa_remind" },
     { "zone": "zone_05", "node": "TRIGGER_zone_04_enter", "to_zone": "zone_04", "to_spawn": "SPAWN_zone_04_from_zone_05", "requires": [] }
   ]
 }

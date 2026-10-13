@@ -15,6 +15,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   người chơi đưa tay nhận, thẻ trượt qua quầy sang tay. Zone 4: thêm câu rút thẻ trước tiếng "bíp" — người chơi bước tới trước
   đầu đọc, đưa thẻ chạm; người lạ dời 0,6 m dọc tường để không chắn đầu đọc. `test:data` mục "thẻ nhân viên cầm tay", smoke
   zone 3 → 4. Nguồn / giấy phép mô hình thẻ: chờ người dùng xác nhận (CREDITS.md).
+  Đợt 2 (13/10/2026, góp ý người dùng): lễ tân **đặt thẻ xuống mặt quầy** (dò mặt phẳng cao nhất 1,12 m, đẩy về phía người chơi),
+  hội thoại đóng thì khoá điều khiển: người chơi bước tới quầy, **cúi đầu nhìn thẻ** ~1,1 s (thêm góc gật vào xương đầu sau
+  animation), đưa **tay phải** cầm lên (thẻ bay lên tay ở 82% clip — trước đó chui dưới mép quầy) rồi cất. Thẻ phóng 1,3 lần
+  cho dễ thấy. **Cửa tự đóng** (`scene_fixes → doors[].auto_close`): người chơi và Tú cách tâm cửa > 2,6 m → đóng, trả hộp va
+  chạm; tới gần < 1,7 m → tự mở lại. **Quẹt thẻ cửa văn phòng** (cửa Phòng FSA → zone 5): quest mới `z4_office_card` (Act 3,
+  gợi ý H / Tú / tin nhắn), hội thoại `office_card` với đầu đọc `dau_doc_the_fsa`; cửa mở theo quest này, lối sang zone 5 đòi
+  quest này; bản lưu cũ đã sang zone 5 → `repair` tự thêm (`past_zone_done`).
 - **Phòng Hạt Lúa + giới thiệu F-Ville 1 ở chỗ chụp ảnh (12/10/2026, nhánh `feat/rice-room`):** mini-game Dòng thời gian thay bằng
   **Hạt Lúa** (`minigames.rice_grain`, `games.js rice_grain`): hạt lúa lớn khắc tên Top Performer theo năm, chạm hạt lúa nhỏ / phím
   1–6 → dòng tên sáng lên + thẻ chi tiết, sáng hết là xong (quest `z3_rice_room`, Hiểu biết +10). Tên chưa có nguồn công khai →

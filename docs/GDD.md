@@ -323,11 +323,12 @@ Zone 4 có hai tình huống lựa chọn quan trọng nhất game, đều xoay 
 
 | Đối tượng | Hoạt động | Kết quả |
 | --- | --- | --- |
-| `INT_cua_quet_the` | **Lần quẹt thẻ đầu tiên:** đưa thẻ vào đầu đọc, đèn xanh, tiếng bíp, hai cánh cửa mở; chữ "Lần quẹt thẻ đầu tiên!" hiện lên | Hiểu biết +5 |
+| `INT_cua_quet_the` | **Lần quẹt thẻ đầu tiên:** người chơi bước tới trước đầu đọc, tay phải cầm thẻ đưa vào, đèn xanh, tiếng bíp, hai cánh cửa mở; chữ "Lần quẹt thẻ đầu tiên!" hiện lên. Đi qua rồi cửa tự đóng (quay lại gần thì tự mở) | Hiểu biết +5 |
 | Người lạ (code đặt cạnh cửa, mặc đồ khách) | Tình huống 1, xem bên dưới | Ô **Gương mẫu** |
 | Tú ở cửa quẹt thẻ | Tình huống 2, xem bên dưới | Ô **Đồng đội** |
 | `TRIGGER_cau_thang` | Đi lên cầu thang chữ U lên tầng trên | |
 | `INT_cua_phong_fsa` | Đọc sứ mệnh FSA và vai trò của học tập trong FPT *[HR cung cấp]*. Mini-game **Lộ trình học**: kéo 3 khóa gợi ý (theo vị trí intern) vào lịch tuần đầu, rồi được hỏi có muốn tự đặt thêm một mục tiêu riêng không | **Sổ tay học tập** (đề xuất); tự đặt mục tiêu: ô **Đổi mới**; Hiểu biết +10 |
+| `INT_cua_phong_fsa` (đầu đọc `dau_doc_the_fsa`) | **Quẹt thẻ vào văn phòng** (13/10/2026): xong Lộ trình học thì quẹt thẻ ở cửa Phòng FSA như ở cửa kính dưới cầu thang → cửa mở, sang zone 5; cửa tự đóng sau lưng | — |
 | Hạt lúa vàng × 1 | Trên chiếu nghỉ cầu thang | |
 
 **Tình huống 1 · Người lạ xin đi ké** (xảy ra ngay khi người chơi vừa mở cửa)

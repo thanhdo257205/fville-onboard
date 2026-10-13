@@ -816,34 +816,67 @@ export class Game {
   // bản lề tới góc đã cho trong `seconds`, hộp COL_ của cửa bỏ khỏi va chạm (dựng lại BVH va chạm). Vào zone mà đã đạt
   // điều kiện → cửa mở sẵn.
   setupDoors() {
-    this.doors = (this.data.sceneFixes?.[this.zone.id]?.doors || []).map((cfg) => ({
-      cfg, t: 0, open: false,
-      leaves: Object.entries(cfg.leaves || {}).map(([name, deg]) => {
-        const node = this.zone.nodes.get(name);
-        // xoay quanh trục Y của node cha (quaternion: cánh có thể đã xoay sẵn, vd Euler 180/0/180)
-        const turn = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(deg));
-        return node && { node, from: node.quaternion.clone(), to: turn.multiply(node.quaternion) };
-      }).filter(Boolean),
-    }));
+    this.doors = (this.data.sceneFixes?.[this.zone.id]?.doors || []).map((cfg) => {
+      const d = { cfg, t: 0, open: false, since: 0, removed: [],
+        leaves: Object.entries(cfg.leaves || {}).map(([name, deg]) => {
+          const node = this.zone.nodes.get(name);
+          // xoay quanh trục Y của node cha (quaternion: cánh có thể đã xoay sẵn, vd Euler 180/0/180)
+          const turn = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(deg));
+          return node && { node, from: node.quaternion.clone(), to: turn.multiply(node.quaternion) };
+        }).filter(Boolean) };
+      // tâm cửa (giữa các bản lề) — đo khoảng cách cho auto_close
+      const ps = d.leaves.map((l) => l.node.getWorldPosition(new THREE.Vector3()));
+      d.center = ps.length ? ps.reduce((a, p) => a.add(p), new THREE.Vector3()).multiplyScalar(1 / ps.length) : null;
+      return d;
+    });
     this.updateDoors(0, true);
   }
+  // cửa mở khi đạt open_if. auto_close { away_m, reopen_m, min_s } (scene_fixes): người chơi và Tú cùng cách tâm cửa > away_m,
+  // đã mở ít nhất min_s giây, không đang quẹt thẻ → tự đóng, trả hộp va chạm col; quay lại gần (< reopen_m) → tự mở lại
   updateDoors(dt, instant = false) {
+    const p = this.player?.position, tu = this.follower && !this.follower.gone ? this.follower.position : null;
     for (const d of this.doors || []) {
-      if (!d.open && this.progress.check(d.cfg.open_if)) {
-        d.open = true;
-        if (instant) d.t = 1;
-        if (d.cfg.col?.length) this.removeColliders(d.cfg.col);
-        const at = d.leaves[0]?.node.getWorldPosition(new THREE.Vector3());
-        if (!instant && at) { sound.play("door_unlock", { pos: at }); sound.play("door_swing", { pos: at }); }
+      const ok = this.progress.check(d.cfg.open_if), ac = d.cfg.auto_close;
+      const dist = (q) => (q && d.center ? Math.hypot(q.x - d.center.x, q.z - d.center.z) : Infinity);
+      let want = ok;
+      if (ok && ac) {
+        if (d.open) want = !(dist(p) > ac.away_m && dist(tu) > ac.away_m && d.since >= (ac.min_s ?? 2) && !this.idCard?.token);
+        // đóng: mở khi vừa đạt điều kiện (vd vừa quẹt thẻ — không tính lúc vào zone) hoặc có người tới gần (cửa cảm biến)
+        else want = (!instant && !d.wasOk) || dist(p) < (ac.reopen_m ?? 1.6) || dist(tu) < (ac.reopen_m ?? 1.6);
       }
-      if (!d.open || (d.t >= 1 && !instant)) continue;
-      d.t = Math.min(1, d.t + dt / (d.cfg.seconds ?? 0.9));
+      d.wasOk = ok;
+      if (want !== d.open) {
+        d.open = want;
+        d.since = 0;
+        if (instant) d.t = want ? 1 : 0;
+        if (d.cfg.col?.length) want ? this.removeColliders(d.cfg.col, d) : this.restoreColliders(d);
+        const at = d.leaves[0]?.node.getWorldPosition(new THREE.Vector3());
+        if (!instant && at) { if (want && !d.unlocked) sound.play("door_unlock", { pos: at }); sound.play("door_swing", { pos: at }); }
+        if (want) d.unlocked = true;
+      }
+      d.since += dt;
+      const goal = d.open ? 1 : 0;
+      if (d.t === goal && !instant) continue;
+      d.t = d.open ? Math.min(1, d.t + dt / (d.cfg.seconds ?? 0.9)) : Math.max(0, d.t - dt / (d.cfg.seconds ?? 0.9));
+      if (instant) d.t = goal;
       const k = THREE.MathUtils.smootherstep(d.t, 0, 1);
       for (const l of d.leaves) l.node.quaternion.slerpQuaternions(l.from, l.to, k);
     }
   }
-  removeColliders(names) {
+  // cửa đóng lại: trả các hộp va chạm đã bỏ lúc mở
+  restoreColliders(d) {
+    if (!d.removed.length) return;
+    const zone = this.zone;
+    zone.colMeshes.push(...d.removed);
+    d.removed = [];
+    this.scene.remove(zone.collider);
+    zone.collider.geometry.dispose();
+    zone.collider = buildCollider(zone.colMeshes, this.data.collision?.[zone.id]?.add || []);
+    this.scene.add(zone.collider);
+  }
+  removeColliders(names, door = null) {
     const zone = this.zone, drop = new Set(names);
+    if (door) door.removed.push(...zone.colMeshes.filter((m) => drop.has(m.name)));
     zone.colMeshes = zone.colMeshes.filter((m) => !drop.has(m.name));
     this.scene.remove(zone.collider);
     zone.collider.geometry.dispose();
@@ -1040,6 +1073,7 @@ export class Game {
     const npcCaps = this.npcs.map((n) => n.capsule()).filter(Boolean);
     const tuCap = this.follower?.capsule();
     this.player.update(dt, this.mode === "play" ? this.input.move() : still, this.cam, this.zone.collider, tuCap ? [...npcCaps, tuCap] : npcCaps);
+    this.idCard.late(dt);                     // cúi đầu nhìn thẻ (sau animation của người chơi)
     if (this.faceTarget) {
       const p = this.player.position;
       this.player.character.faceDir(new THREE.Vector3(this.faceTarget.x - p.x, 0, this.faceTarget.z - p.z), dt, 6);

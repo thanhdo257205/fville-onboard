@@ -153,6 +153,16 @@ export class GameState {
     };
     const grainIds = new Set((c.raw?.interactables?.grains || []).map((g) => g.id));
     this.quests = new Set(keep("quests", [...this.quests], (q) => c.questById.has(q)));
+    // việc thêm vào zone đã chơi qua (quests.json → past_zone_done, vd quẹt thẻ cửa văn phòng 13/10/2026): bản lưu đã có việc
+    // của zone sau / đang ở zone sau → coi như xong (không bắt quay lại)
+    const zi = (z) => zoneOrder.indexOf(z);
+    const reached = Math.max(zi(this.zone), ...[...this.quests].map((q) => zi(c.questById.get(q)?.zone)));
+    for (const q of c.quests) {
+      if (q.past_zone_done && !this.quests.has(q.id) && zi(q.zone) >= 0 && reached > zi(q.zone)) {
+        this.quests.add(q.id);
+        fixed.push(`quests: thêm ${q.id} (đã sang zone sau ${q.zone})`);
+      }
+    }
     this.rewards = keep("rewards", this.rewards, (r) => c.rewards.has(r));
     this.items = keep("items", this.items, (x) => c.carry.has(x));
     this.values = new Set(keep("values", [...this.values], (v) => c.valueById.has(v)));
