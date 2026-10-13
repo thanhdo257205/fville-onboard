@@ -707,6 +707,26 @@ async function runLook(browser, base, look) {
           const rooms = []; __game._game.zone.root.traverse((o) => { if (o.userData.fix === "room") rooms.push(o.name); });
           return { spots: r.spots, rays: r.rays, down: n("down"), flat: n("flat"), rooms, top: r.gaps.slice(0, 5) }; }, zone);
         const strict = GAP_FREE.includes(zone), flatFree = FLAT_FREE.includes(zone);
+        // Lộ trình học (phòng FSA): không có đúng / sai — xếp ngược thứ tự gợi ý bằng phím vẫn được, không tính lỗi, không dấu ✓;
+        // bấm ngày đã xếp → lấy thẻ ra; đủ 3 ngày → câu hỏi mục tiêu riêng; Esc đóng (chưa nhận gì, việc z4 làm sau như thường)
+        if (zone === "zone_04") {
+          await ev(() => { __game._game.runMinigame("learning_path"); });
+          const lp = { open: await wait(() => __game.mg?.id === "learning_path", 5000) };
+          const st = () => ev(() => __game.mg);
+          const key = async (ci) => { const o = (await st()).state.order; await page.keyboard.press(`Digit${o.indexOf(ci) + 1}`); };
+          await key(2);
+          lp.first = await st();
+          await page.click("#minigame .day.filled", { timeout: 5000 });
+          lp.back = await st();
+          for (const ci of [2, 1, 0]) await key(ci);
+          lp.full = await st();
+          await page.keyboard.press("Escape");
+          lp.closed = await wait(() => !__game.mg?.id && __game._game.mode === "play", 5000);
+          await check(lp.open && lp.first.state.slots[0] === 2 && lp.first.mistakes === 0 && !lp.first.hint.includes("✓")
+            && lp.back.state.slots.every((x) => x < 0) && lp.full.state.stage === "goal" && lp.full.state.slots.join() === "2,1,0" && lp.full.mistakes === 0 && lp.closed,
+            `${zone}: Lộ trình học — xếp ngược thứ tự gợi ý (${lp.full.state.slots.map((i) => lp.full.state.courses[i]).join(" → ")}) không tính lỗi, không ✓ ("${lp.first.hint}"), bấm ngày → lấy thẻ ra, đủ 3 ngày → hỏi mục tiêu riêng`,
+            JSON.stringify(lp));
+        }
         // chậu cây thay chậu cọ cũ (scene_fixes → remove_parts + props): mọi hộp gỡ đúng 1 cây (≥ 3 mảnh), đủ số chậu mới
         const fxz = SCENE_FIXES[zone] || {}, zf = await ev(() => __game._game.zone.fixes);
         const parts = (zf.remove_parts || []).flatMap((r) => r.parts_per_box);
