@@ -25,6 +25,7 @@ export class Player {
   // đổi model (vd đổi mức đồ hoạ: bản 6k ↔ 15k), giữ vị trí và hướng
   setCharacter(character) {
     this.leaveSeat();
+    this.dancing = false;
     const rot = this.character.root.rotation.y;
     this.character.dispose();
     this.character = character;
