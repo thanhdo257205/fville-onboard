@@ -7,6 +7,10 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Smoke zone 5: lời dẫn không bị tin app chen ngang (13/10/2026, nhánh `fix/smoke-z5-narration`):** CI trên main (sau PR #59)
+  đỏ 1 bước — khi đi từ zone_04 sang, tin app "09:15 · Meeting with Ms. Nga" (`zones.json → on_enter`, mở sau 600 ms hẹn giờ
+  thật) bật lên đúng lúc bài thử lời dẫn khoang làm việc. Bài thử giờ chờ qua mốc on_enter rồi giải hết hội thoại mới bắt đầu.
+  Game không đổi.
 - **Video trên TV (13/10/2026, nhánh `feat/tv-video`):** video giới thiệu FPT Software Academy (người dùng gửi) cắt còn ~65 s
   (7 đoạn theo chỗ chuyển cảnh), 480 × 270, bỏ tiếng → `assets/video/fpt_academy.webm` (VP9) + `.mp4` (H.264), mỗi file ~2,3 MB
   (trình duyệt chỉ tải 1 file, chỉ khi vào zone có TV). Phát trên 2 TV đứng sảnh zone 3 (mặt màn hình trong GLB quay vào vách gỗ
