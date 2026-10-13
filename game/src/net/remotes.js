@@ -116,7 +116,7 @@ export class RemotePlayers {
     const ch = r.ch, serial = r.emoteSerial = (r.emoteSerial || 0) + 1;
     if (anim.startsWith("dance_")) {
       r.pendingDance = anim;
-      try { await loadDanceClips(ch); } catch { return; }
+      try { await loadDanceClips(ch, anim); } catch { return; }
       if (this.list.get(id) !== r || r.ch !== ch || r.emoteSerial !== serial) return;
       r.pendingDance = null;
       r.sitting = false;

@@ -1,5 +1,5 @@
 {
-  "_ghi_chu": "Một lựa chọn Breakdance: ghép đủ 34 clip theo order, giữ quỹ đạo ngang qua các đoạn, nội suy tư thế 0,4 giây và nối vòng cuối. Nhảy lặp liên tục; mở vòng hành động rồi bấm Dừng mới trở về điểm bắt đầu. Phím đi không ngắt, E mở vòng để dừng; chuyển zone / đổi nhân vật kết thúc phiên nhảy. Tải khi cần; trạng thái + thời gian nhảy đồng bộ qua Worker có dance_state, kể cả người vào sau. FBX và rig nguồn chỉ ở máy làm việc.",
+  "_ghi_chu": "Hai lựa chọn: Graceful Dance (ActorCore) tải riêng; Breakdance: ghép đủ 34 clip theo order, giữ quỹ đạo ngang qua các đoạn, nội suy tư thế 0,4 giây và nối vòng cuối. Nhảy lặp liên tục; mở vòng hành động rồi bấm Dừng mới trở về điểm bắt đầu. Phím đi không ngắt, E mở vòng để dừng; chuyển zone / đổi nhân vật kết thúc phiên nhảy. Tải khi cần; trạng thái + thời gian nhảy đồng bộ qua Worker có dance_state, kể cả người vào sau. FBX và rig nguồn chỉ ở máy làm việc.",
   "source_zip_sha256": "e784e820df7472dd8c830bb1e6da75863dff711b2328eb83001ce843e5dc2c7c",
   "dances": [
     {
@@ -10,6 +10,15 @@
         "vi": "Nhảy Breakdance"
       },
       "icon": "🕺"
+    },
+    {
+      "id": "dance_graceful",
+      "anim": "dance_graceful",
+      "label": {
+        "en": "Graceful Dance",
+        "vi": "Nhảy uyển chuyển"
+      },
+      "icon": "💃"
     }
   ],
   "segments": [

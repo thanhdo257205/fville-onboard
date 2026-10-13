@@ -14,6 +14,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
   đòi cửa đang mở (`triggers[].door`, nhắc `hud.card_needed`). Cửa phòng họp vẫn tự do (không thẻ); đóng từ trong phòng khi
   người chơi đứng trong vùng cánh quét → lùi người chơi vào trong 0,35 s rồi đóng (`roomdoors.js stepOut`). `test:data`: cửa
   quẹt thẻ có đầu đọc, `outside`, vật tương tác, lối ra trỏ đúng cửa.
+- **Graceful Dance từ ActorCore (13/10/2026, nhánh `codex/actorcore-graceful-dance`):** thêm ô “Nhảy uyển chuyển”
+  cạnh Breakdance. Motion 697 khung / 23,2 giây, chuyển CC3 → 22 xương của bốn rig người chơi, bù khác biệt
+  tư thế nghỉ / bone roll và tỷ lệ hông, chỉnh chân chạm sàn; thêm 13 khung nối vòng, tổng 23,63 giây.
+  GLB giữ nguyên lưới nhân vật, nén Meshopt, tải riêng khi chọn qua `dance_glbs`; giữ nút Dừng / về mốc và
+  đồng bộ trạng thái cho người xem vào sau. Nguồn FBX / JSON không đưa lên repo. Kiểm hình bằng Blender,
+  CI kiểm đủ clip / rig / đoạn nối vòng, chọn hai ô, đổi bài khi đang nhảy và kết nối lại giữa bài ActorCore.
+
 - **Đồng bộ và quỹ đạo Breakdance (13/10/2026, nhánh `codex/dance-sync-continuity`):** máy chủ đang chạy thiếu
   `dance_sequence`, nên bản web không gửi điệu nhảy. Thêm trạng thái nhảy / thời gian vào bản tin vị trí và danh sách
   người cùng zone (`dance_state`): nhận được trước khi dựng model, vào sau / kết nối lại vẫn nhảy đúng đoạn;
@@ -1795,6 +1802,23 @@ Người dùng muốn thấy hình bộ áo trước khi thay, như nút "Xem tr
   tạo nhân vật). Màn thấp: khung 84 px.
 - Smoke (bước tủ đồ): ảnh xem trước = chân dung bộ ngày đầu, ảnh thu nhỏ mọi áo là chân dung, rê chuột vào Áo Cam → khung đổi
   sang chân dung Áo Cam mà chưa thay áo. Đo: test:quick 57/57; xem bằng mắt 1280 × 720 và 844 × 390. **Đã deploy** gh-pages 0125625 (từ main 7500094).
+
+### Zone 2: chân lún vào sân gạch, camera chui xuống dưới gạch (13/10/2026, nhánh `fix/floor-visual-height`)
+
+Người dùng: lia camera xuống thấp ở zone 2 thì thấy chân nhân vật chạm nền cỏ, không chạm nền gạch.
+
+- Nguyên nhân: sân lát gạch `ENV_paving` (và phần mặt đất có viền `ENV_ground`) cao hơn sàn va chạm `COL_ground` 8 cm → nhân vật
+  (người chơi, Tú, người chơi khác) lún 8 cm vào gạch; camera chỉ tránh COL_ nên hạ thấp nhất (pitch −0,25) thì xuống dưới mặt gạch,
+  nhìn thấy cỏ bên dưới. Đo bằng `__game.floorGaps()` (mới: lưới ô 1 m, sàn hiển thị cao hơn sàn COL_ 4–60 cm, tên mesh): zone_02
+  ~2.000 ô (gần hết sân), zone 0 / 1 vỉa hè 15 cm ở chỗ không đi tới, zone 3–5 chỉ vài ô lẻ (bậc thềm, mép đồ đạc).
+- Sửa bằng dữ liệu (không sửa GLB): `data/collision.json → zone_02.floors = ["^ENV_paving", "^ENV_ground"]` — mặt nằm ngang của 2 mesh
+  này thành sàn va chạm (`world/zone.js floorMesh`, dọn khi đổi zone). Sau sửa: zone_02 còn ~160 ô, toàn mép viền mỏng < 25 cm
+  (bồn cây, bó vỉa) và bậc thềm trước sảnh (12–16 cm).
+- Camera: `clampCeiling` xét cả chiều xuống — camera dừng trên mặt nằm ngang của lưới hiển thị ít nhất 15 cm (không chui xuống dưới
+  sàn / bậc / bồn cây chỉ có hình, không có COL_).
+- Smoke zone_02: không còn ô sàn lún ở ENV_paving / ENV_ground; đứng trên sân gạch: chân trên mặt gạch, camera hạ thấp nhất vẫn trên
+  mặt gạch. Đo: test:data, test:quick 75/75, `--mobile ui` 21/21. Ảnh kiểm tra: camera thấp nhất ngước lên toà nhà gạch cạnh luống
+  ngô — thấy nền gạch, chân đứng trên gạch.
 
 ### Zone 5: lời dẫn phòng họp + khoang làm việc (13/10/2026, nhánh `feat/zone5-narration`)
 

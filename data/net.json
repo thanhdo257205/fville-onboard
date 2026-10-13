@@ -58,6 +58,16 @@
       },
       "icon": "🕺",
       "dance": true
+    },
+    {
+      "id": "dance_graceful",
+      "anim": "dance_graceful",
+      "label": {
+        "en": "Graceful Dance",
+        "vi": "Nhảy uyển chuyển"
+      },
+      "icon": "💃",
+      "dance": true
     }
   ],
   "phrases": [

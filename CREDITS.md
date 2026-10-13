@@ -26,6 +26,8 @@ do người dùng cung cấp, chỉ nằm trong texture.
   người chơi. `tai_xe_for_mixamo.fbx` là mô hình tham chiếu, không phải điệu nhảy và không được đưa vào game.
   Toàn bộ 34 clip được ghép thành một chuỗi với chuyển tư thế 0,4 giây. Các file nguồn giữ riêng trên máy; game tải biến thể nhân vật đã nén `*_dances.glb` khi chọn nhảy lần đầu.
 
+- **Graceful Dance** (ActorCore / Reallusion, motion `dance-graceful-378939`) do người dùng cung cấp, chuyển bộ xương CC3 sang bốn rig người chơi. Bản game `assets/characters/<id>/<id>_dance_graceful.glb` chứa lưới nhân vật hiện có và hoạt ảnh đã retarget; tải riêng khi chọn nhảy. FBX / JSON nguồn giữ riêng trên máy.
+
 ## Thẻ nhân viên
 - `assets/props/id_card/id_card.glb`: khung nhựa + mặt thẻ lấy từ mô hình thẻ nhân viên do người dùng cung cấp (12/10/2026, nguồn /
   giấy phép: *chờ người dùng xác nhận*); đã bỏ dây đeo và ảnh mặt thẻ mẫu, mặt thẻ do game vẽ bằng code

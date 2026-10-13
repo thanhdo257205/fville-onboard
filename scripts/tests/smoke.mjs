@@ -411,9 +411,26 @@ async function runLook(browser, base, look) {
         return !g.dances.active && !g.player.dancing && g.player.character.loco && g.player.character.danceMotion.position.length() < .001;
       });
       await page.setViewportSize({ width: 640, height: 360 });
-      await check(opened && fits && seen.size === 1 && playing && bound.count === 1 && !bound.loco && !bound.connected
+      await check(opened && fits && seen.size === 2 && playing && bound.count === 1 && !bound.loco && !bound.connected
         && continuity.inputKept && continuity.loopGap < .3 && continuity.carried && continuity.stillActive && kept && stopped && short.ok && !short.overlap && closed,
         "Hành động T: nhảy liên tục qua vòng lặp, phím đi / mở vòng / Esc không ngắt; bấm Dừng mới về mốc, màn thấp 230 px", JSON.stringify({ opened, fits, seen: seen.size, playing, bound, continuity, kept, stopped, short, closed }));
+      await page.keyboard.press("KeyT");
+      await clickShown("#emotes .wheel-choice[data-id=dance_graceful]");
+      const graceful = await wait(() => {
+        const g = __game._game, a = g.player.character.current;
+        return g.dances.active?.id === "dance_graceful" && a?.time > 0 && a.getClip().duration > 23 && a.getClip().duration < 24;
+      }, 30000);
+      const gracefulLoop = graceful && await ev(() => {
+        const g = __game._game, ch = g.player.character, a = ch.current;
+        a.time = a.getClip().duration - .05; ch.dancePlayback.elapsed = a.time; ch.mixer.update(0);
+        const p = g.dances.position.clone(); ch.update(.1);
+        return { gap: g.dances.position.distanceTo(p), active: g.dances.active?.id, clips: Object.keys(ch.actions).filter(k => k.startsWith('dance_')).length };
+      });
+      await page.keyboard.press("KeyT");
+      await clickShown("#emotes [data-a=stop]");
+      const gracefulStop = await ev(() => !__game._game.dances.active && !__game._game.player.dancing && __game._game.player.character.loco);
+      await check(graceful && gracefulLoop.gap < .3 && gracefulLoop.active === "dance_graceful" && gracefulLoop.clips === 2 && gracefulStop,
+        "ActorCore Graceful Dance: lựa chọn riêng, tải clip 23 giây, nhảy nối vòng trên rig đang chơi và Dừng về mốc", JSON.stringify({ graceful, gracefulLoop, gracefulStop }));
     }
 
     const pauses = (st) => zoneIsLast(st.zone) ? [...(st.lunch ? [] : ["time_skip"]), ...(st.login ? [] : ["login"]), ...(st.reloaded || look !== looks[0] ? [] : ["ending:lan"])] : [];
@@ -853,6 +870,25 @@ async function runLook(browser, base, look) {
         });
         await check(grass.count > 0 && grass.count === grass.meshes && grass.after <= grass.before && grass.width === 512 && grass.height === 512 && grass.normalsUp && grass.noOutline && grass.surface,
           `${zone}: nền cỏ WebP 512 px, ${grass.before} → ${grass.after} tam giác, ${grass.count} mesh, không viền`, JSON.stringify(grass));
+      }
+      // sàn hiển thị cao hơn sàn va chạm (data/collision.json → floors; __game.floorGaps): zone_02 sân lát gạch / mặt đất không còn
+      // ô nào chân lún (ENV_paving, ENV_ground cao 8 cm trên COL_ground — người dùng báo 13/10/2026); đứng trên sân gạch, camera hạ
+      // thấp nhất ngước lên vẫn ở trên mặt gạch (camera.js + clampCeiling chiều xuống). Xong về chỗ cũ
+      if (zone === "zone_02" && look === looks[0]) {
+        const fg = await ev(async () => {
+          const r = __game.floorGaps(), bad = Object.keys(r.names).filter((k) => /^ENV_(paving|ground)/.test(k));
+          const g = __game._game, P = g.player, back = P.position.clone(), cam = g.cam, keep = [cam.yaw, cam.pitch, cam.distance];
+          P.body.teleport(new P.body.position.constructor(26, 0.6, -56)); P.sync();
+          __game.simulate(0.6, undefined, { render: false });
+          cam.yaw = 0; cam.pitch = -0.25; cam.distance = 7;
+          __game.simulate(0.4, undefined, { render: false });
+          const out = { bad, feet: +P.position.y.toFixed(3), camY: +g.camera.position.y.toFixed(3) };
+          [cam.yaw, cam.pitch, cam.distance] = keep;
+          P.body.teleport(back.setY(back.y + 0.05)); P.sync(); __game.simulate(0.3, undefined, { render: false });
+          return out;
+        });
+        await check(!fg.bad.length && fg.feet > 0.06 && fg.camY > fg.feet + 0.12,
+          `${zone}: sân gạch — chân đứng trên mặt gạch (${fg.feet} m), camera hạ thấp nhất vẫn trên mặt gạch (${fg.camY} m), không còn ô sàn lún`, JSON.stringify(fg));
       }
       // ngồi tự do (data/seats.json, game/src/game/interaction.js + Game.sitFree): mỗi nhóm ghế của zone 1 ghế — đứng
       // cạnh ghế → lời nhắc "Sit down", E → ngồi đúng hướng ghế, nâng lên mặt ghế, nhắc "Stand up"; đứng dậy bằng bước đi / E lần
@@ -1782,7 +1818,8 @@ async function runChat(browser, base, srv) {
     };
     await Promise.all([free(A), free(B)]);
     // Dance packets must play on the other player's existing rig as well.
-    const dancerId = await A.ev(() => __game.net.id), danceId = "dance_breakdance_full";
+    const dancerId = await A.ev(() => __game.net.id);
+    let danceId = "dance_breakdance_full";
     const remoteReady = await B.wait(id => !!__game._game.net.remotes.list.get(id)?.ch, 20000, dancerId);
     await A.wait(() => performance.now() - __game._game.state.readyAt > 1200, 5000);
     await free(A);
@@ -1796,6 +1833,13 @@ async function runChat(browser, base, srv) {
       return r?.emoting?.getClip().name === dance && r.emoting.time > 0 && !r.ch.loco;
     }, 30000, { who: dancerId, dance: danceId });
     await check(danceSent && remoteDance && C.features.includes("dance_state"), "Breakdance đồng bộ trạng thái: người khác tải clip / thấy nhảy cả khi cooldown của câu chat chưa hết", JSON.stringify({ localDance, remoteReady, remoteDance, features: C.features }));
+    danceId = "dance_graceful";
+    const switched = await A.ev(id => __game._game.dances.play(id), danceId);
+    const gracefulRemote = await B.wait(({ who, dance }) => {
+      const r = __game._game.net.remotes.list.get(who);
+      return r?.emoting?.getClip().name === dance && r.emoting.time > 0 && !r.ch.loco;
+    }, 30000, { who: dancerId, dance: danceId });
+    await check(switched && gracefulRemote, "Đổi Breakdance → Graceful Dance: người khác tải đúng asset ActorCore và nhảy trên rig của người gửi", JSON.stringify({ switched, gracefulRemote }));
     const late = await B.ev(() => {
       const n = __game._game.net, oldId = n.myId;
       n.client.stop(); n.onClose(); n.client.start(); return oldId;

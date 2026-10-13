@@ -397,6 +397,34 @@ export function installDebug(game, loop) {
       const from = [game.player.position];
       game.zone.root.traverse((o) => { if (/^(SPAWN|NPC|INT)_/.test(o.name)) from.push(o.getWorldPosition(new THREE.Vector3())); });
       return findGaps(game.zone, from, { skip: new RegExp(game.seeThrough.cfg.meshes), ...opts }); },
+    // sàn hiển thị cao hơn sàn va chạm (chân lún dưới mặt gạch / bậc): lưới ô `step` m, ở mỗi chỗ đứng được (mặt ngang COL_) tìm
+    // mặt ngang của lưới hiển thị (zone.view) cao hơn sàn COL_ từ minGap tới maxGap → gộp ô liền nhau thành vùng
+    floorGaps({ step = 1, minGap = 0.04, maxGap = 0.6 } = {}) {
+      const z = game.zone, col = z.collider.geometry.boundsTree, view = z.view.geometry.boundsTree;
+      const box = new THREE.Box3().setFromBufferAttribute(z.collider.geometry.attributes.position), ray = new THREE.Ray(), down = new THREE.Vector3(0, -1, 0);
+      const cells = [];
+      for (let x = box.min.x + step / 2; x < box.max.x; x += step) for (let zz = box.min.z + step / 2; zz < box.max.z; zz += step) {
+        ray.set(new THREE.Vector3(x, box.max.y + 1, zz), down);
+        const fl = col.raycast(ray, THREE.DoubleSide, 0, box.max.y - box.min.y + 2).filter((h) => Math.abs(h.face.normal.y) > 0.7).map((h) => h.point.y);
+        for (const fy of fl) {
+          ray.set(new THREE.Vector3(x, fy + 2.0, zz), down);
+          const ok = col.raycastFirst(new THREE.Ray(new THREE.Vector3(x, fy + 0.05, zz), new THREE.Vector3(0, 1, 0)), THREE.DoubleSide, 0, 1.7);
+          if (ok) continue;                                      // không đứng được (vướng COL_ phía trên)
+          const vs = view.raycast(new THREE.Ray(new THREE.Vector3(x, fy + maxGap, zz), down), THREE.DoubleSide, 0, maxGap - minGap)
+            .filter((h) => Math.abs(h.face.normal.y) > 0.7).map((h) => h.point.y - fy);
+          if (vs.length) cells.push({ x: +x.toFixed(1), z: +zz.toFixed(1), fy: +fy.toFixed(2), gap: +Math.max(...vs).toFixed(2) });
+        }
+      }
+      // tên lưới hiển thị tạo mặt sàn cao hơn (lấy mẫu tối đa 400 ô)
+      const rc = new THREE.Raycaster(), names = {};
+      const meshes = []; z.root.traverse((o) => { if (o.isMesh && o.visible && !o.name.startsWith("COL_")) meshes.push(o); });
+      for (const c of cells.filter((_, i) => i % Math.max(1, Math.ceil(cells.length / 400)) === 0)) {
+        rc.set(new THREE.Vector3(c.x, c.fy + maxGap, c.z), down); rc.far = maxGap - minGap + 0.01;
+        const h = rc.intersectObjects(meshes, false).find((h) => Math.abs(h.face.normal.y) > 0.7);
+        if (h) { const k = `${h.object.name}|${c.gap}`; names[k] = (names[k] || 0) + 1; }
+      }
+      return { count: cells.length, names, cells };
+    },
     // chỗ ngồi tự do của zone đang chơi (data/seats.json): danh sách, ghế đang được nhắc (E: Sit down), ghế có NPC ngồi sẵn
     get seats() {
       const list = game.interaction.list.filter((e) => e.seat), cur = game.interaction.current;
