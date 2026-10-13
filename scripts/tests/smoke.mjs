@@ -359,7 +359,7 @@ async function runLook(browser, base, look) {
     if (startZone === order[0]) await tuCheck("trước cổng", false);
 
     // Offline action wheel: every dance is reachable, playback binds to the
-    // existing player rig, walking stops it and the low-height layout stays usable.
+    // existing rig; only the Stop button ends playback and returns to its anchor.
     if (startZone === order[0]) {
       await wait(() => performance.now() - (__game._game.state.readyAt ?? 0) > 1000, 5000);
       await ev(() => __game.resolve());
@@ -386,12 +386,15 @@ async function runLook(browser, base, look) {
       const playing = await wait(id => __game._game.dances.active?.id === id && __game._game.player.character.current?.time > 0, 30000, id);
       const bound = await ev(() => ({ count: Object.keys(__game._game.player.character.actions).filter(k => k.startsWith("dance_")).length,
         loco: __game._game.player.character.loco, connected: __game._game.net.connected }));
-      const stopped = await ev(() => {
+      const continuity = await ev(() => {
         const g = __game._game, p = g.player.position.clone(); g.player.character.mixer.timeScale = 1;
         __game.simulate(0.6, { x: 0, y: 1 }, { render: false });
-        const ok = !g.dances.active && g.player.character.loco;
-        g.player.body.teleport(p); g.player.velocity.set(0, 0, 0); g.player.speed = 0;
-        return ok;
+        const inputKept = !!g.dances.active && g.player.position.distanceTo(p) < .01;
+        const ch = g.player.character, duration = ch.current.getClip().duration;
+        ch.current.time = duration - .05; ch.dancePlayback.elapsed = duration - .05; ch.mixer.update(0);
+        const before = g.dances.position.clone(); ch.update(.1);
+        const loopGap = g.dances.position.distanceTo(before);
+        return { inputKept, loopGap, carried: ch.danceMotion.position.length() > .01, stillActive: !!g.dances.active };
       });
       await page.setViewportSize({ width: 640, height: 230 });
       await page.keyboard.press("KeyT");
@@ -400,9 +403,17 @@ async function runLook(browser, base, look) {
       await page.screenshot({ path: join(OUT, `dance-wheel-short-${look.id}.png`) });
       await page.keyboard.press("Escape");
       const closed = await wait(() => !__game._game.actionsWheel.open && __game._game.mode === "play" && document.getElementById("menu").hidden, 5000);
+      const kept = await ev(() => !!__game._game.dances.active);
+      await page.keyboard.press("KeyT");
+      await clickShown("#emotes [data-a=stop]");
+      const stopped = await ev(() => {
+        const g = __game._game; __game.simulate(.6, undefined, { render: false });
+        return !g.dances.active && !g.player.dancing && g.player.character.loco && g.player.character.danceMotion.position.length() < .001;
+      });
       await page.setViewportSize({ width: 640, height: 360 });
-      await check(opened && fits && seen.size === 1 && playing && bound.count === 1 && !bound.loco && !bound.connected && stopped && short.ok && !short.overlap && closed,
-        "Hành động T: vòng tròn 1 bài ghép đủ 34 clip, tải / nhảy offline, đi lại dừng nhảy, màn thấp 230 px và Esc đóng", JSON.stringify({ opened, fits, seen: seen.size, playing, bound, stopped, short, closed }));
+      await check(opened && fits && seen.size === 1 && playing && bound.count === 1 && !bound.loco && !bound.connected
+        && continuity.inputKept && continuity.loopGap < .3 && continuity.carried && continuity.stillActive && kept && stopped && short.ok && !short.overlap && closed,
+        "Hành động T: nhảy liên tục qua vòng lặp, phím đi / mở vòng / Esc không ngắt; bấm Dừng mới về mốc, màn thấp 230 px", JSON.stringify({ opened, fits, seen: seen.size, playing, bound, continuity, kept, stopped, short, closed }));
     }
 
     const pauses = (st) => zoneIsLast(st.zone) ? [...(st.lunch ? [] : ["time_skip"]), ...(st.login ? [] : ["login"]), ...(st.reloaded || look !== looks[0] ? [] : ["ending:lan"])] : [];
@@ -1744,9 +1755,8 @@ async function runChat(browser, base, srv) {
     const remoteReady = await B.wait(id => !!__game._game.net.remotes.list.get(id)?.ch, 20000, dancerId);
     await A.wait(() => performance.now() - __game._game.state.readyAt > 1200, 5000);
     await free(A);
-    if (remoteReady) await B.ev(id => { __game._game.net.remotes.list.get(id).ch.mixer.timeScale = 0.1; }, dancerId);
     const localDance = await A.ev(async id => {
-      const g = __game._game; await g.player.standUp(); g.net.cooldown = 0; g.player.character.mixer.timeScale = 0.1;
+      const g = __game._game; await g.player.standUp(); g.net.cooldown = 99;
       const played = await g.dances.play(id); return { played, mode: g.mode, phase: g.state.phase, seated: !!g.player.seated };
     }, danceId);
     const danceSent = localDance.played;
@@ -1754,7 +1764,20 @@ async function runChat(browser, base, srv) {
       const r = __game._game.net.remotes.list.get(who);
       return r?.emoting?.getClip().name === dance && r.emoting.time > 0 && !r.ch.loco;
     }, 30000, { who: dancerId, dance: danceId });
-    await check(danceSent && remoteDance && C.features.includes("dance_sequence"), "Breakdance gửi qua máy chủ: người chơi khác tải clip và nhảy trên rig của An", JSON.stringify({ localDance, remoteReady, remoteDance, features: C.features }));
+    await check(danceSent && remoteDance && C.features.includes("dance_state"), "Breakdance đồng bộ trạng thái: người khác tải clip / thấy nhảy cả khi cooldown của câu chat chưa hết", JSON.stringify({ localDance, remoteReady, remoteDance, features: C.features }));
+    const late = await B.ev(() => {
+      const n = __game._game.net, oldId = n.myId;
+      n.client.stop(); n.onClose(); n.client.start(); return oldId;
+    });
+    const lateDance = await B.wait(({ who, oldId, dance }) => {
+      const n = __game._game.net, r = n.remotes.list.get(who);
+      return n.connected && n.myId !== oldId && r?.emoting?.getClip().name === dance && r.ch.dancePlayback?.elapsed > .5;
+    }, 30000, { who: dancerId, oldId: late, dance: danceId });
+    const phaseGap = lateDance && await B.ev(id => {
+      const r = __game._game.net.remotes.list.get(id);
+      return Math.abs(r.ch.dancePlayback.elapsed - r.dance.time - (performance.now() - r.dance.at) / 1000);
+    }, dancerId);
+    await check(lateDance && phaseGap < .6, "Vào lại phòng giữa bài nhảy: dựng model sau bản tin, tiếp tục đúng đoạn đang nhảy", JSON.stringify({ lateDance, phaseGap }));
     await A.ev(() => { const g = __game._game; g.dances.stop(); g.player.character.mixer.timeScale = 1; });
     const remoteStopped = remoteReady && await B.wait(id => {
       const r = __game._game.net.remotes.list.get(id); return !r?.emoting && r?.ch?.loco;

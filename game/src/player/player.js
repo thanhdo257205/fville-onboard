@@ -117,6 +117,7 @@ export class Player {
 
   update(dt, input, cam, collider, obstacles = null) {
     this.collider = collider;
+    if (this.dancing) { this.character.update(dt); this.sync(); return; }
     if (this.seated) { this.character.update(dt); this.sync(); return; }      // đang ngồi: không đi lại, không trọng lực
     const { walk, run } = this.character.model.speed_mps;
     const want = new THREE.Vector3()

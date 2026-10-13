@@ -92,17 +92,26 @@ def merge_dances(base, exported, output):
 def join_actions(arm, mesh, manifest):
     """Bake every source frame plus pose-blended bridges into one clip."""
     bones = list(arm.pose.bones)
-    samples = []
+    samples, last_xy, root_joins = [], None, []
     for key in manifest['order']:
         action = bpy.data.actions.get(key)
         if action is None:
             raise RuntimeError(f'Missing source action {key}; rebuild from private FBX files')
         set_action(arm, action)
         start, end = frames_of(action)
+        bpy.context.scene.frame_set(start)
+        hips = arm.pose.bones[HIPS]
+        first_xy = hips.matrix.translation.copy()
+        offset = Vector((0, 0, 0)) if last_xy is None else Vector((last_xy.x - first_xy.x, last_xy.y - first_xy.y, 0))
+        if last_xy is not None:
+            root_joins.append({'next': key, 'offset_xy_m': list(offset[:2])})
         poses = []
         for f in range(start, end + 1):
             bpy.context.scene.frame_set(f)
+            matrix = hips.matrix.copy(); matrix.translation += offset; hips.matrix = matrix
+            bpy.context.view_layer.update()
             poses.append([tuple(v.copy() for v in pb.matrix_basis.decompose()) for pb in bones])
+        last_xy = hips.matrix.translation.copy()
         samples.append((key, poses))
     action = bpy.data.actions.new(manifest['dances'][0]['anim'])
     action.use_fake_user = True
@@ -136,6 +145,20 @@ def join_actions(arm, mesh, manifest):
         for pose in poses:
             bake(pose)
         previous = poses[-1]
+    # Close the pose loop at the final horizontal position, rather than pulling
+    # the dancer back to the original spot. Runtime carries this displacement.
+    first = [(loc.copy(), rot.copy(), scale.copy()) for loc, rot, scale in samples[0][1][0]]
+    # Hips basis axes need not match the floor axes: offset the first pose in arm space.
+    for pb, (loc, rot, scale) in zip(bones, first):
+        pb.location, pb.rotation_quaternion, pb.scale = loc, rot, scale
+    bpy.context.view_layer.update()
+    hips = arm.pose.bones[HIPS]
+    matrix = hips.matrix.copy(); matrix.translation.x, matrix.translation.y = last_xy.x, last_xy.y; hips.matrix = matrix
+    bpy.context.view_layer.update()
+    first = [tuple(v.copy() for v in pb.matrix_basis.decompose()) for pb in bones]
+    for i in range(1, bridge_frames + 2):
+        k = i / (bridge_frames + 1); k = k * k * (3 - 2 * k)
+        bake([(a[0].lerp(b[0], k), a[1].slerp(b[1], k), a[2].lerp(b[2], k)) for a, b in zip(previous, first)])
     # Remove originals only after sampling. The exporter emits a single dance action.
     for old in list(bpy.data.actions):
         if old != action and old.name.startswith('dance_'):
@@ -146,7 +169,8 @@ def join_actions(arm, mesh, manifest):
             k.interpolation = 'LINEAR'
     bpy.context.scene.frame_start, bpy.context.scene.frame_end = 1, frame - 1
     return action, {'fps': bpy.context.scene.render.fps, 'frames': frame - 1, 'joins': joins,
-                    'order': manifest['order'], 'duration_s': (frame - 2) / bpy.context.scene.render.fps}
+                    'order': manifest['order'], 'duration_s': (frame - 2) / bpy.context.scene.render.fps,
+                    'root_continuity': True, 'root_joins': root_joins, 'loop_bridge_frames': bridge_frames + 1}
 
 
 def main():

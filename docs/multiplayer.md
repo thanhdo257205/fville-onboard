@@ -535,3 +535,15 @@ python scripts/deploy_site.py          # 1. bản web (hỏi người dùng trư
 cd server && npx wrangler deploy       # 2. máy chủ — tin chào phải có "pool_spin"
 ```
 
+
+## Breakdance liên tục (13/10/2026)
+
+Bản web cần máy chủ có `dance_sequence` để gửi bài ghép. `dance_state` bổ sung trường `dance: {id, time}` vào
+bản tin vị trí và danh sách người cùng zone; `time` là số giây đã nhảy, kể cả các vòng đã lặp. Máy chủ chỉ nhận
+ID nằm trong danh sách dance, thời gian hữu hạn 0–86.400 giây; bản tin sai bị xoá trạng thái nhảy. Trạng thái
+được lưu trong attachment của WebSocket, giữ qua lúc Durable Object ngủ. Người vào sau lấy thời gian hiện tại,
+tải model / clip rồi tiếp tục đúng đoạn. Dừng gửi `emote_stop` và `dance: null`; máy khách hủy cả clip đang tải.
+
+Giữ tin `emote` cho bản web cũ. Máy chủ lưu cả bài nhảy bắt đầu bằng emote cũ và xoá khi người đó đi lại / dừng.
+Máy chủ chưa cập nhật chỉ cho nhảy tại máy mình; deploy Worker bằng `cd server && npx wrangler deploy`, rồi tải
+lại trang để nhận features mới. Worker và bản web đều cần cập nhật để có đủ đồng bộ thời gian / quỹ đạo lặp.

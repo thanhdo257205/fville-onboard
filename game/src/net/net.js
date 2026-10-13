@@ -107,11 +107,14 @@ export class Net {
     // người cùng zone thấy mình rời đi, không còn đứng ở cửa xe; máy chủ không cần đổi (zone_NN hợp lệ)
     const riding = !!g.cutscene && !pl.character.root.visible;
     const zone = riding ? this.cfg.transit_zone || "zone_99" : g.state.zone;
-    return { zone, pos: [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)], yaw: +pl.character.root.rotation.y.toFixed(2), anim };
+    const dance = g.dances?.active && pl.character.dancePlayback;
+    return { zone, pos: [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)], yaw: +pl.character.root.rotation.y.toFixed(2), anim,
+      ...(this.features.includes("dance_state") ? { dance: dance ? { id: g.dances.active.id, time: +dance.elapsed.toFixed(2) } : null } : {}) };
   }
   get inTransit() { return this.sent?.zone === (this.cfg.transit_zone || "zone_99"); }
   changed(a, b) {
     if (!b || a.zone !== b.zone || a.anim !== b.anim) return true;
+    if (JSON.stringify(a.dance) !== JSON.stringify(b.dance)) return true;
     const d = Math.hypot(a.pos[0] - b.pos[0], a.pos[1] - b.pos[1], a.pos[2] - b.pos[2]);
     const dy = Math.abs(Math.atan2(Math.sin(a.yaw - b.yaw), Math.cos(a.yaw - b.yaw)));
     return d > 0.02 || dy > 0.035;
@@ -208,7 +211,10 @@ export class Net {
       case "online": this.online = m.n; break;
       case "emote": {
         const e = this.emotes.find((x) => x.id === m.e);
-        if (e) { r.emote(m.id, e.anim); this.log.push({ from: m.id, emote: m.e }); }
+        if (e) {
+          if (!e.dance || !this.features.includes("dance_state")) r.emote(m.id, e.anim);
+          this.log.push({ from: m.id, emote: m.e });
+        }
         break;
       }
       case "emote_stop": {
@@ -261,7 +267,7 @@ export class Net {
     if (this.myBubbleLeft > 0) {
       this.myBubbleLeft -= dt;
       if (this.myBubbleLeft <= 0) this.myBubble.visible = false;
-      else if (ch) this.myBubble.position.copy(ch.root.position).setY(ch.root.position.y + ch.model.height_m + 0.55);
+      else if (ch) this.myBubble.position.copy(g.dances?.position ?? ch.root.position).setY(ch.root.position.y + ch.model.height_m + 0.55);
     }
     this.remotes.update(dt);
     // góc màn hình

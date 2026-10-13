@@ -320,7 +320,10 @@ export class Character {
   }
   get accessoryList() { return [...(this.accessories?.keys() || [])]; }
 
-  update(dt) { this.mixer.update(dt); }
+  update(dt) {
+    if (this.dancePlayback) this.dancePlayback.elapsed += dt * this.mixer.timeScale;
+    this.mixer.update(dt);
+  }
 
   // gỡ khỏi cảnh + giải phóng GPU của riêng nhân vật này: texture ma trận xương (mỗi SkinnedMesh một DataTexture — trước đây
   // không dọn: mỗi lần vào zone 5 đọng 7 cái), vật liệu riêng, đồ cầm tay. Geometry / texture màu dùng chung với GLB trong bộ

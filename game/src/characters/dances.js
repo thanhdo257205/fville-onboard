@@ -3,6 +3,7 @@
 import { loadGLTF, url } from "../core/assets.js";
 import { t } from "../i18n.js";
 import { hud } from "../ui/hud.js";
+import * as THREE from "three";
 
 const packs = new Map();
 export async function loadDanceClips(ch) {
@@ -30,7 +31,62 @@ export async function loadDanceClips(ch) {
   return true;
 }
 
+// Keep the capsule's starting point, but carry the visual trajectory across loops.
+// Both local and remote rigs use this playback, including late-join time seeking.
+export function startDancePlayback(ch, anim, elapsed = 0) {
+  stopDancePlayback(ch);
+  if (!ch.danceMotion) {
+    ch.danceMotion = new THREE.Group();
+    ch.danceMotion.name = "dance_motion";
+    ch.root.add(ch.danceMotion);
+    ch.danceMotion.add(ch.mixer.getRoot());
+  }
+  const action = ch._play(anim, { loop: true, fade: .2 });
+  if (!action) return null;
+  ch.root.updateMatrixWorld(true);
+  const track = action.getClip().tracks.find(t => t.name === `${ch.hips?.name}.position`);
+  const delta = new THREE.Vector3();
+  if (track) {
+    const matrix = ch.root.matrixWorld.clone().invert().multiply(ch.hips.parent.matrixWorld);
+    const first = new THREE.Vector3().fromArray(track.values, 0).applyMatrix4(matrix);
+    delta.fromArray(track.values, track.values.length - 3).applyMatrix4(matrix).sub(first).setY(0);
+  }
+  const playback = ch.dancePlayback = { action, delta, elapsed: 0 };
+  playback.loop = e => { if (e.action === action) ch.danceMotion.position.addScaledVector(delta, e.loopDelta); };
+  ch.mixer.addEventListener("loop", playback.loop);
+  ch.root.traverse(o => { if (o.isSkinnedMesh) { o.userData.danceCull = o.frustumCulled; o.frustumCulled = false; } });
+  seekDancePlayback(ch, elapsed);
+  return action;
+}
+
+export function seekDancePlayback(ch, elapsed) {
+  const p = ch.dancePlayback;
+  if (!p) return;
+  const duration = p.action.getClip().duration;
+  p.elapsed = Math.max(0, elapsed);
+  p.action.time = p.elapsed % duration;
+  ch.danceMotion.position.copy(p.delta).multiplyScalar(Math.floor(p.elapsed / duration));
+  ch.mixer.update(0);
+}
+
+export function stopDancePlayback(ch) {
+  const p = ch.dancePlayback;
+  if (!p) return;
+  ch.mixer.removeEventListener("loop", p.loop);
+  ch.dancePlayback = null;
+  ch.danceMotion.position.set(0, 0, 0);
+  ch.root.traverse(o => { if (o.isSkinnedMesh) { o.frustumCulled = o.userData.danceCull; delete o.userData.danceCull; } });
+  if (ch.current === p.action) ch.enableLocomotion();
+}
+
+export function dancePosition(ch) {
+  if (!ch.dancePlayback || !ch.hips) return ch.root.position;
+  ch.root.updateMatrixWorld(true);
+  return ch.hips.getWorldPosition(new THREE.Vector3()).setY(ch.root.position.y);
+}
+
 export class DanceController {
+  get position() { return this.active ? dancePosition(this.active.ch) : null; }
   constructor(game, cfg) {
     this.g = game;
     this.items = cfg?.dances || [];
@@ -53,18 +109,15 @@ export class DanceController {
       this.loading = false;
       this.pendingCharacter = null;
       if (g.net) g.net.myEmote = null;
-      const done = ch.playOnce(item.anim);
-      const action = ch.current;
-      this.active = { id, ch, action, zone, serial };
+      const action = startDancePlayback(ch, item.anim);
+      this.active = { id, ch, action, zone, serial, origin: g.player.position.clone() };
+      g.player.dancing = true;
+      g.player.velocity.set(0, 0, 0); g.player.speed = 0;
       // The combined clip needs a server that advertises the new allowlist / stop message.
-      if (g.net?.connected && g.net.features.includes("dance_sequence") && g.net.cooldown <= 0) {
-        g.net.cooldown = g.net.cfg.cooldown_s ?? 1.5;
+      if (g.net?.connected && g.net.features.includes("dance_sequence")) {
         g.net.client.send({ t: "emote", id });
         this.active.sent = true;
       }
-      done.then(() => {
-        if (this.active?.serial === serial && ch.current === action) this.stop();
-      });
       return true;
     } catch (error) {
       if (serial === this.serial) {
@@ -87,12 +140,19 @@ export class DanceController {
     if (active?.sent && this.g.net?.connected && this.g.net.features.includes("dance_sequence")) {
       this.g.net.client.send({ t: "emote_stop", id: active.id });
     }
-    if (active && active.ch.current === active.action) active.ch.enableLocomotion();
+    if (active) {
+      stopDancePlayback(active.ch);
+      if (this.g.player?.character === active.ch) {
+        this.g.player.dancing = false;
+        if (this.g.state.zone === active.zone) this.g.player.body.teleport(active.origin);
+        this.g.player.sync();
+      }
+    }
   }
   update() {
     const g = this.g;
     if (!this.active && !this.loading) return;
-    if (g.mode !== "play" || g.state.phase !== "playing" || g.player?.speed > 0.15 ||
+    if (g.state.phase !== "playing" ||
         this.active && (g.player?.character !== this.active.ch || g.state.zone !== this.active.zone || this.active.ch.current !== this.active.action) ||
         this.loading && g.player?.character !== this.pendingCharacter) this.stop();
   }

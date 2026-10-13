@@ -1,6 +1,6 @@
 {
   "fps": 30,
-  "frames": 4106,
+  "frames": 4119,
   "joins": [
     {
       "next": "dance_breakdance_ready_2",
@@ -204,5 +204,240 @@
     "dance_breakdance_uprock_to_ground_2",
     "dance_breakdance_footwork_to_idle_2"
   ],
-  "duration_s": 136.83333333333334
+  "duration_s": 137.26666666666668,
+  "root_continuity": true,
+  "root_joins": [
+    {
+      "next": "dance_breakdance_ready_2",
+      "offset_xy_m": [
+        -0.3969992697238922,
+        -0.06276724487543106
+      ]
+    },
+    {
+      "next": "dance_breakdance_ready_3",
+      "offset_xy_m": [
+        -0.019089065492153168,
+        -0.08848936855792999
+      ]
+    },
+    {
+      "next": "dance_brooklyn_uprock",
+      "offset_xy_m": [
+        -0.013833015225827694,
+        -0.09417491406202316
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock",
+      "offset_xy_m": [
+        -0.02430984564125538,
+        -0.09320232272148132
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock_2",
+      "offset_xy_m": [
+        -0.01787559688091278,
+        -0.08855526149272919
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock_var_1_start",
+      "offset_xy_m": [
+        0.2716972231864929,
+        -0.28242263197898865
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock_var_1",
+      "offset_xy_m": [
+        0.7014111876487732,
+        -0.5539421439170837
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock_var_2",
+      "offset_xy_m": [
+        0.7117729783058167,
+        -0.5511465072631836
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock_var_1_end",
+      "offset_xy_m": [
+        1.3100491762161255,
+        -0.5572106838226318
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock_to_ground",
+      "offset_xy_m": [
+        1.3111226558685303,
+        -0.5560575723648071
+      ]
+    },
+    {
+      "next": "dance_breakdance_footwork_1",
+      "offset_xy_m": [
+        2.0763649940490723,
+        -1.1910336017608643
+      ]
+    },
+    {
+      "next": "dance_breakdance_footwork_2",
+      "offset_xy_m": [
+        2.0762779712677,
+        -1.1914087533950806
+      ]
+    },
+    {
+      "next": "dance_breakdance_footwork_3",
+      "offset_xy_m": [
+        2.07432222366333,
+        -1.1956604719161987
+      ]
+    },
+    {
+      "next": "dance_flair",
+      "offset_xy_m": [
+        2.0652692317962646,
+        -1.2040406465530396
+      ]
+    },
+    {
+      "next": "dance_flair_2",
+      "offset_xy_m": [
+        2.0267889499664307,
+        -1.3237018585205078
+      ]
+    },
+    {
+      "next": "dance_flair_3",
+      "offset_xy_m": [
+        2.024181604385376,
+        -1.3027207851409912
+      ]
+    },
+    {
+      "next": "dance_breakdance_swipes",
+      "offset_xy_m": [
+        2.8131401538848877,
+        -1.8303128480911255
+      ]
+    },
+    {
+      "next": "dance_breakdance_1990",
+      "offset_xy_m": [
+        3.2228176593780518,
+        -1.7114893198013306
+      ]
+    },
+    {
+      "next": "dance_breakdance_1990_2",
+      "offset_xy_m": [
+        3.4688053131103516,
+        -1.4241719245910645
+      ]
+    },
+    {
+      "next": "dance_breakdance_1990_3",
+      "offset_xy_m": [
+        3.464995861053467,
+        -1.431037187576294
+      ]
+    },
+    {
+      "next": "dance_breakdance_footwork_to_freeze",
+      "offset_xy_m": [
+        4.821211338043213,
+        -1.7175530195236206
+      ]
+    },
+    {
+      "next": "dance_crossleg_freeze",
+      "offset_xy_m": [
+        4.447121620178223,
+        -1.6707738637924194
+      ]
+    },
+    {
+      "next": "dance_breakdance_freezes",
+      "offset_xy_m": [
+        4.467752456665039,
+        -2.027109146118164
+      ]
+    },
+    {
+      "next": "dance_breakdance_freeze_var_1",
+      "offset_xy_m": [
+        5.04897928237915,
+        -1.8717461824417114
+      ]
+    },
+    {
+      "next": "dance_breakdance_freeze_var_2",
+      "offset_xy_m": [
+        5.6963958740234375,
+        -2.9386329650878906
+      ]
+    },
+    {
+      "next": "dance_breakdance_freeze_var_3",
+      "offset_xy_m": [
+        5.759965896606445,
+        -4.00504732131958
+      ]
+    },
+    {
+      "next": "dance_breakdance_freeze_var_4",
+      "offset_xy_m": [
+        4.238990783691406,
+        -3.1084680557250977
+      ]
+    },
+    {
+      "next": "dance_breakdance_ending_1",
+      "offset_xy_m": [
+        3.583343029022217,
+        -3.9148597717285156
+      ]
+    },
+    {
+      "next": "dance_breakdance_ending_2",
+      "offset_xy_m": [
+        3.491083860397339,
+        -3.0120046138763428
+      ]
+    },
+    {
+      "next": "dance_breakdance_ending_3",
+      "offset_xy_m": [
+        3.193058729171753,
+        -2.1443686485290527
+      ]
+    },
+    {
+      "next": "dance_breakdance_footwork_to_idle",
+      "offset_xy_m": [
+        3.6369988918304443,
+        -2.8478331565856934
+      ]
+    },
+    {
+      "next": "dance_breakdance_uprock_to_ground_2",
+      "offset_xy_m": [
+        3.403697967529297,
+        -3.3651771545410156
+      ]
+    },
+    {
+      "next": "dance_breakdance_footwork_to_idle_2",
+      "offset_xy_m": [
+        3.1978557109832764,
+        -3.7694242000579834
+      ]
+    }
+  ],
+  "loop_bridge_frames": 13
 }
