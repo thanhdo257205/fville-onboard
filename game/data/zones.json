@@ -24,6 +24,12 @@
       "audio": { "ambience": "corridor", "steps": "concrete", "reverb": 0.25 } },
     "zone_05": { "file": "zone_05_office", "start": "SPAWN_zone_05_from_zone_04",
       "audio": { "ambience": "office", "steps": "carpet", "reverb": 0.12 },
+      "events": [
+        { "area": { "center": [-43, 1.2, 0.1], "size": [20, 2.4, 2.8] }, "dialogue": "z5_meeting_rooms_intro", "once_flag": "z5_meeting_rooms_seen",
+          "_ly_do": "Người dùng 13/10/2026: lời dẫn khi tới hành lang trước 3 phòng họp (x −53 … −33, trước cửa kính z −1,5): tên phòng theo làng nổi tiếng, thiết bị hiện đại." },
+        { "area": { "center": [-22, 1.2, 7.8], "size": [24, 2.4, 10.4] }, "dialogue": "z5_workspace_intro", "once_flag": "z5_workspace_seen",
+          "_ly_do": "Người dùng 13/10/2026: lời dẫn khi bước vào khu bàn làm việc chính (x −34 … −10, z 2,6 … 13): tông màu làng quê — xanh cây cỏ, nâu đất, vàng lúa." }
+      ],
       "on_enter": { "dialogue": "z5_app_meeting", "once_flag": "z5_meeting_notice", "_ly_do": "GDD zone 5: vào zone, app báo \"09:15 Meeting with Ms. Nga\" (mentor)." },
       "variants": [{ "if": { "flags": ["lunch_done"] }, "time": { "en": "13:30", "vi": "13:30" },
         "mood": { "_ghi_chu": "Buổi chiều sau bữa trưa (GDD: màn mờ \"12:00 · The team invites you to lunch\" rồi sáng lại): nắng thấp hơn, ấm hơn.",
