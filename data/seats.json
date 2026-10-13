@@ -1,7 +1,9 @@
 {
  "_ghi_chu": "Chỗ ngồi tự do (game/src/game/seats.js): đứng gần ghế (radius_m, đo ngang) → phím E / nút hành động \"Sit\" → ngồi (Player.sit như bàn làm việc zone 5); E lần nữa hoặc bước đi → đứng dậy. at = điểm giữa mặt ghế chiếu xuống sàn (toạ độ glTF, y = sàn), yaw_deg = hướng nhìn khi ngồi (0 = nhìn −Z), h = mặt ngồi cao trên sàn (m; đã tính phần ghế hạ ở scene_fixes → chairs), group = nhóm ghế (để đọc). Ghế có NPC_ ngồi sẵn (trong occupied_m) hoặc việc khác ở gần (INT_, NPC…) thì việc kia được ưu tiên. Ghế nằm chung lưới với bàn / đồ khác nên không có node riêng: danh sách dò bằng scripts/tools/find_seats.mjs (game/src/world/seats.js — mặt ngang 0,33–0,62 m trên sàn COL_, cỡ một chỗ ngồi, lưng ghế / bàn gần → hướng) rồi lọc tay; build lại zone thì chạy lại công cụ.",
  "_bo_qua": "Không đưa vào: bậu cửa sổ nhà xa (zone_00 nha_pho, zone_01–03 buildings), thành giếng làng + bệ tượng Cuder (zone_02), ghế xe bus (zone_01, không vào được), ghế băng tầng trên + tầng trệt zone_04 và bàn cộng tác sát cửa kính zone_05 (không có chỗ đứng tới được), ghế đẩu nhựa quán vỉa hè zone_00 (cao 0,3 m — animation ngồi cần ghế ≥ 0,33 m).",
- "radius_m": 1.2,
+ "typing_groups": ["ban_van_phong", "ban_intern", "phong_phu"],
+  "_typing_ghi_chu": "13/10/2026 (người dùng chốt): nhóm ghế ở bàn có bàn phím + máy tính → ngồi gõ phím (sit_type); ghế khác (bàn cộng tác, phòng họp, ghế đôn, ghế chờ…) → ngồi yên tay trên đùi (sit_idle — Mixamo \"Sitting\", scripts/blender/characters/build_reach.py --clip sit_idle). Bàn làm việc của người chơi (SPAWN_ban_lam_viec) luôn gõ phím.",
+  "radius_m": 1.2,
  "occupied_m": 0.6,
  "zones": {
   "zone_00": [

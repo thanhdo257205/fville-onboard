@@ -7,6 +7,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Bàn làm việc: tay chạm bàn phím, bỏ vật trắng trước bàn phím, ngồi yên ở ghế không có máy tính (13/10/2026, nhánh
+  `feat/desk-sitting`):** đo trong game: tay của `sit_type` cách bàn phím 15–25 cm → `desktop_computer.build(kb_forward=0,15)`
+  đẩy bàn phím + chuột về phía người ngồi (`zone_05.py PC_KB_FORWARD`), build lại zone 5 (node giữ nguyên). Vật trắng là bảng
+  tên (game in tên người chơi lên) → dời từ mép trước bàn lên vách ngăn bên phải màn hình (`NAMEPLATE_LOCAL`, interactables
+  `bang_ten` pos / face). Hoạt ảnh Mixamo "Sitting" → clip `sit_idle` (lặp, hông dời khớp chỗ ngồi cuối của `sit_down`) cho 4
+  ngoại hình người chơi (`build_reach.py --clip sit_idle …`). `seats.json → typing_groups` (bàn văn phòng, bàn intern, khu làm
+  việc phụ) ngồi gõ phím; ghế khác (bàn cộng tác, phòng họp, sofa, ghế đôn, ghế chờ) ngồi yên (`Player.sit(…, pose)`).
 - **Lối cửa phòng họp, bàn phím và tường chập chờn (13/10/2026, nhánh `codex/meeting-room-clearance-fixes`):**
   ba phòng sâu thêm 1,5 m, bàn / ghế dịch vào 0,75 m; khoảng từ đầu cánh cửa mở tới dãy ghế gần nhất khoảng 90 cm.
   Giữ bố cục chữ T của phòng Prajith. Máy tính lùi 17 cm, bàn phím từ nhô 12 cm / nổi 3,5 cm thành nằm trọn trên

@@ -473,7 +473,7 @@
     {
       "zone": "zone_05",
       "object": "bang_ten",
-      "pos": [-11.9, 0.8, 4.34],
+      "pos": [-12.4, 0.95, 4.963],
       "snap": false,
       "model": "nameplate",
       "radius": 0,
@@ -482,8 +482,8 @@
         "vi": ""
       },
       "action": "none",
-      "_ly_do": "Bảng tên trên bàn intern (trong GLB là tấm trắng để trống, gộp vào ban_lam_viec_mesh): code đặt tấm chữ sát mặt tấm trắng (face = pháp tuyến mặt tấm, toạ độ glTF), hiện tên người chơi + vị trí khi có cờ nameplate_on (sau mini-game Đăng nhập). Toạ độ suy từ scripts/blender/zone_05.py (bàn yaw 180, tấm ở (0; −0,66; 0,8) nghiêng −30°). action none: chỉ để nhìn, không bấm E.",
-      "face": [0, 0.5, -0.866],
+      "_ly_do": "Bảng tên trên bàn intern (trong GLB là tấm trắng để trống, gộp vào ban_lam_viec_mesh): code đặt tấm chữ sát mặt tấm trắng (face = pháp tuyến mặt tấm, toạ độ glTF), hiện tên người chơi + vị trí khi có cờ nameplate_on (sau mini-game Đăng nhập). Toạ độ suy từ scripts/blender/zone_05.py (bàn yaw 180 tại (−11,9; −5,0); NAMEPLATE_LOCAL (0,5; −0,037; 0,95) — 13/10/2026 dời từ mép trước bàn (chắn trước bàn phím) lên vách ngăn, mặt nhìn về người ngồi). action none: chỉ để nhìn, không bấm E.",
+      "face": [0, 0, -1],
       "show_if": {
         "flags": [
           "nameplate_on"

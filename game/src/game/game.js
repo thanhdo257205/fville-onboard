@@ -1029,7 +1029,9 @@ export class Game {
   // seated.free → E lần nữa hoặc bước đi thì đứng dậy, hội thoại tự mở (tin nhắn…) xong vẫn ngồi nguyên
   sitFree(s) {
     if (!s || this.player.seated) return;
-    const done = this.player.sit(new THREE.Vector3(...s.at), THREE.MathUtils.degToRad(s.yaw_deg ?? 0) + Math.PI, s.h ?? null);
+    // bàn có bàn phím + máy tính (seats.json → typing_groups) → gõ phím; ghế khác → ngồi yên (sit_idle)
+    const pose = (this.data.seats?.typing_groups || []).includes(s.group) ? "sit_type" : "sit_idle";
+    const done = this.player.sit(new THREE.Vector3(...s.at), THREE.MathUtils.degToRad(s.yaw_deg ?? 0) + Math.PI, s.h ?? null, pose);
     if (this.player.seated) this.player.seated.free = true;
     return done;
   }
