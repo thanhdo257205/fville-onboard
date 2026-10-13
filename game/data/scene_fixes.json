@@ -52,6 +52,35 @@
     ]
   },
   "zone_05": {
+    "room_doors": [
+      {
+        "id": "phong_hop_mentor",
+        "name": "Phòng họp 1",
+        "leaf": "ENV_cua_phong_hop_mentor",
+        "degrees": 85,
+        "seconds": 0.7,
+        "col_closed": "COL_cua_phong_hop_mentor_closed",
+        "col_open": "COL_cua_phong_hop_mentor_open"
+      },
+      {
+        "id": "phong_hop_manager",
+        "name": "Trạch Xá",
+        "leaf": "ENV_cua_phong_hop_manager",
+        "degrees": 85,
+        "seconds": 0.7,
+        "col_closed": "COL_cua_phong_hop_manager_closed",
+        "col_open": "COL_cua_phong_hop_manager_open"
+      },
+      {
+        "id": "phong_hop_3",
+        "name": "Ước Lễ",
+        "leaf": "ENV_cua_phong_hop_3",
+        "degrees": 85,
+        "seconds": 0.7,
+        "col_closed": "COL_cua_phong_hop_3_closed",
+        "col_open": "COL_cua_phong_hop_3_open"
+      }
+    ],
     "remove_parts": [
       { "mesh": "^ENV_khu_nghi$", "boxes": [{ "center": [-1.0, 0.8, -5.2], "size": [1.0, 1.8, 1.0] }, { "center": [-7.2, 0.8, -5.2], "size": [1.0, 1.8, 1.0] }],
         "_ly_do": "2 chậu cọ chậu trắng khu nghỉ cũ (scripts/blender/zone_05.py build_break_area → interior.potted_palm h 1,4 tại Blender (−1, 5,2), (−7,2, 5,2) → glTF (x, 0, −5,2)) → thay bằng chậu cây Sketchfab (props). COL_chau_cay_* giữ nguyên." }

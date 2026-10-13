@@ -1,4 +1,9 @@
 {
+  "meeting_doors": {
+    "open": "Mở cửa · {room}",
+    "close": "Đóng cửa · {room}",
+    "blocked": "Có người trong vùng cửa. Lùi ra rồi đóng nhé."
+  },
   "_note": "Mọi chữ giao diện, tiếng Việt — cùng khoá với en.json. Văn phong (xưng hô, thuật ngữ): docs/vi_style.md. Tên riêng giữ nguyên: Tú, Huyền, Lan, Minh, Hà, Khang, F-Ville, Hòa Lạc, My FPT.",
   "app": {
     "title": "Ngày Đầu Ở F-Ville",
