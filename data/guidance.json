@@ -160,6 +160,32 @@
         { "en": "Take the stairs behind the card gate — the FSA Room is at the far end upstairs.", "vi": "Em đi cầu thang phía sau cửa quẹt thẻ — Phòng FSA ở cuối tầng trên." }
       ]
     },
+    "z4_office_card": {
+      "help": {
+        "en": "Tap your employee card on the reader beside the FSA Room doors (E) — they lead into the office.",
+        "vi": "Quẹt thẻ nhân viên vào đầu đọc cạnh cửa Phòng FSA (E) — cửa này dẫn vào văn phòng."
+      },
+      "tu": [
+        {
+          "en": "The office is through those doors — tap your card on the reader first!",
+          "vi": "Văn phòng ở sau cánh cửa kia — cậu quẹt thẻ vào đầu đọc trước đã!"
+        },
+        {
+          "en": "Same as downstairs: card on the reader, then the doors open.",
+          "vi": "Y như dưới tầng: chạm thẻ vào đầu đọc là cửa mở."
+        }
+      ],
+      "phone": [
+        {
+          "en": "Hi {player}! The office door upstairs opens with your card too — tap it on the reader.",
+          "vi": "Chào {player}! Cửa văn phòng trên tầng cũng mở bằng thẻ của em — quẹt vào đầu đọc nhé."
+        },
+        {
+          "en": "Tap your card on the reader by the FSA Room doors and you're in.",
+          "vi": "Em quẹt thẻ vào đầu đọc cạnh cửa Phòng FSA là vào được rồi."
+        }
+      ]
+    },
     "z5_prajith": {
       "route": [{ "pos": [-18.0, 0, -1.4], "r": 1.2 }, { "pos": [-18.0, 0, -3.7], "r": 0.9 }],
       "_route_ly_do": "Phòng họp chỉ mở cửa phía lối đi chính (giữa vách nam, x −19,3 … −16,7): dấu \"!\" dẫn tới trước cửa, vào hẳn trong cửa rồi mới tới mentor (đi thẳng từ trước cửa tới mentor thì vướng mép vách).",
