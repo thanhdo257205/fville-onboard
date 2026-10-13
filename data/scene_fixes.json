@@ -50,7 +50,7 @@
     "doors": [
       {
         "_ghi_chu": "Cửa quẹt thẻ (kính khung đen 2 cánh, bản lề ở mép ngoài: canh_trai x 1,0, canh_phai x 3,6). Quẹt thẻ xong (quest z4_card_gate) → 2 cánh xoay 90° mở vào phía cầu thang (−Z), bỏ hộp COL_cua_quet_the khỏi va chạm.",
-        "leaves": { "cua_quet_the_canh_trai": 90, "cua_quet_the_canh_phai": -90 },
+        "leaves": { "cua_quet_the_canh_trai": -80, "cua_quet_the_canh_phai": 80 },
         "col": ["COL_cua_quet_the"],
         "open_if": { "quests": ["z4_card_gate"] },
         "seconds": 0.9,
