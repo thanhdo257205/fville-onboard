@@ -184,9 +184,11 @@
       }
     },
     {
-      "id": "card_gate", "start": "tap",
+      "id": "card_gate", "start": "reach",
       "nodes": {
-        "tap": { "speaker": "narrator", "sfx": "card_ok", "text": { "en": "You hold your new employee card to the reader. Beep — green light! The glass doors swing open.", "vi": "Bạn chạm thẻ nhân viên mới vào đầu đọc. Bíp — đèn xanh! Cửa kính từ từ mở ra." },
+        "reach": { "speaker": "narrator", "text": { "en": "You take out your brand-new employee card — your photo, your name — and reach for the reader.", "vi": "Bạn lấy tấm thẻ nhân viên mới tinh ra — có ảnh, có tên mình hẳn hoi — rồi đưa về phía đầu đọc." },
+          "effects": { "card": { "do": "tap", "face": "INT_cua_quet_the", "reader": "dau_doc_the", "stand_m": 0.65 } }, "next": "tap" },
+        "tap": { "speaker": "narrator", "sfx": "card_ok", "text": { "en": "Beep — green light! The glass doors swing open.", "vi": "Bíp — đèn xanh! Cửa kính từ từ mở ra." },
           "effects": { "quest": "z4_card_gate", "hieu_biet": 5, "banner": { "en": "First card tap!", "vi": "Lần quẹt thẻ đầu tiên!" } }, "next": "s0" },
         "s0": { "branch": [{ "if": { "flags": ["stranger_done"] }, "next": "tu0" }], "next": "s1" },
         "s1": { "speaker": "nguoi_la", "anim": "wave", "text": { "en": "Excuse me! Could I come in with you? I left my card on the bus.", "vi": "Em ơi, cho anh vào cùng em được không? Anh để quên thẻ trên xe mất rồi." },
@@ -274,8 +276,8 @@
         "form": { "action": "minigame:profile_check", "next": "n3" },
         "n3": { "speaker": "le_tan", "anim": "point", "text": { "en": "Perfect. Now a quick photo for your card: pick an expression, then take the shot. Big smile — you'll be wearing this one every day!", "vi": "Chuẩn rồi. Giờ chụp nhanh tấm ảnh làm thẻ: chọn biểu cảm rồi bấm chụp. Cười thật tươi vào — ngày nào em cũng đeo tấm thẻ này đấy!" }, "next": "photo" },
         "photo": { "action": "minigame:id_photo", "next": "n4" },
-        "n4": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. Welcome aboard — have a wonderful first day!", "vi": "{player}, đây là thẻ nhân viên FPT và bộ Welcome Kit của em. Chào mừng em gia nhập FPT — chúc em ngày đầu thật vui!" },
-          "effects": { "reward": ["the_nhan_vien", "welcome_kit"], "hieu_biet": 5, "quest": "z3_card" }, "next": null },
+        "n4": { "speaker": "le_tan", "anim": "reach", "text": { "en": "Here's your FPT employee card, {player}, and your Welcome Kit. Welcome aboard — have a wonderful first day!", "vi": "{player}, đây là thẻ nhân viên FPT và bộ Welcome Kit của em. Chào mừng em gia nhập FPT — chúc em ngày đầu thật vui!" },
+          "effects": { "reward": ["the_nhan_vien", "welcome_kit"], "hieu_biet": 5, "quest": "z3_card", "card": "give" }, "next": null },
         "after": { "speaker": "le_tan", "text": { "en": "Your card opens the card gate down the corridor. If anything comes up, pop back to reception — or message Ms. Nga in the app!", "vi": "Thẻ của em mở được cửa quẹt thẻ ở cuối hành lang. Có gì cứ quay lại lễ tân, hoặc nhắn chị Nga qua app nhé!" }, "next": null },
         "w1": { "speaker": "player", "text": { "en": "Excuse me — I found this wallet on the seats over there.", "vi": "Chị ơi, em nhặt được cái ví này ở dãy ghế đằng kia ạ." }, "next": "w2" },
         "w2": { "speaker": "le_tan", "anim": "nod", "text": { "en": "Oh, thank you! Someone must be worried sick. I'll make sure it gets back to its owner.", "vi": "Ôi, cảm ơn em! Chắc ai đó đang lo lắm. Chị sẽ gửi lại tận tay người đánh rơi." },
