@@ -433,7 +433,7 @@ body.overlay-open #guide-arrow, body.photo-mode #guide-arrow { display: none; }
 .lpath .day b { display: block; color: #c4520f; font-size: 13px; }
 .lpath .day span { display: block; font-weight: 700; font-size: 13px; line-height: 1.25; margin-top: 4px; }
 .lpath .day.now { outline: 2px solid var(--orange); }
-.lpath .day.filled { background: #e3f5e8; }
+.lpath .day.filled { background: #fde9d6; cursor: pointer; }   /* đã xếp — bấm để lấy thẻ ra (không màu đúng / sai) */
 .lpath .lp-cards li { cursor: grab; }
 .lpath .lp-cards li div { display: grid; gap: 2px; }
 .lpath .lp-cards li small { color: var(--muted); font-weight: 700; font-size: 12px; }
