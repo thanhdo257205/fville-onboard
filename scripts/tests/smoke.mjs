@@ -483,8 +483,14 @@ async function runLook(browser, base, look) {
             const rotated = d.node.quaternion.angleTo(d.from) > 1.4;
             go(p.x, -3.65); go(p.x, 0);
             const original = g.player.position.clone();
+            // người chơi đứng ngay mặt cửa (trong vùng cánh quét) mà đóng → lùi người chơi ra khỏi vùng đó rồi mới đóng (13/10/2026:
+            // đóng được từ trong phòng); không bao giờ đóng xuyên người
             g.player.body.teleport(new V(p.x, 0.05, -1.5));
-            const safe = g.roomDoors.toggle(id) === false && d.target;
+            const shut = g.roomDoors.toggle(id);
+            for (let k = 0; k < 60; k++) g.roomDoors.update(1 / 60);
+            const safe = shut && !d.target && !g.roomDoors.occupied(d);
+            g.roomDoors.toggle(id);                                       // mở lại cho bước sau
+            for (let k = 0; k < 60; k++) g.roomDoors.update(1 / 60);
             g.player.body.teleport(original);
             const closed = g.roomDoors.toggle(id);
             for (let k = 0; k < 60; k++) g.roomDoors.update(1 / 60);
@@ -496,7 +502,7 @@ async function runLook(browser, base, look) {
         });
         await check(office.legs.every(l => l.reached && l.floor) && office.names.length === 3 && office.batches.length > 0
           && office.doors.every(d => Object.values(d).every(Boolean)),
-          "zone_05: 3 cửa đóng chặn capsule, mở đi qua, biển xoay theo cánh; không đóng khi có người; hành lang / sàn liên tục", JSON.stringify(office));
+          "zone_05: 3 cửa đóng chặn capsule, mở đi qua, biển xoay theo cánh; đóng khi đứng sát cửa → lùi người chơi ra, không đóng xuyên người; hành lang / sàn liên tục", JSON.stringify(office));
         // Exercise the same E callback / live prompt used by the touch action button.
         await ev(() => __game.resolve());
         const doorUi = await ev(() => {

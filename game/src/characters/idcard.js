@@ -357,7 +357,12 @@ export class IdCard {
       // bước tới trước đầu đọc (data: card.reader, card.stand_m) rồi mới rút thẻ đưa vào
       if (opt.reader) { await this.stepTo(opt.reader, opt.stand_m ?? 0.55, 600); if (this.token !== token) return; }
       if (!player || !this.hold(player, "player")) return this.clear();
-      await reach(player);
+      const r = reach(player);
+      // thẻ chạm đầu đọc ở cuối clip (tay đã ngang đầu đọc): bíp, cửa mở (Game.tapDoor) — không đợi hết clip
+      if (!(await this.wait((player.model.durations_s?.reach ?? 2.6) * 800, token))) return;
+      opt.onTap?.();
+      await r;
+      if (this.token !== token) return;
       if (!(await this.wait(400, token))) return;
       this.clear();
       if (!player.disposed) player.enableLocomotion();

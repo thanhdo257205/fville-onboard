@@ -227,6 +227,7 @@ export class Interaction {
     const it = e.item;
     if (it.action === "none") return false;                     // chỉ để nhìn (vd bảng tên trên bàn)
     if (it.hide_if && this.hideMatch(it.hide_if)) return false;
+    if (it.action.startsWith("card:") && !this.game.cardDoorReady?.(it.action.split(":")[1])) return false;   // cửa đang đóng, đứng phía ngoài
     return this.game.progress.check(it.requires);
   }
 

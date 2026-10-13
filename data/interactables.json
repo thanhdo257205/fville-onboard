@@ -2,6 +2,8 @@
   "_ghi_chu": "Nối đối tượng trong GLB với hành động. Vùng tương tác: 'radius' (m, đo theo phương ngang từ node; mặc định default_radius) và/hoặc 'area' (hộp TRIGGER_: đứng trong hộp là tương tác được). 'actor': nhân vật do code đặt (vd Tú). 'at': điểm tương tác riêng (toạ độ glTF) thay cho vị trí node. 'object': vật do code đặt (không có trong GLB) tại node 'anchor' + 'offset' (glTF, m). action: dialogue:<id> | minigame:<id> | pickup:<carry id> (mini-game mở bằng INT_ đi qua hội thoại <id>_intro: Tú nói luật lần đầu). requires/hide_if: { flags, not_flags, quests, rewards }. Hiệu ứng (hieu_biet, ket_noi, value, reward, flags, quest, item, remove_item) nằm trong dialogues.json và minigames bên dưới.",
   "default_radius": 2.0,
   "items": [
+    {"zone": "zone_04", "node": "INT_cua_quet_the", "area": "TRIGGER_cua_quet_the", "prompt": {"en": "Tap your card", "vi": "Quẹt thẻ"}, "action": "card:cua_kinh", "requires": {"quests": ["z4_card_gate"]}, "_ly_do": "13/10/2026 (người dùng chốt): sau lần quẹt thẻ đầu tiên (quest z4_card_gate), mỗi lần vào cửa kính từ phía hành lang đều quẹt thẻ lại (cửa tự đóng sau lưng) — chỉ hiện khi cửa đang đóng và đứng phía ngoài (Game.cardDoorReady)."},
+    {"zone": "zone_04", "node": "INT_cua_phong_fsa", "area": "TRIGGER_cua_phong_fsa", "prompt": {"en": "Tap your card", "vi": "Quẹt thẻ"}, "action": "card:cua_fsa", "requires": {"quests": ["z4_office_card"]}, "_ly_do": "13/10/2026: như cửa kính — mỗi lần vào văn phòng qua cửa Phòng FSA đều quẹt thẻ."},
     {
       "zone": "zone_05",
       "node": "INT_cua_phong_hop_mentor",

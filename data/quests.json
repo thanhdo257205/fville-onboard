@@ -48,7 +48,7 @@
     { "zone": "zone_03", "node": "TRIGGER_zone_02_enter", "to_zone": "zone_02", "to_spawn": "SPAWN_zone_02_from_zone_03", "requires": [] },
     { "zone": "zone_03", "node": "TRIGGER_zone_04_enter", "to_zone": "zone_04", "to_spawn": "SPAWN_zone_04_from_zone_03", "requires": ["z3_card", "z3_rice_room"], "blocked_dialogue": "tu_remind_zone3" },
     { "zone": "zone_04", "node": "TRIGGER_zone_03_enter", "to_zone": "zone_03", "to_spawn": "SPAWN_zone_03_from_zone_04", "requires": [] },
-    { "zone": "zone_04", "node": "TRIGGER_zone_05_enter", "to_zone": "zone_05", "to_spawn": "SPAWN_zone_05_from_zone_04", "requires": ["z4_card_gate", "z4_fsa", "z4_office_card"], "blocked_dialogue": "fsa_remind" },
+    { "zone": "zone_04", "node": "TRIGGER_zone_05_enter", "to_zone": "zone_05", "to_spawn": "SPAWN_zone_05_from_zone_04", "requires": ["z4_card_gate", "z4_fsa", "z4_office_card"], "blocked_dialogue": "fsa_remind", "door": "cua_fsa" },
     { "zone": "zone_05", "node": "TRIGGER_zone_04_enter", "to_zone": "zone_04", "to_spawn": "SPAWN_zone_04_from_zone_05", "requires": [] }
   ]
 }

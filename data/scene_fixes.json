@@ -43,6 +43,8 @@
         "open_if": { "quests": ["z4_card_gate"] },
         "seconds": 0.9,
         "auto_close": { "away_m": 2.6, "reopen_m": 1.7, "min_s": 2.5 },
+        "card": { "id": "cua_kinh", "reader": "dau_doc_the", "stand_m": 0.65, "outside": [0, 1] },
+        "_card_ghi_chu": "13/10/2026 (người dùng chốt): mỗi lần vào từ phía ngoài (outside = hướng glTF về phía đầu đọc, hành lang +Z) phải quẹt thẻ (interactables action card:cua_kinh); từ phía cầu thang tới gần thì tự mở.",
         "_auto_close_ghi_chu": "13/10/2026 (người dùng chốt): đi qua rồi cửa tự đóng (người chơi và Tú cùng cách tâm cửa > away_m, đã mở ít nhất min_s, không đang quẹt thẻ) → trả hộp va chạm; quay lại gần (< reopen_m) thì tự mở như cửa cảm biến (đã quẹt thẻ một lần)."
       },
       {
@@ -50,7 +52,8 @@
         "leaves": { "cua_phong_fsa_canh_trai": 90, "cua_phong_fsa_canh_phai": -90 },
         "open_if": { "quests": ["z4_office_card"] },
         "seconds": 0.9,
-        "auto_close": { "away_m": 2.6, "reopen_m": 1.7, "min_s": 2.5 }
+        "auto_close": { "away_m": 2.6, "reopen_m": 1.7, "min_s": 2.5 },
+        "card": { "id": "cua_fsa", "reader": "dau_doc_the_fsa", "stand_m": 0.65, "outside": [1, 0] }
       }
     ]
   },
