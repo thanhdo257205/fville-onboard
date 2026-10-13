@@ -471,12 +471,12 @@ export class Game {
 
   checkNpcEntries() {
     if (this.mode !== "play" || this.state.phase !== "playing") return;
-    const p = this.player.character.root.position.clone();
+    const p = this.player.position.clone();
     p.y += 0.9;
     for (const npc of this.npcs) {
       const area = this.characters.role(npc.role)?.entry_area;
       const trigger = area && this.zone.triggers.find(t => t.name === area);
-      if (trigger && inTrigger(trigger, p)) npc.arrive(this.player.character.root.position.clone());
+      if (trigger && inTrigger(trigger, p)) npc.arrive(this.player.position.clone());
     }
   }
 

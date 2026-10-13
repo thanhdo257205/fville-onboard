@@ -102,4 +102,4 @@ Danh sách đầy đủ từng file, nguồn, SHA-256 và giấy phép: `docs/au
 ## Thư viện
 - three.js (MIT) — trang xem thử `viewer/` và game web.
 
-- Bàn/ghế executive `ceo_01.glb` và máy tính `apple_desktop.glb`: người dùng cung cấp cho phòng Prajith. Game chỉ dùng bản mesh/texture đã rút gọn; file nguồn giữ riêng trên máy.
+- Bàn/ghế executive (`assets/props/ceo_office/ceo_office.glb`, nguồn `ceo_01.glb`) và máy tính (`assets/props/apple_desktop/apple_desktop.glb`, nguồn `apple_desktop.glb`): người dùng cung cấp cho phòng Prajith. Game chỉ dùng bản mesh/texture đã rút gọn; file nguồn giữ riêng trên máy.
