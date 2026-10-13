@@ -183,6 +183,12 @@
       "model": "prajith_polo",
       "place": "node",
       "node": "NPC_manager",
+      "pose": "seated",
+      "node_marks": "seat",
+      "chair_height_m": 0.447,
+      "chair_drop": false,
+      "entry_area": "TRIGGER_manager_entry",
+      "arrival_exit": [-38.5, 0, -9.65],
       "_ghi_chu": "Prajith (người thật, đã đồng ý dùng hình) là quản lý team ở zone 5 (người dùng chốt 12/10/2026; trước đó là mentor, quản lý là chị Manager hư cấu). Model prajith_polo (áo polo cam FPT có logo, thay model prajith cũ 12/10/2026 — prajith vẫn giữ: nguồn animation, viewer so sánh), không đổi màu áo."
     },
     "dong_nghiep_1": {

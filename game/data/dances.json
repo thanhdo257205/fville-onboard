@@ -1,7 +1,18 @@
 {
-  "_ghi_chu": "Breakdance Pack do người dùng cung cấp. 34 điệu / biến thể, dùng cho cả 4 model người chơi. FBX nguồn chỉ ở source/ trên máy làm việc; xuất animation gắn vào model game, không phát tán FBX hoặc gói animation thô. Mỗi lựa chọn phát một lượt, di chuyển / tương tác sẽ dừng.",
+  "_ghi_chu": "Một lựa chọn Breakdance: ghép đủ 34 clip theo order, nội suy tư thế 0,4 giây giữa các đoạn. Tải khi cần, di chuyển / tương tác sẽ dừng. FBX và rig nguồn chỉ ở máy làm việc.",
   "source_zip_sha256": "e784e820df7472dd8c830bb1e6da75863dff711b2328eb83001ce843e5dc2c7c",
   "dances": [
+    {
+      "id": "dance_breakdance_full",
+      "anim": "dance_breakdance_full",
+      "label": {
+        "en": "Breakdance",
+        "vi": "Nhảy Breakdance"
+      },
+      "icon": "🕺"
+    }
+  ],
+  "segments": [
     {
       "id": "dance_brooklyn_uprock",
       "anim": "dance_brooklyn_uprock",
@@ -342,5 +353,42 @@
       },
       "icon": "🕺"
     }
-  ]
+  ],
+  "order": [
+    "dance_breakdance_ready",
+    "dance_breakdance_ready_2",
+    "dance_breakdance_ready_3",
+    "dance_brooklyn_uprock",
+    "dance_breakdance_uprock",
+    "dance_breakdance_uprock_2",
+    "dance_breakdance_uprock_var_1_start",
+    "dance_breakdance_uprock_var_1",
+    "dance_breakdance_uprock_var_2",
+    "dance_breakdance_uprock_var_1_end",
+    "dance_breakdance_uprock_to_ground",
+    "dance_breakdance_footwork_1",
+    "dance_breakdance_footwork_2",
+    "dance_breakdance_footwork_3",
+    "dance_flair",
+    "dance_flair_2",
+    "dance_flair_3",
+    "dance_breakdance_swipes",
+    "dance_breakdance_1990",
+    "dance_breakdance_1990_2",
+    "dance_breakdance_1990_3",
+    "dance_breakdance_footwork_to_freeze",
+    "dance_crossleg_freeze",
+    "dance_breakdance_freezes",
+    "dance_breakdance_freeze_var_1",
+    "dance_breakdance_freeze_var_2",
+    "dance_breakdance_freeze_var_3",
+    "dance_breakdance_freeze_var_4",
+    "dance_breakdance_ending_1",
+    "dance_breakdance_ending_2",
+    "dance_breakdance_ending_3",
+    "dance_breakdance_footwork_to_idle",
+    "dance_breakdance_uprock_to_ground_2",
+    "dance_breakdance_footwork_to_idle_2"
+  ],
+  "transition_s": 0.4
 }
