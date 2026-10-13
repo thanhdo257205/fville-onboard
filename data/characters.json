@@ -1146,7 +1146,8 @@
         "sit_type": "sit_type",
         "cheer": "cheer",
         "stand_up": "stand_up",
-        "reach": "reach"
+        "reach": "reach",
+        "sit_idle": "sit_idle"
       },
       "loop": [
         "idle",
@@ -1157,7 +1158,8 @@
         "think",
         "phone",
         "sit_type",
-        "cheer"
+        "cheer",
+        "sit_idle"
       ],
       "once": [
         "wave",
@@ -1184,7 +1186,8 @@
         "sit_type": 16.467,
         "cheer": 2.0,
         "stand_up": 2.233,
-        "reach": 2.6333
+        "reach": 2.6333,
+        "sit_idle": 7.0
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1251,7 +1254,8 @@
         "sit_type": "sit_type",
         "cheer": "cheer",
         "stand_up": "stand_up",
-        "reach": "reach"
+        "reach": "reach",
+        "sit_idle": "sit_idle"
       },
       "loop": [
         "idle",
@@ -1262,7 +1266,8 @@
         "think",
         "phone",
         "sit_type",
-        "cheer"
+        "cheer",
+        "sit_idle"
       ],
       "once": [
         "wave",
@@ -1289,7 +1294,8 @@
         "sit_type": 16.467,
         "cheer": 2.0,
         "stand_up": 2.233,
-        "reach": 2.6333
+        "reach": 2.6333,
+        "sit_idle": 7.0
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1355,7 +1361,8 @@
         "sit_type": "sit_type",
         "cheer": "cheer",
         "stand_up": "stand_up",
-        "reach": "reach"
+        "reach": "reach",
+        "sit_idle": "sit_idle"
       },
       "loop": [
         "idle",
@@ -1366,7 +1373,8 @@
         "think",
         "phone",
         "sit_type",
-        "cheer"
+        "cheer",
+        "sit_idle"
       ],
       "once": [
         "wave",
@@ -1393,7 +1401,8 @@
         "sit_type": 16.467,
         "cheer": 2.0,
         "stand_up": 2.233,
-        "reach": 2.6333
+        "reach": 2.6333,
+        "sit_idle": 7.0
       },
       "speed_mps": {
         "walk": 1.4,
@@ -1458,7 +1467,8 @@
         "sit_type": "sit_type",
         "cheer": "cheer",
         "stand_up": "stand_up",
-        "reach": "reach"
+        "reach": "reach",
+        "sit_idle": "sit_idle"
       },
       "loop": [
         "idle",
@@ -1469,7 +1479,8 @@
         "think",
         "phone",
         "sit_type",
-        "cheer"
+        "cheer",
+        "sit_idle"
       ],
       "once": [
         "wave",
@@ -1496,7 +1507,8 @@
         "sit_type": 16.467,
         "cheer": 2.0,
         "stand_up": 2.233,
-        "reach": 2.6333
+        "reach": 2.6333,
+        "sit_idle": 7.0
       },
       "speed_mps": {
         "walk": 1.4,
