@@ -34,6 +34,7 @@ import { PoolTable } from "../pool/table.js";
 import { Footsteps } from "./footsteps.js";
 import { replaceGrass, grassTexture } from "../world/grass.js";
 import { IdCard } from "../characters/idcard.js";
+import { Greeter } from "./greet.js";
 
 // áp hiệu ứng (GameState.apply → events.kinds) → tiếng, theo thứ tự ưu tiên
 const EFFECT_SOUNDS = ["reward", "checklist", "value", "quest", "grain", "item", "advice"];
@@ -54,6 +55,7 @@ export class Game {
     this.outfitOverride = null;   // vd đang chụp check-in: mặc thử Áo Cam FPT
     this.zoneTime = 0;            // giây đã chơi trong zone hiện tại (sự kiện theo giờ, vd Tú kêu mất balo)
     this.interaction = new Interaction(this, content);
+    this.greeter = new Greeter(this);          // cúi chào + bắt tay khi gặp NPC (hiệu ứng greet)
     this.idCard = new IdCard(this);           // thẻ nhân viên cầm tay: lễ tân đưa (zone 3), quẹt ở cửa (zone 4)
     this.runner = new DialogueRunner({ content, state: progress, ui: ui.dialogue, hooks: {
       speakerInfo: (role) => this.speakerInfo(role),
@@ -248,6 +250,7 @@ export class Game {
   async _enterZone(zoneId, spawnName, { fade = true, keepPose = null, file = null, silent = false, zoneCard = true } = {}) {
     this.state.phase = "transition";
     this.idCard.clear();
+    this.greeter.stop();
     // đang hội thoại / mini-game / mở app / chơi bi-a thì đóng lại trước khi rời zone
     if (this.pool?.active) this.pool.leave();
     if (this.runner.active) this.runner.abort();
@@ -676,6 +679,7 @@ export class Game {
     if (e?.banner) hud.banner(tx(e.banner));
     // thẻ nhân viên cầm tay: card = "give" (lễ tân đưa — anim reach của lễ tân đặt ở câu thoại) | { do: "tap", face: node, reader:
     // tên vật đầu đọc, stand_m } (người chơi bước tới trước đầu đọc, quay vào, đưa thẻ chạm) — characters/idcard.js
+    if (e?.greet) this.greeter.run(e.greet);                        // cúi chào + bắt tay (game/greet.js)
     if (e?.card) {
       const c = typeof e.card === "string" ? { do: e.card } : e.card, node = c.face && this.zone?.nodes.get(c.face);
       if (node) this.faceTarget = worldPos(node);

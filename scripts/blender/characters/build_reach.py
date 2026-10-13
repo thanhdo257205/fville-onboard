@@ -8,6 +8,8 @@ Chạy (không giao diện, mỗi nhân vật 1 lần):
       --align-seat sit_down
     --end 0: lấy cả clip · --loop: game phát lặp (models.<id>.loop) thay vì 1 lần · --align-seat <clip>: dời hông (ngang +
     độ cao) cho trùng chỗ ngồi cuối của clip đó (ngồi yên tại gốc như Mixamo "Sitting" → khớp ghế như sit_type)
+    --lean k: giữ k phần độ cúi / nghiêng của cột sống, cổ, đầu so với khung đầu (dáng thẳng, lịch sự — vd bắt tay 0,35)
+    --step k: giữ k phần quãng hông dời ngang so với khung đầu (bước chân ngắn lại)
 
 Vào:  assets/characters/<id>/<id>_rig.blend, <id>.report.json (file riêng, chỉ trên máy làm việc)
       assets/characters/prajith/mixamo/Reaching Out.fbx (Mixamo "Reaching Out", Without Skin, 25 xương — không commit)
@@ -107,6 +109,8 @@ def main():
     src_fbx = args[args.index("--fbx") + 1] if "--fbx" in args else SRC_FBX
     loop = "--loop" in args
     seat_ref = args[args.index("--align-seat") + 1] if "--align-seat" in args else None
+    lean = float(args[args.index("--lean") + 1]) if "--lean" in args else None
+    step_k = float(args[args.index("--step") + 1]) if "--step" in args else None
     end = int(args[args.index("--end") + 1]) if "--end" in args else 70
     source_root = Path(args[args.index("--source-root") + 1]).resolve() if "--source-root" in args else ROOT
     cfg = json.loads((ROOT / "data/characters.json").read_text(encoding="utf-8"))
@@ -138,6 +142,30 @@ def main():
             fc.keyframe_points.remove(kp)
     action.use_frame_range = True
     action.frame_range = (start, stop)
+    if lean is not None or step_k is not None:
+        from mathutils import Quaternion
+        set_action(arm, action)
+        upper = [b for b in ("mixamorig:Spine", "mixamorig:Spine1", "mixamorig:Spine2", "mixamorig:Neck", "mixamorig:Head")
+                 if b in arm.pose.bones] if lean is not None else []
+        bpy.context.scene.frame_set(start)
+        q0 = {b: arm.pose.bones[b].rotation_quaternion.copy() for b in upper}
+        hp = arm.pose.bones[HIPS]
+        t0 = hp.matrix.translation.copy()
+        for f in range(start, stop + 1):
+            bpy.context.scene.frame_set(f)
+            for b in upper:
+                pb = arm.pose.bones[b]
+                delta = q0[b].inverted() @ pb.rotation_quaternion
+                pb.rotation_quaternion = q0[b] @ Quaternion((1, 0, 0, 0)).slerp(delta, lean)
+                pb.keyframe_insert("rotation_quaternion", frame=f)
+            if step_k is not None:
+                m = hp.matrix.copy()
+                m.translation.x = t0.x + (m.translation.x - t0.x) * step_k
+                m.translation.y = t0.y + (m.translation.y - t0.y) * step_k
+                hp.matrix = m
+                bpy.context.view_layer.update()
+                hp.keyframe_insert("location", frame=f)
+        print(f"[dáng] {CLIP}: giữ {lean} độ cúi cột sống / cổ / đầu, {step_k} quãng bước hông")
     if seat_ref:
         import numpy as np
         ref = bpy.data.actions.get(seat_ref)
@@ -149,7 +177,8 @@ def main():
         print(f"[ngồi] dời hông {CLIP} ({d[0]:+.3f}, {d[1]:+.3f}, {d[2]:+.3f}) m cho trùng chỗ ngồi cuối của {seat_ref}")
     set_action(arm, action)
     hand = arm.pose.bones.get("mixamorig:RightHand") or arm.pose.bones.get("mixamorigRightHand")
-    for f in (start, (start + stop) // 2, stop):
+    peak = max(range(start, stop + 1), key=lambda f: (bpy.context.scene.frame_set(f), -(arm.matrix_world @ hand.head).y)[1])
+    for f in (start, peak, stop):
         bpy.context.scene.frame_set(f)
         p = arm.matrix_world @ hand.head
         print(f"[tay phải] khung {f}: x {p.x:+.2f}  trước {-p.y:+.2f}  cao {p.z:.2f} m")
