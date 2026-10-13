@@ -7,6 +7,13 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Cửa quẹt thẻ mỗi lần vào; đóng cửa phòng họp từ trong (13/10/2026, nhánh `feat/card-doors`):** cửa kính dưới cầu thang +
+  cửa Phòng FSA (`scene_fixes → doors[].card`): sau lần đầu (quest), đi xa thì tự đóng; từ phía ngoài tới gần **không tự mở** —
+  phím E "Quẹt thẻ" (`card:cua_kinh` / `card:cua_fsa`, `Game.tapDoor`): khoá điều khiển, bước tới đầu đọc, tay phải đưa thẻ, bíp ở
+  80% clip, cửa mở; từ phía trong tới gần thì tự mở (nút ra); Tú tới gần thì mở (không kẹt ngoài). Lối sang zone 5 sau cửa FSA
+  đòi cửa đang mở (`triggers[].door`, nhắc `hud.card_needed`). Cửa phòng họp vẫn tự do (không thẻ); đóng từ trong phòng khi
+  người chơi đứng trong vùng cánh quét → lùi người chơi vào trong 0,35 s rồi đóng (`roomdoors.js stepOut`). `test:data`: cửa
+  quẹt thẻ có đầu đọc, `outside`, vật tương tác, lối ra trỏ đúng cửa.
 - **Graceful Dance từ ActorCore (13/10/2026, nhánh `codex/actorcore-graceful-dance`):** thêm ô “Nhảy uyển chuyển”
   cạnh Breakdance. Motion 697 khung / 23,2 giây, chuyển CC3 → 22 xương của bốn rig người chơi, bù khác biệt
   tư thế nghỉ / bone roll và tỷ lệ hông, chỉnh chân chạm sàn; thêm 13 khung nối vòng, tổng 23,63 giây.

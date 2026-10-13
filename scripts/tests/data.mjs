@@ -240,6 +240,16 @@ for (const [id, d] of content.dialogues) for (const [k, n] of Object.entries(d.n
   if (!existsSync(f)) cardErrs.push("thiếu assets/props/id_card/id_card.glb");
   else { const b = readFileSync(f), n = b.readUInt32LE(12); const mats = (JSON.parse(b.subarray(20, 20 + n).toString("utf8")).materials || []).map((m) => m.name); if (!mats.includes("card_face")) cardErrs.push(`id_card.glb: không có chất liệu card_face (${mats.join(", ")})`); }
 }
+// cửa quẹt thẻ (scene_fixes → doors[].card): đầu đọc có trong GLB, outside [x, z] khác 0, có vật tương tác card:<id> cùng zone,
+// lối ra đòi cửa (quests.json → triggers[].door) trỏ tới cửa có thật
+const cardFx = D("scene_fixes") || {}, cardInt = D("interactables"), cardQ = D("quests");
+for (const [z, zf] of Object.entries(cardFx)) for (const d of (zf?.doors || []).filter((x) => x.card)) {
+  const c = d.card, w = `scene_fixes.${z}.doors[${c.id}]`;
+  if (!names[z]?.has(c.reader)) cardErrs.push(`${w}: không có đầu đọc ${c.reader} trong GLB`);
+  if (!Array.isArray(c.outside) || c.outside.length !== 2 || !(c.outside[0] || c.outside[1])) cardErrs.push(`${w}: outside phải là [x, z] khác 0`);
+  if (!cardInt.items.some((it) => it.zone === z && it.action === `card:${c.id}`)) cardErrs.push(`${w}: thiếu vật tương tác card:${c.id}`);
+}
+for (const tr of cardQ.triggers || []) if (tr.door && !(cardFx[tr.zone]?.doors || []).some((d) => d.card?.id === tr.door)) cardErrs.push(`quests.triggers ${tr.node}: door "${tr.door}" không có trong scene_fixes.${tr.zone}.doors`);
 report("thẻ nhân viên cầm tay", cardErrs, `${cardUses.join(", ") || "không có"}; clip reach: ${[chars.roles.le_tan?.model, ...playerModels].join(", ")}`);
 
 // 6. Tú: khác giới với người chơi; đại từ của Tú trong chữ là biến {tu_he}/{tu_his}/{tu_him}/{tu_himself} (+ viết hoa

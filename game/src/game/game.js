@@ -631,7 +631,9 @@ export class Game {
     const p = this.player.position.clone().setY(this.player.position.y + 0.9);
     for (const tr of this.zone.triggers) {
       const inside = inTrigger(tr, p);
-      if (inside && !tr.inside) this.onTrigger(tr.name);
+      // lối ra đứng sau cửa quẹt thẻ (quests.json → triggers[].door): cửa đóng thì chờ — đứng yên trong vùng, quẹt thẻ cho cửa mở là đi
+      if (inside && (!tr.inside || tr.waitDoor)) tr.waitDoor = this.onTrigger(tr.name) === "door";
+      if (!inside) tr.waitDoor = false;
       tr.inside = inside;
     }
   }
@@ -647,6 +649,9 @@ export class Game {
       else hud.toast(t(cfg.blocked || "hud.zone_locked"));
       return;
     }
+    // lối ra sau cửa quẹt thẻ: cửa còn đóng → nhắc quẹt thẻ (1 lần mỗi lần bước vào vùng)
+    const door = cfg.door && (this.doors || []).find((d) => d.cfg.card?.id === cfg.door);
+    if (door && !door.open) { if (!this.zone.triggers.find((x) => x.name === name)?.waitDoor) hud.toast(t("hud.card_needed")); return "door"; }
     if (cfg.cutscene) { this.playCutscene(cfg.cutscene); return; }
     if (cfg.blocked || !cfg.to_zone) { hud.toast(t(cfg.blocked || "hud.zone_locked")); return; }
     this.enterZone(cfg.to_zone, cfg.to_spawn);
@@ -859,7 +864,10 @@ export class Game {
     this.updateDoors(0, true);
   }
   // cửa mở khi đạt open_if. auto_close { away_m, reopen_m, min_s } (scene_fixes): người chơi và Tú cùng cách tâm cửa > away_m,
-  // đã mở ít nhất min_s giây, không đang quẹt thẻ → tự đóng, trả hộp va chạm col; quay lại gần (< reopen_m) → tự mở lại
+  // đã mở ít nhất min_s giây, không đang quẹt thẻ → tự đóng, trả hộp va chạm col; tới gần (< reopen_m) → tự mở lại.
+  // card { id, reader, stand_m, outside: [x, z] } (cửa quẹt thẻ, 13/10/2026): từ phía ngoài (outside = hướng glTF về phía có đầu
+  // đọc) người chơi PHẢI quẹt thẻ mỗi lần vào (phím E "Quẹt thẻ" — tapDoor); từ phía trong tới gần thì tự mở (nút ra); Tú tới gần
+  // phía nào cũng mở (Tú cũng có thẻ — không bị kẹt ngoài)
   updateDoors(dt, instant = false) {
     const p = this.player?.position, tu = this.follower && !this.follower.gone ? this.follower.position : null;
     for (const d of this.doors || []) {
@@ -869,7 +877,12 @@ export class Game {
       if (ok && ac) {
         if (d.open) want = !(dist(p) > ac.away_m && dist(tu) > ac.away_m && d.since >= (ac.min_s ?? 2) && !this.idCard?.token);
         // đóng: mở khi vừa đạt điều kiện (vd vừa quẹt thẻ — không tính lúc vào zone) hoặc có người tới gần (cửa cảm biến)
-        else want = (!instant && !d.wasOk) || dist(p) < (ac.reopen_m ?? 1.6) || dist(tu) < (ac.reopen_m ?? 1.6);
+        else {
+          const near = (q) => dist(q) < (ac.reopen_m ?? 1.6);
+          const inside = (q) => !d.cfg.card || !q || (q.x - d.center.x) * d.cfg.card.outside[0] + (q.z - d.center.z) * d.cfg.card.outside[1] < 0;
+          want = (!instant && !d.wasOk) || d.tapped || (near(p) && inside(p)) || near(tu);
+        }
+        d.tapped = false;
       }
       d.wasOk = ok;
       if (want !== d.open) {
@@ -889,6 +902,30 @@ export class Game {
       const k = THREE.MathUtils.smootherstep(d.t, 0, 1);
       for (const l of d.leaves) l.node.quaternion.slerpQuaternions(l.from, l.to, k);
     }
+  }
+  // cửa quẹt thẻ đang đóng, người chơi ở phía ngoài (phía đầu đọc) → có lời nhắc "Quẹt thẻ" (interaction.js action card:<id>)
+  cardDoorReady(id) {
+    const d = (this.doors || []).find((x) => x.cfg.card?.id === id), p = this.player?.position;
+    if (!d || !p || d.open || this.idCard?.token || !this.progress.check(d.cfg.open_if)) return false;
+    const o = d.cfg.card.outside;
+    return (p.x - d.center.x) * o[0] + (p.z - d.center.z) * o[1] > 0;
+  }
+  // quẹt thẻ ở cửa (mỗi lần vào): khoá điều khiển, bước tới đầu đọc, tay phải đưa thẻ chạm → bíp, cửa mở
+  async tapDoor(id) {
+    const d = (this.doors || []).find((x) => x.cfg.card?.id === id);
+    if (!d || !this.cardDoorReady(id)) return false;
+    const c = d.cfg.card;
+    this.setMode("cutscene");
+    try {
+      await this.idCard.play("tap", { reader: c.reader, stand_m: c.stand_m ?? 0.65, onTap: () => {
+        sound.play("card_ok", { pos: d.center });
+        d.tapped = true;
+      } });
+    } finally {
+      this.faceTarget = null;
+      if (this.mode === "cutscene" && !this.cutscene && !this.timeSkipping) this.setMode("play");
+    }
+    return true;
   }
   // cửa đóng lại: trả các hộp va chạm đã bỏ lúc mở
   restoreColliders(d) {
@@ -965,6 +1002,7 @@ export class Game {
     if (kind === "stand") return this.player.standUp();
     if (kind === "seat") return this.sitFree(e.seat);
     if (kind === "door") return this.roomDoors?.toggle(id);
+    if (kind === "card") return this.tapDoor(id);
     if (kind === "dialogue") return this.runDialogue(id, { npc: this.interaction.npcFor(e), actor: e.item.actor });
     if (kind === "minigame") return this.runMinigame(id);
     if (kind === "pool") return this.pool?.enter();          // bàn bi-a (pool:play): tập một mình / bàn chung qua máy chủ

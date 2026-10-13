@@ -59,6 +59,7 @@
     "click_to_look": "Click to look around with the mouse",
     "objective_explore": "Explore the {zone}",
     "zone_locked": "This way opens in the next update.",
+    "card_needed": "Tap your card on the reader to open the door (E).",
     "tier_auto_low": "Graphics switched to Low to keep things smooth.",
     "detail_lowered": "Detail lowered to keep things smooth (Esc → Detail).",
     "interact": "{key} {action}",
