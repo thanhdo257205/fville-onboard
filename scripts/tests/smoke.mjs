@@ -63,6 +63,7 @@ const langArg = arg("lang");
 const langOf = (look) => (langArg ? String(langArg) : looks.indexOf(look) === 1 ? "vi" : "en");
 const I18N = { en: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "en.json"), "utf8")), vi: JSON.parse(readFileSync(join(ROOT, "data", "i18n", "vi.json"), "utf8")) };
 const SCENE_FIXES = JSON.parse(readFileSync(join(ROOT, "data", "scene_fixes.json"), "utf8"));
+const OFFICE = JSON.parse(readFileSync(join(ROOT, "data", "office.json"), "utf8"));
 const ACH = JSON.parse(readFileSync(join(ROOT, "data", "achievements.json"), "utf8")).final.title;   // tên thành tựu cuối theo ngôn ngữ
 const QUESTS = JSON.parse(readFileSync(join(ROOT, "data", "quests.json"), "utf8")).quests;
 // tên có dấu tiếng Việt để thử tên file ảnh thẻ
@@ -436,14 +437,14 @@ async function runLook(browser, base, look) {
             names.push(room.userData.label);
             go(p.x, 0);
             const approach = body.position.clone();
-            go(p.x, -3.1);
+            go(p.x, -3.65);
             const blockedClosed = !legs.pop().reached;
             body.teleport(approach);
             const d = g.roomDoors.list.find(d => d.cfg.id === id);
             const opened = g.roomDoors.toggle(id);
             for (let k = 0; k < 60; k++) g.roomDoors.update(1 / 60);
             const rotated = d.node.quaternion.angleTo(d.from) > 1.4;
-            go(p.x, -3.1); go(p.x, 0);
+            go(p.x, -3.65); go(p.x, 0);
             const original = g.player.position.clone();
             g.player.body.teleport(new V(p.x, 0.05, -1.5));
             const safe = g.roomDoors.toggle(id) === false && d.target;
@@ -475,6 +476,52 @@ async function runLook(browser, base, look) {
         });
         await check(doorUi.current === "door:phong_hop_3" && doorUi.before !== doorUi.after && doorUi.closed,
           "cửa Ước Lễ: tương tác E / nút cảm ứng đổi Mở ↔ Đóng theo trạng thái", JSON.stringify(doorUi));
+        const surfaces = await ev(rooms => {
+          const g = __game._game, V = g.player.position.constructor;
+          const points = rooms.flatMap(r => {
+            const [x0, x1, y0, y1] = r.bounds;
+            return [y0 + 1.15, (y0 + y1) / 2 - .4, y1 - .45].map(y => ({ room: r.id, x: x1 - .1, y: 1.37, z: -y, hits: 0 }));
+          });
+          const gaps = [];
+          for (const r of rooms) {
+            const room = g.zone.nodes.get(`INT_${r.id}`), cx = (r.bounds[0] + r.bounds[1]) / 2, cy = (r.bounds[2] + r.bounds[3]) / 2;
+            let nearest = Infinity, tip = -Infinity;
+            g.zone.nodes.get(`${r.id}_mesh`).traverse(o => {
+              const a = o.geometry?.attributes.position;
+              if (!a) return;
+              for (let i = 0; i < a.count; i++) {
+                const v = new V().fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld), y = -v.z;
+                if (v.y > .03 && v.y < 1.2 && Math.abs(v.x - cx) < 1.8 && y > r.bounds[2] + .5 && y < cy) nearest = Math.min(nearest, y);
+              }
+            });
+            const col = g.zone.nodes.get(`COL_cua_${r.id}_open`);
+            col.traverse(o => {
+              const a = o.geometry?.attributes.position;
+              if (!a) return;
+              for (let i = 0; i < a.count; i++) tip = Math.max(tip, -new V().fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld).z);
+            });
+            gaps.push({ room: r.id, metres: nearest - tip });
+          }
+          const area = (a, b, c) => (b.y - a.y) * (c.z - a.z) - (b.z - a.z) * (c.y - a.y);
+          g.zone.root.traverse(o => {
+            if (!o.isMesh) return;
+            for (let parent = o; parent; parent = parent.parent) if (/^(COL_|TRIGGER_|PROP_)/.test(parent.name)) return;
+            const p = o.geometry.attributes.position, index = o.geometry.index;
+            for (let i = 0, n = index?.count ?? p.count; i < n; i += 3) {
+              const v = [0, 1, 2].map(k => new V().fromBufferAttribute(p, index ? index.getX(i + k) : i + k).applyMatrix4(o.matrixWorld));
+              if (Math.abs(area(...v)) < 1e-8) continue;
+              for (const point of points) {
+                if (!v.every(a => Math.abs(a.x - point.x) < .004)) continue;
+                const d = [area(v[0], v[1], point), area(v[1], v[2], point), area(v[2], v[0], point)];
+                if (d.every(a => a >= -1e-6) || d.every(a => a <= 1e-6)) point.hits++;
+              }
+            }
+          });
+          return { gaps, points };
+        }, OFFICE.meeting_rooms);
+        await check(surfaces.gaps.every(g => Number.isFinite(g.metres) && g.metres >= .85)
+          && surfaces.points.every(p => p.hits === 1),
+          "phòng họp: cửa mở cách dãy ghế ≥ 85 cm; tường sau sếp / vách chung chỉ một mặt tại 9 điểm (không z-fighting)", JSON.stringify(surfaces));
         const boss = await ev(async () => {
           const g = __game._game, npc = g.npcs.find(n => n.role === "manager"), p = g.player.position.clone();
           const initial = { state: npc.state, clip: npc.character.current?.getClip().name };

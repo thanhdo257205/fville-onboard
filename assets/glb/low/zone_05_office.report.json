@@ -1,8 +1,8 @@
 {
   "zone": "zone_05_office",
   "quality": "low",
-  "triangles_visible": 59992,
-  "triangles_collision": 888,
+  "triangles_visible": 59908,
+  "triangles_collision": 864,
   "materials": [
     "M_anh_team_1",
     "M_anh_team_2",
@@ -16,7 +16,7 @@
     "M_palette",
     "M_pool_tex"
   ],
-  "objects": 279,
+  "objects": 277,
   "game_objects": {
     "COL_": [
       "COL_ban_bi_a",
@@ -51,14 +51,12 @@
       "COL_nghi_tuong_nam",
       "COL_phong_hop_3_bac",
       "COL_phong_hop_3_ban",
-      "COL_phong_hop_3_dong",
       "COL_phong_hop_3_phai",
       "COL_phong_hop_3_san",
       "COL_phong_hop_3_tay",
       "COL_phong_hop_3_trai",
       "COL_phong_hop_manager_bac",
       "COL_phong_hop_manager_ban",
-      "COL_phong_hop_manager_dong",
       "COL_phong_hop_manager_phai",
       "COL_phong_hop_manager_san",
       "COL_phong_hop_manager_tay",

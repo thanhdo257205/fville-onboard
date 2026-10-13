@@ -66,7 +66,7 @@ for (const room of cfg.meeting_rooms) {
   assert.ok(nodes.has(door.col_closed) && nodes.has(door.col_open) && nodes.has(`INT_cua_${room.id}`));
   assert.equal(nodes.get(`ENV_bien_${room.id}`).n.extras?.room_name, room.name);
   assert.equal(parents.get(nodes.get(`ENV_bien_${room.id}`).i), nodes.get(door.leaf).i, 'sign must turn with door');
-  for (let y = 0; y <= 3.1; y += 0.1) {
+  for (let y = 0; y <= 3.8; y += 0.1) {
     const entry = new THREE.Vector3(cx, 0, -y);
     assert.ok(supported(entry) && clear(entry), `room ${room.id} entrance blocked at ${y}`);
   }
@@ -100,6 +100,22 @@ assert.ok(Math.abs(executive.z - conference.z) < .01, 'both tabletop centres mus
 assert.ok(Math.abs(-executive.z - nodes.get('INT_phong_hop_mentor').n.extras.clock_wall_axis_y) < .01, 'desk must align with the clock / central artwork');
 assert.ok(executive.x > conference.x + 2, 'executive desk must occupy the head of the conference table');
 assert.ok(supported(new THREE.Vector3(...manager.arrival_exit)) && clear(new THREE.Vector3(...manager.arrival_exit)), 'boss needs a clear standing position');
+const pcBytes = readFileSync(new URL('../../assets/props/apple_desktop/apple_desktop.glb', import.meta.url));
+const pcData = JSON.parse(pcBytes.subarray(20, 20 + pcBytes.readUInt32LE(12)).toString('utf8'));
+const pcBounds = new THREE.Box3();
+for (const mesh of pcData.meshes) for (const primitive of mesh.primitives) {
+  const a = pcData.accessors[primitive.attributes.POSITION];
+  pcBounds.union(new THREE.Box3(new THREE.Vector3().fromArray(a.min), new THREE.Vector3().fromArray(a.max)));
+}
+pcBounds.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...pc.at),
+  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(pc.yaw_deg)), new THREE.Vector3(1, 1, 1)));
+const top = colliders.find(c => c.name === 'COL_executive_desk').box;
+assert.ok(pcBounds.min.x >= top.min.x + .04 && pcBounds.max.x <= top.max.x - .04
+  && pcBounds.min.z >= top.min.z + .04 && pcBounds.max.z <= top.max.z - .04, 'entire computer footprint must sit inside the desktop with a safe edge margin');
+const keyboard = pcData.meshes.find(m => m.name === 'Keyboard_0');
+assert.ok(keyboard, 'computer must include the keyboard');
+const keyboardBottom = Math.min(...keyboard.primitives.map(p => pcData.accessors[p.attributes.POSITION].min[1]));
+assert.ok(keyboardBottom >= -.001 && keyboardBottom < .006, 'keyboard must rest on the tabletop rather than float above it');
 let extraTris = 0, extraBytes = 0;
 for (const id of ['ceo_office', 'apple_desktop']) {
   const prop = readFileSync(new URL(`../../assets/props/${id}/${id}.glb`, import.meta.url));

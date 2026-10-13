@@ -26,7 +26,7 @@ Tọa độ Blender: Z lên, X/Y trên sàn. Trục +X đi từ phòng phụ v�
 | Lối vào / khu nghỉ | −8 … 0 | −6 … 6 |
 | Phòng chính | −34 … −8 | −14 … 8 |
 | Hành lang | −55 … −34 | −1,5 … 1,5 |
-| Ba phòng họp | −55 … −34 | 1,5 … 7,5 |
+| Ba phòng họp | −55 … −34 | 1,5 … 9 |
 | Phòng phụ | −73 … −55 | −8 … 8 |
 
 Phòng họp nằm phía +Y của hành lang: bên trái khi nhìn theo +X, bên phải khi nhìn theo −X.
@@ -67,8 +67,13 @@ dùng chung mesh / material và gộp lượt vẽ khi tải zone. Cả hai phò
 
 ## Bàn Prajith trong phòng đầu tiên (13/10/2026)
 
-Phòng 1 rộng 9 × 6 m (X −43 … −34; Y 1,5 … 7,5). Bàn CEO đặt dưới đồng hồ / ba bức tranh trên tường đông, ở đầu bàn họp, xoay −90° tạo bố cục chữ T. Tâm hai mặt bàn và đồng hồ / tranh giữa cùng trục Y = 4,8 m. Bộ CEO ở (−35,3; 4,69; 0), máy tính ở (−35,51; 4,885; 0,762), xoay 90° nhìn về người ngồi. Ghế cao 0,447 m. Prajith ngồi gõ máy, khi người chơi vào sẽ đứng rồi ra chỗ trống phía cạnh bàn (−35,3; 6,55; 0).
+Phòng 1 rộng 9 × 7,5 m (X −43 … −34; Y 1,5 … 9). Bàn CEO đặt dưới đồng hồ / ba bức tranh trên tường đông, ở đầu bàn họp, xoay −90° tạo bố cục chữ T. Tâm hai mặt bàn và đồng hồ / tranh giữa cùng trục Y = 5,55 m. Bộ CEO ở (−35,3; 5,44; 0), máy tính ở (−35,68; 5,635; 0,762), xoay 90° nhìn về người ngồi. Ghế cao 0,447 m. Prajith ngồi gõ máy, khi người chơi vào sẽ đứng rồi ra chỗ trống phía cạnh bàn (−35,3; 7,3; 0).
 
 Trạch Xá, Ước Lễ và phòng phụ dịch 3 m về phía tây để dành chiều ngang cho phòng 1; hành lang dài thêm 3 m, các cửa / spawn / bàn phụ và va chạm cùng dịch theo cấu hình. Văn phòng chính / khu nghỉ giữ vị trí. Ms. Nga ở Trạch Xá; thứ tự nhiệm vụ gặp Nga rồi Prajith giữ nguyên.
 
-Hai prop thêm 4.140 tam giác, 51.108 byte, texture tối đa 512 px. GLB bối cảnh có 59.992 tam giác / 633.872 byte; nền cộng hai prop là 64.132 tam giác, chưa tính NPC và các prop cây có sẵn. Các khe của điều hòa trần chỉ giữ mặt dưới nhìn thấy để duy trì ngân sách 60.000 của GLB nền.
+Hai prop thêm 4.140 tam giác, 51.116 byte, texture tối đa 512 px. GLB bối cảnh có 59.908 tam giác / 632.092 byte; nền cộng hai prop là 64.048 tam giác, chưa tính NPC và các prop cây có sẵn. Các khe của điều hòa trần chỉ giữ mặt dưới nhìn thấy để duy trì ngân sách 60.000 của GLB nền.
+
+Khoảng trống cửa mở tới dãy ghế khoảng 90 cm (CI đọc vertex thực, yêu cầu ≥ 85 cm). Trạch Xá / Ước Lễ sâu 7,5 m,
+phòng Prajith 9 × 7,5 m; vị trí cửa và hành lang giữ nguyên. Máy tính nằm trong footprint mặt bàn với lề 5 cm,
+bàn phím đặt sát mặt bàn. Tường đông phòng 1 dùng chung tường văn phòng; mỗi vách giữa hai phòng dựng một lớp,
+có màu trắng / xanh theo phía. Tranh và đồng hồ tách khỏi mặt tường; CI kiểm 9 điểm không có hai tam giác phủ trùng.
