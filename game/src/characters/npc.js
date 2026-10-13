@@ -99,6 +99,13 @@ export class Npc {
 
   async release() {
     if (this.state !== "talking") return;
+    // đã bước ra chỗ khác (vd ra chào, bắt tay — game/greet.js) → đi về chỗ cũ rồi mới quay lại / ngồi
+    if (this.returnTo) {
+      const home = this.returnTo;
+      this.returnTo = null;
+      await new Promise((res) => this.walkTo(home, { speed: 1.0, done: res }));
+      this.state = "talking";
+    }
     this.state = "turning_back";
     this.character.play("idle", { fade: 0.25 });
     await this.turnTo(this.homeYaw);

@@ -7,6 +7,12 @@ Quy ước: cuối mỗi lần làm việc cập nhật file này, commit và pu
 
 ## Đã xong
 
+- **Gặp anh Prajith: cúi chào + bắt tay (13/10/2026, nhánh `feat/bow-handshake`):** Mixamo "Quick Formal Bow" → clip `bow` (4
+  ngoại hình), "Shaking Hands 2" → `handshake` (4 ngoại hình + `prajith_polo`; `build_reach.py --lean 0.35 --step 0.5`: giữ 35% độ
+  cúi cột sống / cổ / đầu, nửa quãng bước — bản gốc hai người đổ tới, đầu cách 0,35 m → 0,54 m). Hiệu ứng `greet` ở câu đầu
+  `manager_main` (`game/src/game/greet.js`): Prajith đứng dậy, bước ra trước bàn (−35,4; −4,1), người chơi đứng đối diện cách 0,95 m,
+  cúi chào, Prajith gật đầu, hai người bắt tay (hai bàn tay cách ~6,5 cm), rồi nói chuyện; xong hội thoại Prajith đi về ghế
+  (`Npc.returnTo`). `stepToPoint(…, { force })`: bước dàn cảnh không bị huỷ khi sượt capsule NPC.
 - **Mạng: không tự ngắt khi đi liên tục (13/10/2026, nhánh `fix/net-heartbeat`):** cứ khoảng 50 giây "N online" và ô chat
   biến mất vài giây. Nguyên nhân: máy khách chỉ ping khi 20 s chưa *gửi* gì, nhưng đang đi thì vị trí gửi đều; máy chủ không trả
   vị trí của mình về cho mình → một mình trong zone / người khác đứng yên thì không *nhận* gì → quá `dead_after_s` (50 s) máy khách
